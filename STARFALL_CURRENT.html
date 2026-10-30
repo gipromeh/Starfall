@@ -960,6 +960,206 @@ npcOf(3, buildHumanoid(Object.assign({}, greyCfg, { name: 'bruk', label: 'Бру
   skin: brukSkin, eyeMat: eOrange, pulse: true, extras: brukExtrasFull })));
 
 
+/* ------------------------------------------------------------------ v43: генератор пришельцев (сид → конфиг buildHumanoid)
+   Четырёх именных NPC (Зорг, Векса, Шшиила, Брук) не трогает. Роль (clerk/captain/mechanic) = реквизит, сид = вид (тело, голова, глаза, кожа, особенности).
+   Вкус держится на ограничениях: пропорции из трёх проверенных архетипов ±10%, на голове не больше одного украшения «сверху» и одного «у рта»,
+   особенностей всего 2–4, палитра одна на вид (кожа + акцентный свет). Всё созданное одним пришельцем собирается в owned и целиком освобождается в genDispose. */
+const GEN = { eyes: { gold: eGold, cyan: eCyan, orange: eOrange }, list: [], warm: false, texSz: isMobile ? 256 : 512 };   // глаза gold/cyan/orange — те же, что у именных NPC
+const GEN_ROLES = ['clerk', 'captain', 'mechanic'], GEN_RN = { clerk: 'Регистратор', captain: 'Капитан', mechanic: 'Механик' };
+const GEN_METAL = [[.85, .6, .16], [.55, .36, .1], [.5, .56, .66], [.7, .38, .22]];
+const GEN_SYL = ['Зо', 'Ра', 'Кла', 'Бру', 'Ве', 'Ши', 'Гра', 'Кро', 'Ксе', 'Нул', 'Тор', 'Ип', 'Мы', 'Ул', 'Дже', 'Фро', 'Хаа', 'Лис'], GEN_END = ['рг', 'кс', 'ла', 'ук', 'ир', 'ша', 'он', 'ак', 'из', 'ус'];
+const GAL_Z = -.4, GAL_SPAN = .82;
+// архетипы = пропорции трёх уже сделанных персонажей (Зорг / Брук / Векса)
+const GEN_ARCH = {
+  slim: { scale: 1, leg: .30, foot: .025, torsoW: .24, torsoH: .38, torsoD: .15, neck: .07, neckR: .026, ua: .27, fa: .30, armR: .02, legR: .032, fingers: 3, fingerLen: .075, seatTop: .42,
+    head: { w: .27, h: .33, d: .25, chin: .5, elong: .3, brow: .12 }, eye: { x: .085, y: -.03, sx: .075, sy: .042, sz: .03, tilt: .55 } },
+  stocky: { scale: 1, leg: .30, foot: .025, torsoW: .34, torsoH: .38, torsoD: .22, neck: .05, neckR: .06, ua: .27, fa: .29, armR: .03, legR: .045, fingers: 4, fingerLen: .08, seatTop: .42,
+    head: { w: .34, h: .30, d: .30, chin: .25, elong: 0, brow: .4 }, eye: { x: .085, y: -.01, sx: .06, sy: .045, sz: .035, tilt: .1 } },
+  tall: { scale: .8, leg: .62, foot: .04, torsoW: .36, torsoH: .72, torsoD: .24, neck: .1, neckR: .055, ua: .5, fa: .55, armR: .036, legR: .055, fingers: 4, fingerLen: .14, seatTop: .52,
+    head: { w: .26, h: .31, d: .27, chin: .45, elong: .8, brow: .3 }, eye: { x: .075, y: -.01, sx: .075, sy: .03, sz: .026, tilt: .35 } }
+};
+const seedOf = s => { let h = 2166136261; s = String(s); for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+const rngOf = seed => { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; };
+const hsl = (h, s, l) => { h = ((h % 1) + 1) % 1; const a = s * Math.min(l, 1 - l), f = n => { const k = (n + h * 12) % 12; return l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1)); }; return [f(0), f(8), f(4)]; };
+const genEye = kind => GEN.eyes[kind] || (GEN.eyes[kind] = eyeMat(kind));
+function genName(g) { const a = GEN_SYL[(g() * GEN_SYL.length) | 0], b = g() < .45 ? GEN_SYL[(g() * GEN_SYL.length) | 0].toLowerCase() : ''; return a + b + GEN_END[(g() * GEN_END.length) | 0]; }
+
+// кожа: 5 видов узора, палитра из одного оттенка + контрастный акцент (он же светится в трещинах/пятнах)
+function genSkin(r) {
+  const kinds = ['mottle', 'scale', 'crack', 'stripe', 'speckle'], kind = kinds[(r() * kinds.length) | 0];
+  const h0 = r(), sat = .3 + r() * .35, lo = .19 + r() * .13;
+  const base = hsl(h0, sat, lo), lite = hsl(h0 + (r() - .5) * .1, sat * .9, lo + .2 + r() * .12);
+  const ac = hsl(h0 + [.5, .33, -.33, .17][(r() * 4) | 0], .9, .55);
+  const s1 = (r() * 900) | 0, K = 3 + ((r() * 5) | 0), G = 10 + ((r() * 7) | 0);
+  const emissive = kind === 'crack' || kind === 'speckle';
+  const col = (t, a) => { const c = mix3(base, lite, clamp(t, 0, 1)), k = a === undefined ? 1 : a; return [c[0] * k, c[1] * k, c[2] * k]; };
+  let fn;
+  if (kind === 'mottle') fn = (u, v) => {
+    const n = fbm(u, v, 5, 5, s1), m = fbm(u, v, 14, 4, s1 + 1), pore = fbm(u, v, 110, 2, s1 + 2), vn = Math.abs(fbm(u, v, 6, 4, s1 + 3) - .5), vm = vn < .02 ? 1 - vn / .02 : 0;
+    return { h: .5 * n + .25 * pore + .2 * fbm(u, v, 40, 2, s1 + 4) - .1 * vm, c: col(.15 + n * .9, 1 - vm * .25), rough: .35 + .25 * m, metal: 0, ao: .7 + .3 * n };
+  };
+  else if (kind === 'scale') fn = (u, v) => {
+    const R = 36, row = Math.floor(v * R), uu = (u * 28 + (row & 1) * .5) % 1, vv = (v * R) % 1;
+    const d = Math.hypot(uu - .5, (vv - .5) * 1.2), bump = Math.max(0, 1 - d / .55), hh = bump * bump * (3 - 2 * bump), n = fbm(u, v, 6, 4, s1);
+    return { h: hh + (n - .5) * .08, c: col(hh * .7 + n * .3), rough: .3 + .3 * (1 - hh), metal: .12, ao: .55 + .45 * hh };
+  };
+  else if (kind === 'crack') fn = (u, v) => {
+    const f1 = fbm(u, v, 6, 5, s1), f2 = fbm(u, v, 22, 3, s1 + 1), f3 = fbm(u, v, 70, 2, s1 + 2), cr = Math.abs(fbm(u, v, 5, 5, s1 + 3) - .5) < .014 ? 1 : 0, mk = sstep(.25, .7, fbm(u, v, 2, 3, s1 + 4)), crk = cr * mk;
+    const t = (f1 * .6 + f2 * .4) * (.7 + .5 * f3);
+    return { h: .6 * f1 + .4 * f2 - .35 * crk, c: col(t * 1.3, 1 - .9 * crk), rough: .7, metal: 0, ao: .65 + .35 * f1, e: [ac[0] * crk, ac[1] * crk, ac[2] * crk] };
+  };
+  else if (kind === 'stripe') fn = (u, v) => {
+    const w = fbm(u, v, 4, 4, s1), n = fbm(u, v, 12, 4, s1 + 1), band = .5 + .5 * Math.sin(Math.PI * 2 * (K * v + 1.6 * (w - .5))), b = sstep(.35, .65, band);
+    const c = mix3(lite, base, b * .85 + n * .15);
+    return { h: .4 * n + .25 * b, c, rough: .45, metal: 0, ao: .75 + .25 * n };
+  };
+  else fn = (u, v) => {
+    const gx = Math.floor(u * G), gy = Math.floor(v * G), fx = (u * G) % 1, fy = (v * G) % 1;
+    const cx = .25 + .5 * hash2(gx, gy, s1), cy = .25 + .5 * hash2(gx, gy, s1 + 1), rr = .1 + .17 * hash2(gx, gy, s1 + 2);
+    const sp = hash2(gx, gy, s1 + 3) > .45 ? 1 - sstep(rr * .7, rr, Math.hypot(fx - cx, fy - cy)) : 0, n = fbm(u, v, 5, 5, s1 + 4), c = col(.1 + n * .9);
+    return { h: .45 * n - .1 * sp, c: [mix(c[0], ac[0] * .6, sp), mix(c[1], ac[1] * .6, sp), mix(c[2], ac[2] * .6, sp)], rough: .4 + .2 * n, metal: 0, ao: .7 + .3 * n, e: [ac[0] * sp * .8, ac[1] * sp * .8, ac[2] * sp * .8] };
+  };
+  return { kind, fn, emissive, ac, h0 };
+}
+
+function genConfig(seed, role) {
+  const r = rngOf(seedOf('A' + seed)), rp = rngOf(seedOf('R' + seed + role));
+  const pi = (g, n) => (g() * n) | 0, pa = (g, a) => a[pi(g, a.length)], J = (v, k) => v * (1 + (r() * 2 - 1) * k);
+  const ak = r() < .4 ? 'slim' : (r() < .5 ? 'stocky' : 'tall'), A = GEN_ARCH[ak], c = {};
+  ['leg', 'foot', 'torsoW', 'torsoH', 'torsoD', 'neck', 'neckR', 'ua', 'fa', 'armR', 'legR', 'fingerLen'].forEach(k => { c[k] = J(A[k], .1); });
+  c.scale = A.scale * (.92 + r() * .16); c.seatTop = A.seatTop; c.fingers = r() < .25 ? (A.fingers === 3 ? 4 : 3) : A.fingers;
+  const hd = A.head; c.head = { w: J(hd.w, .1), h: J(hd.h, .1), d: J(hd.d, .1), chin: clamp(hd.chin + (r() - .5) * .3, .1, .7), elong: clamp(hd.elong + (r() - .5) * .6, 0, .95), brow: clamp(hd.brow + (r() - .5) * .16, .04, .45), crest: 0 };
+  const ey = A.eye; c.eye = { x: J(ey.x, .1), y: ey.y + (r() - .5) * .02, sx: J(ey.sx, .12), sy: J(ey.sy, .12), sz: J(ey.sz, .1), tilt: clamp(ey.tilt + (r() - .5) * .3, 0, .7) };
+  if (r() < .6) { c.eye.slit = true; c.eye.pw = .22 + r() * .14; }
+  const ek = pa(r, ['amber', 'gold', 'cyan', 'magenta', 'orange', 'black']);
+  // особенности: ≤1 «сверху», ≤1 «у рта», всего 2–4
+  const f = {}, feats = [], NM = { tend: 'щупальца', ears: 'плавники', frill: 'воротник', eye3: 'третий глаз', spines: 'шипы' };
+  const top = pa(r, ['horns', 'crest', 'fan', 'none', 'none']);
+  if (top === 'horns') { f.horns = { len: .12 + r() * .16, base: .03 + r() * .02, ang: .45 + r() * .5 }; feats.push('рога'); }
+  else if (top === 'crest') { c.head.crest = .04 + r() * .04; feats.push('гребень'); }
+  else if (top === 'fan') { f.fan = { R: .2 + r() * .14, n: 5 + pi(r, 4) }; feats.push('веер'); }
+  const mouth = pa(r, ['tusks', 'mandibles', 'none', 'none']);
+  if (mouth === 'tusks') { f.tusks = { len: .11 + r() * .07 }; feats.push('клыки'); } else if (mouth === 'mandibles') { c.mandibles = true; feats.push('жвалы'); }
+  const pool = ['tend', 'ears', 'frill', 'eye3', 'spines'];
+  while (pool.length && (feats.length < 2 || (feats.length < 4 && r() < .4))) {
+    const k = pool.splice(pi(r, pool.length), 1)[0];
+    if (k === 'tend') f.tend = { sp: .02 + r() * .05, len: r() * .2 };
+    else if (k === 'ears') f.ears = { R: .06 + r() * .06 };
+    else if (k === 'frill') f.frill = { R: .15 + r() * .1 };
+    else if (k === 'eye3') f.eye3 = 1;
+    else c.spines = 3 + pi(r, 3);
+    feats.push(NM[k]);
+  }
+  const sk = genSkin(r);
+  c.skin = skinMat('gskin' + seed, makeTexSet('gs' + seed, GEN.texSz, sk.fn, { bump: 9, emissive: sk.emissive }), 3);
+  if (sk.kind === 'crack') c.skin.subSurface.isTranslucencyEnabled = false;
+  c.eyeMat = genEye(ek); c.extras = genExtras;
+  c.gen = { role, f, accent: sk.ac, metal: pa(rp, GEN_METAL), cloth: hsl(sk.h0 + .5 + (rp() - .5) * .2, .35, .09 + rp() * .05), lensSide: rp() < .5 ? 1 : -1 };
+  return { c, seed, role, name: genName(rp), ak, skinKind: sk.kind, feats, eyeKind: ek };
+}
+
+// реквизит роли + особенности вида; всё из примитивов, материалы свои (освобождаются вместе с пришельцем)
+function genExtras(X) {
+  const { c, chestN, neckN, headN, headCY, H, E, reg, node, sph, surfZ, shx, shy } = X, g = c.gen, f = g.f, mt = g.metal, ac = g.accent, cl = g.cloth;
+  const W = c.torsoW, Th = c.torsoH, D = c.torsoD;
+  const cyl = (n, o) => BABYLON.MeshBuilder.CreateCylinder(n, Object.assign({ tessellation: 16 }, o), scene);
+  const tor = (n, d, t) => BABYLON.MeshBuilder.CreateTorus(n, { diameter: d, thickness: t, tessellation: 36 }, scene);
+  const box = (n, w, h, d) => BABYLON.MeshBuilder.CreateBox(n, { width: w, height: h, depth: d }, scene);
+  const disc = (n, R, o) => BABYLON.MeshBuilder.CreateDisc(n, Object.assign({ radius: R, tessellation: 40, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, o || {}), scene);
+  const metal = mm('gMetal', new C3(mt[0], mt[1], mt[2]), 1, .28), glo = glowMat('gGlow', new C3(ac[0] * 3, ac[1] * 3, ac[2] * 3));
+  const cloth = mm('gCloth', new C3(cl[0], cl[1], cl[2]), .1, .6); cloth.sheen.isEnabled = true; cloth.sheen.intensity = .5; cloth.sheen.color = new C3(ac[0], ac[1], ac[2]);
+  const trans = pbr('gTrans'); trans.albedoColor = new C3(ac[0] * .35, ac[1] * .35, ac[2] * .35); trans.emissiveColor = new C3(ac[0] * .25, ac[1] * .25, ac[2] * .25);
+  trans.alpha = .55; trans.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_ALPHABLEND; trans.backFaceCulling = false; trans.metallic = 0; trans.roughness = .4;
+  const leather = mm('gLeather', new C3(.07, .045, .025), 0, .55);
+  // ===== роль
+  if (g.role === 'clerk') {
+    const robe = reg(sph('robe', 28), chestN, cloth); robe.scaling.set(W * 1.14, Th * 1.06, D * 1.5); robe.position.y = Th * .5;
+    const cd = Math.max(.2, W * 1.2), col = reg(cyl('collar', { height: .07, diameterTop: cd * .55, diameterBottom: cd, tessellation: 32 }), neckN, cloth); col.position.y = -.005; col.scaling.z = .85;
+    const ring = reg(tor('cring', cd, .014), neckN, metal); ring.position.y = -.04; ring.scaling.z = .85;
+    const vl = reg(box('vline', .008, Th * .8, .006), chestN, metal); vl.position.set(0, Th * .46, D * .75);
+    const hx = reg(cyl('hex', { height: .012, diameter: .075, tessellation: 6 }), chestN, metal); hx.rotation.x = Math.PI / 2; hx.position.set(0, Th * .55, D * .76);
+    const gm = reg(sph('gem', 12), chestN, glo); gm.scaling.setAll(.032); gm.position.set(0, Th * .55, D * .78);
+  } else if (g.role === 'captain') {
+    const cp = reg(box('cape', W * 1.4, Th * 1.15, .012), chestN, cloth); cp.position.set(0, Th * .38, -D * .8); cp.rotation.x = -.1;
+    const sash = reg(box('sash', .045, Th * 1.05, .01), chestN, glo); sash.position.set(0, Th * .5, D * .54); sash.rotation.z = .55;
+    for (const s of [1, -1]) { const ep = reg(tor('epaulet', .1 + W * .12, .014), chestN, metal); ep.rotation.z = Math.PI / 2; ep.position.set(s * (shx + .01), shy, 0); }
+    const bd = reg(sph('badge', 14), chestN, metal); bd.scaling.set(.05, .05, .015); bd.position.set(W * .2, Th * .72, D * .52);
+    const bg = reg(sph('badgeG', 10), chestN, glo); bg.scaling.setAll(.018); bg.position.set(W * .2, Th * .72, D * .56);
+    const nr = reg(tor('nring', Math.max(.12, W * .55), .014), neckN, metal); nr.position.y = .04;
+  } else {
+    const sd = g.lensSide, ld = Math.max(.09, E.sx * 1.7), lx = sd * E.x, ly = headCY + E.y, lz = surfZ(E.x, E.y);
+    const lb = reg(cyl('lensBody', { height: .05, diameter: ld, tessellation: 28 }), headN, metal); lb.rotation.x = Math.PI / 2; lb.position.set(lx, ly, lz + .01);
+    const lr = reg(tor('lensRim', ld, .015), headN, metal); lr.rotation.x = Math.PI / 2; lr.position.set(lx, ly, lz + .037);
+    const lg = reg(sph('lensGlass', 20), headN, glo); lg.scaling.set(ld * .7, ld * .7, .03); lg.position.set(lx, ly, lz + .037);
+    for (const s of [1, -1]) { const st = reg(box('strap', .03, Th * 1.1, .012), chestN, leather); st.position.set(0, Th * .5, D * .53); st.rotation.z = s * .5; }
+    const bk = reg(sph('buckle', 10), chestN, glo); bk.scaling.setAll(.03); bk.position.set(0, Th * .5, D * .56);
+    const wr = reg(cyl('wrench', { height: .16, diameter: .014, tessellation: 8 }), chestN, metal); wr.position.set(W * .22, Th * .2, D * .6); wr.rotation.z = .5; wr.rotation.x = .2;
+    const pk = reg(box('pocket', .1, .075, .012), chestN, leather); pk.position.set(-W * .2, Th * .22, D * .56);
+    const sh = reg(sph('msh', 20), chestN, metal); sh.scaling.setAll(.17); sh.position.set(-sd * (shx + .035), shy + .01, 0);
+  }
+  // ===== особенности вида
+  if (f.horns) for (const s of [1, -1]) { const h = reg(cyl('horn', { height: f.horns.len, diameterTop: 0, diameterBottom: f.horns.base, tessellation: 12 }), headN, c.skin); h.position.set(s * H.w * .36, headCY + H.h * .3, -.04); h.rotation.z = -s * f.horns.ang; h.rotation.x = -.35; }
+  if (f.fan) {
+    const R = f.fan.R, fan = node('fan', headN, 0, headCY - .02, -H.d * .42); fan.rotation.x = -.28;
+    const d = disc('fanD', R, { tessellation: 48, arc: .5 }); d.parent = fan; d.material = trans; d.isPickable = false;
+    for (let i = 0; i <= f.fan.n; i++) { const a = i / f.fan.n * Math.PI, rb = cyl('rib', { height: R, diameter: .006, tessellation: 6 }); rb.parent = fan; rb.material = metal; rb.position.set(Math.cos(a) * R / 2, Math.sin(a) * R / 2, .002); rb.rotation.z = a - Math.PI / 2; }
+    const path = []; for (let i = 0; i <= 40; i++) { const a = i / 40 * Math.PI; path.push(new V3(Math.cos(a) * R, Math.sin(a) * R, .003)); }
+    const rim = BABYLON.MeshBuilder.CreateTube('fanRim', { path, radius: .005, tessellation: 6 }, scene); rim.parent = fan; rim.material = metal;
+  }
+  if (f.tusks) for (const s of [1, -1]) {
+    const tn = node('tuskN', headN, s * .034, headCY - H.h * .33, surfZ(s * .034, -H.h * .33) * .96 + .012), pts = [];
+    for (let i = 0; i <= 10; i++) { const t = i / 10; pts.push(new V3(s * (.004 + .04 * t * t), f.tusks.len * t * 1.15 - .012, .022 * t)); }
+    const tb = BABYLON.MeshBuilder.CreateTube('tusk', { path: pts, radiusFunction: i => .0135 * (1 - i / 11) + .0008, tessellation: 8 }, scene); tb.parent = tn; tb.material = ivory; shadowGen.addShadowCaster(tb);
+  }
+  if (f.tend) for (const s of [1, -1]) {
+    const a = new V3(s * .07, headCY - .1, surfZ(s * .07, -.1) * .85), b = new V3(s * (.08 + f.tend.sp), headCY - H.h * (.55 + f.tend.len), .1);
+    segm(headN, a, b, .011, c.skin); const bd = reg(sph('tbead', 10), headN, glo); bd.scaling.setAll(.026); bd.position.copyFrom(b);
+  }
+  if (f.ears) for (const s of [1, -1]) { const fin = disc('ear', f.ears.R); fin.parent = headN; fin.material = trans; fin.isPickable = false; fin.scaling.set(1.25, 1, 1); fin.position.set(s * H.w * .42, headCY + .01, -.02); fin.rotation.z = s * .35; }
+  if (f.frill) { const fl = disc('frill', f.frill.R); fl.parent = neckN; fl.material = trans; fl.isPickable = false; fl.rotation.x = Math.PI / 2; fl.position.set(0, .015, -.02); const fr = tor('frillRim', f.frill.R * 2, .008); fr.parent = neckN; fr.material = glo; fr.position.set(0, .015, -.02); }
+  if (f.eye3) { const te = reg(sph('eye3', 24), headN, c.eyeMat); te.scaling.set(E.sx * .75, E.sx * .75, E.sz); te.position.set(0, headCY + H.h * .17, surfZ(0, H.h * .17) * .985); }
+}
+
+function genLabel(text, x, y, z) {
+  const w = 640, h = 150, pl = BABYLON.MeshBuilder.CreatePlane('glabel', { width: .8, height: .8 * h / w }, scene);
+  const dt = new BABYLON.DynamicTexture('glabelT', { width: w, height: h }, scene, true), g = dt.getContext();
+  g.fillStyle = 'rgba(4,16,30,.82)'; g.fillRect(0, 0, w, h); g.fillStyle = '#e6f6ff'; g.textAlign = 'center';
+  text.split('\n').forEach((ln, i) => { g.font = (i ? '26px' : 'bold 36px') + ' sans-serif'; g.fillText(ln, w / 2, 56 + i * 50); });
+  dt.update();
+  const m = new BABYLON.StandardMaterial('glabelM', scene); m.disableLighting = true; m.emissiveTexture = dt; m.diffuseColor = C3.Black(); m.specularColor = C3.Black(); m.fogEnabled = false;
+  pl.material = m; pl.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL; pl.position.set(x, y, z); pl.isPickable = false; return pl;
+}
+
+function genAlien(seed, role, pos, yaw, opt) {
+  opt = opt || {};
+  if (!GEN.warm) { ['amber', 'gold', 'cyan', 'magenta', 'orange', 'black'].forEach(genEye); GEN.warm = true; }   // общие глаза создаём ДО снимка — они не принадлежат пришельцу
+  const snap = { m: new Set(scene.meshes), mt: new Set(scene.materials), tx: new Set(scene.textures), tn: new Set(scene.transformNodes) };
+  const cfg = genConfig(seed, role);
+  const A = buildHumanoid(Object.assign(cfg.c, { name: 'g' + seed, label: cfg.name, pos, yaw, sit: false, lookRange: 8, headSpeed: 2.5 }, opt.cfg || {}));
+  A.gen = cfg;
+  if (opt.label) genLabel('#' + seed + ' · ' + GEN_RN[role] + ' ' + cfg.name + '\n' + cfg.ak + ' · ' + cfg.skinKind + ' · ' + cfg.feats.join(', '), pos.x, 2.05, pos.z);
+  return { A, cfg, owned: { meshes: scene.meshes.filter(m => !snap.m.has(m)), mats: scene.materials.filter(m => !snap.mt.has(m)), texs: scene.textures.filter(t => !snap.tx.has(t)), tns: scene.transformNodes.filter(n => !snap.tn.has(n)) } };
+}
+function genDispose(g) {
+  const i = actors.indexOf(g.A); if (i >= 0) actors.splice(i, 1);
+  g.owned.meshes.forEach(m => { try { if (!m.isDisposed()) m.dispose(false, false); } catch (e) {} });
+  g.owned.tns.forEach(n => { try { if (!n.isDisposed()) n.dispose(false, false); } catch (e) {} });
+  g.owned.mats.forEach(m => { try { m.dispose(false, false); } catch (e) {} });
+  g.owned.texs.forEach(t => { try { t.dispose(); } catch (e) {} });
+}
+function galleryLight(on) {   // пока открыта галерея, переднее освещение сильнее (в самом баре силуэты тёмные из-за контрового света окна)
+  if (on && !GEN.light) { GEN.light = { h: hemi.intensity, k: keyLight.intensity }; hemi.intensity = 1.0; keyLight.intensity = 2.4; }
+  else if (!on && GEN.light) { hemi.intensity = GEN.light.h; keyLight.intensity = GEN.light.k; GEN.light = null; }
+}
+function galleryClear() { GEN.list.forEach(genDispose); GEN.list.length = 0; galleryLight(false); }
+// отладочная «примерочная»: n пришельцев в ряд, подпись = сид, роль, имя, архетип, узор кожи, особенности
+function gallery(seed0, n) {
+  galleryClear(); n = n || 6; galleryLight(true);
+  for (let i = 0; i < n; i++) { const seed = seed0 + i; GEN.list.push(genAlien(seed, GEN_ROLES[seed % 3], new V3((i - (n - 1) / 2) * GAL_SPAN, 0, GAL_Z), Math.PI, { label: true })); }
+  setCine(false);
+  const s = { a: -Math.PI / 2, b: 1.5, r: 4.3, t: new V3(0, 1.0, GAL_Z) }; SHOTS.push(s); goShot(SHOTS.length - 1, 1.2); SHOTS.pop();
+}
+
 /* ------------------------------------------------------------------ interaction */
 scene.onPointerObservable.add(pi => {
   if (pi.type === BABYLON.PointerEventTypes.POINTERDOWN) { anim = null; if (cine) setCine(false); }
@@ -1100,6 +1300,9 @@ return {
   stop() { if (!running) return; running = false; engine.stopRenderLoop(frame); },
   focus(i) { setCine(false); goShot(FOCUS[i], 1.2); },
   overview() { setCine(false); goShot(0, 1.4); },
+  gallery(seed0, n) { gallery(seed0, n); },
+  galleryClear() { galleryClear(); },
+  stats() { return { actors: actors.length, gen: GEN.list.length, meshes: scene.meshes.length, mats: scene.materials.length, texs: scene.textures.length, tns: scene.transformNodes.length, casters: shadowGen.getShadowMap().renderList.length }; },
   cam: camera,
   resize() { engine.resize(); },
   dispose() { running = false; if (ro) ro.disconnect(); try { engine.stopRenderLoop(); scene.dispose(); engine.dispose(); } catch (e) {} }
@@ -1812,7 +2015,7 @@ h.querySelectorAll(".hall-win,.hall-bar,.hall-floor,.hall-npc").forEach(e=>e.sty
 h.insertBefore(CAFE.cv,h.firstChild);
 const ov=document.createElement("div");ov.className="cafe-ov";const st=cafeMarks();CAFE.tags=[];
 ALN.forEach((a,i)=>{const t=document.createElement("div");t.className="cafe-tag";t.style.setProperty("--c",a.c);t.innerHTML=(st[i]?'<em class="'+(st[i]==="?"?"q":"")+'">'+st[i]+'</em>':"")+"<span>"+a.n+"</span>";t.onclick=()=>cafePick(i);t.style.display="none";ov.appendChild(t);CAFE.tags[i]=t});
-const ob=document.createElement("button");ob.className="cafe-ob";ob.textContent="ОБЩИЙ ПЛАН";ob.onclick=()=>CAFE.api.overview();ov.appendChild(ob);{const hn=document.createElement("div");hn.className="cafe-note";hn.textContent="Тяни — двигать сцену · двумя пальцами — вращать и приближать";ov.appendChild(hn);setTimeout(()=>hn.remove(),7000)}
+const ob=document.createElement("button");ob.className="cafe-ob";ob.textContent="ОБЩИЙ ПЛАН";ob.onclick=()=>CAFE.api.overview();ov.appendChild(ob);if(/[?&]gallery/.test(location.search)){const gw=document.createElement("div");gw.style.cssText="position:absolute;left:8px;top:8px;display:flex;gap:6px;flex-wrap:wrap;max-width:75%;pointer-events:none";let gs=Math.max(1,parseInt(new URLSearchParams(location.search).get("gallery"))||1);const gn=TCH?3:6,gb=(t,f)=>{const b=document.createElement("button");b.textContent=t;b.style.cssText="pointer-events:auto;min-height:44px;padding:6px 12px;font-size:11px";b.onclick=f;gw.appendChild(b)},go=d=>{gs=Math.max(1,gs+d);CAFE.api.gallery(gs,gn)};gb("ГАЛЕРЕЯ",()=>go(0));gb("◀",()=>go(-gn));gb("▶",()=>go(gn));gb("УБРАТЬ",()=>CAFE.api.galleryClear());ov.appendChild(gw)}{const hn=document.createElement("div");hn.className="cafe-note";hn.textContent="Тяни — двигать сцену · двумя пальцами — вращать и приближать";ov.appendChild(hn);setTimeout(()=>hn.remove(),7000)}
 h.insertBefore(ov,h.firstChild.nextSibling);
 CAFE.api.start();cafeLive=true}
 function cafeAttach(hall){if(CAFE.st<0)return;CAFE.hall=hall;
