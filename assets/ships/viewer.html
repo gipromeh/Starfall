@@ -113,8 +113,7 @@ function inspect(root,bytes,cfg){
   h+=maxTex>MAX_TEX?msg('bad','Текстура '+maxTex+' px &gt; '+MAX_TEX):msg('ok','Размер текстур: ок');
   h+=bytes/1048576>MAX_MB?msg('warn','Файл больше '+MAX_MB+' МБ: сожми текстуры или включи Draco'):msg('ok','Размер файла: ок');
   if(skinned)h+=msg('warn','Есть скелетные меши ('+skinned+'): для корабля обычно не нужны');
-  const dz=size.z,dx=size.x;
-  h+=dz>=dx*0.6?msg('ok','Длина вдоль Z (нос −Z, двигатели +Z): ок, проверь стрелки осей'):msg('warn','Корабль шире, чем длинный по Z: проверь ориентацию (нос должен быть в −Z)');
+  h+=msg('','Ориентацию проверь вручную: включи «Оси», нос должен смотреть в −Z (стрелка Z — на корму)');
   const off=Math.hypot(center.x,center.y,center.z);
   h+=off>radius*0.25?msg('warn','Центр модели смещён от начала координат: примени Origin to Geometry в Blender'):msg('ok','Центр модели у начала координат');
   $('checks').innerHTML=h;
