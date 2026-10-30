@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Imperial TIE Fighter — 3D Viewer</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#070b12;color:#e8edf2;font-family:system-ui,-apple-system,Segoe UI,sans-serif}#stage{position:fixed;inset:0}canvas{display:block;width:100%;height:100%;touch-action:none}
+.panel{position:absolute;background:linear-gradient(145deg,#121b39e8,#070c14df);border:1px solid #9ab6cc35;border-radius:13px;backdrop-filter:blur(12px);box-shadow:0 12px 40px #0007}
+#header{top:14px;left:14px;padding:12px 15px}h1{font-size:14px;letter-spacing:.13em;margin:0 0 4px}#sub{font-size:11px;color:#a9bac9;letter-spacing:.04em}
+#controls{right:14px;top:14px;width:220px;padding:12px}h2{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:#9fb2c3;margin:0 0 10px}
+button{background:#263747;color:#eaf2f8;border:1px solid #536879;border-radius:8px;padding:8px 10px;font-size:12px;cursor:pointer}button.active{background:#41627b;border-color:#9cc9e8}.row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px}.row button{flex:1}
+label{display:flex;justify-content:space-between;font-size:11px;color:#c2d0db;margin:10px 0 4px}input{width:100%;accent-color:#8ebbd8}
+#badge{font-size:10px;color:#9bb0c1;margin-top:8px}#hint{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);font-size:11px;color:#aebdca;background:#0b1420c9;border:1px solid #334657;border-radius:20px;padding:8px 13px;white-space:nowrap}
+@media(max-width:650px){#controls{top:auto;bottom:58px;right:10px;width:184px;padding:10px}#header{top:10px;left:10px}#hint{bottom:10px;font-size:10px}label{margin:7px 0 3px}}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+</head>
+<body>
+<div id="stage"></div>
+<div id="header" class="panel"><h1>IMPERIAL TIE FIGHTER</h1><div id="sub">TIE/ln · PROCEDURAL 3D MODEL</div></div>
+<div id="controls" class="panel">
+<h2>Осмотр модели</h2>
+<div class="row"><button id="front">Спереди</button><button id="side">Сбоку</button><button id="top">Сверху</button></div>
+<div class="row"><button id="spin" class="active">Вращение: ВКЛ</button><button id="wire">Каркас</button></div>
+<label>Масштаб модели <span id="detailVal">100%</span></label><input id="detail" type="range" min="70" max="125" value="100">
+<label>Освещение <span id="lightVal">75%</span></label><input id="light" type="range" min="20" max="120" value="75">
+<div id="badge">Перетаскивание — вращение · щипок — масштаб</div>
+</div>
+<div id="hint">Перетаскивайте модель пальцем или мышью · прокрутка для приближения</div>
+<div id="stage"></div>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x070b12);scene.fog=new THREE.FogExp2(0x070b12,.018);
+const camera=new THREE.PerspectiveCamera(38,innerWidth/innerHeight,.1,200);camera.position.set(0,2,12.8);
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;
+document.querySelector('#stage').appendChild(renderer.domElement);
+const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.06;controls.minDistance=5;controls.maxDistance=25;
+scene.add(new THREE.HemisphereLight(0xb9d7f2,0x202630,1.7));
+const key=new THREE.DirectionalLight(0xe4f1ff,2.4);key.position.set(-5,7,8);scene.add(key);
+const rim=new THREE.DirectionalLight(0x6c9fc4,1.95);rim.position.set(5,2,-7);scene.add(rim);
+const fill=new THREE.PointLight(0x9eb8cc,26,30);fill.position.set(0,-4,5);scene.add(fill);
+const stars=new THREE.BufferGeometry(),starPos=[];for(let i=0;i<850;i++){const r=35+Math.random()*55,a=Math.random()*Math.PI*2,b=Math.acos(2*Math.random()-1);starPos.push(r*Math.sin(b)*Math.cos(a),r*Math.cos(b),r*Math.sin(b)*Math.sin(a))}stars.setAttribute('position',new THREE.Float32BufferAttribute(starPos,3));scene.add(new THREE.Points(stars,new THREE.PointsMaterial({color:0xa9c8e2,size:.11})));
+
+const model=new THREE.Group();scene.add(model);
+const M=(c,metal=.55,rough=.42)=>new THREE.MeshStandardMaterial({color:c,metalness:metal,roughness:rough});
+const hull=M(0x858b8d,.72,.34),edge=M(0x626b70,.72,.38),bright=M(0xb2b8b8,.68,.3),dark=M(0x171d22,.35,.56),panel=M(0x20272c,.38,.62),glass=new THREE.MeshPhysicalMaterial({color:0x172633,metalness:.35,roughness:.12,transparent:true,opacity:.88,clearcoat:1}),glow=new THREE.MeshBasicMaterial({color:0x63caff}),black=M(0x090e13,.2,.4);
+const allMats=[hull,edge,bright,dark,panel,glass,glow,black];
+function cylBetween(parent,a,b,r1,r2,material,n=12){const d=new THREE.Vector3().subVectors(b,a),m=new THREE.Mesh(new THREE.CylinderGeometry(r2,r1,d.length(),n),material);m.position.copy(a).add(b).multiplyScalar(.5);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());parent.add(m);return m}
+function rod(p,a,b,r,m){return cylBetween(p,new THREE.Vector3(...a),new THREE.Vector3(...b),r,r,m,10)}
+function ball(p,pos,scale,m,n=24){const o=new THREE.Mesh(new THREE.SphereGeometry(1,n,Math.max(12,n/2)),m);o.position.set(...pos);o.scale.set(...scale);p.add(o);return o}
+
+// Armored spherical cockpit, front glazing points toward -Z
+ball(model,[0,0,0],[1,1,1],hull,48);ball(model,[0,0,.03],[.91,.91,.91],edge,40);
+ball(model,[0,0,-.76],[.69,.69,.22],black,40);ball(model,[0,0,-.79],[.62,.62,.18],glass,40);
+ball(model,[0,0,.78],[.58,.58,.16],dark,36);
+const noseRing=new THREE.Mesh(new THREE.TorusGeometry(.70,.055,10,48),bright);noseRing.position.z=-.78;model.add(noseRing);
+for(let i=0;i<12;i++){const a=i*Math.PI/6,x=Math.cos(a),y=Math.sin(a);rod(model,[x*.73,y*.73,-.56],[x*.92,y*.92,-.20],.035,bright);rod(model,[x*.92,y*.92,-.20],[x*.96,y*.96,.16],.028,edge)}
+for(let i=0;i<8;i++){const a=i*Math.PI/4;rod(model,[Math.cos(a)*.62,Math.sin(a)*.62,.67],[Math.cos(a)*.88,Math.sin(a)*.88,.22],.025,bright)}
+cylBetween(model,new THREE.Vector3(0,0,-1.02),new THREE.Vector3(0,0,-.83),.18,.18,bright,24);
+for(let i=0;i<8;i++){const a=i*Math.PI/4;ball(model,[Math.cos(a)*.94,Math.sin(a)*.94,-.02],[.045,.045,.045],bright,12)}
+
+function makeWing(side){
+ const g=new THREE.Group();g.position.x=side*3.45;model.add(g);const w=3.15,h=4.05;
+ const pts=[[-w*.34,h*.5],[w*.34,h*.5],[w*.5,h*.29],[w*.5,-h*.29],[w*.34,-h*.5],[-w*.34,-h*.5],[-w*.5,-h*.29],[-w*.5,h*.29]];
+ const s=new THREE.Shape();s.moveTo(...pts[0]);for(let i=1;i<pts.length;i++)s.lineTo(...pts[i]);s.closePath();
+ const plate=new THREE.Mesh(new THREE.ExtrudeGeometry(s,{depth:.10,bevelEnabled:true,bevelThickness:.025,bevelSize:.025,bevelSegments:2}),panel);plate.position.z=-.05;g.add(plate);
+ for(let i=0;i<pts.length;i++){const p=pts[i],q=pts[(i+1)%pts.length];rod(g,[p[0],p[1],-.02],[q[0],q[1],-.02],.075,bright)}
+ const inner=pts.map(([x,y])=>[x*.84,y*.84]);for(let i=0;i<inner.length;i++){const p=inner[i],q=inner[(i+1)%inner.length];rod(g,[p[0],p[1],-.105],[q[0],q[1],-.105],.035,edge)}
+ rod(g,[0,-h*.43,-.13],[0,h*.43,-.13],.035,edge);
+ for(let y=-1;y<=1;y+=.5)rod(g,[-w*.39,y*h*.36,-.13],[w*.39,y*h*.36,-.13],.025,edge);
+ for(const x of [-1,1]){rod(g,[0,0,-.14],[x*w*.39,h*.36,-.14],.026,edge);rod(g,[0,0,-.14],[x*w*.39,-h*.36,-.14],.026,edge)}
+ ball(g,[0,0,.03],[.22,.34,.18],hull,20);return g;
+}
+makeWing(-1);makeWing(1);
+for(const s of [-1,1]){
+ const x=s*1,wx=s*3.35;
+ rod(model,[x,.53,.02],[wx,.53,.02],.105,bright);rod(model,[x,-.53,.02],[wx,-.53,.02],.105,bright);
+ rod(model,[x,.53,-.02],[wx,.53,-.02],.045,edge);rod(model,[x,-.53,-.02],[wx,-.53,-.02],.045,edge);
+ ball(model,[s*1.02,0,0],[.25,.34,.28],bright,20);ball(model,[s*3.38,0,0],[.22,.32,.22],hull,20);
+ // twin forward laser cannons
+ const xg=s*.48,yg=-.72;cylBetween(model,new THREE.Vector3(xg,yg,-1),new THREE.Vector3(xg,yg,-1.92),.065,.052,hull,16);
+ cylBetween(model,new THREE.Vector3(xg,yg,-1.89),new THREE.Vector3(xg,yg,-1.98),.085,.065,bright,16);
+ cylBetween(model,new THREE.Vector3(xg,yg,-1.99),new THREE.Vector3(xg,yg,-2.02),.045,.045,glow,12);
+ rod(model,[s*.42,-.58,-.5],[xg,yg,-1.02],.08,edge);
+ // engine nacelle and luminous exhaust facing aft
+ const ex=s*.43;cylBetween(model,new THREE.Vector3(ex,0,.48),new THREE.Vector3(ex,0,1.16),.23,.20,edge,24);
+ cylBetween(model,new THREE.Vector3(ex,0,1.12),new THREE.Vector3(ex,0,1.20),.22,.19,bright,24);
+ const disk=new THREE.Mesh(new THREE.CircleGeometry(.155,24),glow);disk.position.set(ex,0,1.205);model.add(disk);
+ const halo=new THREE.Mesh(new THREE.TorusGeometry(.19,.025,8,32),bright);halo.position.set(ex,0,1.21);model.add(halo);
+}
+for(let i=-2;i<=2;i++)rod(model,[i*.18,-.58,-.88],[i*.18,-.47,-.91],.018,bright);
+
+let spinning=true,wire=false;
+document.querySelector('#spin').onclick=e=>{spinning=!spinning;e.target.textContent='Вращение: '+(spinning?'ВКЛ':'ВЫКЛ');e.target.classList.toggle('active',spinning)};
+document.querySelector('#wire').onclick=e=>{wire=!wire;allMats.forEach(m=>m.wireframe=wire);e.target.classList.toggle('active',wire)};
+function setView(p){spinning=false;document.querySelector('#spin').textContent='Вращение: ВЫКЛ';document.querySelector('#spin').classList.remove('active');camera.position.set(...p);controls.target.set(0,0,0);controls.update()}
+document.querySelector('#front').onclick=()=>setView([0,0,13]);document.querySelector('#side').onclick=()=>setView([13,1,0]);document.querySelector('#top').onclick=()=>setView([0,13,.01]);
+document.querySelector('#detail').oninput=e=>{model.scale.setScalar(+e.target.value/100);document.querySelector('#detailVal').textContent=e.target.value+'%'};
+document.querySelector('#light').oninput=e=>{const v=+e.target.value/100;key.intensity=2.4*v;rim.intensity=1.95*v;fill.intensity=26*v;document.querySelector('#lightVal').textContent=e.target.value+'%'};
+const clock=new THREE.Clock();function animate(){requestAnimationFrame(animate);if(spinning)model.rotation.y+=clock.getDelta()*.22;else clock.getDelta();controls.update();renderer.render(scene,camera)}animate();
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2))});
+</script>
+</body></html>
