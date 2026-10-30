@@ -265,6 +265,53 @@ function makeWing(side){
  const tracer=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(tracerPts,true),96,.014,6,true),new THREE.MeshBasicMaterial({color:side<0?0xff3eae:0x29eaff,transparent:true,opacity:.82,blending:THREE.AdditiveBlending,depthWrite:false}));g.add(tracer);
  return g;
 }
+// Twin vertical solar wings: classic Star Wars silhouette, rebuilt in the drone's biomechanical language.
+const wingFrameMat=new THREE.MeshStandardMaterial({color:0x263642,metalness:.88,roughness:.28});
+const wingEdgeMat=new THREE.MeshStandardMaterial({color:0x8dabb6,metalness:.82,roughness:.24});
+const wingPanelMat=new THREE.MeshPhysicalMaterial({color:0x071522,metalness:.72,roughness:.24,clearcoat:.8,clearcoatRoughness:.16});
+const wingCellMat=new THREE.MeshStandardMaterial({color:0x123044,metalness:.68,roughness:.3,emissive:0x061b2a,emissiveIntensity:.45});
+const wingGlowCyan=new THREE.MeshBasicMaterial({color:0x20dfff,transparent:true,opacity:.62,blending:THREE.AdditiveBlending,depthWrite:false});
+const wingGlowPink=new THREE.MeshBasicMaterial({color:0xff36b7,transparent:true,opacity:.46,blending:THREE.AdditiveBlending,depthWrite:false});
+const solarWings=[];
+function makeSolarWing(side){
+ const wing=new THREE.Group();wing.position.set(side*3.12,0,.12);model.add(wing);
+ const w=2.22,h=3.72,c=.34;
+ const outline=[[-w/2+c,h/2],[w/2-c,h/2],[w/2,h/2-c],[w/2,-h/2+c],[w/2-c,-h/2],[-w/2+c,-h/2],[-w/2,-h/2+c],[-w/2,h/2-c]];
+ const shape=new THREE.Shape();shape.moveTo(outline[0][0],outline[0][1]);for(let i=1;i<outline.length;i++)shape.lineTo(outline[i][0],outline[i][1]);shape.closePath();
+ const plateGeo=new THREE.ExtrudeGeometry(shape,{depth:.13,bevelEnabled:true,bevelSegments:2,bevelSize:.045,bevelThickness:.035});
+ const plate=new THREE.Mesh(plateGeo,wingFrameMat);plate.position.z=-.07;wing.add(plate);
+ const innerW=w-.30,innerH=h-.34,innerC=.25;
+ const panelShape=new THREE.Shape();panelShape.moveTo(-innerW/2+innerC,innerH/2);panelShape.lineTo(innerW/2-innerC,innerH/2);panelShape.lineTo(innerW/2,innerH/2-innerC);panelShape.lineTo(innerW/2,-innerH/2+innerC);panelShape.lineTo(innerW/2-innerC,-innerH/2);panelShape.lineTo(-innerW/2+innerC,-innerH/2);panelShape.lineTo(-innerW/2,-innerH/2+innerC);panelShape.lineTo(-innerW/2,innerH/2-innerC);panelShape.closePath();
+ const panel=new THREE.Mesh(new THREE.ShapeGeometry(panelShape,2),wingPanelMat);panel.position.z=.075;wing.add(panel);
+ // Fine photovoltaic cells, separated by structural bus bars.
+ for(let row=0;row<8;row++){
+  const y=-innerH/2+.18+row*(innerH-.36)/7;
+  const cell=new THREE.Mesh(new THREE.BoxGeometry(innerW-.28,.012,.018),wingEdgeMat);cell.position.set(0,y,.092);wing.add(cell);
+ }
+ for(let col=-2;col<=2;col++){
+  const x=col*(innerW-.24)/5;
+  const bus=new THREE.Mesh(new THREE.BoxGeometry(.012,innerH-.28,.018),wingFrameMat);bus.position.set(x,0,.094);wing.add(bus);
+ }
+ // Recessed diagonal tension ribs and central service spine.
+ for(const sign of [-1,1])rod(wing,[-innerW*.40,sign*innerH*.37,.105],[innerW*.40,-sign*innerH*.37,.105],.018,wingEdgeMat);
+ rod(wing,[0,-innerH*.43,.12],[0,innerH*.43,.12],.035,wingEdgeMat);
+ // Bright but restrained perimeter rails.
+ const rimPoints=outline.map(([x,y])=>new THREE.Vector3(x,y,.12));
+ const rimCurve=new THREE.CatmullRomCurve3(rimPoints,true);
+ wing.add(new THREE.Mesh(new THREE.TubeGeometry(rimCurve,96,.035,8,true),wingEdgeMat));
+ const tracerPoints=outline.map(([x,y])=>new THREE.Vector3(x*.94,y*.94,.145));
+ wing.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(tracerPoints,true),96,.012,6,true),side<0?wingGlowPink:wingGlowCyan));
+ // Armoured central hub and attachment struts.
+ const hub=ball(wing,[0,0,.19],[.22,.34,.12],bright,24);
+ for(const y of [-.55,.55]){ball(wing,[0,y,.2],[.09,.09,.055],side<0?emissiveRed:emissiveCyan,14)}
+ rod(model,[side*1.45,.48,.10],[side*2.08,.48,.10],.105,bright);
+ rod(model,[side*1.45,-.48,.10],[side*2.08,-.48,.10],.105,bright);
+ rod(model,[side*1.60,0,.10],[side*2.08,0,.10],.075,edge);
+ wing.position.x=side*3.12;
+ solarWings.push({wing,side,phase:side*.35});
+}
+makeSolarWing(-1);makeSolarWing(1);
+
 // Wing plates omitted: this is a biomechanical drone, not a conventional TIE fighter.
 // Floating photonic halo behind the cockpit gives the silhouette a readable luminous outline.
 const haloGroup=new THREE.Group();model.add(haloGroup);
