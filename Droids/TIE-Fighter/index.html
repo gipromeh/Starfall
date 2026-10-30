@@ -44,7 +44,7 @@ const camera=new THREE.PerspectiveCamera(38,innerWidth/innerHeight,.1,200);const
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;
 document.querySelector('#stage').appendChild(renderer.domElement);
-const controls=new THREE.OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.06;controls.minDistance=5;controls.maxDistance=25;
+const controls=new THREE.OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.075;controls.enableRotate=true;controls.enablePan=false;controls.minAzimuthAngle=-Infinity;controls.maxAzimuthAngle=Infinity;controls.minPolarAngle=.001;controls.maxPolarAngle=Math.PI-.001;controls.rotateSpeed=.8;controls.minDistance=5;controls.maxDistance=25;
 scene.add(new THREE.HemisphereLight(0xb9d7f2,0x202630,1.7));
 const key=new THREE.DirectionalLight(0xe4f1ff,2.4);key.position.set(-5,7,8);scene.add(key);
 const rim=new THREE.DirectionalLight(0x6c9fc4,1.95);rim.position.set(5,2,-7);scene.add(rim);
@@ -64,8 +64,8 @@ function makeWearTexture(base,seed=1){
 }
 function makeScaleTexture(){
  const c=document.createElement('canvas');c.width=1024;c.height=512;const x=c.getContext('2d');
- const g=x.createLinearGradient(0,0,1024,512);g.addColorStop(0,'#071b45');g.addColorStop(.18,'#146c9c');g.addColorStop(.36,'#7c3da5');g.addColorStop(.53,'#e1a34a');g.addColorStop(.69,'#20a99d');g.addColorStop(.84,'#234c9c');g.addColorStop(1,'#10152f');x.fillStyle=g;x.fillRect(0,0,1024,512);
- for(let row=-1;row<18;row++)for(let col=-1;col<34;col++){const px=col*32+(row%2)*16,py=row*30,hue=(px/1024*260+py/512*110+185)%360;x.beginPath();x.arc(px,py,25,.08,Math.PI-.08);x.strokeStyle='hsla('+hue+',95%,78%,.82)';x.lineWidth=3.2;x.stroke();x.beginPath();x.arc(px,py+2,21,.12,Math.PI-.12);x.strokeStyle='hsla('+((hue+45)%360)+',90%,35%,.72)';x.lineWidth=2;x.stroke();const shine=x.createLinearGradient(px-15,py-20,px+15,py+8);shine.addColorStop(0,'rgba(255,255,255,.52)');shine.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=shine;x.beginPath();x.ellipse(px-5,py-7,10,4,-.5,0,Math.PI*2);x.fill()}
+ const g=x.createLinearGradient(0,0,1024,512);g.addColorStop(0,'#06101d');g.addColorStop(.18,'#123b55');g.addColorStop(.36,'#1b5365');g.addColorStop(.53,'#806344');g.addColorStop(.69,'#246c68');g.addColorStop(.84,'#183b60');g.addColorStop(1,'#080f1b');x.fillStyle=g;x.fillRect(0,0,1024,512);
+ for(let row=-1;row<18;row++)for(let col=-1;col<34;col++){const px=col*32+(row%2)*16,py=row*30,hue=(px/1024*34+py/512*18+190)%360;x.beginPath();x.arc(px,py,25,.08,Math.PI-.08);x.strokeStyle='hsla('+hue+',48%,63%,.78)';x.lineWidth=3.2;x.stroke();x.beginPath();x.arc(px,py+2,21,.12,Math.PI-.12);x.strokeStyle='hsla('+((hue+18)%360)+',42%,23%,.82)';x.lineWidth=2;x.stroke();const shine=x.createLinearGradient(px-15,py-20,px+15,py+8);shine.addColorStop(0,'rgba(255,255,255,.52)');shine.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=shine;x.beginPath();x.ellipse(px-5,py-7,10,4,-.5,0,Math.PI*2);x.fill()}
  for(let i=0;i<70;i++){x.strokeStyle='rgba(255,255,255,'+(.025+Math.random()*.09)+')';x.lineWidth=1+Math.random()*4;x.beginPath();const yy=Math.random()*512;x.moveTo(0,yy);x.bezierCurveTo(300,yy-70,700,yy+70,1024,yy-20);x.stroke()}
  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=8;return t;
 }
@@ -118,9 +118,19 @@ const domeMat=new THREE.MeshPhysicalMaterial({color:0x8cecff,metalness:.08,rough
 const dome=new THREE.Mesh(domeGeo,domeMat);dome.position.set(0,0,-.55);dome.rotation.x=-Math.PI/2;model.add(dome);
 const domeGlow=new THREE.Mesh(new THREE.SphereGeometry(.99,48,32,0,Math.PI*2,0,Math.PI*.56),new THREE.MeshBasicMaterial({color:0x20dfff,transparent:true,opacity:.10,side:THREE.DoubleSide,depthWrite:false}));domeGlow.position.copy(dome.position);domeGlow.rotation.copy(dome.rotation);model.add(domeGlow);
 const domeRim=new THREE.Mesh(new THREE.TorusGeometry(1.02,.045,12,64),emissiveCyan);domeRim.position.set(0,0,-.55);model.add(domeRim);
+const cabinInterior=new THREE.Group();cabinInterior.position.set(0,-.02,-.63);model.add(cabinInterior);
+const cabinWhite=new THREE.MeshStandardMaterial({color:0xe7e9e5,metalness:.18,roughness:.66});
+const seatMat=new THREE.MeshStandardMaterial({color:0x202a30,metalness:.42,roughness:.5});
+const seatTrim=new THREE.MeshStandardMaterial({color:0x89979b,metalness:.58,roughness:.36});
+const rearWall=new THREE.Mesh(new THREE.BoxGeometry(1.32,1.68,.09),cabinWhite);rearWall.position.set(0,.02,.30);cabinInterior.add(rearWall);
+const wallInset=new THREE.Mesh(new THREE.BoxGeometry(1.08,1.40,.035),seatTrim);wallInset.position.set(0,.02,.245);cabinInterior.add(wallInset);
+const seatBack=new THREE.Mesh(new THREE.BoxGeometry(.78,1.14,.20),seatMat);seatBack.position.set(0,.02,.10);cabinInterior.add(seatBack);
+const seatHead=new THREE.Mesh(new THREE.BoxGeometry(.54,.24,.23),seatTrim);seatHead.position.set(0,.58,.035);cabinInterior.add(seatHead);
+const seatBase=new THREE.Mesh(new THREE.BoxGeometry(.76,.20,.68),seatMat);seatBase.position.set(0,-.57,.30);cabinInterior.add(seatBase);
+for(const sx of [-1,1]){const bolster=new THREE.Mesh(new THREE.BoxGeometry(.13,.82,.28),seatTrim);bolster.position.set(sx*.36,-.03,.015);cabinInterior.add(bolster)}
 const pilotGroup=new THREE.Group();pilotGroup.position.set(0,-.02,-.63);model.add(pilotGroup);
-const suitMat=new THREE.MeshPhysicalMaterial({color:0x111923,metalness:.72,roughness:.28,clearcoat:.8});
-const helmetMat=new THREE.MeshPhysicalMaterial({color:0x080d14,metalness:.86,roughness:.16,clearcoat:1,clearcoatRoughness:.035});
+const suitMat=new THREE.MeshPhysicalMaterial({color:0x20272b,metalness:.52,roughness:.42,clearcoat:.55});
+const helmetMat=new THREE.MeshPhysicalMaterial({color:0x090e12,metalness:.72,roughness:.23,clearcoat:1,clearcoatRoughness:.045});
 const visorMat=new THREE.MeshPhysicalMaterial({color:0x02060b,metalness:.45,roughness:.12,clearcoat:1});const redGlow=new THREE.MeshBasicMaterial({color:0xff334d});allMats.push(suitMat,helmetMat,visorMat,redGlow);
 ball(pilotGroup,[0,-.40,.03],[.43,.50,.34],suitMat,32);ball(pilotGroup,[0,.19,-.03],[.34,.43,.32],helmetMat,40);
 const brow=new THREE.Mesh(new THREE.BoxGeometry(.58,.105,.11),edge);brow.position.set(0,.39,-.31);pilotGroup.add(brow);
@@ -136,8 +146,21 @@ const respirator=new THREE.Mesh(new THREE.BoxGeometry(.23,.17,.07),edge);respira
 for(let i=-2;i<=2;i++){const slot=new THREE.Mesh(new THREE.BoxGeometry(.022,.11,.012),dark);slot.position.set(i*.04,-.12,-.431);pilotGroup.add(slot)}
 const chest=new THREE.Mesh(new THREE.BoxGeometry(.34,.18,.055),black);chest.position.set(0,-.48,-.30);pilotGroup.add(chest);
 for(let i=0;i<3;i++){const led=new THREE.Mesh(new THREE.BoxGeometry(.055,.035,.015),i===0?emissiveRed:emissiveCyan);led.position.set((i-1)*.09,-.48,-.337);pilotGroup.add(led)}
-const cabinLight=new THREE.PointLight(0x36dfff,2.2,3);cabinLight.position.set(0,.25,-1.05);model.add(cabinLight);
+for(const side of [-1,1]){
+ const shoulder=new THREE.Vector3(side*.27,-.30,-.73),elbow=new THREE.Vector3(side*.34,-.40,-.91),wrist=new THREE.Vector3(side*.25,-.31,-1.02);
+ cylBetween(pilotGroup,shoulder,elbow,.105,.085,suitMat,16);cylBetween(pilotGroup,elbow,wrist,.075,.055,helmetMat,14);
+ ball(pilotGroup,[wrist.x,wrist.y,wrist.z],[.085,.07,.07],black,16);
+ const grip=new THREE.Mesh(new THREE.CylinderGeometry(.035,.045,.22,12),seatTrim);grip.position.set(side*.25,-.24,-1.12);grip.rotation.x=.22;pilotGroup.add(grip);
+ const gripLamp=new THREE.Mesh(new THREE.SphereGeometry(.035,10,8),emissiveCyan);gripLamp.position.set(side*.25,-.13,-1.13);pilotGroup.add(gripLamp);
+}
+for(const side of [-1,1])cylBetween(pilotGroup,new THREE.Vector3(side*.27,.02,-.23),new THREE.Vector3(side*.08,-.43,-.34),.035,.035,seatTrim,8);
+const consoleBase=new THREE.Mesh(new THREE.BoxGeometry(.88,.18,.30),black);consoleBase.position.set(0,-.72,-.88);pilotGroup.add(consoleBase);
+for(let i=0;i<9;i++){const lamp=new THREE.Mesh(new THREE.SphereGeometry(.027,8,6),[emissiveCyan,emissiveRed,amber][i%3]);lamp.position.set(-.36+i*.09,-.64,-1.04);pilotGroup.add(lamp)}
+const cabinLight=new THREE.PointLight(0x36dfff,3.6,4);cabinLight.position.set(0,.25,-1.05);model.add(cabinLight);
 const canopyHighlight=new THREE.Mesh(new THREE.TorusGeometry(.76,.012,8,64),new THREE.MeshBasicMaterial({color:0xc8fbff,transparent:true,opacity:.65}));canopyHighlight.position.set(0,.15,-1.13);canopyHighlight.rotation.x=.25;model.add(canopyHighlight);
+for(let i=0;i<24;i++){const a=i/24*Math.PI*2,rr=1.02;const lamp=new THREE.Mesh(new THREE.SphereGeometry(i%4===0?.047:.026,10,8),i%4===0?emissiveRed:emissiveCyan);lamp.position.set(Math.cos(a)*rr,Math.sin(a)*rr,-.56);model.add(lamp)}
+for(let i=0;i<16;i++){const a=i/16*Math.PI*2;const lamp=new THREE.Mesh(new THREE.SphereGeometry(.035,8,6),i%3===0?amber:emissiveCyan);lamp.position.set(Math.cos(a)*1.22,Math.sin(a)*1.22,.08);model.add(lamp)}
+const canopyBeacon=new THREE.PointLight(0x40dfff,1.8,2.5);canopyBeacon.position.set(0,.7,-.65);model.add(canopyBeacon);
 ball(model,[0,0,.98],[.72,.72,.18],dark,40);
 
 function makeWing(side){
@@ -219,7 +242,7 @@ for(const [i,x] of [-.48,.48].entries()){
  laserBolts.push({beam,head,mat,headMat,phase:i*.5});
 }
 
-let spinning=true,wire=false;
+let spinning=false,wire=false;document.querySelector('#spin').textContent='Вращение: ВЫКЛ';document.querySelector('#spin').classList.remove('active');
 document.querySelector('#spin').onclick=e=>{spinning=!spinning;e.target.textContent='Вращение: '+(spinning?'ВКЛ':'ВЫКЛ');e.target.classList.toggle('active',spinning)};
 document.querySelector('#wire').onclick=e=>{wire=!wire;allMats.forEach(m=>m.wireframe=wire);e.target.classList.toggle('active',wire)};
 function setView(p){spinning=false;document.querySelector('#spin').textContent='Вращение: ВЫКЛ';document.querySelector('#spin').classList.remove('active');camera.position.set(...p);controls.target.set(0,0,0);controls.update()}
