@@ -27,8 +27,8 @@ label{display:flex;justify-content:space-between;font-size:11px;color:#c2d0db;ma
 </div>
 <div id="hint">Вращение — палец/мышь · масштаб — щипок или колесо · пилот виден за фонарём</div>
 <div id="stage"></div>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js" onerror="document.getElementById(\'badge\').textContent=\'ОШИБКА: не загрузился Three.js CDN\'"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js" onerror="document.getElementById(\'badge\').textContent=\'ОШИБКА: не загрузился OrbitControls CDN\'"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js" onerror="document.getElementById('badge').textContent='ОШИБКА: не загрузился Three.js CDN'"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js" onerror="document.getElementById('badge').textContent='ОШИБКА: не загрузился OrbitControls CDN'"></script>
 <script>
 (function(){
 const badge=document.querySelector("#badge");
@@ -74,7 +74,9 @@ function ball(p,pos,scale,m,n=24){const o=new THREE.Mesh(new THREE.SphereGeometr
 const cockpitGeo=new THREE.SphereGeometry(1,48,32),cockpitPos=cockpitGeo.attributes.position,cockpitIdx=cockpitGeo.index.array,cockpitKeep=[];
 for(let i=0;i<cockpitIdx.length;i+=3){const a=cockpitIdx[i],b=cockpitIdx[i+1],c=cockpitIdx[i+2];if((cockpitPos.getZ(a)+cockpitPos.getZ(b)+cockpitPos.getZ(c))/3>=-.70)cockpitKeep.push(a,b,c)}
 cockpitGeo.setIndex(cockpitKeep);model.add(new THREE.Mesh(cockpitGeo,hull));
-ball(model,[0,0,.03],[.91,.91,.91],edge,40);
+const innerGeo=new THREE.SphereGeometry(.91,40,28),innerPos=innerGeo.attributes.position,innerIdx=innerGeo.index.array,innerKeep=[];
+for(let i=0;i<innerIdx.length;i+=3){const a=innerIdx[i],b=innerIdx[i+1],c=innerIdx[i+2];if((innerPos.getZ(a)+innerPos.getZ(b)+innerPos.getZ(c))/3>=-.65)innerKeep.push(a,b,c)}
+innerGeo.setIndex(innerKeep);const innerShell=new THREE.Mesh(innerGeo,edge);innerShell.position.z=.03;model.add(innerShell);
 const cockpitLip=new THREE.Mesh(new THREE.TorusGeometry(.714,.045,10,48),bright);cockpitLip.position.z=-.70;model.add(cockpitLip);
 ball(model,[0,0,-.55],[.69,.69,.16],black,40);
 // Seated pilot silhouette behind a lightly tinted transparent canopy.
