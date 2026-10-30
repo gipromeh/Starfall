@@ -2378,7 +2378,7 @@ if(na){tn.fromBufferAttribute(na,i).applyMatrix3(nm).normalize();q.n.push(tn.x,t
 const ix=gm.index,m=ix?ix.count:n;for(let k=0;k<m;k+=3){const a=ix?ix.getX(k):k,b=ix?ix.getX(k+1):k+1,c=ix?ix.getX(k+2):k+2;if(fl)q.i.push(q.c+a,q.c+c,q.c+b);else q.i.push(q.c+a,q.c+b,q.c+c)}q.c+=n});
 const out=new T.Group();G.forEach((q,mat)=>{const g=new T.BufferGeometry();g.setAttribute("position",new T.Float32BufferAttribute(q.p,3));g.setAttribute("normal",new T.Float32BufferAttribute(q.n,3));g.setAttribute("uv",new T.Float32BufferAttribute(q.u,2));g.setIndex(q.c>65535?new T.Uint32BufferAttribute(q.i,1):new T.Uint16BufferAttribute(q.i,1));out.add(new T.Mesh(g,mat))});
 out.rotation.y=Math.PI;const root=new T.Group();root.add(out);root.updateMatrixWorld(true);const bb=new T.Box3().setFromObject(root),c=bb.getCenter(new T.Vector3());out.position.sub(c);return root}
-/* GLB-модели с GitHub Pages: type 0 — «Ржавый череп», type 1 — «Шакал». */
+/* v46: GitHub Pages GLB — type 0 «Ржавый череп», type 1 «Шакал»; первая волна ждёт обе модели. */
 const GLB_PIR=[
  {ty:0,url:"assets/ships/pirate/pirate_fighter_002/model.glb",sc:.75,bake:0},
  {ty:1,url:"assets/ships/pirate/pirate_fighter_001/pirate_droid_001.glb",sc:1,bake:1}
