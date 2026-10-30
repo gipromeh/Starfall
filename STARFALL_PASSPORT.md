@@ -2,10 +2,10 @@
 date: 2026-10-31
 topic: STARFALL — Void Hunter: паспорт проекта (архитектура, технологии, механика, сохранения, качество)
 tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура]
-game_version: "v61"
+game_version: "v62"
 last_update: 2026-10-31
 main_file: STARFALL_CURRENT.html
-main_file_sha256: "f8001bcf22c1448011f7d50af9b33a81021722d8e733e548b821f416590f1c5e"
+main_file_sha256: "bdfe088c71ab7a437bf4740dfd90344460d26ddaa6d4a512708f2acc63a07c22"
 save_format_version: 2
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"
@@ -19,6 +19,11 @@ libs:
 > Назначение файла: дать будущей сессии полный контекст без перечитывания ~360 КБ кода и всей переписки.
 > **Правило:** любое изменение `STARFALL_CURRENT.html` обновляет в том же коммите этот паспорт (в т.ч. `game_version`, `last_update`, `main_file_sha256`) и `CHANGELOG.md`. SHA считается командой `python3 tools/check_passport.py --fix`; проверка есть в CI (`.github/workflows/passport-check.yml`) и локально `python3 tools/check_passport.py`.
 > Перед правками всё равно открыть актуальный `STARFALL_CURRENT.html` — этот паспорт описывает устройство, а не заменяет код.
+
+## v62 — мягкое освещение, спутники и кольца Сатурна
+- Снижена интенсивность центрального света, ambient/directional fill, bloom; исправлена маска ночных огней (корректный smoothstep), приглушены облака и три атмосферные оболочки.
+- Добавлены естественные спутники Сатурна, Марса, Эдема и Нейреи; существующая Луна Земли сохранена.
+- Кольца Сатурна стали полупрозрачнее и шире по туманным слоям; количество процедурных инстансированных обломков увеличено до 360 на мобильных устройствах и 720 на ПК.
 
 ## v61 — устранение экранного искажения планет
 - Отключена хроматическая аберрация в основном игровом рендере: экранное смещение цветовых каналов больше не создаёт ложное ощущение деформации объектов при поворотах камеры.
