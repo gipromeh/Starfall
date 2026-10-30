@@ -123,6 +123,23 @@ function makeLiveryTexture(side){
   x.fillStyle='#ef6248';for(let i=0;i<48;i++){const a=i*2.399,r=65+(i%7)*9;x.beginPath();x.arc(Math.cos(a)*r,Math.sin(a)*r,1.5+(i%4),0,Math.PI*2);x.fill()}
  }
  x.restore();
+ // Layer multiple hand-sprayed pirate insults across the armor.
+ const tagWords=[
+  String.fromCharCode(83,72,73,84),String.fromCharCode(65,83,83,72,79,76,69,83),
+  String.fromCharCode(66,65,83,84,65,82,68,83),String.fromCharCode(70,85,67,75,69,82,83),
+  String.fromCharCode(83,67,85,77),String.fromCharCode(80,73,83,83,32,79,70,70)
+ ];
+ x.save();x.textAlign='center';x.lineJoin='round';
+ const tagLayout=[[-164,-166,25,-.12],[-165,166,23,.10],[165,-165,24,.08],[166,165,25,-.09],[-6,-190,19,.04],[0,190,20,-.03]];
+ tagLayout.forEach(([tx,ty,size,angle],i)=>{
+  x.save();x.translate(tx,ty);x.rotate(angle);x.font='900 '+size+'px Impact, Haettenschweiler, sans-serif';
+  x.lineWidth=7;x.strokeStyle='#07131c';x.strokeText(tagWords[i%tagWords.length],0,0);
+  x.fillStyle=i%2?'#f1dfb4':'#ff654b';x.fillText(tagWords[i%tagWords.length],0,0);
+  x.restore();
+ });
+ // Paint drips and spray flecks make the lettering look field-applied.
+ x.fillStyle='#ef6248';for(let i=0;i<32;i++){const px=((i*73)%430)+41,py=((i*47)%430)+41;x.beginPath();x.arc(px,py,1.4+(i%3),0,Math.PI*2);x.fill()}
+ x.restore();
  // Rivet rows, panel seams and restrained weathering.
  x.strokeStyle='rgba(210,236,232,.35)';x.lineWidth=2;
  for(let y=76;y<410;y+=48){x.beginPath();x.moveTo(48,y);x.lineTo(464,y);x.stroke()}
@@ -188,11 +205,6 @@ function makeWing(side){
   const mat=material.clone();mat.side=THREE.DoubleSide;
   const mesh=new THREE.Mesh(new THREE.ShapeGeometry(sh),mat);mesh.position.z=z;g.add(mesh);return mesh;
  }
- paintPanel([[-1.28,1.72],[-.42,1.72],[.02,1.15],[-.88,.88]],cobalt);
- paintPanel([[.10,1.72],[1.28,1.72],[1.28,1.18],[.54,.92]],amber);
- paintPanel([[-1.28,-.10],[-.62,-.10],[-.20,-.72],[-1.28,-1.22]],teal);
- paintPanel([[.30,-.72],[1.28,-.30],[1.28,-1.62],[.72,-1.72]],orange);
- paintPanel([[-.42,.66],[.34,.66],[.62,.22],[-.18,.22]],signalRed);
  for(let i=0;i<pts.length;i++){const p=pts[i],q=pts[(i+1)%pts.length];rod(g,[p[0],p[1],-.02],[q[0],q[1],-.02],.075,bright)}
  const inner=pts.map(([x,y])=>[x*.84,y*.84]);for(let i=0;i<inner.length;i++){const p=inner[i],q=inner[(i+1)%inner.length];rod(g,[p[0],p[1],-.105],[q[0],q[1],-.105],.035,edge)}
  // Procedural paint damage: fine scratches, exposed metal chips and fasteners.
