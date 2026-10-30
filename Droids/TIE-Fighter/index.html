@@ -18,7 +18,7 @@ label{display:flex;justify-content:space-between;font-size:11px;color:#c2d0db;ma
 </head>
 <body>
 <div id="stage"></div>
-<div id="header" class="panel"><h1>IMPERIAL TIE FIGHTER</h1><div id="sub">TIE/ln · PROCEDURAL 3D MODEL</div></div>
+<div id="header" class="panel"><h1>IMPERIAL TIE FIGHTER</h1><div id="sub">TIE/ln · WEATHERED FIELD UNIT · PILOT VISIBLE</div></div>
 <div id="controls" class="panel">
 <h2>Осмотр модели</h2>
 <div class="row"><button id="front">Спереди</button><button id="side">Сбоку</button><button id="top">Сверху</button></div>
@@ -27,7 +27,7 @@ label{display:flex;justify-content:space-between;font-size:11px;color:#c2d0db;ma
 <label>Освещение <span id="lightVal">75%</span></label><input id="light" type="range" min="20" max="120" value="75">
 <div id="badge">Перетаскивание — вращение · щипок — масштаб</div>
 </div>
-<div id="hint">Перетаскивайте модель пальцем или мышью · прокрутка для приближения</div>
+<div id="hint">Вращение — палец/мышь · масштаб — щипок или колесо · пилот виден за фонарём</div>
 <div id="stage"></div>
 <script type="module">
 import * as THREE from 'three';
@@ -46,8 +46,18 @@ const fill=new THREE.PointLight(0x9eb8cc,26,30);fill.position.set(0,-4,5);scene.
 const stars=new THREE.BufferGeometry(),starPos=[];for(let i=0;i<850;i++){const r=35+Math.random()*55,a=Math.random()*Math.PI*2,b=Math.acos(2*Math.random()-1);starPos.push(r*Math.sin(b)*Math.cos(a),r*Math.cos(b),r*Math.sin(b)*Math.sin(a))}stars.setAttribute('position',new THREE.Float32BufferAttribute(starPos,3));scene.add(new THREE.Points(stars,new THREE.PointsMaterial({color:0xa9c8e2,size:.11})));
 
 const model=new THREE.Group();scene.add(model);
-const M=(c,metal=.55,rough=.42)=>new THREE.MeshStandardMaterial({color:c,metalness:metal,roughness:rough});
-const hull=M(0x858b8d,.72,.34),edge=M(0x626b70,.72,.38),bright=M(0xb2b8b8,.68,.3),dark=M(0x171d22,.35,.56),panel=M(0x20272c,.38,.62),glass=new THREE.MeshPhysicalMaterial({color:0x172633,metalness:.35,roughness:.12,transparent:true,opacity:.88,clearcoat:1}),glow=new THREE.MeshBasicMaterial({color:0x63caff}),black=M(0x090e13,.2,.4);
+function makeWearTexture(base,seed=1){
+ const c=document.createElement('canvas');c.width=512;c.height=512;const x=c.getContext('2d');let s=seed;const rnd=()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296};
+ x.fillStyle=base;x.fillRect(0,0,512,512);
+ for(let i=0;i<14500;i++){const alpha=rnd()*.18;x.fillStyle=rnd()>.5?'rgba(220,226,224,'+alpha+')':'rgba(8,13,17,'+alpha+')';x.fillRect(rnd()*512,rnd()*512,1+rnd()*4,1+rnd()*3)}
+ for(let i=0;i<95;i++){const px=rnd()*512,py=rnd()*512,len=5+rnd()*65,ang=(rnd()-.5)*.8;x.save();x.translate(px,py);x.rotate(ang);x.strokeStyle=rnd()>.45?'rgba(225,230,225,.48)':'rgba(5,9,12,.65)';x.lineWidth=.5+rnd()*1.5;x.beginPath();x.moveTo(0,0);x.lineTo(len,0);x.stroke();x.restore()}
+ for(let y=0;y<512;y+=64){x.fillStyle='rgba(5,9,12,.12)';x.fillRect(0,y,512,1)}
+ const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;return t;
+}
+const hullTex=makeWearTexture('#858b8b',17),panelTex=makeWearTexture('#252c30',83);
+const M=(c,metal=.55,rough=.42,map=null)=>new THREE.MeshStandardMaterial({color:c,metalness:metal,roughness:rough,map});
+const hull=M(0xffffff,.72,.48,hullTex),edge=M(0x626b70,.72,.42),bright=M(0xb2b8b8,.68,.34),dark=M(0x171d22,.35,.62),panel=M(0xffffff,.38,.72,panelTex),glass=new THREE.MeshPhysicalMaterial({color:0x8ba9bb,metalness:.12,roughness:.08,transparent:true,opacity:.32,depthWrite:false,side:THREE.DoubleSide,clearcoat:1,clearcoatRoughness:.04}),glow=new THREE.MeshBasicMaterial({color:0x63caff}),black=M(0x090e13,.2,.5),pilotMat=M(0x080d12,.12,.78),pilotSuit=M(0x151d22,.18,.72),marking=M(0xc4a76d,.45,.55);
+const allMats=[hull,edge,bright,dark,panel,glass,glow,black,pilotMat,pilotSuit,marking];
 const allMats=[hull,edge,bright,dark,panel,glass,glow,black];
 function cylBetween(parent,a,b,r1,r2,material,n=12){const d=new THREE.Vector3().subVectors(b,a),m=new THREE.Mesh(new THREE.CylinderGeometry(r2,r1,d.length(),n),material);m.position.copy(a).add(b).multiplyScalar(.5);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());parent.add(m);return m}
 function rod(p,a,b,r,m){return cylBetween(p,new THREE.Vector3(...a),new THREE.Vector3(...b),r,r,m,10)}
@@ -55,7 +65,16 @@ function ball(p,pos,scale,m,n=24){const o=new THREE.Mesh(new THREE.SphereGeometr
 
 // Armored spherical cockpit, front glazing points toward -Z
 ball(model,[0,0,0],[1,1,1],hull,48);ball(model,[0,0,.03],[.91,.91,.91],edge,40);
-ball(model,[0,0,-.76],[.69,.69,.22],black,40);ball(model,[0,0,-.79],[.62,.62,.18],glass,40);
+ball(model,[0,0,-.76],[.69,.69,.22],black,40);
+// Seated pilot silhouette behind a lightly tinted transparent canopy.
+ball(model,[0,.10,-.49],[.205,.235,.19],pilotMat,24);
+ball(model,[0,.105,-.635],[.155,.095,.055],dark,20);
+ball(model,[0,-.25,-.34],[.29,.39,.22],pilotSuit,24);
+ball(model,[-.245,-.12,-.36],[.16,.22,.17],pilotSuit,18);ball(model,[.245,-.12,-.36],[.16,.22,.17],pilotSuit,18);
+rod(model,[-.12,-.30,-.48],[0,-.38,-.57],.055,pilotMat);rod(model,[.12,-.30,-.48],[0,-.38,-.57],.055,pilotMat);
+const helmetRing=new THREE.Mesh(new THREE.TorusGeometry(.205,.018,8,28),edge);helmetRing.position.set(0,.10,-.50);model.add(helmetRing);
+const hose=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(.16,-.02,-.46),new THREE.Vector3(.23,-.12,-.50),new THREE.Vector3(.19,-.29,-.49)]),16,.018,6,false),bright);model.add(hose);
+ball(model,[0,0,-.79],[.62,.62,.18],glass,48);
 ball(model,[0,0,.78],[.58,.58,.16],dark,36);
 const noseRing=new THREE.Mesh(new THREE.TorusGeometry(.70,.055,10,48),bright);noseRing.position.z=-.78;model.add(noseRing);
 for(let i=0;i<12;i++){const a=i*Math.PI/6,x=Math.cos(a),y=Math.sin(a);rod(model,[x*.73,y*.73,-.56],[x*.92,y*.92,-.20],.035,bright);rod(model,[x*.92,y*.92,-.20],[x*.96,y*.96,.16],.028,edge)}
@@ -70,6 +89,10 @@ function makeWing(side){
  const plate=new THREE.Mesh(new THREE.ExtrudeGeometry(s,{depth:.10,bevelEnabled:true,bevelThickness:.025,bevelSize:.025,bevelSegments:2}),panel);plate.position.z=-.05;g.add(plate);
  for(let i=0;i<pts.length;i++){const p=pts[i],q=pts[(i+1)%pts.length];rod(g,[p[0],p[1],-.02],[q[0],q[1],-.02],.075,bright)}
  const inner=pts.map(([x,y])=>[x*.84,y*.84]);for(let i=0;i<inner.length;i++){const p=inner[i],q=inner[(i+1)%inner.length];rod(g,[p[0],p[1],-.105],[q[0],q[1],-.105],.035,edge)}
+ // Procedural paint damage: fine scratches, exposed metal chips and fasteners.
+ for(let k=0;k<34;k++){const px=(Math.random()-.5)*w*.72,py=(Math.random()-.5)*h*.72,len=.035+Math.random()*.22;const scar=new THREE.Mesh(new THREE.BoxGeometry(len,.008,.008),k%3===0?bright:edge);scar.position.set(px,py,-.145);scar.rotation.z=(Math.random()-.5)*.45;g.add(scar)}
+ for(const [px,py] of [[-.92,1.55],[.92,1.55],[-.92,-1.55],[.92,-1.55]])ball(g,[px,py,-.15],[.045,.045,.025],bright,10);
+ for(let k=0;k<4;k++){const stripe=new THREE.Mesh(new THREE.BoxGeometry(.18,.025,.012),marking);stripe.position.set(-.78+k*.12,-1.63,-.15);g.add(stripe)}
  rod(g,[0,-h*.43,-.13],[0,h*.43,-.13],.035,edge);
  for(let y=-1;y<=1;y+=.5)rod(g,[-w*.39,y*h*.36,-.13],[w*.39,y*h*.36,-.13],.025,edge);
  for(const x of [-1,1]){rod(g,[0,0,-.14],[x*w*.39,h*.36,-.14],.026,edge);rod(g,[0,0,-.14],[x*w*.39,-h*.36,-.14],.026,edge)}
