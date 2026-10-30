@@ -206,6 +206,30 @@ for(const s of [-1,1]){
 }
 for(let i=-2;i<=2;i++)rod(model,[i*.18,-.58,-.88],[i*.18,-.47,-.91],.018,bright);
 
+// Animated exotic-plasma drive: a soft cyan/violet energy plume, not conventional lamps.
+const driveEffects=[];
+for(const ex of [-.43,.43]){
+ const plumeMat=new THREE.MeshBasicMaterial({color:ex<0?0x28e8ff:0x9b65ff,transparent:true,opacity:.72,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide});
+ const plume=new THREE.Mesh(new THREE.ConeGeometry(.19,1.35,24,1,true),plumeMat);
+ plume.rotation.x=-Math.PI/2;plume.position.set(ex,0,1.88);model.add(plume);
+ const coreMat=new THREE.MeshBasicMaterial({color:0xb9ffff,transparent:true,opacity:.82,blending:THREE.AdditiveBlending,depthWrite:false});
+ const core=new THREE.Mesh(new THREE.CylinderGeometry(.035,.105,1.05,16,1,true),coreMat);
+ core.rotation.x=-Math.PI/2;core.position.set(ex,0,1.82);model.add(core);
+ driveEffects.push({plume,core,plumeMat,coreMat,phase:Math.random()*6.28});
+}
+
+// Twin neon pulse cannons. The bolts animate forward from the actual gun muzzles.
+const laserBolts=[];
+for(const [i,x] of [-.48,.48].entries()){
+ const color=i===0?0x31f6ff:0xff4bd8;
+ const mat=new THREE.MeshBasicMaterial({color,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
+ const beam=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,3.1,12),mat);
+ beam.rotation.x=Math.PI/2;beam.position.set(x,-.72,-3.56);model.add(beam);
+ const headMat=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0,blending:THREE.AdditiveBlending});
+ const head=new THREE.Mesh(new THREE.SphereGeometry(.075,12,8),headMat);head.position.set(x,-.72,-5.12);model.add(head);
+ laserBolts.push({beam,head,mat,headMat,phase:i*.5});
+}
+
 let spinning=true,wire=false;
 document.querySelector('#spin').onclick=e=>{spinning=!spinning;e.target.textContent='Вращение: '+(spinning?'ВКЛ':'ВЫКЛ');e.target.classList.toggle('active',spinning)};
 document.querySelector('#wire').onclick=e=>{wire=!wire;allMats.forEach(m=>m.wireframe=wire);e.target.classList.toggle('active',wire)};
@@ -213,7 +237,13 @@ function setView(p){spinning=false;document.querySelector('#spin').textContent='
 const viewDistance=()=>innerWidth<innerHeight?21:13;document.querySelector('#front').onclick=()=>setView([0,0,-viewDistance()]);document.querySelector('#side').onclick=()=>setView([viewDistance(),innerWidth<innerHeight?0:1,0]);document.querySelector('#top').onclick=()=>setView([0,viewDistance(),.01]);
 document.querySelector('#detail').oninput=e=>{model.scale.setScalar(+e.target.value/100);document.querySelector('#detailVal').textContent=e.target.value+'%'};
 document.querySelector('#light').oninput=e=>{const v=+e.target.value/100;key.intensity=2.4*v;rim.intensity=1.95*v;fill.intensity=26*v;document.querySelector('#lightVal').textContent=e.target.value+'%'};
-const clock=new THREE.Clock();function animate(){requestAnimationFrame(animate);if(spinning)model.rotation.y+=clock.getDelta()*.22;else clock.getDelta();controls.update();renderer.render(scene,camera)}animate();
+const clock=new THREE.Clock();function animate(){
+ requestAnimationFrame(animate);const t=clock.getElapsedTime(),dt=clock.getDelta();
+ if(spinning)model.rotation.y+=dt*.22;
+ for(const e of driveEffects){const pulse=.82+Math.sin(t*8+e.phase)*.16;e.plume.scale.set(1,pulse,1);e.core.scale.y=.86+Math.sin(t*11+e.phase)*.12;e.plumeMat.opacity=.48+Math.sin(t*7+e.phase)*.16;e.coreMat.opacity=.55+Math.sin(t*10+e.phase)*.2}
+ for(const b of laserBolts){const phase=(t*1.35+b.phase)%1;b.mat.opacity=phase<.24?.95:0;b.headMat.opacity=phase<.24?1:0;const travel=phase<.24?phase/.24:0;b.beam.position.z=-2.12-travel*3.0;b.head.position.z=-2.12-travel*3.0}
+ controls.update();renderer.render(scene,camera)
+}animate();
 badge.textContent="3D ENGINE OK · МОДЕЛЬ СОЗДАНА";
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));const portrait=innerWidth<innerHeight;model.rotation.z=portrait?Math.PI/2:0;camera.position.set(0,portrait?0:1.2,portrait?-21:-12.8);controls.target.set(0,0,0);controls.update()});
 }catch(error){showError(error.stack||error.message||error)}
