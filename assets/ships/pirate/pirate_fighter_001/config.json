@@ -3,7 +3,7 @@
   "name": "STARFALL Pirate TIE Fighter",
   "faction": "pirate",
   "prototype": "Imperial TIE/ln Fighter",
-  "status": "procedural_visual_prototype",
+  "status": "integrated",
   "model": "pirate_droid_001.glb",
   "source_scene": "pirate_droid_001.blend",
   "preview": "pirate_droid_001_preview.png",
@@ -20,6 +20,12 @@
   "limitations": [
     "Wing solar cells and skull emblems are modeled geometry, not authored image textures.",
     "Tentacle animation and flight response are not implemented.",
-    "Animated laser bolts, production wear maps, optimized LODs, and an interactive Three.js viewer are not included."
-  ]
+    "Animated laser bolts, production wear maps, optimized LODs, and an interactive Three.js viewer are not included.",
+    "В игре (v45) 634 меша сливаются по 17 материалам при загрузке, щупальца запекаются в статичную позу, анимации не используются."
+  ],
+  "replaces": {
+    "kind": "pirate",
+    "index": 0
+  },
+  "scale": 1.0
 }

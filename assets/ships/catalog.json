@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
-  "activeShip": "pirate_fighter_001",
+  "activeShip": "pirate_droid_001",
   "ships": [
     {
-      "id": "pirate_fighter_001",
-      "name": "Pirate Fighter — Bio-Plasma",
+      "id": "pirate_droid_001",
+      "name": "Pirate Droid 001 — TIE-пират с пришельцем",
       "faction": "pirate",
       "category": "fighter",
       "path": "assets/ships/pirate/pirate_fighter_001/",
       "config": "config.json",
-      "viewer": "index.html",
-      "status": "procedural_viewer"
+      "status": "integrated",
+      "model": "pirate_droid_001.glb"
     },
     {
       "id": "pirate_fighter_002",
@@ -19,7 +19,7 @@
       "category": "fighter",
       "path": "assets/ships/pirate/pirate_fighter_002/",
       "config": "config.json",
-      "status": "integrated"
+      "status": "library"
     }
   ]
 }
