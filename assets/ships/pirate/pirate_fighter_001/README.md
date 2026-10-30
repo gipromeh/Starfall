@@ -1,18 +1,20 @@
-# STARFALL Pirate TIE Fighter — pirate_droid_001
+# STARFALL Pirate TIE Fighter — «Шакал» (pirate_droid_001)
 
-Procedural 3D visual prototype built in Blender from the supplied specification.
+Пиратский перехватчик TIE-типа с пришельцем-пилотом и биомеханическими щупальцами.
 
-## Files
+## Файлы
+- pirate_droid_001.blend — редактируемая сцена Blender.
+- pirate_droid_001.glb — игровая модель.
+- pirate_droid_001_preview.png — превью.
+- config.json — паспорт модели.
 
-- `pirate_droid_001.blend` — editable Blender scene.
-- `pirate_droid_001.glb` — updated scene export.
-- `pirate_droid_001_preview.png` — updated rendered preview.
-- `config.json` — asset metadata and status.
+## Игровая интеграция (v46)
+- Назначение: тип 1 — «Шакал» (перехватчик) в системе пиратских противников.
+- Загрузка из GitHub Pages: assets/ships/pirate/pirate_fighter_001/pirate_droid_001.glb.
+- 634 исходных меша и 17 материалов объединяются при загрузке примерно в 19 мешей; статическая поза щупалец запекается, скелет и анимации в рантайм не переносятся.
+- Масштаб в игре: 1,0. Нос ориентирован по −Z.
+- В первой волне новой игры появляется гарантированно вторым, после «Ржавого черепа».
+- При ошибке загрузки используется процедурный «Шакал»; характеристики и AI не меняются.
 
-## Current additions
-
-Both wings now have a blue photovoltaic cell grid with metallic bus conductors, plus layered skull and crossbones reliefs, red bandanas, and Russian pirate profanity stencils. The cockpit now contains a green alien pilot with an elongated head and large reflective black eyes, visible through the canopy.
-
-## Status and limitations
-
-This remains a procedural visual prototype. The wing cells and skull emblems are modeled geometry rather than authored image textures. Production wear maps, optimized retopology/LODs, animated tentacle deformation or flight response, animated laser bolts, an interactive Three.js viewer, and mobile performance profiling are not included. The tentacles hold a static pose.
+## Визуальные особенности и ограничения
+Оба крыла имеют синюю сетку фотоэлементов с металлическими проводниками, рельефные эмблемы черепа и скрещённых костей, красные банданы и русские пиратские трафаретные надписи. В кабине виден зелёный пришелец с вытянутой головой и большими чёрными глазами. Щупальца остаются в статичной позе; полноценной анимации полёта и деформации нет.
