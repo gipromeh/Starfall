@@ -21,11 +21,11 @@
     "Wing solar cells and skull emblems are modeled geometry, not authored image textures.",
     "Tentacle animation and flight response are not implemented.",
     "Animated laser bolts, production wear maps, optimized LODs, and an interactive Three.js viewer are not included.",
-    "В игре (v45) 634 меша сливаются по 17 материалам при загрузке, щупальца запекаются в статичную позу, анимации не используются."
+    "В игре (v46) назначен типу 1 «Шакал»: 634 меша объединяются по 17 материалам при загрузке, щупальца запекаются в статичную позу."
   ],
   "replaces": {
     "kind": "pirate",
-    "index": 0
+    "index": 1
   },
-  "scale": 1.0
+  "scale": 1
 }
