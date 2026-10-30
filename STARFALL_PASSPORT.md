@@ -316,3 +316,8 @@ J (или «ПРЫЖОК» в меню ≡) — только в космосе �
 ## v40
 GAL (конец скрипта): GAL.s[i]={sec,eco,pir,rep}; методы ev(тип: pirate/boss/civ/raid/deliver), price(s), visit(), left(from), extra(), ambK(), news(), bars(i), init(), load(). Хуки: kill, killNv, сдача контракта, dock (цены+новости+сохранение), arrive, reset, stnDraw (.gal-bar), openJump.
 Лучи: beamMats/BMT, shoot() — Group(core Box + 2 Plane с градиентом + Sprite).
+
+## v41
+Фракции/события: константы FACS, EVT; объект GAL (замена v40): s[i]={sec,eco,pir,rep,inf{gld,bur,mec,pir},evt{id,left,k}}, fr{gld,bur,mec,pir}. Методы: ctl(i), rwK(), bwK(), cost(v), roll(), tick() (вызов в lift), board(). Сохранение: sf_sv.gal, sf_sv.fr (load с дефолтами = миграция).
+Шутки: JKDB[0..3] (Зорг, Векса, Шшиила, Брук), JKDB[4] общие; JK.tell(i); просмотренные в localStorage sf_jk. dlgOpen обёрнут: добавляет «Шутка?» и для Шшиилы «Расклад сил» (флаг GAL._nj защищает от рекурсии).
+Хуки цен: talk(0) награда ×GAL.rwK(), ofb.rw ×GAL.bwK(), talk(3) цены через GAL.cost().

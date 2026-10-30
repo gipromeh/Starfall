@@ -1200,13 +1200,13 @@ SYS.forEach((s,i)=>{s.l=[1,0,2,0,2][i];s.t=[0,3,2,1,2][i];s.g=[0,1,2,3,4].map(k=
 const DF=[{sp:.7,dm:.6,fr:1.5,hp:.8,ac:1.6},{sp:1,dm:1,fr:1,hp:1,ac:1},{sp:1.3,dm:1.4,fr:.7,hp:1.3,ac:.6}];
 {const p=$("pause"),b=document.createElement("button");try{AS=localStorage.getItem("sf_as")==="1"}catch(e){}const lb=()=>"ПОМОЩЬ ПРИЦЕЛА: "+(AS?"ВКЛ":"ВЫКЛ");b.textContent=lb();b.onclick=()=>{AS=!AS;b.textContent=lb();try{localStorage.setItem("sf_as",AS?"1":"0")}catch(e){}};p.appendChild(b)}
 {const p=$("pause"),mk=(t,min,max,st,v,f)=>{const l=document.createElement("label");l.textContent=t+" ";const i=document.createElement("input");i.type="range";i.min=min;i.max=max;i.step=st;i.value=v;i.oninput=()=>f(+i.value);l.appendChild(i);p.appendChild(l)};mk("Чувствительность",.4,2,.1,1,v=>sens=v);mk("Музыка",0,.5,.02,.2,v=>{vol=v;if(mg)mg.gain.value=v});const c=document.createElement("button");c.textContent="ИНВЕРСИЯ ВЕРТИКАЛИ: ВЫКЛ";c.onclick=()=>{inv=-inv;c.textContent="ИНВЕРСИЯ ВЕРТИКАЛИ: "+(inv<0?"ВКЛ":"ВЫКЛ")};p.appendChild(c);const ib=document.createElement("button");ib.textContent="УПРАВЛЕНИЕ: АРКАДА";ib.onclick=()=>{ine=(ine+1)%3;ib.textContent="УПРАВЛЕНИЕ: "+["АРКАДА","БАЛАНС","РЕАЛИСТИЧНО"][ine]};p.appendChild(ib)}
-try{if(localStorage.getItem("sf_sv")){const b=document.createElement("button");b.textContent="ПРОДОЛЖИТЬ";b.onclick=()=>{$("tsp").style.display="none";ensureAC();reset();const d=JSON.parse(localStorage.getItem("sf_sv"));cr=d.cr;cargo=d.cargo.concat([0,0]).slice(0,5);pp=d.pp.concat([0,0]).slice(0,5);sy=d.sy;uh=d.uh;uf=d.uf;ud=d.ud;us=d.us;wave=d.wave;ct=d.ct||null;GAL.load(d.gal);if(d.shp!==undefined){shp=d.shp;gw=d.gw;shd=d.shd;mt=d.mt;owS=d.owS;owW=d.owW;owH=d.owH;owM=d.owM}atStn=1;applyShip();recolor();dock()};b.className="mn-cont";$("mnmain").insertBefore(b,$("play"))}}catch(e){}
+try{if(localStorage.getItem("sf_sv")){const b=document.createElement("button");b.textContent="ПРОДОЛЖИТЬ";b.onclick=()=>{$("tsp").style.display="none";ensureAC();reset();const d=JSON.parse(localStorage.getItem("sf_sv"));cr=d.cr;cargo=d.cargo.concat([0,0]).slice(0,5);pp=d.pp.concat([0,0]).slice(0,5);sy=d.sy;uh=d.uh;uf=d.uf;ud=d.ud;us=d.us;wave=d.wave;ct=d.ct||null;GAL.load(d.gal,d.fr);if(d.shp!==undefined){shp=d.shp;gw=d.gw;shd=d.shd;mt=d.mt;owS=d.owS;owW=d.owW;owH=d.owH;owM=d.owM}atStn=1;applyShip();recolor();dock()};b.className="mn-cont";$("mnmain").insertBefore(b,$("play"))}}catch(e){}
 {const r=document.createElement("div");r.className="row";[["ЛЁГКИЙ",0],["СРЕДНИЙ",1],["ПРОФИ",2]].forEach(([t,i])=>{const b=document.createElement("button");b.textContent=t;b.className=i===dif?"on":"";b.onclick=()=>{dif=i;[...r.children].forEach((c,j)=>c.classList.toggle("on",j===i))};r.appendChild(b)});$("mndif").appendChild(r)}
 const IN=[{d:3.2,s:10,al:10,cam:12},{d:2,s:6,al:5,cam:9},{d:1.3,s:4,al:2.5,cam:7}];
 function aimDir(){const f=new T.Vector3(0,0,-1).applyQuaternion(Q);if(AS&&E&&E.warp<=0){const tp=E.g.position.clone().addScaledVector(E.vel,E.g.position.distanceTo(P)/420).sub(P).normalize();if(f.angleTo(tp)<[.22,.14,.07][dif])return tp}return f}
 const home=new T.Mesh(new T.SphereGeometry(500,48,32),new T.MeshStandardMaterial({map:ptex("#2a5aa8","#7fc4ff"),roughness:.9}));home.position.set(-300,-620,-900);home.visible=false;home.add(lights(500));S.add(home);
 function recolor(){sun.color.set(SYS[sy].c[1]);spl.forEach((m,i)=>{const c=SYS[(sy+i)%5].c;m.material.map=ptex(c[0],c[1]);m.material.needsUpdate=true})}
-function dock(){bm2.visible=false;tun.visible=false;state="dock";firing=false;[bul,eb,mis,deb,ali,trs,pk].forEach(clr);dockT=0;[E,E2].forEach(en=>{if(en)en.g.visible=false});nv.forEach(n=>n.g.visible=false);if(nk)S.remove(nk.m);nk=null;$("hud").style.display="none";home.visible=true;const c=SYS[sy].c;home.material.map=ptex(c[0],c[1]);home.material.needsUpdate=true;C.fov=70;C.updateProjectionMatrix();rig.visible=true;P.set(0,0,0);rig.quaternion.identity();Q.identity();vel.set(0,0,0);ev="";ofb=(()=>{const n=2+Math.floor(Math.random()*3);return{n,rw:n*220}})();ofr={g:Math.floor(Math.random()*3),n:3+Math.floor(Math.random()*4),to:(sy+1+Math.floor(Math.random()*4))%5};{const s=SYS[sy];s.g=[0,1,2,3,4].map(k=>LV[s.l][k]+(sy*7+k*3)%9);if(Math.random()<.3){const k=Math.floor(Math.random()*3),up=Math.random()<.5;s.g[k]=Math.round(s.g[k]*(up?2:.5));ev=GN[k]+(up?" — дефицит, цена ×2":" — переизбыток, цена ÷2")}GAL.price(s)}GAL.visit();ev=(ev||"")+GAL.news();try{localStorage.setItem("sf_sv",JSON.stringify({gal:GAL.s,cr,cargo,pp,sy,uh,uf,ud,us,wave,ct,shp,gw,shd,mt,owS,owW,owH,owM}))}catch(e){}drawMkt()}
+function dock(){bm2.visible=false;tun.visible=false;state="dock";firing=false;[bul,eb,mis,deb,ali,trs,pk].forEach(clr);dockT=0;[E,E2].forEach(en=>{if(en)en.g.visible=false});nv.forEach(n=>n.g.visible=false);if(nk)S.remove(nk.m);nk=null;$("hud").style.display="none";home.visible=true;const c=SYS[sy].c;home.material.map=ptex(c[0],c[1]);home.material.needsUpdate=true;C.fov=70;C.updateProjectionMatrix();rig.visible=true;P.set(0,0,0);rig.quaternion.identity();Q.identity();vel.set(0,0,0);ev="";ofb=(()=>{const n=2+Math.floor(Math.random()*3);return{n,rw:Math.round(n*220*GAL.bwK())}})();ofr={g:Math.floor(Math.random()*3),n:3+Math.floor(Math.random()*4),to:(sy+1+Math.floor(Math.random()*4))%5};{const s=SYS[sy];s.g=[0,1,2,3,4].map(k=>LV[s.l][k]+(sy*7+k*3)%9);if(Math.random()<.3){const k=Math.floor(Math.random()*3),up=Math.random()<.5;s.g[k]=Math.round(s.g[k]*(up?2:.5));ev=GN[k]+(up?" — дефицит, цена ×2":" — переизбыток, цена ÷2")}GAL.price(s)}GAL.visit();ev=(ev||"")+GAL.news();try{localStorage.setItem("sf_sv",JSON.stringify({gal:GAL.s,fr:GAL.fr,cr,cargo,pp,sy,uh,uf,ud,us,wave,ct,shp,gw,shd,mt,owS,owW,owH,owM}))}catch(e){}drawMkt()}
 function lift(){cafePause();thl=.25;mnm=false;seen=1;home.visible=false;$("mkt").classList.add("hide");$("hud").style.display="block";C.position.set(0,3.4,10.5);C.quaternion.identity();state="play";spawnT=2.5;makePlanet();restoreWorld();say(E?"ВЗЛЁТ — ПИРАТЫ ПОБЛИЗОСТИ!":"ВЗЛЁТ — система "+SYS[sy].n,3)}
 var drawMkt;
 function openJump(){state="jumpmenu";$("hud").style.display="none";const m=$("jmp");m.innerHTML="<h2 style='color:var(--ac)'>ГИПЕРДВИГАТЕЛЬ</h2>Двигатель заряжен. Куда прыгаем?<br><small>Отсталые миры: дёшевы еда и руда, дорога техника. Высокотехнологичные: наоборот. Средние — посередине.</small>";[0,1,2,3,4].filter(i=>i!==sy).sort(()=>Math.random()-.5).slice(0,3).forEach(i=>{const b=document.createElement("button");b.textContent=SYS[i].n+" — "+SYS[i].p+" · "+LN[SYS[i].l]+(ct&&ct.to===i?" ★ КОНТРАКТ":"");b.onclick=()=>{m.classList.add("hide");jd=i;jt=2.2;state="jump"};m.appendChild(b)});const cb=document.createElement("button");cb.textContent="ОТМЕНА";cb.onclick=()=>{m.classList.add("hide");$("hud").style.display="block";state="play"};m.appendChild(cb);m.classList.remove("hide")}
@@ -1781,13 +1781,13 @@ function dlgOpen(i,txt,opts){let d=$("dlg");if(!d){stTab="hall";stnDraw();d=$("d
 function talk(i){const s=SYS[sy],re=()=>stnDraw();
 if(i===0){if(ct&&ct.to===sy){if(cargo[ct.g]>=ct.n)dlgOpen(0,"Груз прибыл! "+ct.n+" × "+GN[ct.g]+". Гильдия платит честно: "+ct.rw+" кредитов.",[["Сдать груз",()=>{cargo[ct.g]-=ct.n;if(!cargo[ct.g])pp[ct.g]=0;cr+=ct.rw;ct=null;GAL.ev("deliver");re()}],["Позже",null]]);else dlgOpen(0,"Где мой груз? Нужно "+ct.n+" × "+GN[ct.g]+", а у тебя "+cargo[ct.g]+". Возвращайся с полным трюмом.",[["Ясно",null]])}
 else if(ct)dlgOpen(0,"Ты уже везёшь наш груз: "+ct.n+" × "+GN[ct.g]+" в систему "+SYS[ct.to].n+". Награда "+ct.rw+".",[["Лечу",null]]);
-else if(ofr){const rw=ofr.n*(s.g[ofr.g]+70);dlgOpen(0,"Гильдии нужен перевозчик. Купи "+ofr.n+" × "+GN[ofr.g]+" на рынке и доставь на станцию "+SYS[ofr.to].n+". Заплачу "+rw+" кредитов — больше, чем стоит товар.",[["Беру",()=>{ct={g:ofr.g,n:ofr.n,to:ofr.to,rw};re()}],["Не сейчас",null]])}else dlgOpen(0,"Работы пока нет.",[["Ладно",null]])}
+else if(ofr){const rw=Math.round(ofr.n*(s.g[ofr.g]+70)*GAL.rwK());dlgOpen(0,"Гильдии нужен перевозчик. Купи "+ofr.n+" × "+GN[ofr.g]+" на рынке и доставь на станцию "+SYS[ofr.to].n+". Заплачу "+rw+" кредитов — больше, чем стоит товар.",[["Беру",()=>{ct={g:ofr.g,n:ofr.n,to:ofr.to,rw};re()}],["Не сейчас",null]])}else dlgOpen(0,"Работы пока нет.",[["Ладно",null]])}
 else if(i===1){if(bty&&bty.sys===sy&&bty.k>=bty.n)dlgOpen(1,"Чистая работа, охотник. "+bty.n+" пиратов больше не побеспокоят торговцев. Держи "+bty.rw+".",[["Получить награду",()=>{cr+=bty.rw;bty=null;re()}]]);
 else if(bty)dlgOpen(1,"Контракт в силе: "+bty.k+" из "+bty.n+" пиратов в системе "+SYS[bty.sys].n+". Они сами тебя найдут — засады здесь теперь чаще.",[["Понял",null]]);
 else if(ofb)dlgOpen(1,"Пираты обнаглели: нападают на транспорты прямо у станции. Уничтожь "+ofb.n+" и возвращайся. Бюро платит "+ofb.rw+".",[["Принимаю",()=>{bty={n:ofb.n,k:0,sys:sy,rw:ofb.rw};re()}],["Отказаться",null]]);else dlgOpen(1,"Пока тихо.",[["Хорошо",null]])}
 else if(i===2){if(tipBuy===sy){const b=GN.map((g,k)=>{let best=0;SYS.forEach((q,j)=>{if(q.g[k]>SYS[best].g[k])best=j});return g+": дороже всего в "+SYS[best].n+" ("+SYS[best].g[k]+"), здесь "+s.g[k]}).join("<br>");dlgOpen(2,"Шшш... вот что я знаю:<br>"+b,[["Спасибо",null]])}
 else dlgOpen(2,"Хочешь знать, где что продаётся дороже? Слухи стоят 25 кредитов, ссссладенький.",[["Заплатить 25",()=>{if(cr>=25){cr-=25;tipBuy=sy;talk(2)}}],["Нет",null]])}
-else{const opt=[];if(hull<100)opt.push(["Ремонт корпуса (60)",()=>{if(cr>=60){cr-=60;hull=100;re();talk(3)}}]);if(miss<SHIPS[shp].miss)opt.push(["Ракета +1 (50)",()=>{if(cr>=50){cr-=50;miss++;re();talk(3)}}]);if(nuke<1)opt.push(["Ядерный заряд (400)",()=>{if(cr>=400){cr-=400;nuke=1;re();talk(3)}}]);opt.push(["Уйти",null]);
+else{const opt=[];if(hull<100)opt.push(["Ремонт корпуса ("+GAL.cost(60)+")",()=>{if(cr>=GAL.cost(60)){cr-=GAL.cost(60);hull=100;re();talk(3)}}]);if(miss<SHIPS[shp].miss)opt.push(["Ракета +1 ("+GAL.cost(50)+")",()=>{if(cr>=GAL.cost(50)){cr-=GAL.cost(50);miss++;re();talk(3)}}]);if(nuke<1)opt.push(["Ядерный заряд ("+GAL.cost(400)+")",()=>{if(cr>=GAL.cost(400)){cr-=GAL.cost(400);nuke=1;re();talk(3)}}]);opt.push(["Уйти",null]);
 dlgOpen(3,(hull<100?"Ну и вмятины... ":"Корабль в порядке. ")+"Корпус "+Math.round(hull)+"%, ракет "+miss+"/"+SHIPS[shp].miss+". Чем помочь?",opt)}}
 function mktView(box,s,n){box.innerHTML='<div class="mk-h">'+(ev?'<span class="ev">⚡ '+ev+'</span>':'Рынок станции · что дёшево здесь — дорого там')+'</div><div class="mk" id="mkl"></div>';
 const cols=["#8fd86a","#d8b070","#7ab4ff","#aab8d0","#ff6af0"];GN.forEach((g,i)=>{const r=document.createElement("div");r.className="mk-r";const loss=cargo[i]&&s.g[i]<pp[i];
@@ -2187,22 +2187,147 @@ shoot=function(arr,p,v,col,dmg,life){const M=beamMats(col),L=arr===bul?10:8,g=ne
 for(let k=0;k<2;k++){const pl=new T.Mesh(BPL,M.glow);pl.scale.set(1.5,L*1.15,1);pl.rotation.set(Math.PI/2,0,k*Math.PI/2);pl.rotateY(0);pl.position.z=-L/2;g.add(pl)}
 const h=new T.Sprite(M.halo);h.scale.set(3.4,3.4,1);h.position.z=.2;g.add(h);g.position.copy(p);g.lookAt(p.clone().add(v));S.add(g);arr.push({m:g,v,dmg,life})};
 /* ===== v40: ЖИВАЯ ГАЛАКТИКА ===== */
-const GAL=(function(){const cl=v=>Math.max(0,Math.min(100,v)),mk=i=>({sec:[40,55,70][SYS[i].l],eco:[35,50,65][SYS[i].l],pir:[65,50,35][SYS[i].l],rep:0});
-const G={s:SYS.map((_,i)=>mk(i)),snap:{},cur:0,
-init(){G.s=SYS.map((_,i)=>mk(i));G.snap={};G.cur=sy},
-load(d){if(Array.isArray(d)&&d.length===SYS.length)G.s=d.map((x,i)=>Object.assign(mk(i),x));else G.s=SYS.map((_,i)=>mk(i));G.snap={}},
-ev(t){const c=G.s[sy],E={pirate:[2,1,-3,0],boss:[10,5,-15,10],civ:[-6,-4,0,-15],raid:[-3,-2,2,0],deliver:[2,8,0,8]}[t];if(!c||!E)return;c.sec=cl(c.sec+E[0]);c.eco=cl(c.eco+E[1]);c.pir=cl(c.pir+E[2]);c.rep=Math.max(-100,Math.min(100,c.rep+E[3]));if(t==="pirate"&&cr!==undefined)cr+=Math.round((100-c.sec)/6)},
-price(s){const c=G.s[sy],f=1+(50-c.eco)/220;s.g=s.g.map(v=>Math.max(5,Math.round(v*f)))},
-visit(){G.cur=sy;const c=G.s[sy];c.pir=cl(c.pir+(50-c.pir)*.05);c.eco=cl(c.eco+(c.sec-50)*.03)},
-left(from){const c=G.s[from];if(c){c.pir=cl(c.pir+6);c.eco=cl(c.eco-2)}G.s.forEach((x,i)=>{if(i!==from&&i!==sy)x.pir=cl(x.pir+(Math.random()<.5?2:-2))})},
-extra(){const c=G.s[sy];return (c.pir>70?1:0)+(c.rep<-30?1:0)},
-ambK(){const c=G.s[sy];return Math.max(.5,Math.min(1.7,1.55-c.pir/70))},
-news(){const c=G.s[sy],o=G.snap[sy],out=[];if(o){const d=(a,b,u,dn)=>{if(c[a]-o[a]>=8)out.push(u);else if(o[a]-c[a]>=8)out.push(dn)};d("pir","", "Пираты активизировались",  "Пиратов стало меньше");d("sec","","Безопасность выросла","Безопасность упала");d("eco","","Экономика растёт","Экономика просела")}G.snap[sy]={sec:c.sec,eco:c.eco,pir:c.pir};if(c.rep<-30)out.push("Охотники за головами ищут вас");return out.length?" · Галактика помнит: "+out.join("; "):""},
-bars(i){const c=G.s[i],b=(n,v,col)=>'<span style="display:inline-flex;align-items:center;gap:4px;margin-right:12px">'+n+' <i style="display:inline-block;width:46px;height:6px;background:#12243a;border-radius:3px;overflow:hidden"><i style="display:block;height:100%;width:'+Math.round(v)+'%;background:'+col+'"></i></i></span>';return b("БЕЗОП.",c.sec,"#4fd")+b("ЭКОН.",c.eco,"#fc4")+b("ПИРАТЫ",c.pir,"#f64")+'<span style="opacity:.8">РЕП. '+(c.rep>0?"+":"")+Math.round(c.rep)+'</span>'}};return G})();
+const FACS=[{id:"gld",n:"Гильдия торговцев",c:"#5fd06a",npc:0},{id:"bur",n:"Охотничье бюро",c:"#7ab4ff",npc:1},{id:"mec",n:"Союз механиков",c:"#ffa040",npc:3},{id:"pir",n:"Пираты Пустоты",c:"#ff5566",npc:-1}];
+const EVT={blk:{n:"Пиратская блокада",d:"налёты чаще, цены растут, охотники платят больше. Собьёте 4 пиратов — прорвёте блокаду",left:3},fam:{n:"Дефицит снабжения",d:"цены ×1.35, Гильдия платит щедрее",left:3},fes:{n:"Фестиваль звёзд",d:"цены ×0.85, туристов больше, налёты реже",left:2},con:{n:"Конвой Гильдии",d:"контракты +50%, налёты реже",left:3},pat:{n:"Рейд охотников",d:"пиратов меньше, награды Бюро +25%",left:2}};
+const GAL=(function(){const cl=v=>Math.max(0,Math.min(100,v)),CT=["gld","bur","mec","gld","bur"],
+mk=i=>{const inf={gld:18,bur:18,mec:18,pir:[30,24,16][SYS[i].l]};inf[CT[i]]+=26;return{sec:[40,55,70][SYS[i].l],eco:[35,50,65][SYS[i].l],pir:[65,50,35][SYS[i].l],rep:0,inf,evt:null}},
+mkFR=()=>({gld:0,bur:0,mec:0,pir:0}),cf=v=>Math.max(-100,Math.min(100,v));
+const G={s:SYS.map((_,i)=>mk(i)),fr:mkFR(),snap:{},cur:0,_nj:0,
+init(){G.s=SYS.map((_,i)=>mk(i));G.fr=mkFR();G.snap={};G.cur=sy},
+load(d,fr){G.s=SYS.map((_,i)=>{const b=mk(i),x=Array.isArray(d)&&d[i]?d[i]:{};return Object.assign(b,x,{inf:Object.assign(b.inf,x.inf||{})})});G.fr=Object.assign(mkFR(),fr||{});G.snap={}},
+ctl(i){const f=G.s[i].inf;return Object.keys(f).reduce((a,k)=>f[k]>f[a]?k:a,"gld")},
+fn(id){return FACS.find(f=>f.id===id).n},
+evId(i){const e=G.s[i===undefined?sy:i].evt;return e?e.id:""},
+ev(t){const c=G.s[sy],E={pirate:[2,1,-3,0],boss:[10,5,-15,10],civ:[-6,-4,0,-15],raid:[-3,-2,2,0],deliver:[2,8,0,8]}[t],F={pirate:{bur:2,gld:1,pir:-3},boss:{bur:8,gld:4,pir:-10},civ:{gld:-12,bur:-6},raid:{pir:1},deliver:{gld:6,mec:1}}[t],I={pirate:{bur:3,pir:-4},boss:{bur:10,pir:-12},civ:{gld:-6,pir:3},raid:{pir:3},deliver:{gld:6}}[t];if(!c||!E)return;c.sec=cl(c.sec+E[0]);c.eco=cl(c.eco+E[1]);c.pir=cl(c.pir+E[2]);c.rep=cf(c.rep+E[3]);for(const k in F)G.fr[k]=cf(G.fr[k]+F[k]);for(const k in I)c.inf[k]=cl(c.inf[k]+I[k]);
+if(t==="pirate"||t==="boss"){cr+=Math.round((100-c.sec)/6);if(c.evt&&c.evt.id==="blk"&&++c.evt.k>=4){c.evt=null;cr+=300;G.fr.bur=cf(G.fr.bur+5);c.pir=cl(c.pir-10);say("БЛОКАДА ПРОРВАНА · +300 кредитов",3)}}},
+price(s){const c=G.s[sy],id=G.evId(),ct=G.ctl(sy);let f=1+(50-c.eco)/220;f*={blk:1.15,fam:1.35,fes:.85}[id]||1;if(ct==="gld")f*=.95;if(ct==="pir")f*=1.1;s.g=s.g.map(v=>Math.max(5,Math.round(v*f)))},
+rwK(){const id=G.evId();return Math.max(.8,Math.min(1.6,1+G.fr.gld/200+(G.ctl(sy)==="gld"?.05:0)))*(id==="con"?1.5:id==="fam"?1.25:1)},
+bwK(){const id=G.evId();return Math.max(.8,Math.min(1.6,1+G.fr.bur/200))*(id==="blk"?1.5:id==="pat"?1.25:1)},
+cost(v){return Math.round(v*(1-Math.min(.35,Math.max(0,G.fr.mec)/300+(G.ctl(sy)==="mec"?.1:0))))},
+roll(){const c=G.s[sy];if(c.evt||Math.random()>.4)return;const w=[];if(c.pir>60)w.push("blk","blk","blk");if(c.eco<40)w.push("fam","fam");if(c.sec>60&&c.eco>55)w.push("fes","fes");if(G.fr.gld>10)w.push("con","con");if(G.fr.bur>10)w.push("pat","pat");w.push("blk","fam","fes","con","pat");const id=w[Math.floor(Math.random()*w.length)];c.evt={id,left:EVT[id].left,k:0}},
+tick(){const c=G.s[sy];if(c&&c.evt&&--c.evt.left<=0)c.evt=null},
+visit(){G.cur=sy;const c=G.s[sy];c.pir=cl(c.pir+(50-c.pir)*.05);c.eco=cl(c.eco+(c.sec-50)*.03);G.roll();const w=G.s.filter((_,i)=>i!==sy);if(Math.random()<.3){const x=w[Math.floor(Math.random()*w.length)];if(!x.evt&&Math.random()<.5){const id=["blk","fam","fes","con","pat"][Math.floor(Math.random()*5)];x.evt={id,left:EVT[id].left,k:0}}}},
+left(from){const c=G.s[from];if(c){c.pir=cl(c.pir+6);c.eco=cl(c.eco-2);c.inf.pir=cl(c.inf.pir+3)}G.s.forEach((x,i)=>{if(i!==from&&i!==sy)x.pir=cl(x.pir+(Math.random()<.5?2:-2))})},
+extra(){const c=G.s[sy],id=G.evId();return(c.pir>70?1:0)+(c.rep<-30?1:0)+(id==="blk"?2:0)+(G.fr.pir<-60?1:0)},
+ambK(){const c=G.s[sy],id=G.evId(),ct=G.ctl(sy);let k=1.55-c.pir/70;if(ct==="bur")k*=1.2;if(ct==="pir")k*=.8;if(id==="blk")k*=.6;if(id==="fes"||id==="con")k*=1.25;if(id==="pat")k*=1.4;return Math.max(.4,Math.min(2,k))},
+news(){const c=G.s[sy],o=G.snap[sy],out=[];if(o){const d=(a,u,dn)=>{if(c[a]-o[a]>=8)out.push(u);else if(o[a]-c[a]>=8)out.push(dn)};d("pir","Пираты активизировались","Пиратов стало меньше");d("sec","Безопасность выросла","Безопасность упала");d("eco","Экономика растёт","Экономика просела");if(o.ct&&o.ct!==G.ctl(sy))out.push("Контроль перешёл к фракции «"+G.fn(G.ctl(sy))+"»")}G.snap[sy]={sec:c.sec,eco:c.eco,pir:c.pir,ct:G.ctl(sy)};if(c.rep<-30)out.push("Охотники за головами ищут вас");return out.length?" · Галактика помнит: "+out.join("; "):""},
+bars(i){const c=G.s[i],b=(n,v,col)=>'<span style="display:inline-flex;align-items:center;gap:4px;margin-right:12px">'+n+' <i style="display:inline-block;width:46px;height:6px;background:#12243a;border-radius:3px;overflow:hidden"><i style="display:block;height:100%;width:'+Math.round(v)+'%;background:'+col+'"></i></i></span>',f=FACS.find(x=>x.id===G.ctl(i));return b("БЕЗОП.",c.sec,"#4fd")+b("ЭКОН.",c.eco,"#fc4")+b("ПИРАТЫ",c.pir,"#f64")+'<span style="opacity:.8;margin-right:12px">РЕП. '+(c.rep>0?"+":"")+Math.round(c.rep)+'</span><span style="color:'+f.c+';margin-right:12px">⚑ '+f.n+'</span>'+(c.evt?'<span style="color:#ffd24a">⚡ '+EVT[c.evt.id].n+'</span>':"")},
+board(){const c=G.s[sy],h=FACS.map(f=>{const v=Math.round(G.fr[f.id]),w=Math.round((v+100)/2);return'<div style="margin:3px 0"><b style="color:'+f.c+'">'+f.n+'</b> <span style="opacity:.8">'+(v>0?"+":"")+v+'</span> <i style="display:inline-block;width:90px;height:6px;background:#12243a;border-radius:3px;overflow:hidden;vertical-align:middle"><i style="display:block;height:100%;width:'+w+'%;background:'+f.c+'"></i></i></div>'}).join(""),e=c.evt?'<div style="margin-top:6px;color:#ffd24a">⚡ '+EVT[c.evt.id].n+' ('+c.evt.left+' выл.): '+EVT[c.evt.id].d+'</div>':"",ctl=SYS.map((s,i)=>s.n+" — "+G.fn(G.ctl(i))+(G.s[i].evt?" ⚡":"")).join("<br>");return"Ссс, расклад сил:<br>"+h+"<div style='margin-top:6px;opacity:.85;font-size:.9em'>Кто хозяин в системах:<br>"+ctl+"</div>"+e+"<div style='margin-top:6px;opacity:.7;font-size:.85em'>Гильдия: награды за контракты. Бюро: награды за пиратов. Механики: скидки на ремонт. Хозяин системы меняет цены и частоту налётов.</div>"}};return G})();
+
 {const _k=kill;kill=function(ms){const b=E&&E.boss;_k(ms);GAL.ev(b?"boss":"pirate")}}
 {const _r=reset;reset=function(){_r.apply(this,arguments);GAL.init()}}
 {const _a=arrive;arrive=function(){GAL.left(GAL.cur);GAL.cur=sy;_a.apply(this,arguments)}}
 {const _sd=stnDraw;stnDraw=function(){_sd.apply(this,arguments);const m=$("mkt"),top=m&&m.querySelector(".stn-top");if(top&&!m.querySelector(".gal-bar")){const d=document.createElement("div");d.className="gal-bar";d.style.cssText="padding:5px 16px;font-size:12px;color:var(--fg);background:rgba(6,20,36,.85);border-bottom:1px solid #1d3b5a;white-space:nowrap;overflow:auto";d.innerHTML=GAL.bars(sy)+(ev&&ev.indexOf("Галактика помнит")>=0?'<span style="color:#ffd24a">'+ev.slice(ev.indexOf("Галактика помнит")).replace(/^/,"")+'</span>':"");top.after(d)}}}
 drawMkt=stnDraw;
 {const _o=openJump;openJump=function(){_o.apply(this,arguments);document.querySelectorAll("#jmp button").forEach(b=>{const i=SYS.findIndex(s=>b.textContent.indexOf(s.n+" —")===0);if(i>=0){const c=GAL.s[i];b.innerHTML=b.textContent+'<br><small>'+GAL.bars(i)+'</small>'}})}}
+/* ===== v41: БАЗА ШУТОК (офлайн, без повторов) ===== */
+const JKDB=[
+[/*Зорг*/
+"Знаешь, чем я отличаюсь от гипердвигателя? Гипердвигатель заводится с первого раза и никогда не жалуется, что у него «сегодня голова болит».",
+"Рынок как моя жена: сегодня дорого, завтра дёшево, а я всё равно остаюсь в проигрыше и с растраченными нервами.",
+"Продал вчера партию «стимулятора для дальних перелётов». Оказалось — кофе. Но клиенты клянутся, что эффект был. Сила внушения, пилот!",
+"Дед мне говорил: «Зорг, не смешивай бизнес с удовольствием». Я послушал. Теперь у меня два банкротства и три развода. Все — по удовольствию.",
+"Моя руда большая, тяжёлая и очень плотная. Жаль, что речь только о руде.",
+"Клиентка просит скидку: «Я же у вас постоянная». Я ей: постоянная — это уже без скидок, дорогая, это отношения.",
+"Хороший товар не нужно рекламировать. Особенно если он длинный, твёрдый и в вечном дефиците. Титан, конечно. А ты о чём подумал?",
+"Мой трюм вмещает триста тонн. Жена говорит, что это единственный объём, в котором я не жалуюсь на размер.",
+"Говорят, главное — не размер, а умение вести дела. Это говорят те, у кого маленькие склады.",
+"Продавать надо с чувством, с толком, с расстановкой. А покупать — быстро, пока не передумала скидка.",
+"Вчера торговался с ахернарцем три часа. В конце мы оба были мокрые, измотанные и страшно довольны. Он в итоге переплатил.",
+"Однажды я продал одному пирату бракованный щит. Он до сих пор ищет меня. Но не торопится — у него проблемы со щитом.",
+"Если у товара есть гарантия — это не товар, это обязательства. Я на обязательствах никогда не женился.",
+"Гильдия учит: клиент всегда прав. Особенно когда расплачивается. Особенно наличными. Особенно сразу.",
+"Мой секрет успешных сделок: улыбка, твёрдое рукопожатие и никогда, слышишь, никогда не показывать, что у тебя трясутся щупальца.",
+"Раньше я думал, что лучше всего на свете — ночь в баре. Потом нашёл, что лучше — ночь в баре с чужой скидочной картой.",
+"Знаешь, почему торговцы любят дефицит? Потому что когда чего-то мало, это все хотят и все готовы доплатить. Как и в личной жизни.",
+"Оптом дешевле, поштучно приятнее. Вот и вся моя философия торговли и не только.",
+],
+[/*Векса*/
+"Охота как свидание: долго выслеживаешь, слегка нервничаешь, и если всё прошло хорошо — кто-то уходит с дыркой.",
+"У моего главного калибра есть одна проблема: он стреляет раньше, чем я успеваю сказать «ещё рано». Вечная беда капитанов.",
+"Пират сдался, потому что я приказала: «Руки вверх». Он поднял все четыре. Хорошо, что у него их было больше, чем у меня терпения.",
+"Говорят, у охотников нет личной жизни. Неправда: у меня их три. Они просто не знают друг о друге, а я не знаю, где мой пистолет.",
+"На войне как на войне: сначала долгие переговоры, потом внезапный залп, потом неловкое молчание. Совсем как на втором свидании.",
+"Мой новый напарник — исполнительный, быстрый, без вопросов. Только что-то слишком часто просит, чтобы я его перезаряжала.",
+"Бюро платит за каждого пирата. Я бы платила за каждого, кто не стреляет в меня раньше времени. Но так у нас не принято.",
+"Стреляю я хорошо, а вот целоваться не умею. Зато второе мне и не нужно: пираты обычно не просят.",
+"Чем длиннее ствол, тем дальше бьёт. Так учили на курсах. Про мужчин на тех же курсах учили обратное, и я поверила обоим.",
+"Однажды пират предложил мне разделить добычу пополам. Я согласилась. Он остался без обеих половин.",
+"У охотничьего Бюро строгие правила: не пить на дежурстве, не спать на дежурстве, не влюбляться в цель. Из трёх мне удаётся один и то не всегда.",
+"Знаешь, что я ценю в мужчине? Когда он умеет вовремя остановиться. И вовремя нажать на спуск, конечно.",
+"Пиратский капитан спросил, замужем ли я. Я ответила: «Замужем за долгом». Он решил, что это ревнивый ухажёр, и убежал.",
+"Моя первая и самая большая любовь — крейсер класса «Гром». Тяжёлый, мощный, гудит всю ночь. Хорошо, что он не храпит.",
+"Они говорят: «Векса, ты слишком холодна». Но в бою я жарче, чем реакторы на форсаже. Просто бы кто попросил.",
+"Мне нравятся мужчины с оружием. И женщины. И инопланетяне. Лишь бы целились в другую сторону.",
+"Лучший способ обезвредить пирата — вовремя вставить ему заряд. Желательно до того, как он вставит тебе.",
+"В молодости у меня был роман с капитаном-пиратом. Закончился перестрелкой. Но мы оба помним первую ночь с огоньком.",
+"Вообще-то я не люблю шутить. Но когда пират кричит «Сдаюсь» и при этом целится в меня — смеюсь, как ненормальная.",
+],
+[/*Шшиила*/
+"Ссссладенький, я знаю столько секретов, что если бы каждый из них был поцелуем, меня бы давно арестовали.",
+"Информация как хорошее вино, пилот: чем дольше держишь, тем выше цена. И тем сильнее хочется выпить прямо сейчас.",
+"Один торговец спросил, чем я могу заплатить за услугу. Я сказала: «Шшшепотом». Он заплатил и ещё остался должен.",
+"Мои слухи всегда точны. Особенно те, что про тебя. Ну и что, что ты их ещё не слышал.",
+"Ссссекрет успеха: делай вид, что знаешь больше, чем говоришь. И говори так, будто знаешь, что собеседнику это очень нравится.",
+"У меня три языка: общий, торговый и тот, которым я шепчу на ухо. Последний самый ценный.",
+"Мужчины как слухи: приятно вспоминать, неприятно проверять и всегда кто-то расскажет больше, чем было на самом деле.",
+"Ты слышал про капитана «Алой Вдовы»? Три развода, два вдовства и ни одного поцелуя без выгоды. Моя героиня.",
+"Говорят, змеи не умеют краснеть. Но когда ты так смотришь на мой хвост, я готова поспорить.",
+"Лучшие слухи рождаются в тёмных углах бара. Лучшее — в тех, куда не заглядывает охрана.",
+"Мои клиенты расплачиваются кредитами, мои друзья — тайнами, а мои враги — всем, что у них есть. Ссссладко.",
+"В любви, как в торговле: главное не продешевить. И не выдать, что ты уже давно готова на любую цену.",
+"Я не флиртую. Я просто собираю данные. Очень, очень близко.",
+"Ты спрашиваешь, сколько стоит моя дружба? Для тебя — 25 кредитов. Для остальных дороже. Но у них нет таких глаз.",
+"Говорят, что информатор должен быть незаметным. Но кто из вас не оглянулся, когда я прошла мимо?",
+"Секрет, шепотом, на ушко: тот, кто больше всех кричит «никогда», чаще всех звонит в ночи.",
+"Однажды я продала один и тот же слух двум разным сторонам. Они встретились, поругались и поженились. С тех пор я беру комиссию.",
+"Ссссчастье — это когда после сделки остаёшься довольной, а клиент уверен, что остался доволен он.",
+],
+[/*Брук*/
+"Знаешь, что общего между мной и твоим реактором? Оба любят, когда в них вставляют хорошие запчасти и не жалеют смазки.",
+"Одна пилотесса принесла корабль: «Что-то у меня в трюме стучит». Я сказал: «Пройдёмте в мастерскую, разберёмся». Теперь у нас совместный бизнес.",
+"Правило механика: не тяни слишком сильно, не затягивай слишком туго, не вставляй не туда. Работает и для двигателей, и для жизни.",
+"Мой любимый инструмент — длинный гаечный ключ с шершавой рукояткой. Мне о нём больше нечего сказать, дальше сам придумывай.",
+"Клиент спросил, можно ли его ремонт сделать побыстрее. Я сказал: можно, но качество упадёт. Он сказал: «Тогда как с женой». Мы выпили.",
+"Говорят, механики грубые. Неправда! Я очень нежно закручиваю болты. Ни одного не сорвал. Ну, почти.",
+"Шлюз — самое интимное место на корабле. Туда входят, оттуда выходят, и все делают вид, что это нормально.",
+"Однажды я полез в двигатель к красивой капитанше. Она потом неделю не могла сидеть. А это было охлаждение, там просто горячо.",
+"Хороший механик знает: у каждой машины есть свои капризы. У каждой женщины тоже. Но с машиной хотя бы есть инструкция.",
+"Мой отец говорил: сынок, в жизни главное — прочная резьба. Теперь я каждый вечер проверяю резьбу у всех подряд. Бар закрывается в десять.",
+"Люблю свою работу: целый день в тёплом, влажном, масляном отсеке, в окружении мощных и блестящих агрегатов.",
+"Если у корабля течёт — это не смазка. Если течёт у пилота после ремонта — это тоже не смазка. Но я уже ничего не гарантирую.",
+"Не будь как этот новичок: он вставил модуль не той стороной и удивился, почему не заработало. Прямо как в жизни.",
+"Помнишь, я чинил твой лазер? Так вот: он больше не перегревается. Зато при взгляде на меня — ещё как.",
+"Лучшая часть моей профессии — когда в конце смены кто-то говорит: «Вау, как это у тебя так долго и мощно работает». Это про генератор.",
+"Сначала диагностика, потом прикосновение. Сначала прикосновение — значит, ты не механик, а пилот. Хотя тоже бывает.",
+"Мне нравятся твёрдые, плотные, блестящие вещи. Только поэтому я работаю с титаном. А ты что подумал?",
+"Один раз я так хорошо отполировал чей-то корпус, что владелец прислал мне открытку. С тех пор у нас так принято.",
+"Знаешь, почему я никогда не женился? У меня слишком много романов с двигателями. И все они гудят громче меня.",
+],
+[/*общие*/
+"В космосе никто не услышит твой крик. Зато все услышат, как скрипит твоя койка. Стены на станции тонкие.",
+"Пилот заходит в бар и просит: «Мне что-нибудь покрепче». Бармен: «Титановый стакан?» Пилот: «Нет, друг, я про коктейль».",
+"Что общего у чёрной дыры и бывшей? Обе всё засасывают, и из обеих ничего не вернуть.",
+"Почему на станции так редко ломается гравитация? Потому что всё остальное падает без неё. А вот люди — наоборот.",
+"Опытный пилот знает, что стыковка — самый ответственный момент. Всё должно войти плавно, точно и с первого раза. Ну и не слишком быстро.",
+"Раньше я считал, что космос бесконечен. Потом посмотрел на счёт за заправку.",
+"Говорят, в космосе нет верха и низа. Но моя бывшая успешно доказала обратное.",
+"Один пилот другому: «Ты слышал, что на станции открыли бордель для роботов?» — «И как?» — «Там всё по протоколу, но жалуются на отсутствие обратной связи».",
+"На станции запретили курить. Зато разрешили всё остальное, что дымит и пахнет. Ну, по расписанию, конечно.",
+"Мой корабль — моя крепость. Сейчас в ней, правда, живёт очень шумная гостья, но это уже другая история.",
+"Гравитация — как любовь: либо она есть, либо ты падаешь, либо тебя долго и мучительно притягивает к кому-то слишком большому.",
+"Почему капитаны любят большие корабли? Говорят, комплекс неполноценности. Мой капитан даже не стесняется.",
+"Как узнать, что пилот слишком долго в рейсе? Он начинает флиртовать с автопилотом. А тот, зараза, отвечает взаимностью.",
+"Двоим в космосе тесно, троим — тесно вдвойне, а четверым — уже вечеринка. Главное, чтобы был кислород.",
+"Пилот жалуется: «Мой корабль не слушается меня». Механик: «Дело в рулях?» — «Нет, в характере. Она вся в мать».",
+"Станционная любовь — это когда вы расстаётесь на гипердвигателе, а встречаетесь на следующем рейсе, и все делают вид, что не помнят.",
+]];
+const JK=(function(){let seen={};try{seen=JSON.parse(localStorage.getItem("sf_jk")||"{}")||{}}catch(e){}
+const save=()=>{try{localStorage.setItem("sf_jk",JSON.stringify(seen))}catch(e){}};
+return{tell(i){const own=JKDB[i]||[],com=JKDB[4],all=[];own.forEach((t,k)=>all.push([i+":"+k,t]));com.forEach((t,k)=>all.push(["c:"+k,t]));let pool=all.filter(a=>!seen[a[0]]);if(!pool.length){all.forEach(a=>delete seen[a[0]]);pool=all}
+const pr=pool.filter(a=>a[0][0]!=="c"),pick=(pr.length&&Math.random()<.7?pr:pool),j=pick[Math.floor(Math.random()*pick.length)];seen[j[0]]=1;save();
+GAL._nj=1;try{dlgOpen(i,j[1],[["Ха-ха! Ещё!",()=>JK.tell(i)],["Хватит",null]])}finally{GAL._nj=0}},total:()=>JKDB.slice(0,5).reduce((a,b)=>a+b.length,0),left:()=>0}})();
+
+{const _dl=dlgOpen;dlgOpen=function(i,txt,opts){if(!GAL._nj){opts=opts.slice();if(i===2)opts.splice(opts.length-1,0,["Расклад сил",()=>{GAL._nj=1;try{dlgOpen(2,GAL.board(),[["Понятно",null]])}finally{GAL._nj=0}}]);opts.push(["Шутка?",()=>JK.tell(i)])}return _dl.call(this,i,txt,opts)}}
+{const _l=lift;lift=function(){GAL.tick();_l.apply(this,arguments);const e=GAL.s[sy].evt;if(e)say("⚡ "+EVT[e.id].n+": "+EVT[e.id].d,5)}}
 </script></body></html>
