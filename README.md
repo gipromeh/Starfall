@@ -30,4 +30,7 @@
 
 ## Запуск
 
-Открыть `STARFALL_CURRENT.html` в браузере. Нужен интернет: Three.js, Babylon.js и шрифты грузятся с CDN.
+- Онлайн (ПК и iPhone): https://gipromeh.github.io/Starfall/ (GitHub Pages, ветка `main`, обновляется примерно за минуту после коммита).
+- Локально: открыть `STARFALL_CURRENT.html` в браузере.
+
+Нужен интернет: Three.js, Babylon.js и шрифты грузятся с CDN. `index.html` только перенаправляет на `STARFALL_CURRENT.html`.
