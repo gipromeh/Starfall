@@ -1806,7 +1806,7 @@ $("hgsl").textContent="Оружие: "+gw.slice(0,q.wp).map(k=>WP[k].n).join(", 
 drawMkt=stnDraw;
 // ===== CAFE 3D: 3D-бар в «ХОЛЛЕ» (Babylon.js, ленивая загрузка; при сбое остаётся прежний холл) =====
 var CAFE={st:0,hall:null,cv:null,api:null,tags:[],ld:null},cafeLive=false;
-function cafeLoad(cb){if(window.BABYLON)return cb(true);if(CAFE.ld){CAFE.ld.push(cb);return}CAFE.ld=[cb];const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/babylonjs@7.0.0/babylon.js";const fin=ok=>{const l=CAFE.ld;CAFE.ld=null;if(l)l.forEach(f=>f(ok))};s.onload=()=>fin(true);s.onerror=()=>fin(false);setTimeout(()=>{if(CAFE.ld)fin(false)},45000);document.head.appendChild(s)}
+function cafeLoad(cb){if(window.BABYLON)return cb(true);if(CAFE.ld){CAFE.ld.push(cb);return}CAFE.ld=[cb];const U=["https://cdn.jsdelivr.net/npm/babylonjs@7.0.0/babylon.js","https://unpkg.com/babylonjs@7.0.0/babylon.js"];let k=0;const fin=ok=>{const l=CAFE.ld;CAFE.ld=null;if(l)l.forEach(f=>f(ok))};const nxt=()=>{if(k>=U.length){fin(false);return}const s=document.createElement("script");s.src=U[k++];s.onload=()=>{if(window.BABYLON)fin(true);else{s.remove();nxt()}};s.onerror=()=>{s.remove();nxt()};document.head.appendChild(s)};setTimeout(()=>{if(CAFE.ld)fin(false)},45000);nxt()}
 function cafeMarks(){return[ct&&ct.to===sy?"?":(!ct&&ofr?"!":""),bty&&bty.k>=bty.n&&bty.sys===sy?"?":(!bty&&ofb?"!":""),"",hull<100||miss<SHIPS[shp].miss?"!":""]}
 function cafePick(i){if(CAFE.api)CAFE.api.focus(i);talk(i)}
 function cafeFrame(pts){const w=CAFE.cv.clientWidth,h=CAFE.cv.clientHeight;for(let i=0;i<pts.length;i++){const t=CAFE.tags[i],p=pts[i];if(!t)continue;const on=p.z>0&&p.z<1;t.style.display=on?"flex":"none";if(on)t.style.transform="translate("+Math.round(p.x*w)+"px,"+Math.round(p.y*h)+"px) translate(-50%,-100%)"}}
@@ -1821,11 +1821,11 @@ CAFE.api.start();cafeLive=true}
 function cafeAttach(hall){if(CAFE.st<0)return;CAFE.hall=hall;
 if(CAFE.st===2){cafeMount();return}if(CAFE.st===1)return;CAFE.st=1;
 const note=document.createElement("div");note.className="cafe-note";note.textContent="Загрузка бара…";hall.appendChild(note);
-cafeLoad(ok=>{if(!ok){CAFE.st=-1;note.remove();return}
+cafeLoad(ok=>{if(!ok){CAFE.st=0;note.textContent="3D-бар не загрузился: нет доступа к библиотеке Babylon. Откройте холл ещё раз.";setTimeout(()=>note.remove(),9000);return}
 setTimeout(()=>{try{const cv=document.createElement("canvas");cv.className="cafe-cv";CAFE.cv=cv;
 if(CAFE.hall&&CAFE.hall.isConnected)CAFE.hall.insertBefore(cv,CAFE.hall.firstChild);
 CAFE.api=cafeBoot(cv,{mobile:TCH,pick:cafePick,frame:cafeFrame});CAFE.st=2;note.remove();
-if(state==="dock"&&stTab==="hall")cafeMount()}catch(e){console.warn("CAFE3D:",e);CAFE.st=-1;note.remove();try{CAFE.api&&CAFE.api.dispose()}catch(_){}CAFE.api=null;cafeLive=false;if(CAFE.cv)CAFE.cv.remove();CAFE.cv=null}},60)})}
+if(state==="dock"&&stTab==="hall")cafeMount()}catch(e){console.warn("CAFE3D:",e);CAFE.st=-1;note.textContent="3D-бар не запустился: "+String(e&&e.message||e).slice(0,140);note.style.cssText+=";white-space:normal;max-width:90%;text-align:center";setTimeout(()=>note.remove(),20000);try{CAFE.api&&CAFE.api.dispose()}catch(_){}CAFE.api=null;cafeLive=false;if(CAFE.cv)CAFE.cv.remove();CAFE.cv=null}},60)})}
 function cafePause(){if(CAFE.api&&cafeLive){CAFE.api.stop();cafeLive=false}}
 {const _hv=hallView;hallView=function(box,s){cafePause();_hv(box,s);cafeAttach(box.firstElementChild)}}
 {const _sd=stnDraw;stnDraw=function(){_sd();if(stTab!=="hall")cafePause()}}
