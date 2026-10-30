@@ -34,7 +34,7 @@ import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x070b12);scene.fog=new THREE.FogExp2(0x070b12,.018);
-const camera=new THREE.PerspectiveCamera(38,innerWidth/innerHeight,.1,200);camera.position.set(0,2,12.8);
+const camera=new THREE.PerspectiveCamera(38,innerWidth/innerHeight,.1,200);camera.position.set(0,1.2,-12.8);
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;
 document.querySelector('#stage').appendChild(renderer.domElement);
@@ -65,18 +65,18 @@ function ball(p,pos,scale,m,n=24){const o=new THREE.Mesh(new THREE.SphereGeometr
 
 // Armored spherical cockpit, front glazing points toward -Z
 ball(model,[0,0,0],[1,1,1],hull,48);ball(model,[0,0,.03],[.91,.91,.91],edge,40);
-ball(model,[0,0,-.76],[.69,.69,.22],black,40);
+ball(model,[0,0,-1.00],[.69,.69,.22],black,40);
 // Seated pilot silhouette behind a lightly tinted transparent canopy.
-ball(model,[0,.10,-.49],[.205,.235,.19],pilotMat,24);
-ball(model,[0,.105,-.635],[.155,.095,.055],dark,20);
-ball(model,[0,-.25,-.34],[.29,.39,.22],pilotSuit,24);
-ball(model,[-.245,-.12,-.36],[.16,.22,.17],pilotSuit,18);ball(model,[.245,-.12,-.36],[.16,.22,.17],pilotSuit,18);
-rod(model,[-.12,-.30,-.48],[0,-.38,-.57],.055,pilotMat);rod(model,[.12,-.30,-.48],[0,-.38,-.57],.055,pilotMat);
-const helmetRing=new THREE.Mesh(new THREE.TorusGeometry(.205,.018,8,28),edge);helmetRing.position.set(0,.10,-.50);model.add(helmetRing);
-const hose=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(.16,-.02,-.46),new THREE.Vector3(.23,-.12,-.50),new THREE.Vector3(.19,-.29,-.49)]),16,.018,6,false),bright);model.add(hose);
-ball(model,[0,0,-.79],[.62,.62,.18],glass,48);
+ball(model,[0,.10,-.91],[.205,.235,.19],pilotMat,24);
+ball(model,[0,.105,-1.055],[.155,.095,.055],dark,20);
+ball(model,[0,-.25,-.77],[.29,.39,.22],pilotSuit,24);
+ball(model,[-.245,-.12,-.79],[.16,.22,.17],pilotSuit,18);ball(model,[.245,-.12,-.79],[.16,.22,.17],pilotSuit,18);
+rod(model,[-.12,-.30,-.91],[0,-.38,-1.00],.055,pilotMat);rod(model,[.12,-.30,-.91],[0,-.38,-1.00],.055,pilotMat);
+const helmetRing=new THREE.Mesh(new THREE.TorusGeometry(.205,.018,8,28),edge);helmetRing.position.set(0,.10,-.92);model.add(helmetRing);
+const hose=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(.16,-.02,-.88),new THREE.Vector3(.23,-.12,-.92),new THREE.Vector3(.19,-.29,-.91)]),16,.018,6,false),bright);model.add(hose);
+ball(model,[0,0,-1.13],[.62,.62,.18],glass,48);
 ball(model,[0,0,.78],[.58,.58,.16],dark,36);
-const noseRing=new THREE.Mesh(new THREE.TorusGeometry(.70,.055,10,48),bright);noseRing.position.z=-.78;model.add(noseRing);
+const noseRing=new THREE.Mesh(new THREE.TorusGeometry(.70,.055,10,48),bright);noseRing.position.z=-1.04;model.add(noseRing);
 for(let i=0;i<12;i++){const a=i*Math.PI/6,x=Math.cos(a),y=Math.sin(a);rod(model,[x*.73,y*.73,-.56],[x*.92,y*.92,-.20],.035,bright);rod(model,[x*.92,y*.92,-.20],[x*.96,y*.96,.16],.028,edge)}
 for(let i=0;i<8;i++){const a=i*Math.PI/4;rod(model,[Math.cos(a)*.62,Math.sin(a)*.62,.67],[Math.cos(a)*.88,Math.sin(a)*.88,.22],.025,bright)}
 cylBetween(model,new THREE.Vector3(0,0,-1.02),new THREE.Vector3(0,0,-.83),.18,.18,bright,24);
@@ -121,7 +121,7 @@ let spinning=true,wire=false;
 document.querySelector('#spin').onclick=e=>{spinning=!spinning;e.target.textContent='Вращение: '+(spinning?'ВКЛ':'ВЫКЛ');e.target.classList.toggle('active',spinning)};
 document.querySelector('#wire').onclick=e=>{wire=!wire;allMats.forEach(m=>m.wireframe=wire);e.target.classList.toggle('active',wire)};
 function setView(p){spinning=false;document.querySelector('#spin').textContent='Вращение: ВЫКЛ';document.querySelector('#spin').classList.remove('active');camera.position.set(...p);controls.target.set(0,0,0);controls.update()}
-document.querySelector('#front').onclick=()=>setView([0,0,13]);document.querySelector('#side').onclick=()=>setView([13,1,0]);document.querySelector('#top').onclick=()=>setView([0,13,.01]);
+document.querySelector('#front').onclick=()=>setView([0,0,-13]);document.querySelector('#side').onclick=()=>setView([13,1,0]);document.querySelector('#top').onclick=()=>setView([0,13,.01]);
 document.querySelector('#detail').oninput=e=>{model.scale.setScalar(+e.target.value/100);document.querySelector('#detailVal').textContent=e.target.value+'%'};
 document.querySelector('#light').oninput=e=>{const v=+e.target.value/100;key.intensity=2.4*v;rim.intensity=1.95*v;fill.intensity=26*v;document.querySelector('#lightVal').textContent=e.target.value+'%'};
 const clock=new THREE.Clock();function animate(){requestAnimationFrame(animate);if(spinning)model.rotation.y+=clock.getDelta()*.22;else clock.getDelta();controls.update();renderer.render(scene,camera)}animate();
