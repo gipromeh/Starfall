@@ -1,4 +1,5 @@
 <!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="claude:viewport-fit-sides" content="cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#02030a"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>STARFALL — Void Hunter</title>
+<meta name="starfall-version" content="v47">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#02030a;--fg:#cfe9ff;--ac:#3cf;--warn:#f54;color-scheme:dark}
@@ -129,13 +130,18 @@ small{opacity:.75;max-width:600px;line-height:1.6}
 .stn-tabs{width:92px!important}.stn-tabs button{padding:10px 2px!important;font-size:11px!important}.stn-tabs button i{font-size:24px!important}
 @media (max-height:440px){.stn-tabs{width:70px!important}.stn-tabs button{padding:6px 2px!important}.stn-tabs button i{font-size:18px!important}}
 #fbtn{min-width:0!important;width:auto!important;font-size:11px!important;padding:6px 12px!important;left:20px!important;transform:none!important;bottom:calc(20px + env(safe-area-inset-bottom,0px))!important}
+
+/* v47: build version labels */
+.mn-version{margin-top:10px;padding:4px 14px;border:1px solid #4fd0ff66;background:#03101dcc;color:#9bdfff;font:700 11px "Exo 2",sans-serif;letter-spacing:.28em;text-shadow:0 0 8px #4fd0ff88;clip-path:polygon(7px 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%,0 7px)}
+.hud-version{position:absolute;right:20px;top:43px;color:#8bc9e9;font:700 10px "Exo 2",sans-serif;letter-spacing:.2em;text-shadow:0 0 7px #4fd0ff88;opacity:.78}
+@media(max-width:600px){.hud-version{right:12px;top:39px;font-size:9px}}
 </style></head><body>
-<div id="hud"><div class="bar" id="hull"><i></i></div><div class="bar" id="shield"><i></i></div>
+<div id="hud"><span class="hud-version" data-version-label></span><div class="bar" id="hull"><i></i></div><div class="bar" id="shield"><i></i></div>
 <div class="t" id="miss" style="left:20px;top:62px"></div><div class="t" id="sc" style="right:20px;top:20px;text-align:right"></div>
 <div class="t" id="msg"></div><button id="fbtn" style="position:absolute;left:50%;transform:translateX(-50%);bottom:64px;pointer-events:auto;padding:6px 14px;font-size:12px;background:#04182cdd;color:#bfeaff;border:2px solid #4fd0ffcc;border-radius:16px;box-shadow:0 0 10px #4fd0ff88;cursor:pointer;z-index:5">СОПРОВОЖДЕНИЕ [H]</button><div id="cross"></div><div id="stick"></div><div id="tgt"></div>
 <div class="t" id="tinfo" style="left:0;right:0;bottom:28px;text-align:center"></div><div class="bar" id="heat" style="top:84px"><i style="background:#fa0;width:0"></i></div><div class="t" id="aux" style="left:20px;top:104px"></div><div class="bar" id="fuel" style="top:128px"><i style="background:#8f4;width:100%"></i></div><div class="bar" id="ehp" style="left:50%;margin-left:-110px;top:20px;display:none"><i style="background:#f44;width:0"></i></div><button id="pbtn" style="position:absolute;right:20px;top:60px;pointer-events:auto;min-width:0;padding:4px 12px;font-size:14px">II</button><div id="thr" style="position:absolute;display:none;color:#f54;font-size:28px">➤</div><div id="lead" style="position:absolute;display:none;width:14px;height:14px;margin:-7px;border:2px solid #8f8;border-radius:50%"></div><div id="hm" style="position:absolute;left:50%;top:50%;margin:-16px;width:32px;height:32px;opacity:0;color:#fff;font-size:30px;text-align:center;line-height:32px">✕</div><div class="t" id="cmb" style="left:0;right:0;top:30%;text-align:center;font-size:20px;color:#fd4"></div><canvas id="radar" width="170" height="170" style="position:absolute;right:20px;bottom:20px;border-radius:50%;background:#02122099;border:1px solid #3cf"></canvas><div id="flash"></div><div class="t" id="scn" style="left:0;right:0;top:57%;text-align:center;font-size:13px;color:#ffd36a;display:none"></div><div class="t" id="spd" style="left:0;right:0;bottom:56px;text-align:center;font-size:12px;line-height:1.5"></div></div>
 <div id="tsp" style="position:fixed;inset:0;pointer-events:none"></div>
-<div class="ov" id="menu"><div class="mn-hero"><h1>STARFALL</h1><div class="mn-sub">VOID HUNTER</div></div>
+<div class="ov" id="menu"><div class="mn-hero"><h1>STARFALL</h1><div class="mn-sub">VOID HUNTER</div><div class="mn-version" data-version-label></div></div>
 <div class="mn-main" id="mnmain"><button id="play">ИГРАТЬ</button><div class="mn-hint">нажмите ENTER или коснитесь кнопки</div></div>
 <div class="mn-cards"><div class="mn-card"><b>СЛОЖНОСТЬ</b><div id="mndif"></div></div><div class="mn-card"><b>МУЗЫКА</b><div class="row" id="mus"></div></div></div>
 <small id="hi"></small><small id="mnhelp"><div class="mn-keys"><div><kbd>W / S</kbd>газ (или колесо мыши)</div><div><kbd>A / D</kbd>боком</div><div><kbd>R / C</kbd>вверх / вниз</div><div><kbd>Shift</kbd>плавный форсаж</div><div><kbd>Мышь</kbd>прицел</div><div><kbd>ЛКМ</kbd>огонь лазером</div><div><kbd>ПКМ / F</kbd>ракета</div><div><kbd>H</kbd>сопровождение цели</div><div><kbd>G</kbd>боевой / горный лазер</div><div><kbd>B</kbd>ядерная бомба</div><div><kbd>J</kbd>гиперпрыжок</div><div><kbd>Esc</kbd>пауза</div></div></small></div>
@@ -2808,4 +2814,7 @@ const DG=(function(){
  addEventListener("keydown",e=>{if(e.code==="Backquote"||e.code==="F3"){e.preventDefault();toggle()}});
  return{toggle:toggle,upd:upd}})();
 {const _l=loop;loop=function(now){if(QL.lost){requestAnimationFrame(loop);return}R.info.reset();QL.frame(now);_l(now);DG.upd(now)}}
-</script></body></html>
+</script><script>
+(()=>{const v=document.querySelector('meta[name="starfall-version"]')?.content||"DEV";document.querySelectorAll("[data-version-label]").forEach(el=>{el.textContent=v;});})();
+</script>
+</body></html>
