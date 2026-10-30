@@ -57,7 +57,6 @@ const hullTex=makeWearTexture('#858b8b',17),panelTex=makeWearTexture('#252c30',8
 const M=(c,metal=.55,rough=.42,map=null)=>new THREE.MeshStandardMaterial({color:c,metalness:metal,roughness:rough,map});
 const hull=M(0xffffff,.72,.48,hullTex),edge=M(0x626b70,.72,.42),bright=M(0xb2b8b8,.68,.34),dark=M(0x171d22,.35,.62),panel=M(0xffffff,.38,.72,panelTex),glass=new THREE.MeshPhysicalMaterial({color:0x8ba9bb,metalness:.12,roughness:.08,transparent:true,opacity:.32,depthWrite:false,side:THREE.DoubleSide,clearcoat:1,clearcoatRoughness:.04}),glow=new THREE.MeshBasicMaterial({color:0x63caff}),black=M(0x090e13,.2,.5),pilotMat=M(0x080d12,.12,.78),pilotSuit=M(0x151d22,.18,.72),marking=M(0xc4a76d,.45,.55);
 const allMats=[hull,edge,bright,dark,panel,glass,glow,black,pilotMat,pilotSuit,marking];
-const allMats=[hull,edge,bright,dark,panel,glass,glow,black];
 function cylBetween(parent,a,b,r1,r2,material,n=12){const d=new THREE.Vector3().subVectors(b,a),m=new THREE.Mesh(new THREE.CylinderGeometry(r2,r1,d.length(),n),material);m.position.copy(a).add(b).multiplyScalar(.5);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());parent.add(m);return m}
 function rod(p,a,b,r,m){return cylBetween(p,new THREE.Vector3(...a),new THREE.Vector3(...b),r,r,m,10)}
 function ball(p,pos,scale,m,n=24){const o=new THREE.Mesh(new THREE.SphereGeometry(1,n,Math.max(12,n/2)),m);o.position.set(...pos);o.scale.set(...scale);p.add(o);return o}
