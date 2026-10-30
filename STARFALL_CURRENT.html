@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="claude:viewport-fit-sides" content="cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#02030a"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>STARFALL — Void Hunter</title>
-<meta name="starfall-version" content="v52.3">
+<meta name="starfall-version" content="v52.4">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#02030a;--fg:#cfe9ff;--ac:#3cf;--warn:#f54;color-scheme:dark}
@@ -2809,19 +2809,38 @@ if(window.visualViewport)visualViewport.addEventListener("resize",()=>rs());
 R.domElement.addEventListener("webglcontextlost",e=>{e.preventDefault();QL.lost=true;firing=false;if(state==="play")pause(true);SV.toast("Графика приостановлена (потерян контекст WebGL). Восстанавливаю…")},false);
 R.domElement.addEventListener("webglcontextrestored",()=>{QL.lost=false;try{RT=null;skyBuild()}catch(e){console.warn("webgl restore:",e)}rs();SV.toast("Графика восстановлена")},false);
 
+/* ---- CPU-профилировщик для диагностики ядерного удара ---- */
+const PF=(function(){
+ const data=Object.create(null);let longCount=0,longLast=0,longMax=0;
+ const record=(name,ms)=>{const x=data[name]||(data[name]={last:0,max:0,total:0,calls:0});x.last=ms;x.max=Math.max(x.max,ms);x.total+=ms;x.calls++};
+ const wrap=(name,fn)=>function(){const t=performance.now();try{return fn.apply(this,arguments)}finally{record(name,performance.now()-t)}};
+ try{if(window.PerformanceObserver){const po=new PerformanceObserver(list=>{for(const e of list.getEntries()){longCount++;longLast=e.duration;longMax=Math.max(longMax,e.duration)}});po.observe({entryTypes:["longtask"]})}}catch(e){}
+ return{record:record,wrap:wrap,stat:()=>({data:JSON.parse(JSON.stringify(data)),longCount:longCount,longLast:longLast,longMax:longMax})};
+})();
+det=PF.wrap("det",det);
+kill=PF.wrap("kill",kill);
+stationCatastrophe=PF.wrap("station",stationCatastrophe);
+stationDetach=PF.wrap("detach",stationDetach);
+stationFireUpdate=PF.wrap("fire",stationFireUpdate);
+envUpd=PF.wrap("env",envUpd);
+upd=PF.wrap("upd",upd);
+
 /* ---- диагностика: ?debug в адресе, клавиша ` или F3 ---- */
 const DG=(function(){
  let el=null,on=false,t=0;
  const toggle=v=>{on=v===undefined?!on:v;if(on&&!el){el=document.createElement("pre");el.id="dbg";el.style.cssText="position:fixed;left:6px;top:6px;z-index:98;margin:0;padding:6px 8px;background:#000b;color:#8fd;font:11px/1.35 monospace;pointer-events:none;white-space:pre;border-radius:4px;max-width:96vw;overflow:hidden";document.body.appendChild(el)}if(el)el.style.display=on?"block":"none"};
- const upd=now=>{if(!on||now-t<500)return;t=now;const q=QL.stat(),i=R.info,rn=i.render,mm=i.memory;let no=0;S.traverse(()=>no++);const si=SV.info();
+ const upd=now=>{if(!on||now-t<500)return;t=now;const q=QL.stat(),i=R.info,rn=i.render,mm=i.memory,pf=PF.stat(),pd=pf.data,fmt=n=>pd[n]?pd[n].last.toFixed(1)+"/"+pd[n].max.toFixed(1):"—";let no=0;S.traverse(()=>no++);const si=SV.info();
   el.textContent=["FPS "+q.fps.toFixed(1)+"  кадр "+q.ms.toFixed(1)+" мс (p95 "+q.p95.toFixed(1)+")","качество "+q.mode+" → "+q.prof+" · масштаб "+Math.round(q.scale*100)+"% · DPR "+q.pr.toFixed(2)+" · "+R.domElement.width+"×"+R.domElement.height,
    "вызовов "+rn.calls+" · треуг. "+rn.triangles+" · точек "+rn.points+" · линий "+rn.lines,"геометрий "+mm.geometries+" · текстур "+mm.textures+" · программ "+(i.programs?i.programs.length:"?")+" · объектов сцены "+no,
+   "CPU ms last/max · det "+fmt("det")+" · station "+fmt("station")+" · kill "+fmt("kill"),
+   "upd "+fmt("upd")+" · env "+fmt("env")+" · fire "+fmt("fire")+" · detach "+fmt("detach"),
+   "long tasks ≥50ms: "+pf.longCount+" · last/max "+pf.longLast.toFixed(1)+"/"+pf.longMax.toFixed(1)+" ms",
    "пули "+bul.length+" · вражеские "+eb.length+" · ракеты "+mis.length+" · эффекты "+fx.length+" · следы "+trs.length+" · обломки "+deb.length+" · капсулы "+pk.length,
    "state "+state+" · сохранение "+(si.persist?"ok":"НЕТ")+" #"+si.seq+" "+(si.slot||"-")+(si.err?" · "+si.err:"")].join("\n")};
  if(/[?&#]debug/.test(location.search+location.hash))toggle(true);
  addEventListener("keydown",e=>{if(e.code==="Backquote"||e.code==="F3"){e.preventDefault();toggle()}});
  return{toggle:toggle,upd:upd}})();
-{const _l=loop;loop=function(now){if(QL.lost){requestAnimationFrame(loop);return}R.info.reset();QL.frame(now);_l(now);DG.upd(now)}}
+{const _l=loop;loop=function(now){if(QL.lost){requestAnimationFrame(loop);return}R.info.reset();QL.frame(now);const __pf=performance.now();_l(now);PF.record("frame",performance.now()-__pf);DG.upd(now)}}
 </script><script>
 (()=>{const v=document.querySelector('meta[name="starfall-version"]')?.content||"DEV";document.querySelectorAll("[data-version-label]").forEach(el=>{el.textContent=v;});})();
 </script>
