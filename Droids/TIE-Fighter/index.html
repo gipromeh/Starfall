@@ -14,7 +14,6 @@ label{display:flex;justify-content:space-between;font-size:11px;color:#c2d0db;ma
 #badge{font-size:10px;color:#9bb0c1;margin-top:8px}#hint{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);font-size:11px;color:#aebdca;background:#0b1420c9;border:1px solid #334657;border-radius:20px;padding:8px 13px;white-space:nowrap}
 @media(max-width:650px){#controls{top:auto;bottom:58px;right:10px;width:184px;padding:10px}#header{top:10px;left:10px}#hint{bottom:10px;font-size:10px}label{margin:7px 0 3px}}
 </style>
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 </head>
 <body>
 <div id="header" class="panel"><h1>IMPERIAL TIE FIGHTER</h1><div id="sub">TIE/ln · WEATHERED FIELD UNIT · PILOT VISIBLE</div></div>
@@ -28,16 +27,24 @@ label{display:flex;justify-content:space-between;font-size:11px;color:#c2d0db;ma
 </div>
 <div id="hint">Вращение — палец/мышь · масштаб — щипок или колесо · пилот виден за фонарём</div>
 <div id="stage"></div>
-<script type="module">
-import * as THREE from 'three';
-import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js" onerror="document.getElementById(\'badge\').textContent=\'ОШИБКА: не загрузился Three.js CDN\'"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js" onerror="document.getElementById(\'badge\').textContent=\'ОШИБКА: не загрузился OrbitControls CDN\'"></script>
+<script>
+(function(){
+const badge=document.querySelector("#badge");
+function showError(message){badge.textContent="ОШИБКА 3D: "+String(message).slice(0,220);badge.style.color="#ff9b9b";badge.style.whiteSpace="normal";}
+window.addEventListener("error",e=>{if(e.message)showError(e.message);},true);
+window.addEventListener("unhandledrejection",e=>showError(e.reason?.message||e.reason||"Promise rejected"));
+try{
+if(!window.THREE)throw new Error("Three.js не загрузился. Проверьте подключение к CDN.");
+if(!THREE.OrbitControls)throw new Error("OrbitControls не загрузился.");
 
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x070b12);scene.fog=new THREE.FogExp2(0x070b12,.018);
 const camera=new THREE.PerspectiveCamera(38,innerWidth/innerHeight,.1,200);camera.position.set(0,1.2,-12.8);
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;
 document.querySelector('#stage').appendChild(renderer.domElement);
-const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.06;controls.minDistance=5;controls.maxDistance=25;
+const controls=new THREE.OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.06;controls.minDistance=5;controls.maxDistance=25;
 scene.add(new THREE.HemisphereLight(0xb9d7f2,0x202630,1.7));
 const key=new THREE.DirectionalLight(0xe4f1ff,2.4);key.position.set(-5,7,8);scene.add(key);
 const rim=new THREE.DirectionalLight(0x6c9fc4,1.95);rim.position.set(5,2,-7);scene.add(rim);
@@ -45,13 +52,15 @@ const fill=new THREE.PointLight(0x9eb8cc,26,30);fill.position.set(0,-4,5);scene.
 const stars=new THREE.BufferGeometry(),starPos=[];for(let i=0;i<850;i++){const r=35+Math.random()*55,a=Math.random()*Math.PI*2,b=Math.acos(2*Math.random()-1);starPos.push(r*Math.sin(b)*Math.cos(a),r*Math.cos(b),r*Math.sin(b)*Math.sin(a))}stars.setAttribute('position',new THREE.Float32BufferAttribute(starPos,3));scene.add(new THREE.Points(stars,new THREE.PointsMaterial({color:0xa9c8e2,size:.11})));
 
 const model=new THREE.Group();scene.add(model);
+// In portrait orientation, rotate the wing span vertically so the whole fighter remains in frame.
+if(innerWidth<innerHeight)model.rotation.z=Math.PI/2;
 function makeWearTexture(base,seed=1){
  const c=document.createElement('canvas');c.width=512;c.height=512;const x=c.getContext('2d');let s=seed;const rnd=()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296};
  x.fillStyle=base;x.fillRect(0,0,512,512);
  for(let i=0;i<14500;i++){const alpha=rnd()*.18;x.fillStyle=rnd()>.5?'rgba(220,226,224,'+alpha+')':'rgba(8,13,17,'+alpha+')';x.fillRect(rnd()*512,rnd()*512,1+rnd()*4,1+rnd()*3)}
  for(let i=0;i<95;i++){const px=rnd()*512,py=rnd()*512,len=5+rnd()*65,ang=(rnd()-.5)*.8;x.save();x.translate(px,py);x.rotate(ang);x.strokeStyle=rnd()>.45?'rgba(225,230,225,.48)':'rgba(5,9,12,.65)';x.lineWidth=.5+rnd()*1.5;x.beginPath();x.moveTo(0,0);x.lineTo(len,0);x.stroke();x.restore()}
  for(let y=0;y<512;y+=64){x.fillStyle='rgba(5,9,12,.12)';x.fillRect(0,y,512,1)}
- const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;return t;
+ const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=8;return t;
 }
 const hullTex=makeWearTexture('#858b8b',17),panelTex=makeWearTexture('#252c30',83);
 const M=(c,metal=.55,rough=.42,map=null)=>new THREE.MeshStandardMaterial({color:c,metalness:metal,roughness:rough,map});
@@ -61,8 +70,12 @@ function cylBetween(parent,a,b,r1,r2,material,n=12){const d=new THREE.Vector3().
 function rod(p,a,b,r,m){return cylBetween(p,new THREE.Vector3(...a),new THREE.Vector3(...b),r,r,m,10)}
 function ball(p,pos,scale,m,n=24){const o=new THREE.Mesh(new THREE.SphereGeometry(1,n,Math.max(12,n/2)),m);o.position.set(...pos);o.scale.set(...scale);p.add(o);return o}
 
-// Armored spherical cockpit, front glazing points toward -Z
-ball(model,[0,0,0],[1,1,1],hull,48);ball(model,[0,0,.03],[.91,.91,.91],edge,40);
+// Cockpit shell with an open forward hemisphere: the pilot is not hidden behind opaque hull geometry.
+const cockpitGeo=new THREE.SphereGeometry(1,48,32),cockpitPos=cockpitGeo.attributes.position,cockpitIdx=cockpitGeo.index.array,cockpitKeep=[];
+for(let i=0;i<cockpitIdx.length;i+=3){const a=cockpitIdx[i],b=cockpitIdx[i+1],c=cockpitIdx[i+2];if((cockpitPos.getZ(a)+cockpitPos.getZ(b)+cockpitPos.getZ(c))/3>=-.70)cockpitKeep.push(a,b,c)}
+cockpitGeo.setIndex(cockpitKeep);model.add(new THREE.Mesh(cockpitGeo,hull));
+ball(model,[0,0,.03],[.91,.91,.91],edge,40);
+const cockpitLip=new THREE.Mesh(new THREE.TorusGeometry(.714,.045,10,48),bright);cockpitLip.position.z=-.70;model.add(cockpitLip);
 ball(model,[0,0,-.55],[.69,.69,.16],black,40);
 // Seated pilot silhouette behind a lightly tinted transparent canopy.
 ball(model,[0,.10,-.91],[.205,.235,.19],pilotMat,24);
@@ -123,6 +136,9 @@ document.querySelector('#front').onclick=()=>setView([0,0,-13]);document.querySe
 document.querySelector('#detail').oninput=e=>{model.scale.setScalar(+e.target.value/100);document.querySelector('#detailVal').textContent=e.target.value+'%'};
 document.querySelector('#light').oninput=e=>{const v=+e.target.value/100;key.intensity=2.4*v;rim.intensity=1.95*v;fill.intensity=26*v;document.querySelector('#lightVal').textContent=e.target.value+'%'};
 const clock=new THREE.Clock();function animate(){requestAnimationFrame(animate);if(spinning)model.rotation.y+=clock.getDelta()*.22;else clock.getDelta();controls.update();renderer.render(scene,camera)}animate();
-addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2))});
+badge.textContent="3D ENGINE OK · МОДЕЛЬ СОЗДАНА";
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));model.rotation.z=innerWidth<innerHeight?Math.PI/2:0});
+}catch(error){showError(error.stack||error.message||error)}
+})();
 </script>
 </body></html>
