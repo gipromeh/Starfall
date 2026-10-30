@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>STARFALL — TIE Fighter / Asset Viewer</title>
+<title>STARFALL — Void Hunter / Biomechanical Sentinel</title>
 <style>
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#070b12;color:#e8edf2;font-family:system-ui,-apple-system,Segoe UI,sans-serif}#stage{position:fixed;inset:0}canvas{display:block;width:100%;height:100%;touch-action:none}
 .panel{position:absolute;background:linear-gradient(145deg,#121b39e8,#070c14df);border:1px solid #9ab6cc35;border-radius:13px;backdrop-filter:blur(12px);box-shadow:0 12px 40px #0007}
@@ -16,7 +16,7 @@ label{display:flex;justify-content:space-between;font-size:11px;color:#c2d0db;ma
 </style>
 </head>
 <body>
-<div id="header" class="panel"><h1>VOID HUNTER · BIO-PLASMA</h1><div id="sub">IMPERIAL FIGHTER · PROCEDURAL 3D ASSET · PILOT VISIBLE</div></div>
+<div id="header" class="panel"><h1>VOID HUNTER · ABYSSAL SENTINEL</h1><div id="sub">BIOMECHANICAL DRONE · 12 LIVING TENTACLES · NEON PLASMA</div></div>
 <div id="controls" class="panel">
 <h2>Осмотр модели</h2>
 <div class="row"><button id="front">Спереди</button><button id="side">Сбоку</button><button id="top">Сверху</button></div>
@@ -25,10 +25,15 @@ label{display:flex;justify-content:space-between;font-size:11px;color:#c2d0db;ma
 <label>Освещение <span id="lightVal">75%</span></label><input id="light" type="range" min="20" max="120" value="75">
 <div id="badge">Перетаскивание — вращение · щипок — масштаб</div>
 </div>
-<div id="hint">Вращение — палец/мышь · масштаб — щипок или колесо · пилот виден за фонарём</div>
+<div id="hint">Вращение — палец/мышь · масштаб — щипок или колесо · череп · купол · 12 подвижных щупалец</div>
 <div id="stage"></div>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js" onerror="document.getElementById('badge').textContent='ОШИБКА: не загрузился Three.js CDN'"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js" onerror="document.getElementById('badge').textContent='ОШИБКА: не загрузился OrbitControls CDN'"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 <script>
 (function(){
 const badge=document.querySelector("#badge");
@@ -40,10 +45,12 @@ if(!window.THREE)throw new Error("Three.js не загрузился. Прове
 if(!THREE.OrbitControls)throw new Error("OrbitControls не загрузился.");
 
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x070b12);scene.fog=new THREE.FogExp2(0x070b12,.018);
-const camera=new THREE.PerspectiveCamera(38,innerWidth/innerHeight,.1,200);const portrait=innerWidth<innerHeight;camera.position.set(0,portrait?0:1.2,portrait?-27:-14.5);
+const camera=new THREE.PerspectiveCamera(38,innerWidth/innerHeight,.1,200);const portrait=innerWidth<innerHeight;camera.position.set(0,portrait?0:1.2,portrait?-15:-10.5);
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;
 document.querySelector('#stage').appendChild(renderer.domElement);
+const composer=THREE.EffectComposer&&THREE.RenderPass&&THREE.UnrealBloomPass?new THREE.EffectComposer(renderer):null;
+if(composer){composer.addPass(new THREE.RenderPass(scene,camera));composer.addPass(new THREE.UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.82,.58,.16));}
 const controls=new THREE.OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.075;controls.enableRotate=true;controls.enablePan=false;controls.minAzimuthAngle=-Infinity;controls.maxAzimuthAngle=Infinity;controls.minPolarAngle=.001;controls.maxPolarAngle=Math.PI-.001;controls.rotateSpeed=.8;controls.minDistance=4;controls.maxDistance=48;
 scene.add(new THREE.HemisphereLight(0xb9d7f2,0x202630,1.7));
 const key=new THREE.DirectionalLight(0xe4f1ff,2.4);key.position.set(-5,7,8);scene.add(key);
@@ -55,7 +62,7 @@ const stars=new THREE.BufferGeometry(),starPos=[];for(let i=0;i<850;i++){const r
 
 const model=new THREE.Group();scene.add(model);
 // In portrait orientation, rotate the wing span vertically so the whole fighter remains in frame.
-if(innerWidth<innerHeight)model.rotation.z=Math.PI/2;
+model.rotation.z=0;
 function makeWearTexture(base,seed=1){
  const c=document.createElement('canvas');c.width=512;c.height=512;const x=c.getContext('2d');let s=seed;const rnd=()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296};
  x.fillStyle=base;x.fillRect(0,0,512,512);
@@ -175,6 +182,33 @@ for(let i=0;i<16;i++){const a=i/16*Math.PI*2;const lamp=new THREE.Mesh(new THREE
 const canopyBeacon=new THREE.PointLight(0x40dfff,1.8,2.5);canopyBeacon.position.set(0,.7,-.65);model.add(canopyBeacon);
 ball(model,[0,0,.98],[.72,.72,.18],dark,40);
 
+// Sculpted biomechanical skull: layered cranial shell, deep sockets and individual teeth.
+const skullRig=new THREE.Group();skullRig.position.set(0,.02,-1.13);model.add(skullRig);
+const boneShell=new THREE.MeshPhysicalMaterial({color:0xd9e1df,metalness:.28,roughness:.3,clearcoat:1,clearcoatRoughness:.12});
+const boneShadow=new THREE.MeshStandardMaterial({color:0x29333a,metalness:.48,roughness:.4});
+const socketMat=new THREE.MeshPhysicalMaterial({color:0x02070d,metalness:.35,roughness:.18,clearcoat:1});
+const skullGlow=new THREE.MeshBasicMaterial({color:0xff2aa8,transparent:true,opacity:.9,blending:THREE.AdditiveBlending});
+const cranium=new THREE.Mesh(new THREE.SphereGeometry(.72,48,36),boneShell);cranium.scale.set(.82,1.02,.43);cranium.position.y=.19;skullRig.add(cranium);
+const jawBone=new THREE.Mesh(new THREE.SphereGeometry(.48,36,24),boneShell);jawBone.scale.set(.92,.58,.42);jawBone.position.set(0,-.43,-.02);skullRig.add(jawBone);
+for(const side of [-1,1]){
+ const socket=new THREE.Mesh(new THREE.SphereGeometry(.235,28,20),socketMat);socket.scale.set(1.12,1.24,.28);socket.position.set(side*.285,.13,-.335);skullRig.add(socket);
+ const eye=new THREE.Mesh(new THREE.SphereGeometry(.105,20,16),skullGlow);eye.position.set(side*.285,.13,-.405);skullRig.add(eye);
+ const brow=new THREE.Mesh(new THREE.TorusGeometry(.245,.065,10,36,Math.PI),boneShell);brow.position.set(side*.285,.18,-.37);brow.rotation.z=side<0?Math.PI:0;skullRig.add(brow);
+ const cheek=new THREE.Mesh(new THREE.SphereGeometry(.27,24,18),boneShell);cheek.scale.set(.82,.52,.38);cheek.position.set(side*.34,-.23,-.22);skullRig.add(cheek);
+ const temple=new THREE.Mesh(new THREE.ConeGeometry(.16,.48,8),boneShadow);temple.position.set(side*.56,.48,.02);temple.rotation.z=side*-.42;skullRig.add(temple);
+}
+const noseCavity=new THREE.Mesh(new THREE.ConeGeometry(.13,.28,3),socketMat);noseCavity.position.set(0,-.18,-.39);noseCavity.rotation.x=Math.PI;skullRig.add(noseCavity);
+for(let i=0;i<8;i++){const tooth=new THREE.Mesh(new THREE.ConeGeometry(.043,.15,8),boneShell);tooth.position.set(-.245+i*.07,-.58,-.32);tooth.rotation.x=Math.PI;skullRig.add(tooth)}
+const cranialSpine=new THREE.Mesh(new THREE.TorusGeometry(.43,.045,8,48),emissiveCyan);cranialSpine.position.set(0,.68,.03);cranialSpine.rotation.x=.18;skullRig.add(cranialSpine);
+for(let i=0;i<7;i++){const node=new THREE.Mesh(new THREE.SphereGeometry(.035,10,8),i%2?emissiveCyan:emissiveRed);node.position.set(-.3+i*.1,.79+Math.sin(i*.7)*.035,-.02);skullRig.add(node)}
+
+// Compact armored shoulder housings replace the oversized fighter wings.
+for(const side of [-1,1]){
+ const pod=new THREE.Mesh(new THREE.SphereGeometry(.62,32,24),orbMat);pod.scale.set(.72,.9,.68);pod.position.set(side*1.08,.05,.18);model.add(pod);
+ const armorRib=new THREE.Mesh(new THREE.TorusGeometry(.48,.055,10,48),edge);armorRib.position.set(side*1.08,.05,.12);armorRib.scale.set(.8,1.05,1);model.add(armorRib);
+ const signal=new THREE.Mesh(new THREE.SphereGeometry(.09,16,12),side<0?emissiveRed:emissiveCyan);signal.position.set(side*1.48,.08,-.05);model.add(signal);
+}
+
 function makeWing(side){
  const g=new THREE.Group();g.position.x=side*3.45;model.add(g);const w=3.15,h=4.05;
  const pts=[[-w*.34,h*.5],[w*.34,h*.5],[w*.5,h*.29],[w*.5,-h*.29],[w*.34,-h*.5],[-w*.34,-h*.5],[-w*.5,-h*.29],[-w*.5,h*.29]];
@@ -230,7 +264,7 @@ function makeWing(side){
  const tracer=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(tracerPts,true),96,.014,6,true),new THREE.MeshBasicMaterial({color:side<0?0xff3eae:0x29eaff,transparent:true,opacity:.82,blending:THREE.AdditiveBlending,depthWrite:false}));g.add(tracer);
  return g;
 }
-makeWing(-1);makeWing(1);
+// Wing plates omitted: this is a biomechanical drone, not a conventional TIE fighter.
 // Floating photonic halo behind the cockpit gives the silhouette a readable luminous outline.
 const haloGroup=new THREE.Group();model.add(haloGroup);
 for(const spec of [{r:1.53,t:.018,c:0x22dfff},{r:1.68,t:.009,c:0xff36b7}]){const halo=new THREE.Mesh(new THREE.TorusGeometry(spec.r,spec.t,8,128),new THREE.MeshBasicMaterial({color:spec.c,transparent:true,opacity:.55,blending:THREE.AdditiveBlending,depthWrite:false}));halo.position.z=.42;haloGroup.add(halo)}
@@ -338,7 +372,7 @@ let spinning=false,wire=false;document.querySelector('#spin').textContent='Вр�
 document.querySelector('#spin').onclick=e=>{spinning=!spinning;e.target.textContent='Вращение: '+(spinning?'ВКЛ':'ВЫКЛ');e.target.classList.toggle('active',spinning)};
 document.querySelector('#wire').onclick=e=>{wire=!wire;allMats.forEach(m=>m.wireframe=wire);e.target.classList.toggle('active',wire)};
 function setView(p){spinning=false;document.querySelector('#spin').textContent='Вращение: ВЫКЛ';document.querySelector('#spin').classList.remove('active');camera.position.set(...p);controls.target.set(0,0,0);controls.update()}
-const viewDistance=()=>innerWidth<innerHeight?27:14.5;document.querySelector('#front').onclick=()=>setView([0,0,-viewDistance()]);document.querySelector('#side').onclick=()=>setView([viewDistance(),innerWidth<innerHeight?0:1,0]);document.querySelector('#top').onclick=()=>setView([0,viewDistance(),.01]);
+const viewDistance=()=>innerWidth<innerHeight?15:10.5;document.querySelector('#front').onclick=()=>setView([0,0,-viewDistance()]);document.querySelector('#side').onclick=()=>setView([viewDistance(),innerWidth<innerHeight?0:1,0]);document.querySelector('#top').onclick=()=>setView([0,viewDistance(),.01]);
 document.querySelector('#detail').oninput=e=>{model.scale.setScalar(+e.target.value/100);document.querySelector('#detailVal').textContent=e.target.value+'%'};
 document.querySelector('#light').oninput=e=>{const v=+e.target.value/100;key.intensity=2.4*v;rim.intensity=1.95*v;fill.intensity=26*v;document.querySelector('#lightVal').textContent=e.target.value+'%'};
 const clock=new THREE.Clock();function animate(){
@@ -359,10 +393,10 @@ for(const e of tentacles){
 }
  haloGroup.rotation.z=Math.sin(t*.22)*.08;
  cyanRimLight.intensity=19+Math.sin(t*2.1)*4;magentaRimLight.intensity=17+Math.cos(t*1.7)*4;
- controls.update();renderer.render(scene,camera)
+ controls.update();if(composer)composer.render();else renderer.render(scene,camera)
 }animate();
-badge.textContent="3D ENGINE OK · МОДЕЛЬ СОЗДАНА";
-addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));const portrait=innerWidth<innerHeight;model.rotation.z=portrait?Math.PI/2:0;camera.position.set(0,portrait?0:1.2,portrait?-27:-14.5);controls.target.set(0,0,0);controls.update()});
+badge.textContent=composer?"WEBGL + BLOOM OK · 12 ЩУПАЛЕЦ":"WEBGL OK · BLOOM FALLBACK";
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));if(composer)composer.setSize(innerWidth,innerHeight);const portrait=innerWidth<innerHeight;model.rotation.z=0;camera.position.set(0,portrait?0:1.2,portrait?-27:-14.5);controls.target.set(0,0,0);controls.update()});
 }catch(error){showError(error.stack||error.message||error)}
 })();
 </script>
