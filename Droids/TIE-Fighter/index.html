@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Imperial TIE Fighter — 3D Viewer</title>
+<title>VOID HUNTER — Bio-Organic 3D Viewer</title>
 <style>
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#070b12;color:#e8edf2;font-family:system-ui,-apple-system,Segoe UI,sans-serif}#stage{position:fixed;inset:0}canvas{display:block;width:100%;height:100%;touch-action:none}
 .panel{position:absolute;background:linear-gradient(145deg,#121b39e8,#070c14df);border:1px solid #9ab6cc35;border-radius:13px;backdrop-filter:blur(12px);box-shadow:0 12px 40px #0007}
@@ -40,15 +40,17 @@ if(!window.THREE)throw new Error("Three.js не загрузился. Прове
 if(!THREE.OrbitControls)throw new Error("OrbitControls не загрузился.");
 
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x070b12);scene.fog=new THREE.FogExp2(0x070b12,.018);
-const camera=new THREE.PerspectiveCamera(38,innerWidth/innerHeight,.1,200);const portrait=innerWidth<innerHeight;camera.position.set(0,portrait?0:1.2,portrait?-21:-12.8);
+const camera=new THREE.PerspectiveCamera(38,innerWidth/innerHeight,.1,200);const portrait=innerWidth<innerHeight;camera.position.set(0,portrait?0:1.2,portrait?-27:-14.5);
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;
 document.querySelector('#stage').appendChild(renderer.domElement);
-const controls=new THREE.OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.075;controls.enableRotate=true;controls.enablePan=false;controls.minAzimuthAngle=-Infinity;controls.maxAzimuthAngle=Infinity;controls.minPolarAngle=.001;controls.maxPolarAngle=Math.PI-.001;controls.rotateSpeed=.8;controls.minDistance=5;controls.maxDistance=25;
+const controls=new THREE.OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.075;controls.enableRotate=true;controls.enablePan=false;controls.minAzimuthAngle=-Infinity;controls.maxAzimuthAngle=Infinity;controls.minPolarAngle=.001;controls.maxPolarAngle=Math.PI-.001;controls.rotateSpeed=.8;controls.minDistance=4;controls.maxDistance=48;
 scene.add(new THREE.HemisphereLight(0xb9d7f2,0x202630,1.7));
 const key=new THREE.DirectionalLight(0xe4f1ff,2.4);key.position.set(-5,7,8);scene.add(key);
 const rim=new THREE.DirectionalLight(0x6c9fc4,1.95);rim.position.set(5,2,-7);scene.add(rim);
-const fill=new THREE.PointLight(0x9eb8cc,26,30);fill.position.set(0,-4,5);scene.add(fill);
+const fill=new THREE.PointLight(0x9eb8cc,30,34);fill.position.set(0,-4,5);scene.add(fill);
+const cyanRimLight=new THREE.PointLight(0x00cfff,22,18);cyanRimLight.position.set(-4,1,-2);scene.add(cyanRimLight);
+const magentaRimLight=new THREE.PointLight(0xff168f,20,18);magentaRimLight.position.set(4,-2,1);scene.add(magentaRimLight);
 const stars=new THREE.BufferGeometry(),starPos=[];for(let i=0;i<850;i++){const r=35+Math.random()*55,a=Math.random()*Math.PI*2,b=Math.acos(2*Math.random()-1);starPos.push(r*Math.sin(b)*Math.cos(a),r*Math.cos(b),r*Math.sin(b)*Math.sin(a))}stars.setAttribute('position',new THREE.Float32BufferAttribute(starPos,3));scene.add(new THREE.Points(stars,new THREE.PointsMaterial({color:0xa9c8e2,size:.11})));
 
 const model=new THREE.Group();scene.add(model);
@@ -206,9 +208,33 @@ function makeWing(side){
  const beacon=new THREE.Mesh(new THREE.SphereGeometry(.105,12,8),side<0?emissiveRed:emissiveCyan);beacon.position.set(side<0?-1.48:1.48,0,-.16);g.add(beacon);
  for(let y=-1;y<=1;y+=.5)rod(g,[-w*.39,y*h*.36,-.13],[w*.39,y*h*.36,-.13],.025,edge);
  for(const x of [-1,1]){rod(g,[0,0,-.14],[x*w*.39,h*.36,-.14],.026,edge);rod(g,[0,0,-.14],[x*w*.39,-h*.36,-.14],.026,edge)}
- ball(g,[0,0,.03],[.22,.34,.18],hull,20);return g;
+ ball(g,[0,0,.03],[.22,.34,.18],hull,20);
+ // Raised sculpted pirate skull: relief geometry sits above the enamel, not only in its texture.
+ const reliefMat=new THREE.MeshPhysicalMaterial({color:0xf0eee2,metalness:.24,roughness:.38,clearcoat:.7,clearcoatRoughness:.16,side:THREE.DoubleSide});
+ const cavityMat=new THREE.MeshStandardMaterial({color:0x10171c,metalness:.32,roughness:.56,side:THREE.DoubleSide});
+ const bandMat=new THREE.MeshPhysicalMaterial({color:0xa91f39,metalness:.18,roughness:.42,clearcoat:.8,side:THREE.DoubleSide});
+ const boneMat=new THREE.MeshStandardMaterial({color:0xd9d6c8,metalness:.16,roughness:.55,side:THREE.DoubleSide});
+ const skullShape=new THREE.Shape();skullShape.moveTo(-.46,.15);skullShape.bezierCurveTo(-.58,.62,-.28,.82,0,.82);skullShape.bezierCurveTo(.34,.82,.57,.57,.46,.15);skullShape.lineTo(.34,-.35);skullShape.quadraticCurveTo(.27,-.55,.16,-.58);skullShape.lineTo(.13,-.76);skullShape.quadraticCurveTo(0,-.83,-.13,-.76);skullShape.lineTo(-.16,-.58);skullShape.quadraticCurveTo(-.34,-.52,-.37,-.32);skullShape.closePath();
+ const skullRelief=new THREE.Mesh(new THREE.ShapeGeometry(skullShape,18),reliefMat);skullRelief.position.set(0,.03,-.19);g.add(skullRelief);
+ for(const sx of [-1,1]){const eye=new THREE.Mesh(new THREE.CircleGeometry(.19,28),cavityMat);eye.position.set(sx*.205,.19,-.205);g.add(eye);const brow=new THREE.Mesh(new THREE.TorusGeometry(.19,.035,7,28,Math.PI),boneMat);brow.position.set(sx*.205,.22,-.215);brow.rotation.z=sx<0?Math.PI:0;g.add(brow)}
+ const noseShape=new THREE.Shape();noseShape.moveTo(0,.02);noseShape.lineTo(-.085,-.18);noseShape.lineTo(.085,-.18);noseShape.closePath();const nose=new THREE.Mesh(new THREE.ShapeGeometry(noseShape),cavityMat);nose.position.set(0,-.04,-.214);g.add(nose);
+ const jaw=new THREE.Mesh(new THREE.BoxGeometry(.46,.19,.045),reliefMat);jaw.position.set(0,-.49,-.215);g.add(jaw);
+ for(let tooth=-2;tooth<=2;tooth++){const groove=new THREE.Mesh(new THREE.BoxGeometry(.012,.15,.012),cavityMat);groove.position.set(tooth*.085,-.49,-.243);g.add(groove)}
+ // Red bandana folds across the brow with a trailing knot.
+ const bandShape=new THREE.Shape();bandShape.moveTo(-.52,.48);bandShape.quadraticCurveTo(0,.76,.52,.47);bandShape.lineTo(.48,.32);bandShape.quadraticCurveTo(0,.56,-.48,.31);bandShape.closePath();const band=new THREE.Mesh(new THREE.ShapeGeometry(bandShape,16),bandMat);band.position.z=-.235;g.add(band);
+ const tailShape=new THREE.Shape();tailShape.moveTo(.39,.46);tailShape.quadraticCurveTo(.72,.68,.88,.48);tailShape.lineTo(.69,.27);tailShape.lineTo(.79,.08);tailShape.quadraticCurveTo(.48,.17,.39,.32);tailShape.closePath();const tail=new THREE.Mesh(new THREE.ShapeGeometry(tailShape,12),bandMat);tail.position.z=-.24;g.add(tail);
+ // Crossbones embossed behind the skull.
+ for(const angle of [-.68,.68]){const bone=new THREE.Mesh(new THREE.CylinderGeometry(.035,.035,1.72,10),boneMat);bone.position.set(0,-.02,-.205);bone.rotation.z=angle;g.add(bone);for(const end of [-.86,.86])for(const side of [-1,1]){const knob=ball(g,[Math.sin(angle)*end+side*.035,Math.cos(angle)*end,-.21],[.075,.075,.035],boneMat,12);}}
+ // Thin cyan/magenta tracer around the inner perimeter catches the studio rim light.
+ const tracerPts=[[-w*.34,h*.5], [w*.34,h*.5],[w*.5,h*.29],[w*.5,-h*.29],[w*.34,-h*.5],[-w*.34,-h*.5],[-w*.5,-h*.29],[-w*.5,h*.29]].map(([x,y])=>new THREE.Vector3(x,y,-.17));
+ const tracer=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(tracerPts,true),96,.014,6,true),new THREE.MeshBasicMaterial({color:side<0?0xff3eae:0x29eaff,transparent:true,opacity:.82,blending:THREE.AdditiveBlending,depthWrite:false}));g.add(tracer);
+ return g;
 }
 makeWing(-1);makeWing(1);
+// Floating photonic halo behind the cockpit gives the silhouette a readable luminous outline.
+const haloGroup=new THREE.Group();model.add(haloGroup);
+for(const spec of [{r:1.53,t:.018,c:0x22dfff},{r:1.68,t:.009,c:0xff36b7}]){const halo=new THREE.Mesh(new THREE.TorusGeometry(spec.r,spec.t,8,128),new THREE.MeshBasicMaterial({color:spec.c,transparent:true,opacity:.55,blending:THREE.AdditiveBlending,depthWrite:false}));halo.position.z=.42;haloGroup.add(halo)}
+for(let i=0;i<48;i++){const a=i/48*Math.PI*2,rr=1.61;const spark=new THREE.Mesh(new THREE.SphereGeometry(i%6===0?.026:.012,8,6),new THREE.MeshBasicMaterial({color:i%2?0x28eaff:0xff3fb7,transparent:true,opacity:.8,blending:THREE.AdditiveBlending}));spark.position.set(Math.cos(a)*rr,Math.sin(a)*rr,.43);haloGroup.add(spark)}
 for(const s of [-1,1]){
  const x=s*1,wx=s*3.35;
  rod(model,[x,.53,.02],[wx,.53,.02],.105,bright);rod(model,[x,-.53,.02],[wx,-.53,.02],.105,bright);
@@ -312,7 +338,7 @@ let spinning=false,wire=false;document.querySelector('#spin').textContent='Вр�
 document.querySelector('#spin').onclick=e=>{spinning=!spinning;e.target.textContent='Вращение: '+(spinning?'ВКЛ':'ВЫКЛ');e.target.classList.toggle('active',spinning)};
 document.querySelector('#wire').onclick=e=>{wire=!wire;allMats.forEach(m=>m.wireframe=wire);e.target.classList.toggle('active',wire)};
 function setView(p){spinning=false;document.querySelector('#spin').textContent='Вращение: ВЫКЛ';document.querySelector('#spin').classList.remove('active');camera.position.set(...p);controls.target.set(0,0,0);controls.update()}
-const viewDistance=()=>innerWidth<innerHeight?22:14;document.querySelector('#front').onclick=()=>setView([0,0,-viewDistance()]);document.querySelector('#side').onclick=()=>setView([viewDistance(),innerWidth<innerHeight?0:1,0]);document.querySelector('#top').onclick=()=>setView([0,viewDistance(),.01]);
+const viewDistance=()=>innerWidth<innerHeight?27:14.5;document.querySelector('#front').onclick=()=>setView([0,0,-viewDistance()]);document.querySelector('#side').onclick=()=>setView([viewDistance(),innerWidth<innerHeight?0:1,0]);document.querySelector('#top').onclick=()=>setView([0,viewDistance(),.01]);
 document.querySelector('#detail').oninput=e=>{model.scale.setScalar(+e.target.value/100);document.querySelector('#detailVal').textContent=e.target.value+'%'};
 document.querySelector('#light').oninput=e=>{const v=+e.target.value/100;key.intensity=2.4*v;rim.intensity=1.95*v;fill.intensity=26*v;document.querySelector('#lightVal').textContent=e.target.value+'%'};
 const clock=new THREE.Clock();function animate(){
@@ -331,10 +357,12 @@ for(const e of tentacles){
  e.root.rotation.x=Math.cos(wave*.82)*.17;
  e.root.rotation.y=Math.sin(wave*.66)*.16;
 }
+ haloGroup.rotation.z=Math.sin(t*.22)*.08;
+ cyanRimLight.intensity=19+Math.sin(t*2.1)*4;magentaRimLight.intensity=17+Math.cos(t*1.7)*4;
  controls.update();renderer.render(scene,camera)
 }animate();
 badge.textContent="3D ENGINE OK · МОДЕЛЬ СОЗДАНА";
-addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));const portrait=innerWidth<innerHeight;model.rotation.z=portrait?Math.PI/2:0;camera.position.set(0,portrait?0:1.2,portrait?-21:-12.8);controls.target.set(0,0,0);controls.update()});
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));const portrait=innerWidth<innerHeight;model.rotation.z=portrait?Math.PI/2:0;camera.position.set(0,portrait?0:1.2,portrait?-27:-14.5);controls.target.set(0,0,0);controls.update()});
 }catch(error){showError(error.stack||error.message||error)}
 })();
 </script>
