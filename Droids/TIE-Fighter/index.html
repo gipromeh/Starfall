@@ -17,7 +17,6 @@ label{display:flex;justify-content:space-between;font-size:11px;color:#c2d0db;ma
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 </head>
 <body>
-<div id="stage"></div>
 <div id="header" class="panel"><h1>IMPERIAL TIE FIGHTER</h1><div id="sub">TIE/ln · WEATHERED FIELD UNIT · PILOT VISIBLE</div></div>
 <div id="controls" class="panel">
 <h2>Осмотр модели</h2>
@@ -65,7 +64,7 @@ function ball(p,pos,scale,m,n=24){const o=new THREE.Mesh(new THREE.SphereGeometr
 
 // Armored spherical cockpit, front glazing points toward -Z
 ball(model,[0,0,0],[1,1,1],hull,48);ball(model,[0,0,.03],[.91,.91,.91],edge,40);
-ball(model,[0,0,-1.00],[.69,.69,.22],black,40);
+ball(model,[0,0,-.55],[.69,.69,.16],black,40);
 // Seated pilot silhouette behind a lightly tinted transparent canopy.
 ball(model,[0,.10,-.91],[.205,.235,.19],pilotMat,24);
 ball(model,[0,.105,-1.055],[.155,.095,.055],dark,20);
