@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "pirate_fighter_001",
+  "name": "Pirate Fighter 001",
+  "displayName": "STARFALL — Pirate Fighter",
+  "faction": "pirate",
+  "category": "fighter",
+  "status": "procedural_viewer",
+  "viewer": "index.html",
+  "renderer": {
+    "engine": "three.js",
+    "version": "0.128.0",
+    "mode": "procedural"
+  },
+  "design": {
+    "silhouette": "twin_hexagonal_wings",
+    "cockpit": "iridescent_spherical_shell",
+    "canopy": "transparent_forward_dome",
+    "pilot": "visible_black_armored",
+    "wingFinish": "weathered_white_enamel",
+    "markings": "pirate_skull_graffiti",
+    "engines": "twin_plasma",
+    "weapons": "twin_forward_lasers"
+  },
+  "production": {
+    "glb": null,
+    "uvMaps": false,
+    "bakedPbrTextures": false,
+    "gameplayIntegrated": false
+  }
+}
