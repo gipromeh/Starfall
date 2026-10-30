@@ -47,7 +47,7 @@ window.addEventListener('error',e=>{if(e.message)fail(e.message)});
 try{
 if(!window.THREE||!THREE.OrbitControls)throw Error('Не удалось загрузить Three.js r128 / OrbitControls. Проверьте доступ к CDN.');
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x080d15);scene.fog=new THREE.Fog(0x080d15,22,65);
-const camera=new THREE.PerspectiveCamera(37,innerWidth/innerHeight,.1,150);camera.position.set(0,1.6,13.4);
+const portrait=()=>innerHeight>innerWidth;const camera=new THREE.PerspectiveCamera(37,innerWidth/innerHeight,.1,150);camera.position.set(0,portrait()?1.1:1.6,portrait()?16.5:13.4);
 const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.18;document.querySelector('#stage').appendChild(renderer.domElement);
 const orbit=new THREE.OrbitControls(camera,renderer.domElement);orbit.enableDamping=true;orbit.dampingFactor=.07;orbit.minDistance=5;orbit.maxDistance=30;orbit.target.set(0,0,0);orbit.enablePan=true;orbit.panSpeed=.55;
@@ -60,7 +60,7 @@ const cyan=new THREE.PointLight(0x29cfff,18,14);cyan.position.set(-5,-1,-1);scen
 const floor=new THREE.Mesh(new THREE.CircleGeometry(28,64),new THREE.MeshStandardMaterial({color:0x111a25,metalness:.55,roughness:.42}));floor.rotation.x=-Math.PI/2;floor.position.y=-5.1;scene.add(floor);
 const grid=new THREE.GridHelper(50,50,0x263b50,0x182737);grid.position.y=-5.08;scene.add(grid);
 const starGeo=new THREE.BufferGeometry(),starArr=[];for(let i=0;i<900;i++){let r=24+Math.random()*35,a=Math.random()*Math.PI*2,b=Math.acos(2*Math.random()-1);starArr.push(r*Math.sin(b)*Math.cos(a),r*Math.cos(b),r*Math.sin(b)*Math.sin(a))}starGeo.setAttribute('position',new THREE.Float32BufferAttribute(starArr,3));const stars=new THREE.Points(starGeo,new THREE.PointsMaterial({color:0xc3d9ed,size:.095}));scene.add(stars);
-const ship=new THREE.Group();scene.add(ship);
+const ship=new THREE.Group();scene.add(ship);ship.rotation.z=portrait()?Math.PI/2:0;
 const mats=[];
 function mat(color,metal=.35,rough=.5,extra={}){const m=new THREE.MeshStandardMaterial({color,metalness:metal,roughness:rough,...extra});mats.push(m);return m}
 const enamel=mat(0xd7d7ce,.48,.48),edge=mat(0x69747a,.82,.32),steel=mat(0xaeb8b9,.88,.24),dark=mat(0x171d24,.58,.55),black=mat(0x070b11,.3,.5),rubber=mat(0x252b30,.12,.82);
@@ -146,13 +146,13 @@ document.querySelector('#zoom').oninput=e=>{ship.scale.setScalar(+e.target.value
 document.querySelector('#light').oninput=e=>{lightPower=+e.target.value/100;document.querySelector('#lightVal').textContent=e.target.value+'%';setEnv(env)};
 document.querySelector('#wear').oninput=e=>{wear=+e.target.value/100;document.querySelector('#wearVal').textContent=e.target.value+'%';enamel.roughness=.25+wear*.4;enamel.color.setRGB(1-.12*wear,1-.12*wear,1-.1*wear);mats.filter(m=>m.map&&m.map!==scaleMap).forEach(m=>{if(m!==enamel)m.roughness=.9-wear*.18})};
 document.querySelector('#glow').oninput=e=>{glowPower=+e.target.value/100;document.querySelector('#glowVal').textContent=e.target.value+'%';cabinLamp.intensity=2.8*glowPower;innerGlow.material.opacity=.16*glowPower;cyanMat.emissiveIntensity=1.8*glowPower;redMat.emissiveIntensity=1.7*glowPower};
-const views={front:[0,1.1,13.4],rear:[0,1.1,-13.4],side:[13.4,1,0],top:[0,13.4,.01],bottom:[0,-13.4,.01]};
-document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{auto=false;document.querySelector('#spin').classList.remove('active');document.querySelector('#spin').textContent='⟳ Вращение: выкл';camera.position.set(...views[b.dataset.view]);orbit.target.set(0,0,0);orbit.update()});
-document.querySelector('#reset').onclick=()=>{ship.scale.setScalar(1);document.querySelector('#zoom').value=100;document.querySelector('#zoomVal').textContent='100%';camera.position.set(0,1.6,13.4);orbit.target.set(0,0,0);orbit.update();ship.rotation.set(0,0,0);auto=true;document.querySelector('#spin').classList.add('active');document.querySelector('#spin').textContent='⟳ Автообзор'};
+const viewPosition=k=>{const d=portrait()?16.5:13.4;return {front:[0,1.1,d],rear:[0,1.1,-d],side:[d,1,0],top:[0,d,.01],bottom:[0,-d,.01]}[k]};
+document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{auto=false;document.querySelector('#spin').classList.remove('active');document.querySelector('#spin').textContent='⟳ Вращение: выкл';camera.position.set(...viewPosition(b.dataset.view));orbit.target.set(0,0,0);orbit.update()});
+document.querySelector('#reset').onclick=()=>{ship.scale.setScalar(1);document.querySelector('#zoom').value=100;document.querySelector('#zoomVal').textContent='100%';camera.position.set(0,portrait()?1.1:1.6,portrait()?16.5:13.4);orbit.target.set(0,0,0);ship.rotation.z=portrait()?Math.PI/2:0;orbit.update();ship.rotation.set(0,0,0);auto=true;document.querySelector('#spin').classList.add('active');document.querySelector('#spin').textContent='⟳ Автообзор'};
 setEnv('studio');status.textContent='МОДЕЛЬ ЗАГРУЖЕНА · 3D ENGINE OK';
 const clock=new THREE.Clock();function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.04),t=clock.elapsedTime;if(auto)ship.rotation.y+=dt*.18;red.intensity=(env==='hangar'?12:22)*lightPower*(.92+Math.sin(t*1.7)*.08);cabinLamp.intensity=2.8*glowPower*(.9+Math.sin(t*2.4)*.1);orbit.update();renderer.render(scene,camera)}
 animate();
-addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2))});
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));ship.rotation.z=portrait()?Math.PI/2:0;camera.position.set(0,portrait()?1.1:1.6,portrait()?16.5:13.4);orbit.target.set(0,0,0);orbit.update()});
 }catch(e){fail(e)}
 })();
 </script>
