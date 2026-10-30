@@ -107,12 +107,15 @@ function ball(p,pos,scale,m,n=24){const o=new THREE.Mesh(new THREE.SphereGeometr
 
 // Iridescent spherical cockpit body with a separate transparent luminous canopy.
 const orbMat=new THREE.MeshPhysicalMaterial({color:0xffffff,map:scaleTexMap,metalness:.82,roughness:.19,clearcoat:1,clearcoatRoughness:.055,reflectivity:1});allMats.push(orbMat);
-const orb=new THREE.Mesh(new THREE.SphereGeometry(1.28,96,64),orbMat);orb.scale.set(1,1,.94);model.add(orb);
+const orbGeo=new THREE.SphereGeometry(1.28,96,64),orbPos=orbGeo.attributes.position,orbIdx=orbGeo.index.array,orbKeep=[];
+for(let i=0;i<orbIdx.length;i+=3){const a=orbIdx[i],b=orbIdx[i+1],c=orbIdx[i+2];if((orbPos.getZ(a)+orbPos.getZ(b)+orbPos.getZ(c))/3>-.48)orbKeep.push(a,b,c)}
+orbGeo.setIndex(orbKeep);orbGeo.computeVertexNormals();
+const orb=new THREE.Mesh(orbGeo,orbMat);orb.scale.set(1,1,.94);model.add(orb);
 for(const r of [1.19,1.24]){const ring=new THREE.Mesh(new THREE.TorusGeometry(r,.018,10,96),bright);ring.rotation.x=Math.PI/2;ring.position.z=.03;model.add(ring)}
 const shellBand=new THREE.Mesh(new THREE.TorusGeometry(1.26,.045,12,96),edge);shellBand.position.z=.02;model.add(shellBand);
 const domeGeo=new THREE.SphereGeometry(1.04,64,48,0,Math.PI*2,0,Math.PI*.56);
 const domeMat=new THREE.MeshPhysicalMaterial({color:0x8cecff,metalness:.08,roughness:.035,transparent:true,opacity:.22,clearcoat:1,clearcoatRoughness:.015,side:THREE.DoubleSide,depthWrite:false});
-const dome=new THREE.Mesh(domeGeo,domeMat);dome.position.set(0,0,-.55);dome.rotation.x=Math.PI;model.add(dome);
+const dome=new THREE.Mesh(domeGeo,domeMat);dome.position.set(0,0,-.55);dome.rotation.x=-Math.PI/2;model.add(dome);
 const domeGlow=new THREE.Mesh(new THREE.SphereGeometry(.99,48,32,0,Math.PI*2,0,Math.PI*.56),new THREE.MeshBasicMaterial({color:0x20dfff,transparent:true,opacity:.10,side:THREE.DoubleSide,depthWrite:false}));domeGlow.position.copy(dome.position);domeGlow.rotation.copy(dome.rotation);model.add(domeGlow);
 const domeRim=new THREE.Mesh(new THREE.TorusGeometry(1.02,.045,12,64),emissiveCyan);domeRim.position.set(0,0,-.55);model.add(domeRim);
 const pilotGroup=new THREE.Group();pilotGroup.position.set(0,-.02,-.63);model.add(pilotGroup);
