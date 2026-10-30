@@ -324,3 +324,8 @@ GAL (конец скрипта): GAL.s[i]={sec,eco,pir,rep}; методы ev(т�
 Фракции/события: константы FACS, EVT; объект GAL (замена v40): s[i]={sec,eco,pir,rep,inf{gld,bur,mec,pir},evt{id,left,k}}, fr{gld,bur,mec,pir}. Методы: ctl(i), rwK(), bwK(), cost(v), roll(), tick() (вызов в lift), board(). Сохранение: sf_sv.gal, sf_sv.fr (load с дефолтами = миграция).
 Шутки: JKDB[0..3] (Зорг, Векса, Шшиила, Брук), JKDB[4] общие; JK.tell(i); просмотренные в localStorage sf_jk. dlgOpen обёрнут: добавляет «Шутка?» и для Шшиилы «Расклад сил» (флаг GAL._nj защищает от рекурсии).
 Хуки цен: talk(0) награда ×GAL.rwK(), ofb.rw ×GAL.bwK(), talk(3) цены через GAL.cost().
+
+## v41.1
+PV (конец скрипта): ангар-превью, обёртка hgrView; PV.set(id), PV.wi (орудие), .pv canvas CSS-override (глобальное правило canvas растягивало любой canvas).
+Станция: панели в mkStation(SKIT): плоскость XY при z=32, центры x=±131; sdStn: sdBox(|x|-131,y,z-32,45,21,.8) + штанга sdBox(|x|-50.5,...).
+ИИ пирата (enemy update, строки ~1356-1360): e.lat (боковой сдвиг в EVADE), BREAK = дуга side+dir*.4, выход по dot(hd,dir)>.5 или d>ext(240-360).
