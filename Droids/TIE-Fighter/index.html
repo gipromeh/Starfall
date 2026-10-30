@@ -211,10 +211,10 @@ const driveEffects=[];
 for(const ex of [-.43,.43]){
  const plumeMat=new THREE.MeshBasicMaterial({color:ex<0?0x28e8ff:0x9b65ff,transparent:true,opacity:.72,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide});
  const plume=new THREE.Mesh(new THREE.ConeGeometry(.19,1.35,24,1,true),plumeMat);
- plume.rotation.x=-Math.PI/2;plume.position.set(ex,0,1.88);model.add(plume);
+ plume.rotation.x=Math.PI/2;plume.position.set(ex,0,1.88);model.add(plume);
  const coreMat=new THREE.MeshBasicMaterial({color:0xb9ffff,transparent:true,opacity:.82,blending:THREE.AdditiveBlending,depthWrite:false});
  const core=new THREE.Mesh(new THREE.CylinderGeometry(.035,.105,1.05,16,1,true),coreMat);
- core.rotation.x=-Math.PI/2;core.position.set(ex,0,1.82);model.add(core);
+ core.rotation.x=Math.PI/2;core.position.set(ex,0,1.82);model.add(core);
  driveEffects.push({plume,core,plumeMat,coreMat,phase:Math.random()*6.28});
 }
 
