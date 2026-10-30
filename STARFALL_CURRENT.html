@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="claude:viewport-fit-sides" content="cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#02030a"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>STARFALL — Void Hunter</title>
-<meta name="starfall-version" content="v60">
+<meta name="starfall-version" content="v61">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#02030a;--fg:#cfe9ff;--ac:#3cf;--warn:#f54;color-scheme:dark}
@@ -1729,7 +1729,7 @@ if(SYS[sy].t===2||SYS[sy].t===3){const ri=PR*1.6,ro=PR*2.3,g=new T.RingGeometry(
 starUpd();
 // post: colour grade + vignette
 try{if(CP.passes){const bp=CP.passes.find(p=>p.strength!==undefined);if(bp){bp.strength=.62;bp.radius=.55;bp.threshold=.8}
-CP.addPass(new T.ShaderPass({uniforms:{tDiffuse:{value:null},ca:{value:GQ?1:0}},vertexShader:"varying vec2 vu;void main(){vu=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}",fragmentShader:"uniform sampler2D tDiffuse;uniform float ca;varying vec2 vu;void main(){vec2 d=vu-.5;float r=dot(d,d);vec3 c;if(ca>.5){float o=.0018*r*4.;c=vec3(texture2D(tDiffuse,vu+d*o).r,texture2D(tDiffuse,vu).g,texture2D(tDiffuse,vu-d*o).b);}else c=texture2D(tDiffuse,vu).rgb;c=c*c*(3.-2.*c)*.35+c*.65;float l=dot(c,vec3(.299,.587,.114));c=mix(vec3(l),c,1.12);c*=1.-.55*r*r*4.;c=pow(c,vec3(.95));gl_FragColor=vec4(c,1.);}"}))}}catch(e){}
+CP.addPass(new T.ShaderPass({uniforms:{tDiffuse:{value:null},ca:{value:0}},vertexShader:"varying vec2 vu;void main(){vu=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}",fragmentShader:"uniform sampler2D tDiffuse;uniform float ca;varying vec2 vu;void main(){vec2 d=vu-.5;float r=dot(d,d);vec3 c=texture2D(tDiffuse,vu).rgb;c=c*c*(3.-2.*c)*.35+c*.65;float l=dot(c,vec3(.299,.587,.114));c=mix(vec3(l),c,1.12);c*=1.-.55*r*r*4.;c=pow(c,vec3(.95));gl_FragColor=vec4(c,1.);}"}))}}catch(e){}
 function gfxTick(dt){const sp=vel.length();plumes.forEach(p=>{const L=1.2+sp/22+thr*4.5;p.scale.set(1,L,1);p.position.z=3.7+L/2;p.material.opacity=.3+.25*thr+.08*Math.random()});
 if(shF>0){shF-=dt;shB.visible=true;shM.uniforms.a.value=Math.max(0,shF/.4)}else shB.visible=false}
 {const _u=upd;upd=function(dt){_u(dt);gfxTick(dt)}}
@@ -2816,7 +2816,7 @@ const QL=(function(){
   const p=PRS[cur],pr=Math.max(.6,Math.min(window.devicePixelRatio||1,p.dpr)*STEPS[si]);
   api.bk=p.bk;api.part=p.part;api.pr=pr;
   R.setPixelRatio(pr);if(CP.setPixelRatio)CP.setPixelRatio(pr);
-  if(BP)BP.strength=p.bs;if(GP)GP.uniforms.ca.value=p.ca;
+  if(BP)BP.strength=p.bs;if(GP)GP.uniforms.ca.value=0;
   rs();label()}
  function label(){if(btn)btn.textContent="КАЧЕСТВО: "+(api.mode==="auto"?"АВТО · ":"")+PRS[cur].n+(si?" · "+Math.round(STEPS[si]*100)+"%":"")}
  /* сглаживание: окно 1 с, понижение при <48 fps четыре окна подряд, повышение при ≥58 fps пятнадцать окон подряд,
