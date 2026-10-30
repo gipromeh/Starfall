@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "activeShip": "pirate_droid_001",
+  "ships": [
+    {
+      "id": "pirate_droid_001",
+      "name": "Pirate Droid 001 — TIE-пират с пришельцем",
+      "faction": "pirate",
+      "category": "fighter",
+      "path": "assets/ships/pirate/pirate_fighter_001/",
+      "config": "config.json",
+      "status": "integrated",
+      "model": "pirate_droid_001.glb"
+    },
+    {
+      "id": "pirate_fighter_002",
+      "name": "Pirate Fighter 002 — Ржавый череп",
+      "faction": "pirate",
+      "category": "fighter",
+      "path": "assets/ships/pirate/pirate_fighter_002/",
+      "config": "config.json",
+      "status": "integrated",
+      "model": "model.glb"
+    }
+  ]
+}

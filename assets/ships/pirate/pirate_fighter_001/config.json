@@ -1,0 +1,31 @@
+{
+  "id": "pirate_droid_001",
+  "name": "STARFALL Pirate TIE Fighter",
+  "faction": "pirate",
+  "prototype": "Imperial TIE/ln Fighter",
+  "status": "integrated",
+  "model": "pirate_droid_001.glb",
+  "source_scene": "pirate_droid_001.blend",
+  "preview": "pirate_droid_001_preview.png",
+  "geometry": {
+    "cockpit": "armored sphere with canopy, seat, consoles, and visible alien pilot",
+    "wings": 2,
+    "photovoltaic_cells": 112,
+    "pirate_skull_reliefs": 2,
+    "profane_russian_stencils": 2,
+    "engines": 2,
+    "laser_cannons": 2,
+    "bio_mechanical_tentacles": 14
+  },
+  "limitations": [
+    "Wing solar cells and skull emblems are modeled geometry, not authored image textures.",
+    "Tentacle animation and flight response are not implemented.",
+    "Animated laser bolts, production wear maps, optimized LODs, and an interactive Three.js viewer are not included.",
+    "В игре (v46) назначен типу 1 «Шакал»: 634 меша сливаются по 17 материалам при загрузке, щупальца запекаются в статичную позу."
+  ],
+  "replaces": {
+    "kind": "pirate",
+    "index": 1
+  },
+  "scale": 1
+}

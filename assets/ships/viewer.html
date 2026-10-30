@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#070a10">
+<title>STARFALL — Ship Viewer</title>
+<style>
+:root{color-scheme:dark;--line:#ffffff20;--muted:#9aa9b8;--cyan:#75dfff;--warn:#ffb74a;--bad:#ff6b6b;--ok:#6be3a0}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#070a10;color:#edf4f8;font:13px/1.4 system-ui,-apple-system,Segoe UI,sans-serif}
+#stage{position:fixed;inset:0}canvas{display:block;width:100%;height:100%;touch-action:none}
+#brand{position:fixed;z-index:3;top:18px;left:22px;pointer-events:none;text-shadow:0 2px 18px #000}
+#brand strong{font-size:18px;letter-spacing:.26em;font-weight:500}#brand small{display:block;margin-top:4px;color:#b6c4d0;letter-spacing:.2em;font-size:9px}
+.panel{position:fixed;z-index:4;background:linear-gradient(145deg,#121b28e8,#080d15e8);border:1px solid var(--line);border-radius:12px;backdrop-filter:blur(14px);box-shadow:0 14px 42px #0008;padding:14px}
+#controls{right:16px;top:16px;width:240px}#info{left:16px;bottom:16px;width:300px;max-height:46vh;overflow:auto}
+h2{font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:#9db4c5;margin:0 0 10px;font-weight:600}
+.group{margin:0 0 14px}.buttons{display:flex;gap:6px;flex-wrap:wrap}.buttons button{flex:1;min-width:58px}
+button,select{border:1px solid #ffffff22;background:#182331;color:#dce8ef;border-radius:7px;padding:8px 9px;font:inherit;font-size:11px;cursor:pointer;min-height:36px}
+button:hover,select:hover{background:#223249}button.on{background:#1f4a63;border-color:var(--cyan)}
+label{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;margin:8px 0 3px}input[type=range]{width:100%}
+table{width:100%;border-collapse:collapse;font-size:12px}td{padding:2px 0;color:#c9d6e0}td:last-child{text-align:right;color:#fff;font-variant-numeric:tabular-nums}
+.msg{margin:6px 0 0;font-size:12px}.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+#status{position:fixed;z-index:5;left:50%;top:50%;transform:translate(-50%,-50%);padding:10px 18px;border-radius:10px;background:#0a111bdd;border:1px solid var(--line)}
+#status.hide{display:none}
+@media(max-width:700px){#controls{width:200px;right:8px;top:8px;padding:10px}#info{left:8px;bottom:8px;width:calc(100% - 16px);max-height:34vh}}
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<div id="brand"><strong id="title">SHIP VIEWER</strong><small id="sub">STARFALL / ASSET LIBRARY</small></div>
+<div id="controls" class="panel">
+  <div class="group"><h2>Вид</h2>
+    <div class="buttons" id="views">
+      <button data-v="front">Нос</button><button data-v="rear">Корма</button><button data-v="side">Бок</button><button data-v="top">Верх</button><button data-v="bottom">Низ</button>
+    </div></div>
+  <div class="group"><h2>Свет</h2>
+    <div class="buttons" id="presets"><button data-p="studio" class="on">Студия</button><button data-p="hangar">Ангар</button><button data-p="space">Космос</button></div>
+    <label>Яркость <span id="lightVal">1.0</span></label><input id="light" type="range" min="0.2" max="2.5" step="0.05" value="1">
+  </div>
+  <div class="group"><h2>Модель</h2>
+    <div class="buttons"><button id="spin" class="on">Вращение</button><button id="wire">Каркас</button><button id="axes">Оси</button></div>
+    <label>Масштаб камеры <span id="zoomVal">1.0</span></label><input id="zoom" type="range" min="0.4" max="2.5" step="0.05" value="1">
+  </div>
+  <div class="group" id="shipPick" style="display:none"><h2>Корабль</h2><select id="ships" style="width:100%"></select></div>
+</div>
+<div id="info" class="panel"><h2>Проверка модели</h2><table id="stats"></table><div id="checks"></div></div>
+<div id="status">Загрузка…</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
+<script>
+/* Общий просмотрщик GLB. Адрес: viewer.html?ship=<id>. Читает catalog.json → config.json → config.model.
+   Контракт модели (glTF, Y вверх): нос в −Z, двигатели у +Z. В Blender: нос по +Y, двигатели по −Y. */
+const $=id=>document.getElementById(id);
+const BUDGET_TRIS=9000, MAX_TEX=2048, MAX_MB=5;
+const PRESETS={
+  studio:{top:'#dfe9f2',mid:'#8795a4',bot:'#2a303a',amb:.35,key:2.2,rim:1.0,bg:0x0b1018},
+  hangar:{top:'#c9a878',mid:'#5a4a3a',bot:'#15110d',amb:.25,key:2.0,rim:.7,bg:0x0c0a08},
+  space:{top:'#1c2c55',mid:'#0a1020',bot:'#020308',amb:.18,key:2.6,rim:1.4,bg:0x02030a}
+};
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(40,1,.01,5000);
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1;
+$('stage').appendChild(renderer.domElement);
+const controls=new THREE.OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.autoRotate=true;controls.autoRotateSpeed=1.2;
+const amb=new THREE.AmbientLight(0xffffff,.3),key=new THREE.DirectionalLight(0xffffff,2),rim=new THREE.DirectionalLight(0x88aaff,1);
+key.position.set(4,6,5);rim.position.set(-5,2,-6);scene.add(amb,key,rim);
+const axes=new THREE.AxesHelper(1);axes.visible=false;scene.add(axes);
+const pmrem=new THREE.PMREMGenerator(renderer);
+let preset='studio',lightK=1,model=null,radius=3,center=new THREE.Vector3();
+
+function envFor(p){
+  const c=document.createElement('canvas');c.width=512;c.height=256;const g=c.getContext('2d'),gr=g.createLinearGradient(0,0,0,256);
+  gr.addColorStop(0,p.top);gr.addColorStop(.5,p.mid);gr.addColorStop(1,p.bot);g.fillStyle=gr;g.fillRect(0,0,512,256);
+  g.fillStyle='#fff';g.globalAlpha=.9;g.fillRect(60,40,90,26);g.fillRect(340,30,60,20);
+  const t=new THREE.CanvasTexture(c);t.mapping=THREE.EquirectangularReflectionMapping;t.encoding=THREE.sRGBEncoding;
+  const rt=pmrem.fromEquirectangular(t);t.dispose();return rt.texture;
+}
+let envTex=null;
+function applyPreset(n){
+  preset=n;const p=PRESETS[n];if(envTex)envTex.dispose();envTex=envFor(p);scene.environment=envTex;scene.background=new THREE.Color(p.bg);
+  amb.intensity=p.amb*lightK;key.intensity=p.key*lightK;rim.intensity=p.rim*lightK;
+  document.querySelectorAll('#presets button').forEach(b=>b.classList.toggle('on',b.dataset.p===n));
+}
+function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix()}
+addEventListener('resize',resize);resize();
+
+function setView(v){
+  const d=radius*2.6/ +$('zoom').value,c=center;
+  const dir={front:[0,.12,-1],rear:[0,.12,1],side:[1,.12,0],top:[0,1,.001],bottom:[0,-1,.001]}[v];
+  camera.position.set(c.x+dir[0]*d,c.y+dir[1]*d,c.z+dir[2]*d);controls.target.copy(c);controls.update();
+}
+function status(t){const s=$('status');s.textContent=t||'';s.classList.toggle('hide',!t)}
+function row(k,v){return '<tr><td>'+k+'</td><td>'+v+'</td></tr>'}
+function msg(cls,t){return '<div class="msg '+cls+'">'+t+'</div>'}
+
+function inspect(root,bytes,cfg){
+  let tris=0,meshes=0,mats=new Set(),texs=new Set(),maxTex=0,skinned=0;
+  root.traverse(o=>{if(!o.isMesh&&!o.isSkinnedMesh)return;meshes++;if(o.isSkinnedMesh)skinned++;
+    const g=o.geometry;tris+=(g.index?g.index.count:g.attributes.position.count)/3;
+    (Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{mats.add(m);
+      ['map','normalMap','roughnessMap','metalnessMap','emissiveMap','aoMap'].forEach(k=>{const t=m[k];if(t&&t.image){texs.add(t);maxTex=Math.max(maxTex,t.image.width||0,t.image.height||0)}})})});
+  const box=new THREE.Box3().setFromObject(root),size=box.getSize(new THREE.Vector3());
+  const budget=cfg.budget&&cfg.budget.triangles||BUDGET_TRIS;
+  $('stats').innerHTML=row('Файл',(bytes/1048576).toFixed(2)+' МБ')+row('Треугольники',Math.round(tris).toLocaleString('ru'))+row('Меши',meshes)+row('Материалы',mats.size)+row('Текстуры',texs.size+(maxTex?' (до '+maxTex+' px)':''))
+    +row('Габариты X×Y×Z',size.x.toFixed(2)+' × '+size.y.toFixed(2)+' × '+size.z.toFixed(2));
+  let h='';
+  h+=tris>budget?msg('bad','Треугольников '+Math.round(tris)+' &gt; бюджета '+budget+' (iPhone)'):msg('ok','Бюджет треугольников: ок ('+Math.round(tris)+' из '+budget+')');
+  h+=maxTex>MAX_TEX?msg('bad','Текстура '+maxTex+' px &gt; '+MAX_TEX):msg('ok','Размер текстур: ок');
+  h+=bytes/1048576>MAX_MB?msg('warn','Файл больше '+MAX_MB+' МБ: сожми текстуры или включи Draco'):msg('ok','Размер файла: ок');
+  if(skinned)h+=msg('warn','Есть скелетные меши ('+skinned+'): для корабля обычно не нужны');
+  h+=msg('','Ориентацию проверь вручную: включи «Оси», нос должен смотреть в −Z (стрелка Z — на корму)');
+  const off=Math.hypot(center.x,center.y,center.z);
+  h+=off>radius*0.25?msg('warn','Центр модели смещён от начала координат: примени Origin to Geometry в Blender'):msg('ok','Центр модели у начала координат');
+  $('checks').innerHTML=h;
+}
+
+async function loadModel(cfg,base){
+  status('Загрузка модели…');
+  const url=new URL(cfg.model,new URL(base,location.href)).href;
+  const res=await fetch(url);if(!res.ok)throw new Error('Не найден файл модели: '+cfg.model+' ('+res.status+')');
+  const buf=await res.arrayBuffer();
+  const loader=new THREE.GLTFLoader();
+  if(THREE.DRACOLoader){const d=new THREE.DRACOLoader();d.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/libs/draco/');loader.setDRACOLoader(d)}
+  const gltf=await new Promise((ok,no)=>loader.parse(buf,url.replace(/[^/]*$/,''),ok,no));
+  if(model)scene.remove(model);model=gltf.scene;scene.add(model);
+  const box=new THREE.Box3().setFromObject(model);box.getCenter(center);radius=box.getBoundingSphere(new THREE.Sphere()).radius||1;
+  axes.scale.setScalar(radius*1.1);axes.position.copy(center);
+  camera.near=radius/100;camera.far=radius*100;camera.updateProjectionMatrix();
+  inspect(model,buf.byteLength,cfg);setView('front');status('');
+}
+
+async function main(){
+  applyPreset('studio');
+  const q=new URLSearchParams(location.search);
+  const cat=await (await fetch('catalog.json',{cache:'no-cache'})).json();
+  const sel=$('ships');cat.ships.forEach(s=>{const o=document.createElement('option');o.value=s.id;o.textContent=s.name+' · '+s.status;sel.appendChild(o)});
+  $('shipPick').style.display='block';
+  const id=q.get('ship')||cat.activeShip;sel.value=id;
+  sel.onchange=()=>{location.search='?ship='+sel.value};
+  const ship=cat.ships.find(s=>s.id===id);if(!ship)throw new Error('Корабль '+id+' не найден в catalog.json');
+  const base=ship.path.replace(/^assets\/ships\//,'');
+  const cfg=await (await fetch(base+ship.config,{cache:'no-cache'})).json();
+  $('title').textContent=(cfg.displayName||cfg.name||id).toUpperCase();
+  $('sub').textContent=(cfg.faction||'')+' · '+(cfg.category||'')+' · '+(cfg.status||'');
+  if(!cfg.model){
+    $('stats').innerHTML=row('Статус',cfg.status||'—');
+    $('checks').innerHTML=msg('warn','У корабля нет GLB (процедурная модель).')+(cfg.viewer?'<div class="msg"><a style="color:#9fd8ff" href="'+base+cfg.viewer+'">Открыть его просмотрщик →</a></div>':'');
+    status('');return;
+  }
+  await loadModel(cfg,base);
+}
+main().catch(e=>{console.error(e);status('Ошибка: '+e.message)});
+
+$('views').onclick=e=>{const v=e.target.dataset.v;if(v){controls.autoRotate=false;$('spin').classList.remove('on');setView(v)}};
+$('presets').onclick=e=>{const p=e.target.dataset.p;if(p)applyPreset(p)};
+$('light').oninput=e=>{lightK=+e.target.value;$('lightVal').textContent=lightK.toFixed(1);applyPreset(preset)};
+$('zoom').oninput=e=>{$('zoomVal').textContent=(+e.target.value).toFixed(1);setView('front')};
+$('spin').onclick=()=>{controls.autoRotate=!controls.autoRotate;$('spin').classList.toggle('on',controls.autoRotate)};
+$('wire').onclick=()=>{const on=$('wire').classList.toggle('on');if(model)model.traverse(o=>{if(o.isMesh)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>m.wireframe=on)})};
+$('axes').onclick=()=>{axes.visible=$('axes').classList.toggle('on')};
+(function loop(){requestAnimationFrame(loop);controls.update();renderer.render(scene,camera)})();
+</script>
+</body>
+</html>

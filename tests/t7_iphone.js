@@ -1,0 +1,23 @@
+const L=require('./lib.js');
+(async()=>{
+ const b=await L.launch();
+ const ctx=await L.newCtx(b,{viewport:{width:932,height:430},dpr:3,touch:true,ua:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1'});
+ const page=await L.openGame(ctx);
+ await page.evaluate(()=>{try{localStorage.clear()}catch(e){}});
+ await page.click('#play').catch(()=>{}); 
+ await page.waitForFunction(()=>state==='dock',null,{timeout:90000}).catch(()=>{});
+ const st=await page.evaluate(()=>({state,pr:R.getPixelRatio(),tch:typeof TCH!=='undefined'&&TCH,prof:QL.stat&&JSON.stringify(QL.stat())}));
+ console.log(st);
+ L.check('iPhone: игра стартует (dock)',st.state==='dock',st);
+ L.check('iPhone: pixelRatio ≤ 2',st.pr<=2,st.pr);
+ L.check('iPhone: тач-режим',st.tch===true,st.tch);
+ await page.evaluate(()=>{const b=document.getElementById('lift')||document.querySelector('[id*=lift]');});
+ await page.evaluate(()=>{lift()}); await L.sleep(3000);
+ const fl=await page.evaluate(()=>{const out={};document.querySelectorAll('div,button').forEach(e=>{const t=(e.textContent||'').trim();if(/^(ОГОНЬ|РАКЕТА|ФОРСАЖ|СОПР\.|ЛАЗЕР)$/.test(t)){const r=e.getBoundingClientRect();if(r.width>0)out[t]=[Math.round(r.width),Math.round(r.height),Math.round(r.left),Math.round(r.top)]}});return{state,out}});
+ console.log(JSON.stringify(fl));
+ L.check('iPhone: вылет (play)',fl.state==='play',fl.state);
+ const small=Object.entries(fl.out).filter(([k,r])=>r[0]<44||r[1]<44); L.check('iPhone: найдены кнопки управления',Object.keys(fl.out).length>=4,Object.keys(fl.out));
+ L.check('iPhone: кнопки ≥44px',small.length===0,small);
+ L.check('iPhone: нет ошибок',page.errors.length===0,page.errors);
+ process.exitCode=L.summary();await b.close();
+})().catch(e=>{console.error('CRASH',e);process.exit(2)});

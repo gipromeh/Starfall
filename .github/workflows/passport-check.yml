@@ -1,0 +1,21 @@
+name: passport-check
+on: [push, pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: SHA паспорта совпадает с игрой
+        run: python3 tools/check_passport.py
+      - name: Игра изменена вместе с паспортом и CHANGELOG
+        run: |
+          base="${{ github.event.before }}"
+          [ "${{ github.event_name }}" = "pull_request" ] && base="${{ github.event.pull_request.base.sha }}"
+          if [ -n "$base" ] && ! echo "$base" | grep -q '^0*$' && git cat-file -e "$base" 2>/dev/null; then
+            changed=$(git diff --name-only "$base" HEAD)
+            if echo "$changed" | grep -qx 'STARFALL_CURRENT.html'; then
+              echo "$changed" | grep -qx 'STARFALL_PASSPORT.md' || { echo "Игра изменена без паспорта"; exit 1; }
+              echo "$changed" | grep -qx 'CHANGELOG.md' || { echo "Игра изменена без CHANGELOG"; exit 1; }
+            fi
+          fi
