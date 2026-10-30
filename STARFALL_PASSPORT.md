@@ -2,10 +2,10 @@
 date: 2026-10-31
 topic: STARFALL — Void Hunter: паспорт проекта (архитектура, технологии, механика, сохранения, качество)
 tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура]
-game_version: "v52.4"
+game_version: "v52.5"
 last_update: 2026-10-31
 main_file: STARFALL_CURRENT.html
-main_file_sha256: "7e4285b02410eec26b09418fd54572c1796f521a8e0a3c6b67f406c80d9a57c1"
+main_file_sha256: "10e55748ea3b4fb351e189ae4a316c78f147735ebdb1d5647cbd8afec4e8f47a"
 save_format_version: 2
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"
@@ -396,7 +396,7 @@ PV (конец скрипта): ангар-превью, обёртка hgrView;
 - **Диагностика:** `?debug`, клавиши `~` и F3: FPS/ms/p95, профиль, масштаб, DPR, `renderer.info.render` (calls, triangles) и `.memory` (geometries, textures), число объектов сцены, размеры массивов эффектов, состояние сохранения. Профилировщик `PF` показывает last/max CPU-время `det`, `stationCatastrophe`, `kill`, `stationDetach`, `stationFireUpdate`, `envUpd`, `upd` и полного кадра; `PerformanceObserver` считает Long Tasks ≥50 мс, если API поддерживается браузером. `R.info.autoReset=false`, сброс счётчиков в начале кадра.
 - **Память:** общая геометрия ракеты/ядерки (`MSG/MSM/NKG/NKM`); обломки пиратов освобождают геометрию по счётчику ссылок (`gRef/gRel`), неиспользованные части модели освобождаются при убийстве; тест `tests/t5_leak.js`: после серии убийств геометрии (±15) и текстуры (±6) возвращаются к исходному уровню.
 
-## 16. Проверка и тесты (v52.4)
+## 16. Проверка и тесты (v52.5)
 Стенд: Playwright + Chromium headless (`--use-angle=swiftshader`), CDN-адреса маршрутизируются на локальные пакеты `three@0.128.0` и `tsparticles@2.12.0` (Babylon и шрифты блокируются — игра использует запасной холл). Файлы: `tests/` (`lib.js`, `t1_saves.js`, `t2_flight.js`, `t5_leak.js`, `t6_probe.js`, `t7_iphone.js`, `t8_nuke.js`); тесты крутят симуляцию через `upd(.05)` и читают глобальные переменные игры через `page.evaluate`. `t8_nuke.js` отдельно замеряет синхронную длительность попадания в станцию и каскадного уничтожения двух противников, а также максимальный разрыв кадров `requestAnimationFrame`. Запуск: `SF_NM=./node_modules node tests/t8_nuke.js`.
 **CI:** `.github/workflows/passport-check.yml` проверяет SHA-256 и совместное обновление игры/паспорта/CHANGELOG. `.github/workflows/game-tests.yml` запускает Playwright + Chromium: `t8_nuke.js` и `t6_probe.js`.
 **Проверено в эмуляции:** синтаксис, ESLint `no-undef`, запуск, меню, станция, вылет, бой, убийства и подбор, ракеты и ядерка, сохранение/восстановление (9 сценариев), профили качества, потеря WebGL-контекста, iPhone-эмуляция (DPR ≤ 2, кнопки ≥ 44 px, ошибок нет).
