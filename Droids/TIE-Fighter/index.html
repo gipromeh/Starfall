@@ -254,10 +254,10 @@ for(const [i,x] of [-.48,.48].entries()){
  laserBolts.push({haze,mid,core,head,hazeMat,midMat,coreMat,headMat,muzzleGlow,phase:i*.5,x});
 }
 // Parametric medusa propulsion appendages: tapered flexible tentacles, animated from their roots.
-const tentacleRig=new THREE.Group();tentacleRig.position.set(0,-.66,.12);model.add(tentacleRig);
+const tentacleRig=new THREE.Group();tentacleRig.position.set(0,-.72,-1.18);model.add(tentacleRig);
 const tentacleMats=[
- new THREE.MeshPhysicalMaterial({color:0x25113e,metalness:.42,roughness:.22,clearcoat:1,clearcoatRoughness:.08,emissive:0x26004a,emissiveIntensity:.34}),
- new THREE.MeshPhysicalMaterial({color:0x142d43,metalness:.38,roughness:.2,clearcoat:1,emissive:0x062c58,emissiveIntensity:.38}),
+ new THREE.MeshPhysicalMaterial({color:0x25113e,metalness:.42,roughness:.22,clearcoat:1,clearcoatRoughness:.08,emissive:0x26004a,emissiveIntensity:.34,side:THREE.DoubleSide}),
+ new THREE.MeshPhysicalMaterial({color:0x142d43,metalness:.38,roughness:.2,clearcoat:1,emissive:0x062c58,emissiveIntensity:.38,side:THREE.DoubleSide}),
  new THREE.MeshPhysicalMaterial({color:0x35142f,metalness:.36,roughness:.24,clearcoat:1,emissive:0x4a0730,emissiveIntensity:.38})
 ];
 const tentacleGlowMats=[
@@ -279,18 +279,18 @@ function taperedTube(points,radii,radial=10){
 const tentacles=[];
 for(let i=0;i<10;i++){
  const angle=i/10*Math.PI*2+(i%2)*.12,side=Math.cos(angle),depth=Math.sin(angle);
- const root=new THREE.Group();root.position.set(side*.34,-.02,depth*.32);tentacleRig.add(root);
+ const root=new THREE.Group();root.position.set(side*.34,-.02,depth*.14);tentacleRig.add(root);
  const len=2.0+(i%4)*.34,spread=.48+(i%3)*.22;
  const points=[
   new THREE.Vector3(0,0,0),
-  new THREE.Vector3(side*.12,-len*.28,depth*.12),
-  new THREE.Vector3(side*spread*.62,-len*.58,depth*.35),
-  new THREE.Vector3(side*spread,-len*.82,depth*.48),
-  new THREE.Vector3(side*(spread*.65+.18),-len,depth*.26)
+  new THREE.Vector3(side*.12,-len*.28,depth*.06),
+  new THREE.Vector3(side*spread*.62,-len*.58,depth*.16),
+  new THREE.Vector3(side*spread,-len*.82,depth*.22),
+  new THREE.Vector3(side*(spread*.65+.18),-len,depth*.10)
  ];
- const main=new THREE.Mesh(taperedTube(points,[.17,.145,.105,.063,.012],12),tentacleMats[i%3]);root.add(main);
+ const main=new THREE.Mesh(taperedTube(points,[.17,.145,.105,.063,.012],12),tentacleMats[i%3]);main.frustumCulled=false;root.add(main);
  const innerPts=points.map((p,k)=>new THREE.Vector3(p.x+(k===0?.02:0),p.y,p.z-.035));
- const filament=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(innerPts),40,.018,7,false),tentacleGlowMats[i%3]);root.add(filament);
+ const filament=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(innerPts),40,.018,7,false),tentacleGlowMats[i%3]);filament.frustumCulled=false;root.add(filament);
  for(let k=1;k<=4;k++){const p=new THREE.CatmullRomCurve3(points).getPointAt(k/5);const bead=new THREE.Mesh(new THREE.SphereGeometry(.035+(1-k/6)*.018,10,8),tentacleGlowMats[(i+k)%3]);bead.position.copy(p);root.add(bead)}
  const tip=new THREE.Mesh(new THREE.SphereGeometry(.045,12,8),tentacleGlowMats[i%3]);tip.position.copy(points[4]);root.add(tip);
  tentacles.push({root,phase:i*1.37,angle,len});
