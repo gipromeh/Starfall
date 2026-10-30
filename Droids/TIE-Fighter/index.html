@@ -16,7 +16,7 @@ label{display:flex;justify-content:space-between;font-size:11px;color:#c2d0db;ma
 </style>
 </head>
 <body>
-<div id="header" class="panel"><h1>IMPERIAL TIE FIGHTER</h1><div id="sub">TIE/ln · WEATHERED FIELD UNIT · PILOT VISIBLE</div></div>
+<div id="header" class="panel"><h1>VOID HUNTER · BIO-PLASMA</h1><div id="sub">XENOBIOMECH VARIANT · IRIDESCENT ARMOR · PILOT VISIBLE</div></div>
 <div id="controls" class="panel">
 <h2>Осмотр модели</h2>
 <div class="row"><button id="front">Спереди</button><button id="side">Сбоку</button><button id="top">Сверху</button></div>
@@ -64,11 +64,17 @@ function makeWearTexture(base,seed=1){
 }
 function makeScaleTexture(){
  const c=document.createElement('canvas');c.width=1024;c.height=512;const x=c.getContext('2d');
- const g=x.createLinearGradient(0,0,1024,512);g.addColorStop(0,'#06101d');g.addColorStop(.18,'#123b55');g.addColorStop(.36,'#1b5365');g.addColorStop(.53,'#806344');g.addColorStop(.69,'#246c68');g.addColorStop(.84,'#183b60');g.addColorStop(1,'#080f1b');x.fillStyle=g;x.fillRect(0,0,1024,512);
- for(let row=-1;row<18;row++)for(let col=-1;col<34;col++){const px=col*32+(row%2)*16,py=row*30,hue=(px/1024*34+py/512*18+190)%360;x.beginPath();x.arc(px,py,25,.08,Math.PI-.08);x.strokeStyle='hsla('+hue+',48%,63%,.78)';x.lineWidth=3.2;x.stroke();x.beginPath();x.arc(px,py+2,21,.12,Math.PI-.12);x.strokeStyle='hsla('+((hue+18)%360)+',42%,23%,.82)';x.lineWidth=2;x.stroke();const shine=x.createLinearGradient(px-15,py-20,px+15,py+8);shine.addColorStop(0,'rgba(255,255,255,.52)');shine.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=shine;x.beginPath();x.ellipse(px-5,py-7,10,4,-.5,0,Math.PI*2);x.fill()}
- for(let i=0;i<70;i++){x.strokeStyle='rgba(255,255,255,'+(.025+Math.random()*.09)+')';x.lineWidth=1+Math.random()*4;x.beginPath();const yy=Math.random()*512;x.moveTo(0,yy);x.bezierCurveTo(300,yy-70,700,yy+70,1024,yy-20);x.stroke()}
+ const base=x.createLinearGradient(0,0,1024,512);
+ [['#050b1c',0],['#123c72',.16],['#087f91',.34],['#174f68',.49],['#71365f',.66],['#163f70',.82],['#071020',1]].forEach(([v,p])=>base.addColorStop(p,v));
+ x.fillStyle=base;x.fillRect(0,0,1024,512);
+ for(const q of [{x:220,y:150,r:300,color:'rgba(0,196,255,.32)'},{x:730,y:320,r:340,color:'rgba(255,35,167,.25)'},{x:520,y:80,r:260,color:'rgba(65,115,255,.26)'}]){const g=x.createRadialGradient(q.x,q.y,4,q.x,q.y,q.r);g.addColorStop(0,q.color);g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(0,0,1024,512)}
+ for(let row=-1;row<23;row++)for(let col=-1;col<45;col++){const px=col*24+(row%2)*12,py=row*23,hue=(188+px/1024*105+py/512*42)%360,shade=43+Math.sin(px*.018+py*.025)*12;x.beginPath();x.ellipse(px,py,18,15,.03,0,Math.PI);x.strokeStyle='hsla('+hue+',78%,'+(shade+13)+'%,.92)';x.lineWidth=3.2;x.stroke();x.beginPath();x.ellipse(px,py+2,16,13,0,.08,Math.PI-.08);x.strokeStyle='hsla('+((hue+22)%360)+',72%,'+(shade-19)+'%,.9)';x.lineWidth=3;x.stroke();const shine=x.createLinearGradient(px-12,py-12,px+8,py+8);shine.addColorStop(0,'rgba(255,255,255,.68)');shine.addColorStop(.35,'rgba(120,245,255,.18)');shine.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=shine;x.beginPath();x.ellipse(px-5,py-6,9,3,-.42,0,Math.PI*2);x.fill()}
+ for(let i=0;i<18;i++){const y=i*31-40;x.beginPath();x.moveTo(-20,y);x.bezierCurveTo(240,y-95+Math.sin(i)*35,520,y+105,1045,y-70);x.strokeStyle=i%3===0?'rgba(255,54,190,.22)':i%3===1?'rgba(30,229,255,.24)':'rgba(125,103,255,.2)';x.lineWidth=2+Math.random()*4;x.stroke()}
+ for(let i=0;i<2600;i++){const px=Math.random()*1024,py=Math.random()*512;x.fillStyle=Math.random()>.5?'rgba(255,255,255,.22)':'rgba(2,7,20,.42)';x.fillRect(px,py,.5+Math.random()*1.5,.5+Math.random()*2)}
+ for(let i=0;i<95;i++){const px=Math.random()*1024,py=Math.random()*512;x.save();x.translate(px,py);x.rotate((Math.random()-.5)*.5);x.strokeStyle=Math.random()>.5?'rgba(255,255,255,.34)':'rgba(0,0,0,.42)';x.lineWidth=.7+Math.random()*1.5;x.beginPath();x.moveTo(0,0);x.lineTo(8+Math.random()*45,0);x.stroke();x.restore()}
  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=8;return t;
 }
+
 const scaleTexMap=makeScaleTexture();
 const hullTex=makeWearTexture('#858b8b',17),panelTex=makeWearTexture('#252c30',83);
 const M=(c,metal=.55,rough=.42,map=null)=>new THREE.MeshStandardMaterial({color:c,metalness:metal,roughness:rough,map});
@@ -81,32 +87,36 @@ const emissiveRed=new THREE.MeshStandardMaterial({color:0xff5363,emissive:0x8f10
 allMats.push(cobalt,teal,amber,orange,signalRed,ivory,emissiveCyan,emissiveRed);
 function makeLiveryTexture(side){
  const c=document.createElement('canvas');c.width=1024;c.height=1024;const x=c.getContext('2d');
- const bg=x.createLinearGradient(0,0,1024,1024);bg.addColorStop(0,'#ffffff');bg.addColorStop(.48,'#e9edf0');bg.addColorStop(1,'#cbd2d8');x.fillStyle=bg;x.fillRect(0,0,1024,1024);
- for(let i=0;i<9500;i++){const a=Math.random()*.09;x.fillStyle=Math.random()>.5?'rgba(255,255,255,'+a+')':'rgba(25,35,45,'+a+')';x.fillRect(Math.random()*1024,Math.random()*1024,1+Math.random()*3,1+Math.random()*2)}
- x.fillStyle='#202a32';x.fillRect(0,0,1024,24);x.fillRect(0,1000,1024,24);x.fillStyle='#c72c36';x.fillRect(0,28,1024,13);x.fillRect(0,983,1024,13);
- x.strokeStyle='rgba(35,48,58,.35)';x.lineWidth=5;for(let y=70;y<980;y+=90){x.beginPath();x.moveTo(40,y);x.lineTo(984,y);x.stroke()}
- x.save();x.translate(512,505);x.fillStyle='rgba(0,0,0,.12)';x.beginPath();x.arc(0,10,250,0,Math.PI*2);x.fill();
- x.strokeStyle='#171d22';x.lineWidth=30;x.lineCap='round';x.beginPath();x.moveTo(-180,210);x.lineTo(180,-170);x.moveTo(-180,-170);x.lineTo(180,210);x.stroke();
- x.fillStyle='#f8f8f4';x.strokeStyle='#171d22';x.lineWidth=22;x.beginPath();x.moveTo(-145,-100);x.quadraticCurveTo(-175,-300,0,-310);x.quadraticCurveTo(175,-300,145,-100);x.lineTo(120,115);x.quadraticCurveTo(90,185,45,195);x.lineTo(-45,195);x.quadraticCurveTo(-90,185,-120,115);x.closePath();x.fill();x.stroke();
- x.fillStyle='#111820';x.beginPath();x.moveTo(-115,-105);x.quadraticCurveTo(-55,-175,-20,-95);x.lineTo(-35,-5);x.quadraticCurveTo(-105,5,-125,-45);x.closePath();x.fill();x.beginPath();x.moveTo(115,-105);x.quadraticCurveTo(55,-175,20,-95);x.lineTo(35,-5);x.quadraticCurveTo(105,5,125,-45);x.closePath();x.fill();x.beginPath();x.moveTo(-22,25);x.lineTo(0,-12);x.lineTo(22,25);x.closePath();x.fill();x.fillRect(-85,100,170,25);
- x.strokeStyle='#111820';x.lineWidth=10;for(let k=-3;k<=3;k++){x.beginPath();x.moveTo(k*24,102);x.lineTo(k*24,165);x.stroke()}
- x.fillStyle='#b82232';x.beginPath();x.moveTo(-150,-110);x.quadraticCurveTo(0,-205,150,-110);x.lineTo(125,-72);x.quadraticCurveTo(0,-145,-125,-72);x.closePath();x.fill();x.beginPath();x.moveTo(140,-110);x.lineTo(225,-155);x.lineTo(190,-70);x.closePath();x.fill();x.restore();
- const words=side<0?['FUCK THE','EMPIRE','NO MERCY']:['EMPIRE','CAN KISS','MY ASS'];x.textAlign='center';x.lineJoin='round';
- const positions=[[512,115,92],[512,900,106],[512,975,50]];
- words.forEach((w,i)=>{x.font='1000 '+positions[i][2]+'px Impact, Haettenschweiler, sans-serif';x.lineWidth=18;x.strokeStyle='#171d22';x.strokeText(w,positions[i][0],positions[i][1]);x.fillStyle=i===1?'#c72c36':'#f2c34e';x.fillText(w,positions[i][0],positions[i][1])});
- const tags=['SHIT','BASTARDS','FUCKERS','SCUM','PISS OFF','ASSHOLES'];x.save();x.translate(512,512);x.rotate(-.10);x.font='1000 48px Impact, sans-serif';
- tags.forEach((w,i)=>{const a=i*Math.PI/3,r=385,tx=Math.cos(a)*r,ty=Math.sin(a)*r;x.lineWidth=10;x.strokeStyle='#161d24';x.strokeText(w,tx,ty);x.fillStyle=i%2?'#c72c36':'#ed5a3c';x.fillText(w,tx,ty)});x.restore();
- for(let i=0;i<180;i++){const px=Math.random()*1024,py=Math.random()*1024;x.fillStyle=Math.random()>.5?'rgba(190,30,42,.7)':'rgba(20,28,34,.65)';x.beginPath();x.arc(px,py,2+Math.random()*8,0,Math.PI*2);x.fill()}
- for(let px=42;px<1000;px+=48)for(const py of [52,972]){x.fillStyle='#737e86';x.beginPath();x.arc(px,py,7,0,Math.PI*2);x.fill();x.fillStyle='#f7f8f8';x.beginPath();x.arc(px-2,py-2,2,0,Math.PI*2);x.fill()}
+ const bg=x.createLinearGradient(0,0,1024,1024);bg.addColorStop(0,'#e8e8df');bg.addColorStop(.5,'#c8c9c1');bg.addColorStop(1,'#777e82');x.fillStyle=bg;x.fillRect(0,0,1024,1024);
+ for(let i=0;i<16000;i++){const a=Math.random()*.17;x.fillStyle=Math.random()>.5?'rgba(255,255,255,'+a+')':'rgba(10,17,22,'+a+')';x.fillRect(Math.random()*1024,Math.random()*1024,1+Math.random()*4,1+Math.random()*3)}
+ for(let i=0;i<180;i++){x.save();x.translate(Math.random()*1024,Math.random()*1024);x.rotate((Math.random()-.5)*.65);x.strokeStyle=Math.random()>.5?'rgba(245,245,230,.8)':'rgba(24,30,34,.7)';x.lineWidth=.8+Math.random()*2;x.beginPath();x.moveTo(0,0);x.lineTo(8+Math.random()*75,0);x.stroke();x.restore()}
+ x.fillStyle='#202b34';x.fillRect(0,0,1024,22);x.fillRect(0,1002,1024,22);x.fillStyle='#b52d3c';x.fillRect(0,25,1024,12);x.fillRect(0,987,1024,12);
+ x.save();x.translate(512,515);x.rotate(-.66);x.strokeStyle='#292d30';x.lineWidth=45;x.lineCap='round';
+ for(const a of [-.72,.72]){x.save();x.rotate(a);x.beginPath();x.moveTo(0,-315);x.lineTo(0,315);x.stroke();x.fillStyle='#deddd1';x.strokeStyle='#303236';x.lineWidth=12;for(const yy of [-315,315]){x.beginPath();x.arc(-23,yy,28,0,Math.PI*2);x.arc(23,yy,28,0,Math.PI*2);x.fill();x.stroke()}x.restore()}x.restore();
+ x.save();x.translate(512,500);const skullGrad=x.createLinearGradient(-150,-220,145,210);skullGrad.addColorStop(0,'#fffdf0');skullGrad.addColorStop(.48,'#d8d6c9');skullGrad.addColorStop(1,'#8e918d');x.fillStyle=skullGrad;x.strokeStyle='#252a2d';x.lineWidth=17;
+ x.beginPath();x.moveTo(-142,-105);x.quadraticCurveTo(-175,-245,-40,-280);x.quadraticCurveTo(0,-300,42,-280);x.quadraticCurveTo(176,-238,142,-100);x.lineTo(112,52);x.quadraticCurveTo(95,112,62,137);x.lineTo(54,205);x.quadraticCurveTo(0,231,-54,205);x.lineTo(-62,137);x.quadraticCurveTo(-95,112,-112,52);x.closePath();x.fill();x.stroke();
+ x.fillStyle='#171d22';x.beginPath();x.ellipse(-67,-76,58,78,-.2,0,Math.PI*2);x.ellipse(67,-76,58,78,.2,0,Math.PI*2);x.fill();x.fillStyle='rgba(0,0,0,.38)';x.beginPath();x.ellipse(-67,-80,39,56,0,0,Math.PI*2);x.ellipse(67,-80,39,56,0,0,Math.PI*2);x.fill();
+ x.fillStyle='#34383a';x.beginPath();x.moveTo(0,-10);x.lineTo(-28,48);x.lineTo(0,65);x.lineTo(28,48);x.closePath();x.fill();
+ x.strokeStyle='#5e6260';x.lineWidth=8;x.beginPath();x.moveTo(-125,-143);x.quadraticCurveTo(-72,-185,-22,-140);x.moveTo(22,-140);x.quadraticCurveTo(72,-185,125,-143);x.stroke();
+ x.fillStyle='#f0eee1';x.strokeStyle='#303436';x.lineWidth=7;x.beginPath();x.roundRect(-76,108,152,70,13);x.fill();x.stroke();for(let i=-3;i<=3;i++){x.beginPath();x.moveTo(i*19,111);x.lineTo(i*19,177);x.stroke()}
+ x.strokeStyle='rgba(35,40,42,.72)';x.lineWidth=5;x.beginPath();x.moveTo(-125,-5);x.lineTo(-90,18);x.lineTo(-103,53);x.moveTo(116,-20);x.lineTo(91,10);x.lineTo(108,42);x.moveTo(-18,-245);x.lineTo(8,-204);x.lineTo(-2,-178);x.stroke();
+ x.fillStyle='#971d2d';x.strokeStyle='#321c23';x.lineWidth=13;x.beginPath();x.moveTo(-153,-174);x.quadraticCurveTo(-5,-260,154,-170);x.lineTo(138,-105);x.quadraticCurveTo(0,-177,-137,-104);x.closePath();x.fill();x.stroke();
+ x.fillStyle='#d33b45';x.beginPath();x.moveTo(110,-165);x.quadraticCurveTo(206,-220,255,-194);x.lineTo(201,-130);x.lineTo(235,-70);x.quadraticCurveTo(165,-91,127,-121);x.closePath();x.fill();x.stroke();x.strokeStyle='rgba(255,190,185,.65)';x.lineWidth=7;x.beginPath();x.moveTo(-105,-173);x.quadraticCurveTo(0,-220,103,-172);x.stroke();x.fillStyle='#e6d8c7';for(let i=0;i<7;i++){x.beginPath();x.arc(-90+i*30,-178+Math.sin(i)*8,5,0,Math.PI*2);x.fill()}x.restore();
+ x.textAlign='center';x.lineJoin='round';const words=side<0?['FUCK THE','EMPIRE','NO QUARTER']:['EMPIRE','CAN KISS','MY ASS'];const positions=[[512,90,82],[512,940,104],[512,990,48]];
+ words.forEach((w,i)=>{x.font='1000 '+positions[i][2]+'px Impact, Haettenschweiler, sans-serif';x.lineWidth=16;x.strokeStyle='#171d22';x.strokeText(w,positions[i][0],positions[i][1]);x.fillStyle=i===1?'#b82b39':'#252c31';x.fillText(w,positions[i][0],positions[i][1])});
+ x.save();x.translate(512,512);x.rotate(-.13);x.fillStyle='#a92737';x.font='1000 44px Impact, sans-serif';x.fillText('NO MERCY',-360,320);x.fillText('PIRATE UNIT',355,-310);x.restore();
+ for(let i=0;i<95;i++){x.strokeStyle='rgba(145,20,35,'+(.12+Math.random()*.3)+')';x.lineWidth=2+Math.random()*8;x.beginPath();const px=Math.random()*1024,py=Math.random()*1024;x.moveTo(px,py);x.lineTo(px+(Math.random()-.5)*70,py+15+Math.random()*85);x.stroke()}
+ for(let px=42;px<1000;px+=48)for(const py of [52,972]){x.fillStyle='#68737a';x.beginPath();x.arc(px,py,7,0,Math.PI*2);x.fill();x.fillStyle='#f7f8f8';x.beginPath();x.arc(px-2,py-2,2,0,Math.PI*2);x.fill()}
  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=8;return t;
 }
+
 const wingLivery=[-1,1].map(side=>{const m=new THREE.MeshStandardMaterial({color:0xffffff,map:makeLiveryTexture(side),metalness:.12,roughness:.78,side:THREE.DoubleSide});allMats.push(m);return m});
 function cylBetween(parent,a,b,r1,r2,material,n=12){const d=new THREE.Vector3().subVectors(b,a),m=new THREE.Mesh(new THREE.CylinderGeometry(r2,r1,d.length(),n),material);m.position.copy(a).add(b).multiplyScalar(.5);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());parent.add(m);return m}
 function rod(p,a,b,r,m){return cylBetween(p,new THREE.Vector3(...a),new THREE.Vector3(...b),r,r,m,10)}
 function ball(p,pos,scale,m,n=24){const o=new THREE.Mesh(new THREE.SphereGeometry(1,n,Math.max(12,n/2)),m);o.position.set(...pos);o.scale.set(...scale);p.add(o);return o}
 
 // Iridescent spherical cockpit body with a separate transparent luminous canopy.
-const orbMat=new THREE.MeshPhysicalMaterial({color:0xffffff,map:scaleTexMap,metalness:.82,roughness:.19,clearcoat:1,clearcoatRoughness:.055,reflectivity:1});allMats.push(orbMat);
+const orbMat=new THREE.MeshPhysicalMaterial({color:0xffffff,map:scaleTexMap,metalness:.76,roughness:.14,clearcoat:1,clearcoatRoughness:.025,reflectivity:1,emissive:0x071b42,emissiveIntensity:.42});allMats.push(orbMat);
 const orbGeo=new THREE.SphereGeometry(1.28,96,64),orbPos=orbGeo.attributes.position,orbIdx=orbGeo.index.array,orbKeep=[];
 for(let i=0;i<orbIdx.length;i+=3){const a=orbIdx[i],b=orbIdx[i+1],c=orbIdx[i+2];if((orbPos.getZ(a)+orbPos.getZ(b)+orbPos.getZ(c))/3>-.48)orbKeep.push(a,b,c)}
 orbGeo.setIndex(orbKeep);orbGeo.computeVertexNormals();
@@ -114,10 +124,10 @@ const orb=new THREE.Mesh(orbGeo,orbMat);orb.scale.set(1,1,.94);model.add(orb);
 for(const r of [1.19,1.24]){const ring=new THREE.Mesh(new THREE.TorusGeometry(r,.018,10,96),bright);ring.rotation.x=Math.PI/2;ring.position.z=.03;model.add(ring)}
 const shellBand=new THREE.Mesh(new THREE.TorusGeometry(1.26,.045,12,96),edge);shellBand.position.z=.02;model.add(shellBand);
 const domeGeo=new THREE.SphereGeometry(1.04,64,48,0,Math.PI*2,0,Math.PI*.56);
-const domeMat=new THREE.MeshPhysicalMaterial({color:0x8cecff,metalness:.08,roughness:.035,transparent:true,opacity:.22,clearcoat:1,clearcoatRoughness:.015,side:THREE.DoubleSide,depthWrite:false});
+const domeMat=new THREE.MeshPhysicalMaterial({color:0x8cecff,metalness:.08,roughness:.035,transparent:true,opacity:.34,clearcoat:1,clearcoatRoughness:.008,side:THREE.DoubleSide,depthWrite:false});
 const dome=new THREE.Mesh(domeGeo,domeMat);dome.position.set(0,0,-.55);dome.rotation.x=-Math.PI/2;model.add(dome);
-const domeGlow=new THREE.Mesh(new THREE.SphereGeometry(.99,48,32,0,Math.PI*2,0,Math.PI*.56),new THREE.MeshBasicMaterial({color:0x20dfff,transparent:true,opacity:.10,side:THREE.DoubleSide,depthWrite:false}));domeGlow.position.copy(dome.position);domeGlow.rotation.copy(dome.rotation);model.add(domeGlow);
-const domeRim=new THREE.Mesh(new THREE.TorusGeometry(1.02,.045,12,64),emissiveCyan);domeRim.position.set(0,0,-.55);model.add(domeRim);
+const domeGlow=new THREE.Mesh(new THREE.SphereGeometry(.99,48,32,0,Math.PI*2,0,Math.PI*.56),new THREE.MeshBasicMaterial({color:0x20dfff,transparent:true,opacity:.17,side:THREE.DoubleSide,depthWrite:false}));domeGlow.position.copy(dome.position);domeGlow.rotation.copy(dome.rotation);model.add(domeGlow);
+const domeRim=new THREE.Mesh(new THREE.TorusGeometry(1.02,.055,16,96),emissiveCyan);domeRim.position.set(0,0,-.55);model.add(domeRim);
 const cabinInterior=new THREE.Group();cabinInterior.position.set(0,-.02,-.63);model.add(cabinInterior);
 const cabinWhite=new THREE.MeshStandardMaterial({color:0xe7e9e5,metalness:.18,roughness:.66});
 const seatMat=new THREE.MeshStandardMaterial({color:0x202a30,metalness:.42,roughness:.5});
@@ -158,7 +168,7 @@ const consoleBase=new THREE.Mesh(new THREE.BoxGeometry(.88,.18,.30),black);conso
 for(let i=0;i<9;i++){const lamp=new THREE.Mesh(new THREE.SphereGeometry(.027,8,6),[emissiveCyan,emissiveRed,amber][i%3]);lamp.position.set(-.36+i*.09,-.64,-1.04);pilotGroup.add(lamp)}
 const cabinLight=new THREE.PointLight(0x36dfff,3.6,4);cabinLight.position.set(0,.25,-1.05);model.add(cabinLight);
 const canopyHighlight=new THREE.Mesh(new THREE.TorusGeometry(.76,.012,8,64),new THREE.MeshBasicMaterial({color:0xc8fbff,transparent:true,opacity:.65}));canopyHighlight.position.set(0,.15,-1.13);canopyHighlight.rotation.x=.25;model.add(canopyHighlight);
-for(let i=0;i<24;i++){const a=i/24*Math.PI*2,rr=1.02;const lamp=new THREE.Mesh(new THREE.SphereGeometry(i%4===0?.047:.026,10,8),i%4===0?emissiveRed:emissiveCyan);lamp.position.set(Math.cos(a)*rr,Math.sin(a)*rr,-.56);model.add(lamp)}
+for(let i=0;i<36;i++){const a=i/36*Math.PI*2,rr=1.02;const lamp=new THREE.Mesh(new THREE.SphereGeometry(i%4===0?.047:.026,10,8),i%4===0?emissiveRed:emissiveCyan);lamp.position.set(Math.cos(a)*rr,Math.sin(a)*rr,-.56);model.add(lamp)}
 for(let i=0;i<16;i++){const a=i/16*Math.PI*2;const lamp=new THREE.Mesh(new THREE.SphereGeometry(.035,8,6),i%3===0?amber:emissiveCyan);lamp.position.set(Math.cos(a)*1.22,Math.sin(a)*1.22,.08);model.add(lamp)}
 const canopyBeacon=new THREE.PointLight(0x40dfff,1.8,2.5);canopyBeacon.position.set(0,.7,-.65);model.add(canopyBeacon);
 ball(model,[0,0,.98],[.72,.72,.18],dark,40);
@@ -254,16 +264,16 @@ for(const [i,x] of [-.48,.48].entries()){
  laserBolts.push({haze,mid,core,head,hazeMat,midMat,coreMat,headMat,muzzleGlow,phase:i*.5,x});
 }
 // Parametric medusa propulsion appendages: tapered flexible tentacles, animated from their roots.
-const tentacleRig=new THREE.Group();tentacleRig.position.set(0,-.72,-1.18);model.add(tentacleRig);
+const tentacleRig=new THREE.Group();tentacleRig.position.set(0,-.72,-1.28);model.add(tentacleRig);
 const tentacleMats=[
- new THREE.MeshPhysicalMaterial({color:0x25113e,metalness:.42,roughness:.22,clearcoat:1,clearcoatRoughness:.08,emissive:0x26004a,emissiveIntensity:.34,side:THREE.DoubleSide}),
- new THREE.MeshPhysicalMaterial({color:0x142d43,metalness:.38,roughness:.2,clearcoat:1,emissive:0x062c58,emissiveIntensity:.38,side:THREE.DoubleSide}),
- new THREE.MeshPhysicalMaterial({color:0x35142f,metalness:.36,roughness:.24,clearcoat:1,emissive:0x4a0730,emissiveIntensity:.38})
+ new THREE.MeshPhysicalMaterial({color:0x7d155e,metalness:.38,roughness:.16,clearcoat:1,clearcoatRoughness:.035,emissive:0x9c075b,emissiveIntensity:.72,side:THREE.DoubleSide}),
+ new THREE.MeshPhysicalMaterial({color:0x087b9b,metalness:.42,roughness:.14,clearcoat:1,clearcoatRoughness:.025,emissive:0x006b9f,emissiveIntensity:.78,side:THREE.DoubleSide}),
+ new THREE.MeshPhysicalMaterial({color:0x9a4a28,metalness:.38,roughness:.18,clearcoat:1,emissive:0x9b2c55,emissiveIntensity:.62})
 ];
 const tentacleGlowMats=[
- new THREE.MeshBasicMaterial({color:0xff39b8,transparent:true,opacity:.9,blending:THREE.AdditiveBlending}),
- new THREE.MeshBasicMaterial({color:0x36dfff,transparent:true,opacity:.85,blending:THREE.AdditiveBlending}),
- new THREE.MeshBasicMaterial({color:0xffa14b,transparent:true,opacity:.85,blending:THREE.AdditiveBlending})
+ new THREE.MeshBasicMaterial({color:0xff20bd,transparent:true,opacity:1,blending:THREE.AdditiveBlending,depthWrite:false}),
+ new THREE.MeshBasicMaterial({color:0x27eaff,transparent:true,opacity:.96,blending:THREE.AdditiveBlending,depthWrite:false}),
+ new THREE.MeshBasicMaterial({color:0xff5b9b,transparent:true,opacity:.95,blending:THREE.AdditiveBlending,depthWrite:false})
 ];
 function taperedTube(points,radii,radial=10){
  const verts=[],indices=[],curve=new THREE.CatmullRomCurve3(points);
@@ -277,10 +287,10 @@ function taperedTube(points,radii,radial=10){
  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));geo.setIndex(indices);geo.computeVertexNormals();return geo;
 }
 const tentacles=[];
-for(let i=0;i<10;i++){
- const angle=i/10*Math.PI*2+(i%2)*.12,side=Math.cos(angle),depth=Math.sin(angle);
+for(let i=0;i<12;i++){
+ const angle=i/12*Math.PI*2+(i%2)*.12,side=Math.cos(angle),depth=Math.sin(angle);
  const root=new THREE.Group();root.position.set(side*.34,-.02,depth*.14);tentacleRig.add(root);
- const len=2.0+(i%4)*.34,spread=.48+(i%3)*.22;
+ const len=2.25+(i%4)*.38,spread=.58+(i%3)*.25;
  const points=[
   new THREE.Vector3(0,0,0),
   new THREE.Vector3(side*.12,-len*.28,depth*.06),
@@ -289,8 +299,10 @@ for(let i=0;i<10;i++){
   new THREE.Vector3(side*(spread*.65+.18),-len,depth*.10)
  ];
  const main=new THREE.Mesh(taperedTube(points,[.17,.145,.105,.063,.012],12),tentacleMats[i%3]);main.frustumCulled=false;root.add(main);
- const innerPts=points.map((p,k)=>new THREE.Vector3(p.x+(k===0?.02:0),p.y,p.z-.035));
- const filament=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(innerPts),40,.018,7,false),tentacleGlowMats[i%3]);filament.frustumCulled=false;root.add(filament);
+ const innerPts=points.map((p,k)=>new THREE.Vector3(p.x+(k===0?.02:0),p.y,p.z-.09));
+ const filament=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(innerPts),48,.026,8,false),tentacleGlowMats[i%3]);filament.frustumCulled=false;root.add(filament);
+ const edgePts=points.map((p,k)=>new THREE.Vector3(p.x+(k===0?-.035:0),p.y,p.z+.055));
+ const edgeGlow=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(edgePts),48,.012,6,false),tentacleGlowMats[(i+1)%3]);edgeGlow.frustumCulled=false;root.add(edgeGlow);
  for(let k=1;k<=4;k++){const p=new THREE.CatmullRomCurve3(points).getPointAt(k/5);const bead=new THREE.Mesh(new THREE.SphereGeometry(.035+(1-k/6)*.018,10,8),tentacleGlowMats[(i+k)%3]);bead.position.copy(p);root.add(bead)}
  const tip=new THREE.Mesh(new THREE.SphereGeometry(.045,12,8),tentacleGlowMats[i%3]);tip.position.copy(points[4]);root.add(tip);
  tentacles.push({root,phase:i*1.37,angle,len});
