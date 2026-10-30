@@ -2,10 +2,10 @@
 date: 2026-10-31
 topic: STARFALL — Void Hunter: паспорт проекта (архитектура, технологии, механика, сохранения, качество)
 tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура]
-game_version: "v59"
+game_version: "v60"
 last_update: 2026-10-31
 main_file: STARFALL_CURRENT.html
-main_file_sha256: "ec36858cc827454b0fb1fe0af481ae86e485580cb85f8e298cda460f3f3c4389"
+main_file_sha256: "71a77a7fda7b201ea588f06713a422f9f106cc059ee3f1f32bbd42cee73f7717"
 save_format_version: 2
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"
@@ -19,6 +19,11 @@ libs:
 > Назначение файла: дать будущей сессии полный контекст без перечитывания ~360 КБ кода и всей переписки.
 > **Правило:** любое изменение `STARFALL_CURRENT.html` обновляет в том же коммите этот паспорт (в т.ч. `game_version`, `last_update`, `main_file_sha256`) и `CHANGELOG.md`. SHA считается командой `python3 tools/check_passport.py --fix`; проверка есть в CI (`.github/workflows/passport-check.yml`) и локально `python3 tools/check_passport.py`.
 > Перед правками всё равно открыть актуальный `STARFALL_CURRENT.html` — этот паспорт описывает устройство, а не заменяет код.
+
+## v60 — визуальная компоновка звёздной системы
+- Орбиты планет: 11,7–60 тыс. единиц.
+- Центральная звезда: красно-оранжевое ядро и многослойная корона.
+- Атмосферы планет: три разнесённые тонкие оболочки поверх облачного слоя.
 
 ## 1. Карточка проекта
 
