@@ -1,29 +1,18 @@
-# Pirate Fighter 001 — approved visual direction
+# STARFALL Pirate TIE Fighter — pirate_droid_001
 
-**Asset ID:** `pirate_fighter_001`  
-**Status:** interactive procedural 3D viewer  
-**Viewer:** [index.html](./index.html)
+Procedural 3D visual prototype built in Blender from the supplied specification.
 
-## Approved design
+## Files
 
-- Twin vertical hexagonal wing plates; proportions and silhouette follow the approved concept.
-- Weathered white enamel, exposed metal edges, scratches and chipped paint.
-- Pirate skull-and-crossbones graphics and hand-painted markings on both wings.
-- Central spherical cockpit shell with an iridescent scale finish.
-- Transparent forward canopy, illuminated cabin and visible angular black-armored pilot.
-- Twin forward laser cannons and twin aft plasma engines.
-- No tentacle appendages or unrelated decorative geometry.
+- `pirate_droid_001.blend` — editable Blender scene.
+- `pirate_droid_001.glb` — updated scene export.
+- `pirate_droid_001_preview.png` — updated rendered preview.
+- `config.json` — asset metadata and status.
 
-## Viewer controls
+## Current additions
 
-- Orbit with mouse drag or touch; pinch / wheel to zoom.
-- Front, rear, side, top and bottom camera views.
-- Studio, hangar and space lighting presets.
-- Auto-rotation, wireframe, scale, lighting, wear and cockpit-glow controls.
-- Portrait layout rotates the wing span to fit a phone display.
+Both wings now have a blue photovoltaic cell grid with metallic bus conductors, plus layered skull and crossbones reliefs, red bandanas, and Russian pirate profanity stencils. The cockpit now contains a green alien pilot with an elongated head and large reflective black eyes, visible through the canopy.
 
-## Production boundary
+## Status and limitations
 
-The current asset is a self-contained Three.js r128 procedural model rendered by the viewer. It is **not yet an exported GLB** and does not contain baked UV/PBR texture maps. The canvas-generated textures and geometry are runtime assets. The approved concept is now represented in a reviewable 3D prototype; Blender/GLB authoring, UV unwrap, baked material maps, LOD and in-game integration remain separate production steps.
-
-The gameplay HTML has not been modified.
+This remains a procedural visual prototype. The wing cells and skull emblems are modeled geometry rather than authored image textures. Production wear maps, optimized retopology/LODs, animated tentacle deformation or flight response, animated laser bolts, an interactive Three.js viewer, and mobile performance profiling are not included. The tentacles hold a static pose.
