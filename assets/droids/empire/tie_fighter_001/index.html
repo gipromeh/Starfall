@@ -398,7 +398,7 @@ for(const e of tentacles){
  controls.update();if(composer)composer.render();else renderer.render(scene,camera)
 }animate();
 badge.textContent=composer?"WEBGL + BLOOM OK · 12 ЩУПАЛЕЦ":"WEBGL OK · BLOOM FALLBACK";
-addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));if(composer)composer.setSize(innerWidth,innerHeight);const portrait=innerWidth<innerHeight;model.rotation.z=0;camera.position.set(0,portrait?0:1.2,portrait?-27:-14.5);controls.target.set(0,0,0);controls.update()});
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));if(composer)composer.setSize(innerWidth,innerHeight);const portrait=innerWidth<innerHeight;model.rotation.z=0;camera.position.set(0,portrait?0:1.2,portrait?-15:-10.5);controls.target.set(0,0,0);controls.update()});
 }catch(error){showError(error.stack||error.message||error)}
 })();
 </script>
