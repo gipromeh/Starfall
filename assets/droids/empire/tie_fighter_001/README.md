@@ -1,21 +1,35 @@
-# TIE Fighter — TIE/ln
+# STARFALL — Void Hunter / Abyssal Sentinel
 
-**ID:** `tie_fighter_001`  
-**Faction:** `empire`  
-**Type:** fighter  
-**Status:** procedural viewer; GLB export is not available yet.
+**ID:** `tie_fighter_001` (legacy asset path)  
+**Type:** biomechanical drone  
+**Status:** procedural Three.js viewer, version 1.1.0
 
-## Files
+## Visual design
 
-- `index.html` — standalone Three.js viewer and procedural model source.
-- `config.json` — asset metadata and viewer capabilities.
-- `textures/` — reserved for exported texture maps.
-- `animations/` — reserved for reusable animation assets.
-- `preview.png` — reserved for an actual rendered preview.
-- `model.glb` — reserved for a future GLB export.
-
-The model is currently generated at runtime. Do not create empty placeholder files for GLB, textures, animations, or preview. Keep the viewer self-contained until a real export pipeline is implemented.
+- Sculpted 3D skull with recessed eye sockets, cheek plates, teeth and emissive cranial details.
+- Transparent luminous canopy and iridescent organic shell.
+- Twelve tapered, animated tentacles with cyan, magenta and crimson filaments.
+- Machined twin cannons with animated magenta plasma bolts.
+- Compact shoulder armor; the oversized TIE wing plates are no longer part of the rendered silhouette.
+- Starfield, cinematic lighting and Unreal Bloom post-processing.
 
 ## Runtime
 
-Three.js 0.128.0 is loaded from jsDelivr CDN. The viewer is independent of the main STARFALL game loop.
+- Three.js 0.128.0
+- WebGLRenderer
+- OrbitControls
+- EffectComposer, RenderPass, UnrealBloomPass
+- CDN dependencies; bloom gracefully falls back to direct WebGL rendering if post-processing scripts fail.
+
+## Controls
+
+Drag / touch — orbit  
+Wheel / pinch — zoom  
+Front / side / top — camera presets  
+Spin — automatic turntable  
+Wireframe — geometry inspection  
+Model scale and lighting — live sliders
+
+## Asset state
+
+The model is procedural and generated at runtime in `index.html`. A production GLB and baked PBR texture set have not been exported. No placeholder model files are used.
