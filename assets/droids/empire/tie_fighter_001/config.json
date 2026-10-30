@@ -1,0 +1,34 @@
+{
+  "id": "tie_fighter_001",
+  "name": "TIE Fighter",
+  "designation": "TIE/ln",
+  "faction": "empire",
+  "asset_type": "fighter",
+  "status": "procedural_viewer",
+  "version": "1.0.0",
+  "entrypoint": "index.html",
+  "model": null,
+  "model_format": null,
+  "geometry": "procedural-threejs",
+  "renderer": {
+    "library": "three.js",
+    "version": "0.128.0"
+  },
+  "controls": {
+    "orbit": true,
+    "zoom": true,
+    "presets": [
+      "front",
+      "side",
+      "top"
+    ],
+    "wireframe": true
+  },
+  "capabilities": [
+    "animated-engine-plumes",
+    "animated-laser-bolts",
+    "animated-tentacles",
+    "pilot-visible"
+  ],
+  "notes": "Исходная модель реализована процедурной геометрией внутри Three.js viewer. Файл model.glb пока отсутствует."
+}
