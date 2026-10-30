@@ -19,7 +19,8 @@
       "category": "fighter",
       "path": "assets/ships/pirate/pirate_fighter_002/",
       "config": "config.json",
-      "status": "library"
+      "status": "integrated",
+      "model": "model.glb"
     }
   ]
 }
