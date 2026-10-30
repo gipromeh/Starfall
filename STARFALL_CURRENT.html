@@ -144,6 +144,7 @@ small{opacity:.75;max-width:600px;line-height:1.6}
 <div class="ov hide" id="over"><h2>МИССИЯ ПРОВАЛЕНА</h2><div id="fin" style="font-size:22px"></div><button id="rst2">ЗАНОВО</button><button id="men2">В МЕНЮ</button></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script><script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script><script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script><script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script><script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script><script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
 <script id="cafe-mod">
 /* ===== CAFE3D: Babylon-бар для вкладки ХОЛЛ (грузится лениво) ===== */
@@ -2366,6 +2367,9 @@ const MC={};
 function cached(key,build){const b=MC[key]||(MC[key]=(()=>{const g=build();g.userData={sc:g.userData.sc||1};return g})());const c=b.clone(true);c.userData={};c.scale.setScalar(b.userData.sc);return c}
 const lightenP=g=>{g.traverse(o=>{if(!o.isMesh||!o.material)return;(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{if(!m.isMeshStandardMaterial||m.userData.lit)return;m.userData.lit=1;if(m.map&&m.emissiveIntensity<=1&&m.emissive.getHex()===0){m.metalness=Math.min(m.metalness,.22);m.roughness=Math.max(m.roughness,.62);m.emissive.setHex(0xffffff);m.emissiveMap=m.map;m.emissiveIntensity=.34}})});return g};
 mkPirate=function(ty){return cached("p"+ty,()=>lightenP(SKIT.mkPirate(ty,gtex)))};
+// v44: GLB-модели пиратов из assets/ships (после загрузки подменяют процедурную модель этого типа в кэше MC; при любой ошибке/без сети остаётся процедурная)
+const GLB_PIR=[{ty:0,url:"assets/ships/pirate/pirate_fighter_002/model.glb",sc:.75}];
+if(T.GLTFLoader&&location.protocol!=="file:"){const GL_=new T.GLTFLoader();GLB_PIR.forEach(d=>GL_.load(d.url,gl=>{try{const g=gl.scene;g.traverse(o=>{if(o.isMesh)o.geometry.userData.keep=1});g.userData={sc:d.sc};MC["p"+d.ty]=lightenP(g)}catch(e){console.warn("GLB",d.url,e)}},undefined,()=>{}))}
 mkBoss=function(){return cached("boss",()=>SKIT.mkBoss(gtex))};
 mkStation=function(){return SKIT.mkStation(gtex)};
 mkFreighter=function(){const k=Math.random()<.6?0:1,g=cached("f"+k,()=>{const f=SKIT.mkFreighter(k,gtex);f.userData.sc=1.6;return f});return g};

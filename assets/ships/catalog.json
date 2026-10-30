@@ -11,6 +11,15 @@
       "config": "config.json",
       "viewer": "index.html",
       "status": "procedural_viewer"
+    },
+    {
+      "id": "pirate_fighter_002",
+      "name": "Pirate Fighter 002 — Ржавый череп",
+      "faction": "pirate",
+      "category": "fighter",
+      "path": "assets/ships/pirate/pirate_fighter_002/",
+      "config": "config.json",
+      "status": "integrated"
     }
   ]
 }
