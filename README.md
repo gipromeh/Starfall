@@ -11,15 +11,19 @@
 | `CHANGELOG.md` | История версий |
 | `STARFALL_MASTER_INSTRUCTION.yaml` | Мастер-инструкция по этапам (stages) и чек-лист приёмки |
 
+## Единственный источник правды
+
+Игра живёт только здесь: `gipromeh/Starfall`, ветка `main`. Версии в проекте Claude, в старых чатах и артефактах — архив. Текущая версия: **v40.1** (метка `v40.1`).
+
 ## Как работать с Claude
 
 Начало чата:
 
-> Прочитай STARFALL_PASSPORT.md и STARFALL_CURRENT.html из репозитория. Работай только с ним.
+> Подключи репозиторий gipromeh/Starfall, прочитай STARFALL_PASSPORT.md и STARFALL_CURRENT.html из него. Работай только с ним. Задача: ...
 
 Конец чата:
 
-> Обнови STARFALL_CURRENT.html, паспорт и changelog, закоммить в репозиторий.
+> Обнови STARFALL_CURRENT.html, паспорт и CHANGELOG.md, закоммить с меткой версии и запушь в main.
 
 ## Правила репозитория
 
