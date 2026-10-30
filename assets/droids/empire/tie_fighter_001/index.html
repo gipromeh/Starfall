@@ -27,8 +27,8 @@ label{display:flex;justify-content:space-between;font-size:11px;color:#c2d0db;ma
 </div>
 <div id="hint">Вращение — палец/мышь · масштаб — щипок или колесо · череп · купол · 12 подвижных щупалец</div>
 <div id="stage"></div>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js" onerror="document.getElementById('badge').textContent='ОШИБКА: не загрузился Three.js CDN'"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js" onerror="document.getElementById('badge').textContent='ОШИБКА: не загрузился OrbitControls CDN'"></script>
+<script src="https://unpkg.com/three@0.128.0/build/three.min.js" onerror="document.getElementById('badge').textContent='ОШИБКА: не загрузился Three.js CDN'"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js" onerror="document.getElementById('badge').textContent='ОШИБКА: не загрузился OrbitControls CDN'"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
@@ -49,8 +49,9 @@ const camera=new THREE.PerspectiveCamera(38,innerWidth/innerHeight,.1,200);const
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;
 document.querySelector('#stage').appendChild(renderer.domElement);
-const composer=THREE.EffectComposer&&THREE.RenderPass&&THREE.UnrealBloomPass?new THREE.EffectComposer(renderer):null;
-if(composer){composer.addPass(new THREE.RenderPass(scene,camera));composer.addPass(new THREE.UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.82,.58,.16));}
+// Render directly while validating the model. Post-processing is intentionally bypassed here:
+// the viewer must remain visible even if an optional post-processing CDN module fails.
+const composer=null;
 const controls=new THREE.OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.075;controls.enableRotate=true;controls.enablePan=false;controls.minAzimuthAngle=-Infinity;controls.maxAzimuthAngle=Infinity;controls.minPolarAngle=.001;controls.maxPolarAngle=Math.PI-.001;controls.rotateSpeed=.8;controls.minDistance=4;controls.maxDistance=48;
 scene.add(new THREE.HemisphereLight(0xb9d7f2,0x202630,1.7));
 const key=new THREE.DirectionalLight(0xe4f1ff,2.4);key.position.set(-5,7,8);scene.add(key);
@@ -395,10 +396,10 @@ for(const e of tentacles){
 }
  haloGroup.rotation.z=Math.sin(t*.22)*.08;
  cyanRimLight.intensity=19+Math.sin(t*2.1)*4;magentaRimLight.intensity=17+Math.cos(t*1.7)*4;
- controls.update();if(composer)composer.render();else renderer.render(scene,camera)
+ controls.update();renderer.render(scene,camera)
 }animate();
-badge.textContent=composer?"WEBGL + BLOOM OK · 12 ЩУПАЛЕЦ":"WEBGL OK · BLOOM FALLBACK";
-addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));if(composer)composer.setSize(innerWidth,innerHeight);const portrait=innerWidth<innerHeight;model.rotation.z=0;camera.position.set(0,portrait?0:1.2,portrait?-15:-10.5);controls.target.set(0,0,0);controls.update()});
+badge.textContent="WEBGL OK · МОДЕЛЬ ЗАГРУЖЕНА · 12 ЩУПАЛЕЦ";
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));const portrait=innerWidth<innerHeight;model.rotation.z=0;camera.position.set(0,portrait?0:1.2,portrait?-15:-10.5);controls.target.set(0,0,0);controls.update()});
 }catch(error){showError(error.stack||error.message||error)}
 })();
 </script>
