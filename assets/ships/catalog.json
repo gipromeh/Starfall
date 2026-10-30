@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "activeShip": "pirate_fighter_001",
+  "ships": [
+    {
+      "id": "pirate_fighter_001",
+      "name": "Pirate Fighter — Bio-Plasma",
+      "faction": "pirate",
+      "category": "fighter",
+      "path": "assets/ships/pirate/pirate_fighter_001/",
+      "config": "config.json",
+      "viewer": "index.html",
+      "status": "procedural_viewer"
+    }
+  ]
+}
