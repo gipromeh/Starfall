@@ -1,18 +1,19 @@
 {
   "id": "tie_fighter_001",
-  "name": "TIE Fighter",
+  "name": "Void Hunter — Abyssal Sentinel",
   "designation": "TIE/ln",
   "faction": "empire",
-  "asset_type": "fighter",
+  "asset_type": "biomechanical_drone",
   "status": "procedural_viewer",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "entrypoint": "index.html",
   "model": null,
   "model_format": null,
   "geometry": "procedural-threejs",
   "renderer": {
     "library": "three.js",
-    "version": "0.128.0"
+    "version": "0.128.0",
+    "pipeline": "WebGLRenderer + EffectComposer + UnrealBloomPass"
   },
   "controls": {
     "orbit": true,
@@ -25,10 +26,14 @@
     "wireframe": true
   },
   "capabilities": [
-    "animated-engine-plumes",
-    "animated-laser-bolts",
-    "animated-tentacles",
-    "pilot-visible"
+    "sculpted-3d-skull",
+    "luminous-transparent-dome",
+    "12-animated-neon-tentacles",
+    "magenta-plasma-cannons",
+    "iridescent-organic-shell",
+    "orbit-controls",
+    "mobile-touch",
+    "bloom-postprocessing"
   ],
-  "notes": "Исходная модель реализована процедурной геометрией внутри Three.js viewer. Файл model.glb пока отсутствует."
+  "notes": "Биомеханический дроид с отдельной рельефной геометрией черепа, светящимся куполом и 12 анимированными щупальцами. Модель генерируется процедурно внутри viewer; GLB пока не экспортирован."
 }
