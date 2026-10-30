@@ -109,7 +109,7 @@ function makeLiveryTexture(side){
  for(let i=0;i<46;i++){const px=rnd()*512,py=rnd()*512;x.strokeStyle=rnd()>.5?'rgba(240,242,224,.58)':'rgba(8,17,24,.65)';x.lineWidth=.7+rnd()*1.1;x.beginPath();x.moveTo(px,py);x.lineTo(px+4+rnd()*22,py+(rnd()-.5)*3);x.stroke()}
  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=8;return t;
 }
-const wingLivery=[-1,1].map(side=>{const m=new THREE.MeshStandardMaterial({color:0xffffff,map:makeLiveryTexture(side),metalness:.48,roughness:.52});allMats.push(m);return m});
+const wingLivery=[-1,1].map(side=>{const m=new THREE.MeshStandardMaterial({color:0xffffff,map:makeLiveryTexture(side),metalness:.18,roughness:.62,side:THREE.DoubleSide});allMats.push(m);return m});
 function cylBetween(parent,a,b,r1,r2,material,n=12){const d=new THREE.Vector3().subVectors(b,a),m=new THREE.Mesh(new THREE.CylinderGeometry(r2,r1,d.length(),n),material);m.position.copy(a).add(b).multiplyScalar(.5);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());parent.add(m);return m}
 function rod(p,a,b,r,m){return cylBetween(p,new THREE.Vector3(...a),new THREE.Vector3(...b),r,r,m,10)}
 function ball(p,pos,scale,m,n=24){const o=new THREE.Mesh(new THREE.SphereGeometry(1,n,Math.max(12,n/2)),m);o.position.set(...pos);o.scale.set(...scale);p.add(o);return o}
@@ -150,7 +150,23 @@ function makeWing(side){
  const g=new THREE.Group();g.position.x=side*3.45;model.add(g);const w=3.15,h=4.05;
  const pts=[[-w*.34,h*.5],[w*.34,h*.5],[w*.5,h*.29],[w*.5,-h*.29],[w*.34,-h*.5],[-w*.34,-h*.5],[-w*.5,-h*.29],[-w*.5,h*.29]];
  const s=new THREE.Shape();s.moveTo(...pts[0]);for(let i=1;i<pts.length;i++)s.lineTo(...pts[i]);s.closePath();
- const plate=new THREE.Mesh(new THREE.ExtrudeGeometry(s,{depth:.10,bevelEnabled:true,bevelThickness:.025,bevelSize:.025,bevelSegments:2}),wingLivery[side<0?0:1]);plate.position.z=-.05;g.add(plate);
+ const plateGeo=new THREE.ExtrudeGeometry(s,{depth:.10,bevelEnabled:true,bevelThickness:.025,bevelSize:.025,bevelSegments:2});
+ const pAttr=plateGeo.attributes.position,uvAttr=plateGeo.attributes.uv;
+ for(let vi=0;vi<pAttr.count;vi++)uvAttr.setXY(vi,(pAttr.getX(vi)+w*.5)/w,(pAttr.getY(vi)+h*.5)/h);
+ uvAttr.needsUpdate=true;plateGeo.computeVertexNormals();
+ const plateMat=wingLivery[side<0?0:1];plateMat.side=THREE.DoubleSide;
+ const plate=new THREE.Mesh(plateGeo,plateMat);plate.position.z=-.05;g.add(plate);
+ function paintPanel(points,material,z=-.125){
+  const sh=new THREE.Shape();sh.moveTo(points[0][0],points[0][1]);
+  for(let i=1;i<points.length;i++)sh.lineTo(points[i][0],points[i][1]);sh.closePath();
+  const mat=material.clone();mat.side=THREE.DoubleSide;
+  const mesh=new THREE.Mesh(new THREE.ShapeGeometry(sh),mat);mesh.position.z=z;g.add(mesh);return mesh;
+ }
+ paintPanel([[-1.28,1.72],[-.42,1.72],[.02,1.15],[-.88,.88]],cobalt);
+ paintPanel([[.10,1.72],[1.28,1.72],[1.28,1.18],[.54,.92]],amber);
+ paintPanel([[-1.28,-.10],[-.62,-.10],[-.20,-.72],[-1.28,-1.22]],teal);
+ paintPanel([[.30,-.72],[1.28,-.30],[1.28,-1.62],[.72,-1.72]],orange);
+ paintPanel([[-.42,.66],[.34,.66],[.62,.22],[-.18,.22]],signalRed);
  for(let i=0;i<pts.length;i++){const p=pts[i],q=pts[(i+1)%pts.length];rod(g,[p[0],p[1],-.02],[q[0],q[1],-.02],.075,bright)}
  const inner=pts.map(([x,y])=>[x*.84,y*.84]);for(let i=0;i<inner.length;i++){const p=inner[i],q=inner[(i+1)%inner.length];rod(g,[p[0],p[1],-.105],[q[0],q[1],-.105],.035,edge)}
  // Procedural paint damage: fine scratches, exposed metal chips and fasteners.
