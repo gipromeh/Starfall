@@ -97,6 +97,32 @@ function makeLiveryTexture(side){
  x.fillStyle='#ffca52';x.beginPath();x.arc(398,350,23,0,Math.PI*2);x.fill();
  x.fillStyle='#17344a';x.beginPath();x.arc(398,350,15,0,Math.PI*2);x.fill();
  x.fillStyle='#f1eee0';x.fillRect(64,338,150,8);x.fillRect(64,354,92,5);
+ // Hand-painted pirate graffiti: skull-and-crossbones on the left wing,
+ // crude anti-Imperial spray lettering on the opposite wing.
+ x.save();x.translate(256,256);
+ if(side<0){
+  x.rotate(-.055);x.fillStyle='rgba(3,10,15,.72)';x.beginPath();x.arc(0,4,103,0,Math.PI*2);x.fill();
+  x.strokeStyle='#e9dfbd';x.lineWidth=9;x.lineCap='round';x.beginPath();x.moveTo(-72,72);x.lineTo(72,-72);x.moveTo(-72,-72);x.lineTo(72,72);x.stroke();
+  x.fillStyle='#e9dfbd';x.beginPath();x.moveTo(-53,-49);x.quadraticCurveTo(-64,-108,0,-112);x.quadraticCurveTo(64,-108,53,-49);x.lineTo(43,31);x.quadraticCurveTo(36,57,22,64);x.lineTo(-22,64);x.quadraticCurveTo(-36,57,-43,31);x.closePath();x.fill();
+  x.fillStyle='#07131c';x.beginPath();x.moveTo(-39,-39);x.quadraticCurveTo(-20,-61,-7,-34);x.lineTo(-15,-5);x.quadraticCurveTo(-37,-4,-42,-20);x.closePath();x.fill();
+  x.beginPath();x.moveTo(39,-39);x.quadraticCurveTo(20,-61,7,-34);x.lineTo(15,-5);x.quadraticCurveTo(37,-4,42,-20);x.closePath();x.fill();
+  x.beginPath();x.moveTo(-8,9);x.lineTo(0,-5);x.lineTo(8,9);x.closePath();x.fill();x.fillRect(-29,37,58,9);
+  x.strokeStyle='#07131c';x.lineWidth=4;for(let k=-2;k<=2;k++){x.beginPath();x.moveTo(k*11,38);x.lineTo(k*11,57);x.stroke()}
+  x.fillStyle='#b72c37';x.beginPath();x.moveTo(-48,-54);x.quadraticCurveTo(0,-78,48,-54);x.lineTo(39,-38);x.quadraticCurveTo(0,-53,-39,-38);x.closePath();x.fill();
+  x.beginPath();x.moveTo(43,-50);x.lineTo(78,-64);x.lineTo(61,-34);x.closePath();x.fill();
+  x.strokeStyle='#15232b';x.lineWidth=3;x.beginPath();x.moveTo(-8,-79);x.lineTo(-2,-61);x.lineTo(-13,-49);x.stroke();
+  x.rotate(.055);const profanity=String.fromCharCode(70,85,67,75,32,84,72,69,32,69,77,80,73,82,69);
+  x.font='900 35px Impact, sans-serif';x.textAlign='center';x.lineJoin='round';x.lineWidth=9;x.strokeStyle='#07131c';x.strokeText(profanity,0,-137);x.fillStyle='#f2dfad';x.fillText(profanity,0,-137);
+  x.font='900 19px Impact, sans-serif';x.lineWidth=5;x.strokeStyle='#07131c';x.strokeText('NO QUARTER',0,145);x.fillStyle='#e9dfbd';x.fillText('NO QUARTER',0,145);
+ }else{
+  x.rotate(.045);x.font='900 49px Impact, Haettenschweiler, sans-serif';x.textAlign='center';x.lineJoin='bevel';
+  x.lineWidth=12;x.strokeStyle='#07131c';x.strokeText('EMPIRE',0,-20);x.fillStyle='#ffcf55';x.fillText('EMPIRE',0,-20);
+  x.font='900 47px Impact, Haettenschweiler, sans-serif';x.lineWidth=11;x.strokeStyle='#07131c';x.strokeText('CAN KISS',0,31);x.fillStyle='#f1e8ce';x.fillText('CAN KISS',0,31);
+  x.font='900 51px Impact, Haettenschweiler, sans-serif';x.lineWidth=12;x.strokeStyle='#07131c';x.strokeText('MY ASS',0,83);x.fillStyle='#ef6248';x.fillText('MY ASS',0,83);
+  x.strokeStyle='#ef6248';x.lineWidth=5;x.beginPath();x.moveTo(-112,-57);x.lineTo(-125,-83);x.moveTo(105,96);x.lineTo(118,128);x.stroke();
+  x.fillStyle='#ef6248';for(let i=0;i<48;i++){const a=i*2.399,r=65+(i%7)*9;x.beginPath();x.arc(Math.cos(a)*r,Math.sin(a)*r,1.5+(i%4),0,Math.PI*2);x.fill()}
+ }
+ x.restore();
  // Rivet rows, panel seams and restrained weathering.
  x.strokeStyle='rgba(210,236,232,.35)';x.lineWidth=2;
  for(let y=76;y<410;y+=48){x.beginPath();x.moveTo(48,y);x.lineTo(464,y);x.stroke()}
