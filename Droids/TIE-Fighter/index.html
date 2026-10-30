@@ -40,7 +40,7 @@ if(!window.THREE)throw new Error("Three.js не загрузился. Прове
 if(!THREE.OrbitControls)throw new Error("OrbitControls не загрузился.");
 
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x070b12);scene.fog=new THREE.FogExp2(0x070b12,.018);
-const camera=new THREE.PerspectiveCamera(38,innerWidth/innerHeight,.1,200);camera.position.set(0,1.2,-12.8);
+const camera=new THREE.PerspectiveCamera(38,innerWidth/innerHeight,.1,200);const portrait=innerWidth<innerHeight;camera.position.set(0,portrait?0:1.2,portrait?-21:-12.8);
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;
 document.querySelector('#stage').appendChild(renderer.domElement);
@@ -134,12 +134,12 @@ let spinning=true,wire=false;
 document.querySelector('#spin').onclick=e=>{spinning=!spinning;e.target.textContent='Вращение: '+(spinning?'ВКЛ':'ВЫКЛ');e.target.classList.toggle('active',spinning)};
 document.querySelector('#wire').onclick=e=>{wire=!wire;allMats.forEach(m=>m.wireframe=wire);e.target.classList.toggle('active',wire)};
 function setView(p){spinning=false;document.querySelector('#spin').textContent='Вращение: ВЫКЛ';document.querySelector('#spin').classList.remove('active');camera.position.set(...p);controls.target.set(0,0,0);controls.update()}
-document.querySelector('#front').onclick=()=>setView([0,0,-13]);document.querySelector('#side').onclick=()=>setView([13,1,0]);document.querySelector('#top').onclick=()=>setView([0,13,.01]);
+const viewDistance=()=>innerWidth<innerHeight?21:13;document.querySelector('#front').onclick=()=>setView([0,0,-viewDistance()]);document.querySelector('#side').onclick=()=>setView([viewDistance(),innerWidth<innerHeight?0:1,0]);document.querySelector('#top').onclick=()=>setView([0,viewDistance(),.01]);
 document.querySelector('#detail').oninput=e=>{model.scale.setScalar(+e.target.value/100);document.querySelector('#detailVal').textContent=e.target.value+'%'};
 document.querySelector('#light').oninput=e=>{const v=+e.target.value/100;key.intensity=2.4*v;rim.intensity=1.95*v;fill.intensity=26*v;document.querySelector('#lightVal').textContent=e.target.value+'%'};
 const clock=new THREE.Clock();function animate(){requestAnimationFrame(animate);if(spinning)model.rotation.y+=clock.getDelta()*.22;else clock.getDelta();controls.update();renderer.render(scene,camera)}animate();
 badge.textContent="3D ENGINE OK · МОДЕЛЬ СОЗДАНА";
-addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));model.rotation.z=innerWidth<innerHeight?Math.PI/2:0});
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));const portrait=innerWidth<innerHeight;model.rotation.z=portrait?Math.PI/2:0;camera.position.set(0,portrait?0:1.2,portrait?-21:-12.8);controls.target.set(0,0,0);controls.update()});
 }catch(error){showError(error.stack||error.message||error)}
 })();
 </script>
