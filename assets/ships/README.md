@@ -1,9 +1,54 @@
 # STARFALL Ship Asset Library
 
-All ship models, previews, material sets and animation assets live here. Every ship has a stable ID and its own directory. Runtime systems resolve assets through `catalog.json`; gameplay code must not hardcode model paths.
+Все модели кораблей, превью и материалы живут здесь. У каждого корабля стабильный `id` и своя папка. Игра находит модели через `catalog.json`; пути к моделям в игровом коде не зашиваются.
 
-## First asset
+## Просмотр
 
-- `pirate/pirate_fighter_001/` — Pirate Fighter — Bio-Plasma.
+Один общий просмотрщик для всех GLB: `viewer.html?ship=<id>` (без параметра открывается `activeShip` из каталога). Он показывает модель с видами, светом, каркасом и осями и делает проверку: бюджет треугольников, размер текстур и файла, ориентацию, центр. Красные пункты исправляем до коммита.
 
-The asset README records its production status and export requirements.
+Корабль без GLB (процедурный) показывает ссылку на свой старый просмотрщик.
+
+## Структура
+
+```
+assets/ships/
+  catalog.json                      реестр: id → папка, статус
+  viewer.html                       общий просмотрщик GLB
+  _template/config.json             шаблон паспорта
+  <фракция>/<id>/
+    model.glb                       модель (главный файл)
+    config.json                     паспорт (по шаблону)
+    README.md                       заметки: замысел, статус
+    preview.png                     (по желанию) превью для каталога
+```
+
+Новый корабль: папка с `id` вида `фракция_класс_NNN`, `model.glb`, `config.json` из шаблона, запись в `catalog.json` со `status: "glb"`.
+
+## Поля `config.json` (schemaVersion 2)
+
+| Поле | Смысл |
+|---|---|
+| `model` | путь к GLB относительно папки корабля |
+| `status` | `procedural_viewer` → `glb` → `integrated` |
+| `replaces` | какой корабль игры заменяет: `{kind: "player", index: 3}` (индекс в `SHIPS`), `{kind: "pirate", index: 1}` (тип `ty`), `boss`, `transport` |
+| `scale` | множитель масштаба при подключении в игру |
+| `budget.triangles` | лимит треугольников (по умолчанию 9000) |
+
+## Требования к GLB (экспорт из Blender)
+
+Формат: glTF 2.0 Binary (`.glb`), Y вверх, Draco по желанию.
+
+- **Ориентация.** Нос корабля смотрит по **+Y в Blender** (в GLB это −Z), двигатели сзади по −Y Blender (+Z в GLB). Так устроены модели в игре. В просмотрщике включи «Оси» и проверь: нос по −Z.
+- **Начало координат** в центре корабля (`Object → Set Origin → Origin to Geometry`), `Ctrl+A → Scale/Rotation` перед экспортом. Без вложенных скейлов и модификаторов (в экспорте включить «Apply Modifiers»).
+- **Бюджет.** До ~9 000 треугольников на корабль (так сейчас в игре; ориентир для iPhone). Крупные корабли можно обсуждать отдельно.
+- **Материалы.** Metallic-Roughness (Principled BSDF). Текстуры не больше 2048 px, лучше 1024; запечённые Base Color / Normal / ORM. Эмиссия для окон и двигателей через Emissive.
+- **Файл** до ~5 МБ (иначе сжать текстуры или включить Draco).
+- **Меши.** Без скелета и анимаций (если не нужны), имена объектов понятные (`hull`, `engine_L`, `cockpit`). Огни двигателей и пушек можно отметить пустышками `engine_*`, `gun_*`: игра потом найдёт по имени.
+
+## Подключение в игру (следующий шаг)
+
+Игра сейчас строит корабли кодом (модуль `SKIT`) и GLB не грузит: для этого понадобится `GLTFLoader` r128 и «приклейка», которая по `replaces` подменяет процедурную модель. Это отдельная версия игры; пока GLB только в библиотеке и в просмотрщике. Статус `integrated` ставится после подключения.
+
+## Корабли
+
+- `pirate/pirate_fighter_001/` — Pirate Fighter, Bio-Plasma (процедурный просмотрщик, GLB пока нет).
