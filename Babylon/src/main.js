@@ -209,7 +209,7 @@ async function boot(){
     camera.rotationOffset=180;camera.cameraAcceleration=.045;camera.maxCameraSpeed=42;
     scene.activeCamera=camera;
     const glow=new BABYLON.GlowLayer("combat-glow",scene,{blurKernelSize:touchDevice?12:16});
-    glow.intensity=touchDevice?.26:.34;
+    glow.intensity=touchDevice ? 0.26 : 0.34;
 
     input=new InputAdapter(canvas);
     if(new URLSearchParams(location.search).has("test")){
