@@ -41,6 +41,35 @@ const L = require('./lib');
   });
   L.check('уничтожение и восстановление корабля сохраняют слот и тип', damage.destroyed && damage.respawned && damage.sameType && damage.slots === 10, damage);
 
+  const textureReuse = await page.evaluate(() => {
+    const first = pirateFleet[0];
+    pirateFleetDamage(first, first.hp * .4, false);
+    pirateFleetDamage(first, first.hp * .4, false);
+    R.render(S, C);
+    const before = R.info.memory.textures;
+    for (let i = 0; i < 5; i++) {
+      const e = pirateFleet[i];
+      pirateFleetDamage(e, e.hp * .4, false);
+      pirateFleetDamage(e, e.hp * .4, false);
+      R.render(S, C);
+      pirateFleetDamage(e, 100000, false);
+      e.respawn = 0; pirateFleetUpdate(.05);
+    }
+    R.render(S, C);
+    return { before, after: R.info.memory.textures };
+  });
+  L.check('повторные повреждения не наращивают GPU-текстуры', textureReuse.after <= textureReuse.before + 1, textureReuse);
+
+  const docked = await page.evaluate(() => {
+    dock();
+    return { state, slots: pirateFleet.length, ready: pirateFleetReady, taggedShots: eb.filter(b => b.pirateFleet).length };
+  });
+  L.check('стыковка очищает флот и его снаряды', docked.state === 'dock' && docked.slots === 0 && !docked.ready && docked.taggedShots === 0, docked);
+  await page.evaluate(() => { lift(); QL.setMode('low'); pirateFleetInit(); });
+  await page.waitForFunction(() => pirateFleet.length === 10, null, { timeout: 15000 });
+  const relaunched = await page.evaluate(() => pirateFleet.length === 10 && pirateFleet.filter(e => e.ty === 0).length === 5 && pirateFleet.filter(e => e.ty === 1).length === 5);
+  L.check('после dock → lift снова создаётся состав 5+5', relaunched);
+
   const cleanup = await page.evaluate(() => {
     toMenu();
     return { slots: pirateFleet.length, ready: pirateFleetReady };
