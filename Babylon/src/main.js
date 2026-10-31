@@ -268,7 +268,7 @@ async function boot(){
     if(gameOver)startButton.textContent="ПЕРЕЗАПУСК";
     startButton.addEventListener("click",()=>{
       if(gameOver){location.reload();return;}
-      overlay.hidden=true;running=true;paused=false;lastTime=performance.now();accumulator=0;input.resetAim();
+      overlay.hidden=true;running=true;paused=false;lastTime=performance.now();accumulator=0;input.activate();
       if(matchMedia("(pointer:fine)").matches)canvas.requestPointerLock?.();
     });
     hud.toast("COMBAT SYSTEM READY");
