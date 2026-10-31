@@ -35,6 +35,7 @@ const L = require('./lib');
   L.check('носовая ось кораблей совпадает с направлением полёта', combat.noseAlignment.every(x => x > .98), combat.noseAlignment);
 
   const pass = await page.evaluate(() => {
+    pirateFleet.forEach(p => { p.fire = 99; p.burst = 0; p.burstGap = 0; });
     const e = pirateFleet[0];
     e.warp = 0; e.g.visible = true;
     e.g.position.copy(P).add(new THREE.Vector3(0, 0, -620));
