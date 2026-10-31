@@ -38,7 +38,7 @@ function log(s){const el=$('log');el.textContent=(s+'\n'+el.textContent).slice(0
 function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 function fuzzy(a){const close=clamp((360-a.distance)/260,0,1),danger=clamp((a.distance-35)/160,0,1),ag=+$('aggr').value;const attack=close*ag,evade=(1-danger)*.12+(a.evades?0.55:0),reposition=(1-close)*.7;return {attack,evade,reposition};}
 function transition(a,s){if(a.state!==s){a.state=s;a.stateTime=0;log('P'+(a.i+1)+' → '+s);}}
-function updateAgent(a,dt){const v=a.vehicle;a.distance=v.position.distanceTo(new YUKA.Vector3(0,0,0));a.stateTime+=dt;
+function updateAgent(a,dt){const v=a.vehicle;v.neighbors=agents.filter(other=>other!==a).map(other=>other.vehicle);v.neighborhoodRadius=+$('sep').value*70+20;a.distance=v.position.distanceTo(new YUKA.Vector3(0,0,0));a.stateTime+=dt;
  const seen=a.distance<520;if(seen){a.lastSeen=0;a.memory=true;}else{a.lastSeen+=dt;a.memory=$('memory').checked&&a.lastSeen<7;}
  const f=fuzzy(a);a.score=Math.max(f.attack,f.evade,f.reposition);
  if(a.evades>0){transition(a,'EVADE');a.evades=Math.max(0,a.evades-dt);}else if(!a.memory)transition(a,'SEARCH');else if(f.attack>f.reposition*.8)transition(a,'ATTACK_RUN');else transition(a,'REPOSITION');
