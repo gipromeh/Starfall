@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="claude:viewport-fit-sides" content="cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#02030a"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>STARFALL — Void Hunter</title>
-<meta name="starfall-version" content="v81">
+<meta name="starfall-version" content="v82">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#02030a;--fg:#cfe9ff;--ac:#3cf;--warn:#f54;color-scheme:dark}
@@ -1711,10 +1711,10 @@ function pirateFleetInit(){
  say("ПИРАТСКАЯ ТРОЙКА: 2 ГОЛОВОРЕЗА · 1 ШАКАЛ",3);
 }
 function pirateDamageFxPrepare(){if(!pirateFleetSmokeTex)pirateFleetSmokeTex=gtex("rgba(55,55,58,.92)");if(!pirateFleetFireTex)pirateFleetFireTex=gtex("rgba(255,75,18,1)")}
-function pirateIgnite(e){if(!e||!e.g)return;pirateDamageFxPrepare();e.hits=(e.hits||0)+1;const c=e.hitCenter||new T.Vector3(),r=e.hitFxRadius||e.r||8;if(!e.fireFx){e.fireFx=new T.Sprite(new T.SpriteMaterial({map:pirateFleetFireTex,color:0xff6724,transparent:true,opacity:.96,blending:T.AdditiveBlending,depthWrite:false,depthTest:false}));e.fireFx.position.copy(c).add(new T.Vector3(0,r*.18,-r*.24));e.fireFx.scale.set(r*1.15,r*1.55,1);e.g.add(e.fireFx)}if(!e.smoke){e.smoke=new T.Sprite(new T.SpriteMaterial({map:pirateFleetSmokeTex,transparent:true,opacity:.62,depthWrite:false,depthTest:false}));e.smoke.position.copy(c).add(new T.Vector3(0,r*.62,r*.04));e.smoke.scale.set(r*1.05,r*1.35,1);e.g.add(e.smoke)}}
-function pirateDamageFxUpdate(e,dt){if(!e||!e.g)return;const t=performance.now()*.018+(e.slot||0),r=e.hitFxRadius||e.r||8;if(e.fireFx){e.fireFx.material.opacity=.72+.25*(.5+.5*Math.sin(t));e.fireFx.scale.set(r*1.15,r*(1.45+.12*Math.sin(t*1.3)),1);e.fireFx.material.rotation+=dt*.22}if(e.smoke){e.smoke.material.opacity=.34+.24*(.5+.5*Math.sin(t*.17));e.smoke.scale.set(r*1.05,r*(1.3+.08*Math.sin(t*.3)),1)}}
+function pirateIgnite(e){if(!e||!e.g)return;pirateDamageFxPrepare();e.hits=(e.hits||0)+1;const c=e.hitCenter||new T.Vector3(),r=e.hitFxRadius||e.r||8;if(!e.fireFx){e.fireFx=new T.Sprite(new T.SpriteMaterial({map:pirateFleetFireTex,color:0xff6724,transparent:true,opacity:.96,blending:T.AdditiveBlending,depthWrite:false,depthTest:false}));e.fireFx.position.copy(c).add(new T.Vector3(0,r*.18,-r*.24));e.fireFx.scale.set(r*1.15,r*1.55,1);e.g.add(e.fireFx)}if(!e.damageFlames){e.damageFlames=[];for(let i=0;i<3;i++){const f=new T.Sprite(new T.SpriteMaterial({map:pirateFleetFireTex,color:[0xff4b18,0xff8a24,0xffc05a][i],transparent:true,opacity:.78,blending:T.AdditiveBlending,depthWrite:false,depthTest:false}));f.position.copy(c).add(new T.Vector3((i-1)*r*.42,r*(i===1?.12:-.08),r*(i===0?.35:-.28)));f.scale.set(r*(.62+i*.08),r*(.9+i*.12),1);e.g.add(f);e.damageFlames.push(f)}}if(!e.smoke){e.smoke=new T.Sprite(new T.SpriteMaterial({map:pirateFleetSmokeTex,transparent:true,opacity:.62,depthWrite:false,depthTest:false}));e.smoke.position.copy(c).add(new T.Vector3(0,r*.62,r*.04));e.smoke.scale.set(r*1.05,r*1.35,1);e.g.add(e.smoke)}e.fireTrailT=0}
+function pirateDamageFxUpdate(e,dt){if(!e||!e.g)return;const t=performance.now()*.018+(e.slot||0),r=e.hitFxRadius||e.r||8;if(e.fireFx){e.fireFx.material.opacity=.72+.25*(.5+.5*Math.sin(t));e.fireFx.scale.set(r*1.15,r*(1.45+.12*Math.sin(t*1.3)),1);e.fireFx.material.rotation+=dt*.22}if(e.damageFlames){for(let i=0;i<e.damageFlames.length;i++){const f=e.damageFlames[i],phase=t*1.7+i*2.1,pulse=.72+.28*Math.sin(phase);f.material.opacity=.58+.35*pulse;f.position.y=(e.hitCenter?.y||0)+r*(.12+.12*Math.sin(phase*.8));f.scale.set(r*(.58+i*.08)*pulse,r*(.95+i*.12)*(1+.12*Math.sin(phase*1.3)),1);f.material.rotation=.08*Math.sin(phase)}}if(e.smoke){e.smoke.material.opacity=.34+.24*(.5+.5*Math.sin(t*.17));e.smoke.scale.set(r*1.05,r*(1.3+.08*Math.sin(t*.3)),1)}if(e.fireFx||e.damageFlames){e.fireTrailT=(e.fireTrailT||0)-dt;if(e.fireTrailT<=0){e.fireTrailT=TCH?.22:.15;e.g.updateMatrixWorld(true);const i=(e.fireTrailIndex||0)%3;e.fireTrailIndex=i+1;const local=(e.damageFlames&&e.damageFlames[i]?e.damageFlames[i].position:new T.Vector3(0,0,0)).clone(),p=e.g.localToWorld(local);trail(p,"rgba(255,105,28,1)",Math.max(2.2,r*.42));if(Math.random()<.38)trail(p.clone().add(rd().multiplyScalar(r*.18)),"rgba(65,62,60,.9)",Math.max(2.5,r*.48))}}}
 function pirateEnemyFxUpdate(dt){pirateDamageFxUpdate(E,dt);if(E2)pirateDamageFxUpdate(E2,dt)}
-function pirateDamageFxClear(e){if(!e)return;if(e.smoke){e.smoke.material.dispose();e.smoke=null}if(e.fireFx){e.fireFx.material.dispose();e.fireFx=null}}
+function pirateDamageFxClear(e){if(!e)return;if(e.smoke){e.smoke.material.dispose();e.smoke=null}if(e.fireFx){e.fireFx.material.dispose();e.fireFx=null}if(e.damageFlames){for(const f of e.damageFlames){if(f.parent)f.parent.remove(f);f.material.dispose()}e.damageFlames.length=0}}
 function pirateFleetDamage(e,d,missile){
  if(!e||e.dead||!e.g)return;e.hp=Math.max(0,e.hp-d);pirateIgnite(e);if(e.hp>0)return;
  e.dead=true;const p=e.g.position.clone(),v=e.vel.clone();xplode(p,v,.72);boom(p,42,5,0xff873c,34,1.05);boom(p,14,10,0xffe0b0,12,.45);ring(p,0xff8a38,3.2,3);
@@ -1765,7 +1765,7 @@ function pirateFleetUpdate(dt){
  }
 }
 const _updWithPirateFleet=upd;
-upd=function(dt){_updWithPirateFleet(dt);pirateFleetUpdate(dt);pirateEnemyFxUpdate(dt)};
+upd=function(dt){_updWithPirateFleet(dt);pirateFleetUpdate(dt);pirateEnemyFxUpdate(dt);for(const pe of pirateFleet)if(pe.g&&pe.hp>0)pirateDamageFxUpdate(pe,dt)};
 // ===== END STARFALL v77 PIRATE FLEET =====
 
 const rc=$("radar").getContext("2d");
