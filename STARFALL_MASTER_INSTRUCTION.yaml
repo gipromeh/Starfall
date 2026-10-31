@@ -1,4 +1,4 @@
-# STARFALL "Void Hunter" — МАСТЕР-ИНСТРУКЦИЯ v2.3 (2026-10-31)
+# STARFALL "Void Hunter" — МАСТЕР-ИНСТРУКЦИЯ v2.4 (2026-10-31)
 # Единственная актуальная инструкция. Лежит в репозитории gipromeh/Starfall, ветка main.
 # Claude читает её ПЕРВОЙ в каждом чате, перед любой правкой, без напоминаний.
 # Все прежние версии инструкции (в проекте Claude, в старых чатах) — архив.
@@ -53,7 +53,7 @@ sanity_check:
 # ПРОЦЕСС РАБОТЫ С GITHUB (единственный источник правды)
 process:
   repo: https://github.com/gipromeh/Starfall   # ветка main
-  current_version: v74
+  current_version: v75
   files:
     game: STARFALL_CURRENT.html        # единственная актуальная версия игры
     passport: STARFALL_PASSPORT.md     # архитектура, переменные, таблицы, правила правок
@@ -504,3 +504,31 @@ pirate_fleet_asset_readiness:
   acceptance:
     - "После lift эскадрилья создаётся автоматически после завершения загрузки ассетов."
     - "В регрессионном тесте проверяется фактическая вложенная осевая группа и мировой вектор носа корабля."
+
+# ─────────────────────────────────────────────────────────────
+# v75 — СВЕТОВАЯ СХЕМА, СОКЕТЫ ОРУЖИЯ И ИНЕРЦИОННЫЙ БОЙ ПИРАТОВ
+pirate_fleet_v75:
+  composition: {total_active_slots: 3, golovorez: 2, jackal: 1}
+  lighting:
+    ambient_intensity: 0.4
+    directional_intensity: 1.3
+    central_point_light_intensity: 0
+    star_disks: false
+  model_sockets:
+    pirate_fighter_002:
+      muzzle: [GUN_0, GUN_1, GUN_2, GUN_3]
+      engines: [ENG_0, ENG_1]
+      fallback: "Если именованные сокеты отсутствуют, использовать локальные позиции корпуса."
+  ai:
+    phases: [APPROACH, ATTACK_RUN, FIRING_PASS, OVERSHOOT, REPOSITION]
+    rule: "Сохранять инерцию, широкий огневой пролёт и упреждение; не разворачивать корпус мгновенно."
+    firing:
+      range: 1300
+      close_range: 720
+      angle_radians: {normal: 1.0, close: 1.6}
+      burst: {shots: 5, gap_seconds: 0.12, cooldown_seconds: "0.48–0.76"}
+  acceptance:
+    - "Все три активных пилота стреляют; «Ржавый череп» выпускает четыре луча из GUN_0…GUN_3."
+    - "Каждый лазер начинается в мировых координатах своего сокета и направлен на рассчитанную точку упреждения."
+    - "Пламя/следы двигателя исходят из ENG_0 и ENG_1; для старых моделей остаётся резервная локальная позиция."
+    - "Световая схема не возвращает видимый звёздный диск или красную центральную засветку."
