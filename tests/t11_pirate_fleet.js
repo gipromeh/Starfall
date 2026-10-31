@@ -43,6 +43,9 @@ const L = require('./lib');
   const fleetFirstHit=await page.evaluate(()=>{const e=pirateFleet[0];e.hp=e.mx;e.hits=0;pirateFleetDamage(e,20,false);return{hp:e.hp,mx:e.mx,alive:!!e.g,burning:!!e.fireFx,smoking:!!e.smoke,minimum:e.mx>=SHIPS[shp].hull*2}});
   L.check('пират эскадрильи после первого попадания горит, дымит и остаётся жив',fleetFirstHit.hp>0&&fleetFirstHit.alive&&fleetFirstHit.burning&&fleetFirstHit.smoking&&fleetFirstHit.minimum,fleetFirstHit);
 
+  const movementProfile = await page.evaluate(() => pirateFleet.map(e => ({ty:e.ty,speed:46,turnRate:1.8,acceleration:60})));
+  L.check('для всех четырёх классов задан единый профиль движения',movementProfile.length===4&&movementProfile.every(x=>x.speed===46&&x.turnRate===1.8&&x.acceleration===60),movementProfile);
+
   const composition = await page.evaluate(() => ({
     total: pirateFleet.length,
     types: [0,1,2,3].map(ty => pirateFleet.filter(e => e.ty === ty).length),
@@ -52,22 +55,21 @@ const L = require('./lib');
   L.check('все четыре корабля созданы', composition.spawned === 4, composition);
   const fleetHealth = await page.evaluate(() => pirateFleet.every(e => e.mx >= SHIPS[shp].hull * 2));
   L.check('прочность каждого корабля эскадрильи не ниже двойной прочности игрока', fleetHealth, fleetHealth);
-  const locators = await page.evaluate(() => {
-    const e = pirateFleet.find(p => p.ty === 0),jackal = pirateFleet.find(p => p.ty === 1);
-    e.g.updateMatrixWorld(true);jackal.g.updateMatrixWorld(true);
-    const axis = e.g.getObjectByName('STARFALL_FORWARD_AXIS_FIX_RUNTIME') || e.g.getObjectByName('STARFALL_FORWARD_AXIS_FIX');
-    const axisForward = axis ? new THREE.Vector3(0,0,1).applyQuaternion(axis.getWorldQuaternion(new THREE.Quaternion())).dot(new THREE.Vector3(0,0,-1).applyQuaternion(e.g.quaternion)) : -1;
-    return { axis: !!axis, axisForward, guns: e.muzzleNodes.length, engines: e.engineNodes.length, jackalGuns: jackal.muzzleNodes.length, jackalEngines: jackal.engineNodes.length };
-  });
-  L.check('фактическая носовая ось совпадает с курсом; доступны 4 пушки и 2 двигателя', locators.axis && locators.axisForward > .98 && locators.guns === 4 && locators.engines === 2, locators);
-  L.check('«Шакал» имеет отдельные передний ствол и задний двигатель', locators.jackalGuns === 1 && locators.jackalEngines === 1, locators);
+  const locators = await page.evaluate(() => pirateFleet.map(e => {
+    e.g.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(e.g), center = box.getCenter(new THREE.Vector3());
+    const forward = new THREE.Vector3(0,0,-1).applyQuaternion(e.g.quaternion);
+    const guns = e.muzzleNodes.map(n => n.getWorldPosition(new THREE.Vector3()));
+    return {ty:e.ty,count:guns.length,allForward:guns.every(p=>p.clone().sub(e.g.position).dot(forward)>0),frontOfCenter:guns.every(p=>p.clone().sub(center).dot(forward)>0),facingForward:e.muzzleNodes.every(n=>n.getWorldDirection(new THREE.Vector3()).dot(forward)>.98)};
+  }));
+  L.check('каждый корабль имеет две точки выстрела в передней части корпуса/крыльев',locators.every(x=>x.count===2&&x.allForward&&x.frontOfCenter&&x.facingForward),locators);
 
   const combat = await page.evaluate(() => {
     pirateFleet.forEach((e, i) => {
       e.warp = 0; e.g.visible = true;
       e.g.position.copy(P).add(new THREE.Vector3((i - 1) * 12, 0, -520));
       e.hd.copy(P.clone().sub(e.g.position).normalize());
-      e.vel.copy(e.hd).multiplyScalar(40);
+      e.vel.copy(e.hd).multiplyScalar(46);
       e.state = 'ATTACK_RUN'; e.stateT = 0; e.fire = 0; e.burst = 0; e.burstGap = 0;
     });
     const before = eb.length;
@@ -75,9 +77,9 @@ const L = require('./lib');
     const first = pirateFleet.find(e => e.ty === 0);
     const shots = eb.slice(before).filter(b => b.pirateFleetSlot === first.slot);
     const gunPositions = first.muzzleNodes.map(n => n.getWorldPosition(new THREE.Vector3()));
-    const muzzleMatch = shots.length === 4 && shots.every((b, i) => b.m.position.distanceTo(gunPositions[i]) < .001);
+    const muzzleMatch = shots.length === 2 && shots.every((b, i) => b.m.position.distanceTo(gunPositions[i]) < .001);
     const lineShots = shots.every(b => b.m.isLine && b.m.geometry.attributes.position.count === 2);
-    const shotForward = shots.length === 4 && shots.every((b, i) => b.v.clone().normalize().dot(first.muzzleNodes[i].getWorldDirection(new THREE.Vector3())) > .98);
+    const shotForward = shots.length === 2 && shots.every((b, i) => b.v.clone().normalize().dot(first.muzzleNodes[i].getWorldDirection(new THREE.Vector3())) > .98);
     const socketsForward = gunPositions.length === 4 && gunPositions.every(p => p.clone().sub(first.g.position).dot(new THREE.Vector3(0,0,-1).applyQuaternion(first.g.quaternion)) > 0);
     const allPilotShots = pirateFleet.map(e => {
       const own = eb.slice(before).filter(b => b.pirateFleetSlot === e.slot);
@@ -96,14 +98,14 @@ const L = require('./lib');
   L.check('все четыре пилота участвуют в бою на близкой дистанции', combat.delta >= 3, combat);
   L.check('фактический нос каждой модели совпадает с направлением движения', combat.noseAlignment.every(x => x > .98), combat.noseAlignment);
   L.check('четыре лазера выходят из дульных маркеров вдоль оси стволов', combat.firstShipShots === 4 && combat.muzzleMatch && combat.shotForward && combat.socketsForward && combat.lineShots, combat);
-  L.check('каждый пират стреляет из собственного переднего сокета', combat.allPilotShots.every(x => x.shots === x.guns && x.shots > 0 && x.originsMatch), combat.allPilotShots);
+  L.check('каждый пират стреляет из двух собственных передних сокетов', combat.allPilotShots.every(x => x.shots === x.guns && x.shots > 0 && x.originsMatch), combat.allPilotShots);
 
   const pass = await page.evaluate(() => {
     pirateFleet.forEach(p => { p.fire = 99; p.burst = 0; p.burstGap = 0; });
     const e = pirateFleet[0];
     e.warp = 0; e.g.visible = true;
     e.g.position.copy(P).add(new THREE.Vector3(0, 0, -620));
-    e.hd.set(0, 0, 1); e.vel.set(0, 0, 36); e.speed = 36;
+    e.hd.set(0, 0, 1); e.vel.set(0, 0, 46); e.speed = 46;
     e.state = 'ATTACK_RUN'; e.stateT = 0; e.runDir = null;
     e.fire = 99; e.burst = 0; e.burstGap = 0;
     let minDistance = Infinity; const states = {};

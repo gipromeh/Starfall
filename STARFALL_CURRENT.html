@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="claude:viewport-fit-sides" content="cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#02030a"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>STARFALL — Void Hunter</title>
-<meta name="starfall-version" content="v83">
+<meta name="starfall-version" content="v84">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#02030a;--fg:#cfe9ff;--ac:#3cf;--warn:#f54;color-scheme:dark}
@@ -1671,11 +1671,17 @@ const pirateFleetForward=new T.Vector3(0,0,-1),pirateFleetUp=new T.Vector3(0,1,0
 const pirateFleetGunNames=["GUN_0","GUN_1","GUN_2","GUN_3"],pirateFleetEngineNames=["ENG_0","ENG_1"];
 const pirateFleetGunFallback=[[-2.74,-1.24,-3.565],[-2.46,-1.24,-3.565],[2.46,-1.24,-3.565],[2.74,-1.24,-3.565]],pirateFleetEngineFallback=[[-.62,-.9,6.535],[.62,-.9,6.535]];
 function pirateFleetResolveSockets(g,ty){
- const resolve=(names,positions,forward=false)=>names.map((name,i)=>{let node=g.getObjectByName(name);if(!node){node=new T.Object3D();node.name=name;node.position.set(...positions[i]);if(forward)node.rotation.y=Math.PI;g.add(node)}return node});
- if(ty===0)return{guns:resolve(pirateFleetGunNames,pirateFleetGunFallback,true),engines:resolve(pirateFleetEngineNames,pirateFleetEngineFallback)};
- if(ty===1){g.updateMatrixWorld(true);const bounds=new T.Box3().setFromObject(g).applyMatrix4(g.matrixWorld.clone().invert()),center=bounds.getCenter(new T.Vector3());const gun=g.getObjectByName("GUN_0")||new T.Object3D();if(!gun.parent){gun.name="GUN_0";gun.position.set(center.x,center.y,bounds.min.z+.06);gun.rotation.y=Math.PI;g.add(gun)}const engine=g.getObjectByName("ENG_0")||new T.Object3D();if(!engine.parent){engine.name="ENG_0";engine.position.set(center.x,center.y,bounds.max.z-.06);g.add(engine)}return{guns:[gun],engines:[engine]}}
- if(ty===2)return{guns:resolve(["GUN_0","GUN_1"],[[-.25,1.7,-4.9],[.25,1.7,-4.9]]),engines:resolve(["ENG_0","ENG_1","ENG_2"],[[-1.5,-.5,6.4],[1.5,-.5,6.4],[0,.6,6.4]])};
- return{guns:[],engines:resolve(["ENG_0","ENG_1"],[[-2.1,0,6],[2.1,0,6]])};
+ // Rebuild weapon sockets from each model's actual bounds; ignore legacy GUN markers.
+ g.updateMatrixWorld(true);
+ const box=new T.Box3().setFromObject(g).applyMatrix4(g.matrixWorld.clone().invert());
+ const size=box.getSize(new T.Vector3()),center=box.getCenter(new T.Vector3());
+ const z=box.min.z+Math.max(.12,size.z*.12),y=center.y+size.y*.035,guns=[],engines=[];
+ for(let i=0;i<2;i++){
+  const side=i===0?-1:1,gun=new T.Object3D(),engine=new T.Object3D();
+  gun.name="STARFALL_FRONT_GUN_"+i;gun.position.set(center.x+side*Math.max(size.x*.24,.18),y,z);gun.rotation.y=Math.PI;g.add(gun);guns.push(gun);
+  engine.name="STARFALL_REAR_ENGINE_"+i;engine.position.set(center.x+side*Math.max(size.x*.22,.16),center.y,box.max.z-Math.max(.12,size.z*.08));g.add(engine);engines.push(engine);
+ }
+ g.updateMatrixWorld(true);return{guns,engines};
 }
 function pirateFleetPrepare(){
  if(pirateFleetTemplates)return;
@@ -1696,8 +1702,8 @@ function pirateFleetSpawn(e,delay=0){
  pirateFleetPrepare();
  const g=pirateFleetTemplates[e.ty].clone(true),fw=new T.Vector3(0,0,-1).applyQuaternion(Q).normalize(),right=new T.Vector3(1,0,0).applyQuaternion(Q).normalize();
  g.position.copy(P).addScaledVector(fw,-(760+e.slot*90)).addScaledVector(right,(e.slot-1.5)*110).add(new T.Vector3(0,(e.slot-1.5)*36,0));
- g.visible=false;S.add(g);e.g=g;const hit=pirateHitBounds(g);Object.assign(e,hit);const sockets=pirateFleetResolveSockets(g,e.ty);e.muzzleNodes=sockets.guns;e.engineNodes=sockets.engines;e.hp=e.mx=Math.max(200,SHIPS[shp].hull*2);e.r=e.ty===0?8.5:7.2;e.warp=.55+delay;e.state="APPROACH";e.stateT=0;e.side=e.slot-1;
- e.fire=.2+Math.random()*.22;e.burst=0;e.burstGap=0;e.trailT=.1;e.hits=0;e.vel=P.clone().sub(g.position).normalize().multiplyScalar(e.ty===0?36:43);e.hd=e.vel.clone().normalize();e.speed=e.vel.length();e.runDir=null;e.dead=false;e.smoke=null;e.fireFx=null;e.flames=[];pirateFleetAttachFX(e);
+ g.visible=false;S.add(g);e.g=g;const hit=pirateHitBounds(g);Object.assign(e,hit);const sockets=pirateFleetResolveSockets(g,e.ty);e.muzzleNodes=sockets.guns;e.engineNodes=sockets.engines;e.hp=e.mx=Math.max(200,SHIPS[shp].hull*2);e.r=e.ty===0?8.5:7.2;e.warp=.55+delay;e.state="APPROACH";e.stateT=0;e.side=e.slot-1.5;
+ e.fire=.2+Math.random()*.22;e.burst=0;e.burstGap=0;e.trailT=.1;e.hits=0;e.vel=P.clone().sub(g.position).normalize().multiplyScalar(46);e.hd=e.vel.clone().normalize();e.speed=e.vel.length();e.runDir=null;e.dead=false;e.smoke=null;e.fireFx=null;e.flames=[];pirateFleetAttachFX(e);
 }
 function pirateFleetClear(){
  for(let i=eb.length-1;i>=0;i--)if(eb[i].pirateFleet){S.remove(eb[i].m);eb.splice(i,1)}
@@ -1738,17 +1744,17 @@ function pirateFleetUpdate(dt){
   // уклонение от снарядов игрока
   for(let b=bul.length-1;b>=0;b--){const bp=bul[b].m.position;if(bp.distanceTo(g.position)<120){aim.addScaledVector(dir.clone().cross(new T.Vector3(0,1,0)).normalize(),55);break}}
   const desiredDir=aim.sub(g.position).normalize(),angle=e.hd.angleTo(desiredDir),axis=e.hd.clone().cross(desiredDir);
-  if(angle>1e-4&&axis.lengthSq()>1e-8)e.hd.applyAxisAngle(axis.normalize(),Math.min(angle,(e.ty===0?1.7:1.9)*dt)).normalize();
-  const targetSpeed=e.ty===0?42:50;e.speed+=(targetSpeed-e.speed)*Math.min(1,.65*dt);
-  const desiredVel=e.hd.clone().multiplyScalar(e.speed),dv=desiredVel.sub(e.vel),maxA=(e.ty===0?55:68)*dt;if(dv.length()>maxA)dv.setLength(maxA);
+  if(angle>1e-4&&axis.lengthSq()>1e-8)e.hd.applyAxisAngle(axis.normalize(),Math.min(angle,1.8*dt)).normalize();
+  const targetSpeed=46;e.speed+=(targetSpeed-e.speed)*Math.min(1,.65*dt);
+  const desiredVel=e.hd.clone().multiplyScalar(e.speed),dv=desiredVel.sub(e.vel),maxA=60*dt;if(dv.length()>maxA)dv.setLength(maxA);
   e.vel.add(dv);g.position.addScaledVector(e.vel,dt);
   // Keep the nose on the actual velocity vector so the ship never appears to fly backwards.
   pirateFleetHeading.copy(e.vel).normalize();g.quaternion.setFromUnitVectors(pirateFleetForward,pirateFleetHeading);g.rotateZ(Math.max(-.2,Math.min(.2,axis.y*-.12)));
-  e.flames.forEach((f,i)=>{const pulse=.88+.12*Math.sin(performance.now()*.018+e.slot+i);f.scale.set(e.ty===0?1.05:1.3,(2.8+Math.min(1,e.speed/55)*2.2)*pulse,1)});
+  e.flames.forEach((f,i)=>{const pulse=.88+.12*Math.sin(performance.now()*.018+e.slot+i);f.scale.set(1.18,(2.8+Math.min(1,e.speed/55)*2.2)*pulse,1)});
   e.trailT-=dt;if(e.trailT<=0){e.trailT=TCH?.48:.36;g.updateMatrixWorld(true);const exhausts=e.engineNodes&&e.engineNodes.length?e.engineNodes.map(n=>n.getWorldPosition(new T.Vector3())):[g.localToWorld(new T.Vector3(0,.05,e.ty===0?4.7:5.45))];for(const exhaust of exhausts){trail(exhaust,e.hp/e.mx<.42?"rgba(255,70,25,1)":"rgba(255,145,66,.9)",e.ty===0?2.2:2);if(e.hp/e.mx<.68&&Math.random()<.7)trail(exhaust,"rgba(55,55,60,.9)",2.8)}}
   if(e.smoke)e.smoke.material.opacity=.25+.18*(.5+.5*Math.sin(performance.now()*.003+e.slot));
   if(e.fireFx){const fr=e.hitFxRadius||e.r||8;e.fireFx.material.opacity=.62+.34*(.5+.5*Math.sin(performance.now()*.02+e.slot));e.fireFx.scale.set(fr*1.15,fr*(1.45+.12*Math.sin(performance.now()*.018+e.slot)),1)}
-  const shotSpeed=e.ty===0?190:210,leadTime=Math.min(6.2,dist/shotSpeed);
+  const shotSpeed=200,leadTime=Math.min(6.2,dist/shotSpeed);
   const targetPoint=P.clone().addScaledVector(vel,leadTime),aimAt=targetPoint.clone().sub(g.position).normalize(),fireAngle=pirateFleetHeading.angleTo(aimAt);
   const canFire=dist<1400&&(fireAngle<.9||(dist<760&&fireAngle<1.35));
   e.fire-=dt;e.burstGap=Math.max(0,e.burstGap-dt);if(canFire&&e.fire<=0&&e.burst<=0)e.burst=3;
@@ -1757,7 +1763,7 @@ function pirateFleetUpdate(dt){
    for(const gun of guns){
     const muzzle=gun?gun.getWorldPosition(new T.Vector3()):g.localToWorld(new T.Vector3(0,-.25,-3.8));
     const shotDir=gun?gun.getWorldDirection(new T.Vector3()).normalize().lerp(targetPoint.clone().sub(muzzle).normalize(),.12).normalize():targetPoint.clone().sub(muzzle).normalize();
-    shootLaser(eb,muzzle,shotDir.multiplyScalar(shotSpeed),e.ty===0?0xff4b3c:0xffb13b,e.ty===0?5.5:4.8,7.0);
+    shootLaser(eb,muzzle,shotDir.multiplyScalar(shotSpeed),0xff7650,5.2,7.0);
     eb[eb.length-1].pirateFleet=true;eb[eb.length-1].pirateFleetSlot=e.slot;
    }
    e.burst--;e.burstGap=.18;if(e.burst<=0)e.fire=.7+Math.random()*.4;sfx("l2");
