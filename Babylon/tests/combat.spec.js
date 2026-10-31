@@ -80,3 +80,21 @@ test("homing missile reaches target and applies weapon damage",async({page})=>{
   expect(state.enemyHealth).toBeLessThan(100);
   expect(state.projectileData.filter(p=>p.owner==="player"&&p.kind==="missile")).toHaveLength(0);
 });
+
+test("laser projectile hits pirate target through swept collision",async({page})=>{
+  await bootGame(page);
+  await page.evaluate(()=>window.__STARFALL_TEST__.fireLaser());
+  await page.waitForFunction(()=>window.__STARFALL_TEST__.state().enemyHealth<100,undefined,{timeout:10000});
+  const state=await page.evaluate(()=>window.__STARFALL_TEST__.state());
+  expect(state.enemyHealth).toBeLessThan(100);
+  expect(state.projectileData.filter(p=>p.owner==="player"&&p.kind==="laser")).toHaveLength(0);
+});
+
+test("enemy projectile damages player shield",async({page})=>{
+  await bootGame(page);
+  await page.evaluate(()=>window.__STARFALL_TEST__.fireEnemy());
+  await page.waitForFunction(()=>window.__STARFALL_TEST__.state().shield<100,undefined,{timeout:5000});
+  const state=await page.evaluate(()=>window.__STARFALL_TEST__.state());
+  expect(state.shield).toBeLessThan(100);
+  expect(state.hull).toBe(100);
+});
