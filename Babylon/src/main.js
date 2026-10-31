@@ -208,7 +208,7 @@ async function boot(){
     input=new InputAdapter(canvas);
     if(new URLSearchParams(location.search).has("test")){
       globalThis.__STARFALL_TEST__={
-        state:()=>({hull,shield,kills,credits,enemyHealth:world.pirateHealth,enemyDestroyed:world.pirateDestroyed,projectiles:projectiles.length,speed:flight.velocity.length(),respawnTimer,running,paused,playerPosition:world.player.position.asArray(),playerForward:world.player.getDirection(BABYLON.Axis.Z).asArray(),targetPosition:world.pirate.position.asArray(),projectileData:projectiles.map(p=>({position:p.mesh.position.asArray(),velocity:p.velocity.asArray(),ttl:p.ttl,owner:p.owner,kind:p.kind}))}),
+        state:()=>({hull,shield,kills,credits,enemyHealth:world.pirateHealth,enemyDestroyed:world.pirateDestroyed,projectiles:projectiles.length,speed:flight.velocity.length(),respawnTimer,running,paused,playerPosition:world.player.position.asArray(),playerForward:world.player.getDirection(BABYLON.Axis.Z).asArray(),targetPosition:world.pirate.position.asArray(),pirateAsset:world.pirateAsset,projectileData:projectiles.map(p=>({position:p.mesh.position.asArray(),velocity:p.velocity.asArray(),ttl:p.ttl,owner:p.owner,kind:p.kind}))}),
         damageTarget:amount=>damagePirate(amount,world.pirate.position.clone()),
         fireMissile:()=>{world.player.computeWorldMatrix(true);spawnProjectile(world.player.position,world.player.getDirection(BABYLON.Axis.Z),"player","missile");},
         fireLaser:()=>{world.player.computeWorldMatrix(true);spawnProjectile(world.player.position,world.player.getDirection(BABYLON.Axis.Z),"player","laser");},
