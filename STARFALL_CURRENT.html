@@ -1701,7 +1701,7 @@ function pirateFleetSpawn(e,delay=0){
 }
 function pirateFleetClear(){
  for(let i=eb.length-1;i>=0;i--)if(eb[i].pirateFleet){S.remove(eb[i].m);eb.splice(i,1)}
- for(const e of pirateFleet){if(e.g)S.remove(e.g);if(e.smoke)e.smoke.material.dispose();if(e.fireFx)e.fireFx.material.dispose();e.g=null;if(e.muzzleNodes)e.muzzleNodes.length=0;if(e.engineNodes)e.engineNodes.length=0}
+ for(const e of pirateFleet){pirateDamageFxClear(e);if(e.g)S.remove(e.g);e.g=null;if(e.muzzleNodes)e.muzzleNodes.length=0;if(e.engineNodes)e.engineNodes.length=0}
  pirateFleet.length=0;pirateFleetReady=false;
 }
 function pirateFleetInit(){
