@@ -58,20 +58,31 @@ export class World {
     hull.diffuseColor=new BABYLON.Color3(...color);hull.specularColor=new BABYLON.Color3(.7,.75,.85);hull.metallic=.72;hull.roughness=.32;
     const dark=new BABYLON.StandardMaterial(name+"-dark",scene);
     dark.diffuseColor=new BABYLON.Color3(.025,.04,.06);dark.specularColor=new BABYLON.Color3(.5,.6,.7);dark.metallic=.8;dark.roughness=.42;
-    const glow=new BABYLON.StandardMaterial(name+"-glow",scene);glow.emissiveColor=new BABYLON.Color3(...accent);
-    const body=BABYLON.MeshBuilder.CreateCylinder(name+"-nose",{height:10,diameterTop:0,diameterBottom:8,tessellation:8},scene);
-    body.parent=g;body.rotation.x=Math.PI/2;body.scaling.z=1.8;body.material=hull;
-    const cockpit=BABYLON.MeshBuilder.CreateSphere(name+"-canopy",{diameter:5,segments:16},scene);
-    cockpit.parent=g;cockpit.position.set(0,2,-4);cockpit.scaling.set(.8,.45,1.25);cockpit.material=glow;
+    const glow=new BABYLON.StandardMaterial(name+"-glow",scene);
+    glow.emissiveColor=new BABYLON.Color3(...accent);glow.disableLighting=true;
+    const body=BABYLON.MeshBuilder.CreateCylinder(name+"-fuselage",{height:14,diameterTop:1.1,diameterBottom:8.2,tessellation:12},scene);
+    body.parent=g;body.rotation.x=Math.PI/2;body.scaling.z=1.35;body.material=hull;
+    const belly=BABYLON.MeshBuilder.CreateBox(name+"-belly",{width:4.8,height:1.2,depth:9},scene);
+    belly.parent=g;belly.position.set(0,-1.25,-1.8);belly.material=dark;
+    const dorsal=BABYLON.MeshBuilder.CreateBox(name+"-dorsal-spine",{width:3.2,height:1.1,depth:9},scene);
+    dorsal.parent=g;dorsal.position.set(0,1.15,-1.2);dorsal.material=hull;
+    const cockpit=BABYLON.MeshBuilder.CreateSphere(name+"-canopy",{diameter:4,segments:20},scene);
+    cockpit.parent=g;cockpit.position.set(0,1.75,3.2);cockpit.scaling.set(.82,.42,1.45);cockpit.material=glow;
     for(const side of [-1,1]){
-      const wing=BABYLON.MeshBuilder.CreateBox(name+"-wing",{width:15,height:1.1,depth:7},scene);
-      wing.parent=g;wing.position.set(side*8,0,1);wing.rotation.y=side*.12;wing.material=dark;
-      const engine=BABYLON.MeshBuilder.CreateCylinder(name+"-engine",{height:4,diameter:2.2,tessellation:12},scene);
-      engine.parent=g;engine.rotation.x=Math.PI/2;engine.position.set(side*4,0,6);engine.material=glow;
-      const flame=BABYLON.MeshBuilder.CreateCylinder(name+"-flame",{height:12,diameterTop:.2,diameterBottom:2.6,tessellation:12},scene);
-      flame.parent=g;flame.rotation.x=-Math.PI/2;flame.position.set(side*4,0,12);
+      const wing=BABYLON.MeshBuilder.CreateBox(name+"-main-wing",{width:17,height:.85,depth:6.5},scene);
+      wing.parent=g;wing.position.set(side*8.5,0,-1.4);wing.rotation.y=-side*.18;wing.material=dark;
+      const tip=BABYLON.MeshBuilder.CreateBox(name+"-wingtip",{width:7,height:.7,depth:3.4},scene);
+      tip.parent=g;tip.position.set(side*16,0,-4.2);tip.rotation.y=-side*.35;tip.material=hull;
+      const fin=BABYLON.MeshBuilder.CreateBox(name+"-wing-fin",{width:1,height:3,depth:3.2},scene);
+      fin.parent=g;fin.position.set(side*17,1.2,-4.3);fin.rotation.z=-side*.12;fin.material=dark;
+      const engine=BABYLON.MeshBuilder.CreateCylinder(name+"-engine",{height:4.5,diameter:2.4,tessellation:16},scene);
+      engine.parent=g;engine.rotation.x=Math.PI/2;engine.position.set(side*4.2,0,-5.2);engine.material=glow;
+      const nozzle=BABYLON.MeshBuilder.CreateTorus(name+"-nozzle",{diameter:2.8,thickness:.28,tessellation:16},scene);
+      nozzle.parent=g;nozzle.position.set(side*4.2,0,-7.2);nozzle.material=dark;
+      const flame=BABYLON.MeshBuilder.CreateCylinder(name+"-flame",{height:12,diameterTop:.15,diameterBottom:2.2,tessellation:12},scene);
+      flame.parent=g;flame.rotation.x=-Math.PI/2;flame.position.set(side*4.2,0,-11.2);
       const fm=new BABYLON.StandardMaterial(name+"-flame-mat",scene);
-      fm.emissiveColor=new BABYLON.Color3(...accent);fm.alpha=.5;flame.material=fm;
+      fm.emissiveColor=new BABYLON.Color3(...accent);fm.alpha=.58;fm.disableLighting=true;flame.material=fm;
     }
     return g;
   }
