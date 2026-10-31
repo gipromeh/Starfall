@@ -1661,7 +1661,7 @@ function planetNavUpdate(){
  navHud.style.display="block";navHud.textContent=selected.target.name+"  ·  "+Math.round(selected.distance).toLocaleString("ru-RU")+" игровых ед.";
 }
 
-// ===== STARFALL v73 — THREE-SHIP PIRATE FLIGHT =====
+// ===== STARFALL v74 — THREE-SHIP PIRATE FLIGHT =====
 const pirateFleet=[];
 let pirateFleetReady=false,pirateFleetTemplates=null,pirateFleetFlameMat=null,pirateFleetSmokeTex=null,pirateFleetFireTex=null;
 const pirateFleetForward=new T.Vector3(0,0,-1),pirateFleetUp=new T.Vector3(0,1,0),pirateFleetHeading=new T.Vector3();
@@ -1689,7 +1689,7 @@ function pirateFleetClear(){
  pirateFleet.length=0;pirateFleetReady=false;
 }
 function pirateFleetInit(){
- if(pirateFleetReady||state!=="play")return;
+ if(pirateFleetReady||state!=="play"||!pirateAssetsReady)return;
  pirateFleetPrepare();pirateFleetReady=true;
  [0,0,1].forEach((ty,i)=>{const e={slot:i,ty,g:null,hp:0,mx:0,respawn:0,dead:false,flames:[]};pirateFleet.push(e);pirateFleetSpawn(e,i*.18)});
  say("ПИРАТСКАЯ ТРОЙКА: 2 ГОЛОВОРЕЗА · 1 ШАКАЛ",3);
@@ -1705,7 +1705,7 @@ function pirateFleetDamage(e,d,missile){
  say((e.ty===0?"ГОЛОВОРЕЗ":"ШАКАЛ")+" УНИЧТОЖЕН · +100",1.5);
 }
 function pirateFleetUpdate(dt){
- if(state==="play"&&!pirateFleetReady)pirateFleetInit();if(!pirateFleetReady||state!=="play")return;
+ if(state==="play"&&!pirateFleetReady&&pirateAssetsReady)pirateFleetInit();if(!pirateFleetReady||state!=="play")return;
  const playerForward=new T.Vector3(0,0,-1).applyQuaternion(Q).normalize(),playerRight=new T.Vector3(1,0,0).applyQuaternion(Q).normalize();
  for(const e of pirateFleet){
   if(!e.g){e.respawn-=dt;if(e.respawn<=0)pirateFleetSpawn(e,0);continue}
@@ -1741,7 +1741,7 @@ function pirateFleetUpdate(dt){
 }
 const _updWithPirateFleet=upd;
 upd=function(dt){_updWithPirateFleet(dt);pirateFleetUpdate(dt)};
-// ===== END STARFALL v73 PIRATE FLEET =====
+// ===== END STARFALL v74 PIRATE FLEET =====
 
 const rc=$("radar").getContext("2d");
 function radar(){const c=85,s=75/700,iq=Q.clone().invert();rc.clearRect(0,0,170,170);rc.strokeStyle="#33ccff66";rc.lineWidth=1;[25,50,75].forEach(r=>{rc.beginPath();rc.arc(c,c,r,0,6.283);rc.stroke()});rc.beginPath();rc.moveTo(c,10);rc.lineTo(c,160);rc.moveTo(10,c);rc.lineTo(160,c);rc.stroke();

@@ -2,10 +2,10 @@
 date: 2026-10-31
 topic: STARFALL — Void Hunter: паспорт проекта (архитектура, технологии, механика, сохранения, качество)
 tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура]
-game_version: "v73"
+game_version: "v74"
 last_update: 2026-10-31
 main_file: STARFALL_CURRENT.html
-main_file_sha256: "a03c65710cfe25757bfb9cee76b5151b93ff140d5ba2859f4c5f218dbeb7c90c"
+main_file_sha256: "cd4f0019cd3e0ebf2616325e0985e14d0003d905c452c16fac538a2176f71442"
 save_format_version: 2
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"
@@ -19,6 +19,10 @@ libs:
 > Назначение файла: дать будущей сессии полный контекст без перечитывания ~360 КБ кода и всей переписки.
 > **Правило:** любое изменение `STARFALL_CURRENT.html` обновляет в том же коммите этот паспорт (в т.ч. `game_version`, `last_update`, `main_file_sha256`) и `CHANGELOG.md`. SHA считается командой `python3 tools/check_passport.py --fix`; проверка есть в CI (`.github/workflows/passport-check.yml`) и локально `python3 tools/check_passport.py`.
 > Перед правками всё равно открыть актуальный `STARFALL_CURRENT.html` — этот паспорт описывает устройство, а не заменяет код.
+
+## v74 — ожидание загрузки пиратских моделей
+- pirateFleetInit и pirateFleetUpdate теперь ожидают pirateAssetsReady=true до создания шаблонов. Это не позволяет закэшировать процедурный fallback до завершения загрузки GLB; при сетевой ошибке сохраняется резервная модель.
+- Регрессионный тест ожидает создание трёх кораблей и проверяет осевую группу на фактическом объекте эскадрильи, не обращаясь к внутреннему кэшу MC.
 
 ## v73 — разворот pirate_fighter_002 и усиление ближнего боя
 - Для legacy GLB «Ржавый череп» игровой загрузчик добавляет внутреннюю группу STARFALL_FORWARD_AXIS_FIX с поворотом 180° вокруг Y; внешний STARFALL_PIRATE_ASSET_ROOT остаётся без вращения и управляется ИИ. Вытянутые элементы и орудия направлены вперёд, двигатели и выхлоп — назад.
