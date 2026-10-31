@@ -2,16 +2,24 @@
 date: 2026-10-31
 topic: STARFALL — Void Hunter: паспорт проекта (архитектура, технологии, механика, сохранения, качество)
 tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура]
-game_version: "v74"
+game_version: "v75"
 last_update: 2026-10-31
 main_file: STARFALL_CURRENT.html
-main_file_sha256: "cd4f0019cd3e0ebf2616325e0985e14d0003d905c452c16fac538a2176f71442"
+main_file_sha256: "b37af1228d68dfa42f0aab59e109ba5f065710754802d93c454bd2d84c992f2b"
 save_format_version: 2
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"
   tsparticles: "2.12.0 (jsDelivr, фон меню)"
   babylonjs: "7.0.0 (jsDelivr, запасной unpkg, лениво, только 3D-бар)"
   fonts: "Exo 2, Russo One (Google Fonts)"
+
+## v75 — возврат освещения, точные сокеты оружия и плавные манёвры
+- Восстановлены значения базовой световой схемы ранней сборки v40: AmbientLight 0.4, DirectionalLight 1.3, направление (1, 0.6, 0.4). Ослабленный PointLight в центре системы отключён; звёздное поле и туманности сохранены.
+- Вектор освещения атмосферы каждой планеты теперь независим; устранено совместное использование одного Vector3 всеми атмосферными шейдерами.
+- pirate_fighter_002: игровой загрузчик использует GUN_0…GUN_3 как реальные точки вылета четырёх лазеров и ENG_0…ENG_1 как сокеты двигателей для пламени/следов. Каждая пушка отдельно рассчитывает упреждение.
+- Пиратские атаки получили более длинные фазы сближения, огневого пролёта, overshoot и reposition; снижены угловая скорость и ускорение, чтобы убрать резкие развороты и короткие петли.
+- Регрессионные проверки охватывают свет, звёздное поле, планеты, независимые атмосферные uniform, осевую коррекцию, четыре точки выстрела и совпадение лазерных лучей с сокетами.
+
 ---
 
 # STARFALL — Void Hunter · Паспорт проекта
