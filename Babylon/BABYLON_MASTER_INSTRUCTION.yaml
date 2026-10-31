@@ -1,0 +1,124 @@
+project:
+  name: "STARFALL — Void Hunter"
+  workspace: "Babylon/"
+  repository: "https://github.com/gipromeh/Starfall"
+  branch: "main"
+  baseline_version: "v85"
+  baseline_source: "../STARFALL_CURRENT.html"
+  status: "isolated migration workspace; not production"
+
+authority:
+  root_master_instruction: "../STARFALL_MASTER_INSTRUCTION.yaml"
+  root_passport: "../STARFALL_PASSPORT.md"
+  root_changelog: "../CHANGELOG.md"
+  rule: >
+    Корневые документы остаются общими обязательными правилами проекта.
+    Этот файл задаёт дополнительные правила только для Babylon-направления.
+    Не изменять production-игру и не переключать GitHub Pages без отдельного
+    завершённого этапа функциональной эквивалентности и явного решения пользователя.
+
+golden_rules:
+  - "Сохранять игровой мир, механику, контент, баланс, управление и сохранения исходной v85."
+  - "Не использовать старые Babylon HTML из чатов как источник истины: они экспериментальные и могут отставать от v85."
+  - "Не создавать упрощённые заглушки вместо переноса оригинальных систем."
+  - "Не удалять оригинальную механику ради удобства миграции."
+  - "Сначала функциональная эквивалентность, затем новые возможности и полировка."
+  - "Не смешивать две конкурирующие системы рендеринга в одной активной сцене."
+  - "Любое отклонение от исходного поведения документировать с причиной и тестом."
+  - "Не заявлять о browser/iPhone тестировании без фактического запуска на соответствующей среде."
+
+technology:
+  rendering:
+    primary: "Babylon.js"
+    rule: "Единственный активный 3D renderer новой реализации."
+    baseline_reference: "Babylon.js 7.0.0 уже используется в исходной игре для 3D-бара; API и совместимость полного движка проверить отдельным прототипом."
+    versioning: "Закреплять точную версию пакета и CDN; не использовать latest."
+  ai:
+    library: "Yuka"
+    responsibility: ["steering behaviors", "vehicle steering", "perception", "state machines", "high-level tactical decisions"]
+    rule: "Yuka задаёт желаемое движение; итоговая скорость и ускорение проходят через FlightModel."
+  physics:
+    library: "Havok via Babylon physics plugin"
+    responsibility: ["collision queries", "rigid-body interactions where justified", "physical contacts"]
+    rule: >
+      Havok не заменяет космическую FlightModel. Не подключать одновременно Havok и Rapier
+      для одних и тех же тел/коллизий. Сначала проверить iOS Safari, WebAssembly и SIMD fallback.
+  animation:
+    library: "GSAP"
+    responsibility: ["HUD transitions", "menus", "cinematic presentation"]
+    rule: "Не использовать GSAP для физики, движения кораблей или авторитетной игровой симуляции."
+  audio:
+    baseline: "Web Audio API"
+    optional: "Howler.js only if it materially simplifies the audio subsystem"
+  build:
+    initial: "Сохранить возможность публикации на GitHub Pages."
+    option: "Vite/module build only after the parity prototype and deployment design are approved."
+  assets:
+    formats: ["glTF", "GLB", "PNG", "KTX2 where supported"]
+    rule: "Сохранять существующие asset paths and stable identifiers."
+
+architecture:
+  modules:
+    - "Core / GameState"
+    - "PlatformAdapter / Input"
+    - "BabylonRenderer / Camera"
+    - "FlightModel"
+    - "PhysicsAdapter"
+    - "Steering / CombatAI / Avoidance"
+    - "WeaponSystem / ProjectileSystem"
+    - "DamageSystem / ThermalSystem"
+    - "EconomySystem / TrafficSystem"
+    - "Station / Dialogue / Narrative"
+    - "DeepSpaceSimulation / SignalSystem"
+    - "SaveSystem"
+    - "Audio / VFX / HUD"
+    - "ResourceLifecycle / PerformanceMonitor"
+  simulation:
+    fixed_timestep: true
+    render_independent: true
+    deterministic_tests: true
+    pooling_required_for_hot_paths: true
+    resource_disposal_required: true
+
+compatibility:
+  platforms: ["Desktop Chromium", "iPhone Safari"]
+  preserve_controls: true
+  preserve_save_format: "SAVE 2.0; existing sf_sv2a/sf_sv2b and legacy sf_sv read path"
+  migration_rule: "Any incompatible save change requires explicit schema versioning, migration and backup."
+  preserve:
+    - "all five star systems and their world objects"
+    - "player ships, pirate ships, bosses, transports and asset identifiers"
+    - "stations, station services, 3D hall/bar and NPC interactions"
+    - "trade, dynamic economy, cargo, mining, repair, refuel, shipyard and upgrades"
+    - "neutral traffic, tourist traffic, pirates and off-screen world consequences"
+    - "dialogues, crew, contracts, jokes, reputation, system state and narrative chains"
+    - "flight, combat, collisions, projectiles, destruction, drops and rewards"
+    - "map, navigation, hyperspace, orbits and planet interactions"
+    - "keyboard/mouse and iPhone touch controls"
+    - "all save keys, migration paths and player progression"
+
+workflow:
+  - "Read this file, README.md, LEGACY_BASELINE.md, root master instruction and relevant passport sections."
+  - "Inspect the current root v85 implementation and existing tests before porting a subsystem."
+  - "Create a behavior inventory: source function/state/data -> Babylon implementation -> regression test."
+  - "Port one bounded subsystem at a time; keep a runnable build at every milestone."
+  - "Run syntax, unit, integration and browser tests; report untested environments honestly."
+  - "Update MIGRATION_PLAN.md, TEST_MATRIX.md and a Babylon-local CHANGELOG.md on each completed milestone."
+  - "Commit only completed, tested changes in Babylon/ until production promotion is approved."
+
+forbidden:
+  - "Replacing root STARFALL_CURRENT.html during isolated migration."
+  - "Treating syntax check as proof of runtime correctness."
+  - "Claiming iPhone performance without a physical-device run and measurements."
+  - "Changing gameplay, balance, control bindings or narrative without explicit scope."
+  - "Adding both Havok and Rapier as competing authoritative physics engines."
+  - "Using unpinned CDN dependencies."
+  - "Leaving TODOs, mock mechanics or fake success states in a milestone declared complete."
+
+acceptance:
+  - "Every original gameplay feature has an inventory entry and a passing parity test or documented exception."
+  - "Old SAVE 2.0 and legacy sf_sv saves load without progression loss."
+  - "All existing root regression tests remain valid for the baseline."
+  - "Babylon tests cover equivalent behaviors independently."
+  - "Desktop and iPhone Safari are tested separately."
+  - "Production switch requires explicit approval and a migration/release commit."
