@@ -52,6 +52,11 @@ const checks = [
   ['Projectile telemetry classifies launch, hit and miss', html.includes("recordEvent('projectile-launch'") && html.includes("recordEvent('projectile-hit'") && html.includes("recordEvent('projectile-miss'")],
   ['Flight recording exports a structured JSON session', html.includes('function exportFlightRecording()') && html.includes('STARFALL_AI_LAB_FLIGHT_RECORDING') && html.includes("$('record-export').onclick=exportFlightRecording")],
   ['Immersive flight mode has dedicated fullscreen control', html.includes('id="fullscreen-btn"') && html.includes("$('fullscreen-btn').onclick") && html.includes('body.flight-mode #record-export')],
+
+  ['Player flight matches v85 mouse steering and inertial thrust model', html.includes('const dead=.07,curve=v=>') && html.includes('flightAngular.x+=') && html.includes('throttle=clamp(throttle+') && html.includes('flightVelocity.addScaledVector(right')],
+  ['Mouse buttons control weapons: left laser, right missile', html.includes("if(e.button===0){mouseFire=true") && html.includes("if(e.button===2){mouseMissile=true") && html.includes('if(mouseFire||fireHeld||keys.has(\'Space\'))firePlayer()') && html.includes('if(mouseMissile){mouseMissile=false;fireMissile();}')],
+  ['Chase camera follows ship orientation like v85', html.includes('new THREE.Vector3(0,3.4,10.5).applyQuaternion(player.quaternion)') && html.includes('camera.quaternion.slerp(player.quaternion')],
+  ['Mouse no longer orbits camera independently', !html.includes('camYaw-=(e.clientX-drag.x)')],
 ];;
 let failed = 0;
 for (const [name, ok] of checks) { console.log((ok ? 'PASS ' : 'FAIL ') + name); if (!ok) failed++; }
