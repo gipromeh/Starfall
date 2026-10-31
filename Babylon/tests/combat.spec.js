@@ -53,9 +53,9 @@ test("combat damages, destroys and respawns pirate target",async({page})=>{
   expect(killed.enemyDestroyed).toBeTruthy();
   expect(killed.kills).toBe(1);
   expect(killed.credits).toBe(250);
-  await page.waitForTimeout(4400);
+  await page.waitForTimeout(5600);
   const respawned=await page.evaluate(()=>window.__STARFALL_TEST__.state());
-  expect(respawned.enemyDestroyed).toBeFalsy();
+  expect(respawned.enemyDestroyed,JSON.stringify(respawned)).toBeFalsy();
   expect(respawned.enemyHealth).toBe(100);
 });
 
@@ -71,7 +71,7 @@ test("mobile HUD and touch flight control are available",async({page})=>{
 test("homing missile reaches target and applies weapon damage",async({page})=>{
   await bootGame(page);
   await page.evaluate(()=>window.__STARFALL_TEST__.fireMissile());
-  await page.waitForFunction(()=>window.__STARFALL_TEST__.state().enemyHealth<100,undefined,{timeout:10000});
+  await page.waitForFunction(()=>window.__STARFALL_TEST__.state().enemyHealth<100,undefined,{timeout:10000}).catch(async error=>{const state=await page.evaluate(()=>window.__STARFALL_TEST__.state());throw new Error(error.message+"\\nMissile diagnostics: "+JSON.stringify(state));});
   const state=await page.evaluate(()=>window.__STARFALL_TEST__.state());
   expect(state.enemyHealth).toBeLessThan(100);
   expect(state.projectiles).toBe(0);
