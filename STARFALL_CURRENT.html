@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="claude:viewport-fit-sides" content="cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#02030a"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>STARFALL — Void Hunter</title>
-<meta name="starfall-version" content="v66">
+<meta name="starfall-version" content="v68">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#02030a;--fg:#cfe9ff;--ac:#3cf;--warn:#f54;color-scheme:dark}
@@ -1348,7 +1348,7 @@ function planetHeight(type=0){const k=document.createElement("canvas");k.width=5
 ["ВЕНЕРА","#a77b3b","#f1d29a",0xffd080,2400,0,0,0],
 ["ЭДЕМ","#286f62","#8ed7a8",0x70ffd0,3040,0,0,0],
 ["НЕЙРЕЯ","#62518c","#c2a6e8",0xc5aaff,2800,0,0,0]
-].forEach(([name,c1,c2,at,r,x,y,z],planetIndex)=>{const orbitR=[60000,19500,28600,11700,39000,49400][planetIndex],phase=[.2,1.7,3.0,4.3,5.3,2.3][planetIndex],tilt=[900,280,520,180,760,640][planetIndex];const m=new T.Mesh(new T.SphereGeometry(r,64,48),new T.MeshStandardMaterial({map:ptex(c1,c2,planetIndex),roughness:planetIndex===0?.82:.96,metalness:0}));m.position.set(SYSTEM_CENTER.x+Math.cos(phase)*orbitR,SYSTEM_CENTER.y+Math.sin(phase*.7)*tilt,SYSTEM_CENTER.z+Math.sin(phase)*orbitR);planetOrbits.push({mesh:m,y:0,tilt,phase,radius:orbitR,speed:.0012*Math.pow(15000/orbitR,1.5)});worldBodies.add(m);m.userData.worldPlanet=planetIndex;worldPlanets.push({mesh:m,name,radius:r,kind:"planet"});spl.push(m);m.add(lights(r));m.material.bumpMap=planetHeight(planetIndex);m.material.bumpScale=r*.0018;m.material.roughness=planetIndex===0?.92:.98;m.material.metalness=0;m.material.envMapIntensity=.12;if(planetIndex===0){
+].forEach(([name,c1,c2,at,r,x,y,z],planetIndex)=>{const id=["saturn","earth","mars","venus","eden","nyrea"][planetIndex],orbitR=[60000,19500,28600,11700,39000,49400][planetIndex],phase=[.2,1.7,3.0,4.3,5.3,2.3][planetIndex],tilt=[900,280,520,180,760,640][planetIndex];const m=new T.Mesh(new T.SphereGeometry(r,64,48),new T.MeshStandardMaterial({map:ptex(c1,c2,planetIndex),roughness:planetIndex===0?.82:.96,metalness:0}));m.position.set(SYSTEM_CENTER.x+Math.cos(phase)*orbitR,SYSTEM_CENTER.y+Math.sin(phase*.7)*tilt,SYSTEM_CENTER.z+Math.sin(phase)*orbitR);planetOrbits.push({mesh:m,id,y:0,tilt,phase,radius:orbitR,speed:.0012*Math.pow(15000/orbitR,1.5)});worldBodies.add(m);m.userData.worldPlanet=planetIndex;m.userData.planetId=id;worldPlanets.push({mesh:m,id,name,radius:r,kind:"planet"});spl.push(m);m.add(lights(r));m.material.bumpMap=planetHeight(planetIndex);m.material.bumpScale=r*.0018;m.material.roughness=planetIndex===0?.92:.98;m.material.metalness=0;m.material.envMapIntensity=.12;if(planetIndex===0){
 const ringPlane=new T.Group();ringPlane.rotation.x=1.18;ringPlane.rotation.z=.16;m.add(ringPlane);const ringOrbit=new T.Group();ringPlane.add(ringOrbit);
 [[r*1.34,r*1.58,0xc7b58e,.13],[r*1.62,r*1.88,0xe2d2ad,.22],[r*1.91,r*2.08,0x8d806d,.12],[r*2.12,r*2.42,0xc9b994,.085]].forEach(([ri,ro,col,op])=>ringOrbit.add(new T.Mesh(new T.RingGeometry(ri,ro,192),new T.MeshBasicMaterial({color:col,side:T.DoubleSide,transparent:true,opacity:op,depthWrite:false}))));
 [[r*1.28,r*2.48,0xc6b99d,.035],[r*1.42,r*2.34,0xd8c9ad,.045],[r*1.72,r*2.18,0x9b927e,.035]].forEach(([ri,ro,col,op])=>ringOrbit.add(new T.Mesh(new T.RingGeometry(ri,ro,192),new T.MeshBasicMaterial({color:col,side:T.DoubleSide,transparent:true,opacity:op,depthWrite:false,blending:T.AdditiveBlending}))));
@@ -1366,6 +1366,74 @@ addMoons("САТУРН",[[155,4200,.006,0xaaa69b],[105,6100,-.004,0x777b83],[78,
 addMoons("МАРС",[[115,3100,.009,0x9b8d7e],[72,4700,-.006,0x77716c]]);
 addMoons("ЭДЕМ",[[145,4700,.004,0x9aab9d],[92,6900,-.003,0x7d8790]]);
 addMoons("НЕЙРЕЯ",[[125,5200,.0045,0xaaa0b9]]);
+
+/* ===== v68: GLB-планеты из assets/planets/catalog.json =====
+   GLB становится дочерней моделью штатного тела: наследует его мировую
+   позицию, вращение и орбиту. Процедурная сфера остаётся резервом при ошибке. */
+function loadPlanetModels(){
+ if(!T.GLTFLoader||location.protocol==="file:")return;
+ const loader=new T.GLTFLoader();
+ const validPath=p=>typeof p==="string"&&/^assets\\/planets\\/[a-z0-9_-]+\\/[^?#]+\\.glb$/i.test(p);
+ const tuneMaterial=mat=>{
+  if(!mat)return mat;
+  if(mat.isMeshBasicMaterial){
+   const p=new T.MeshStandardMaterial({color:mat.color?mat.color.clone():0xffffff,map:mat.map,alphaMap:mat.alphaMap,transparent:mat.transparent,opacity:mat.opacity,side:mat.side,roughness:.96,metalness:0});
+   if(mat.normalMap)p.normalMap=mat.normalMap;
+   if(mat.aoMap)p.aoMap=mat.aoMap;
+   if(mat.emissiveMap)p.emissiveMap=mat.emissiveMap;
+   if(mat.emissive)p.emissive.copy(mat.emissive);
+   p.alphaTest=mat.alphaTest;p.depthWrite=mat.depthWrite;p.needsUpdate=true;
+   return p;
+  }
+  if(mat.isMeshStandardMaterial||mat.isMeshPhysicalMaterial){
+   mat.roughness=Math.max(.78,Number.isFinite(mat.roughness)?mat.roughness:.92);
+   mat.metalness=Math.min(.08,Number.isFinite(mat.metalness)?mat.metalness:0);
+   mat.envMapIntensity=.08;mat.needsUpdate=true;
+  }
+  return mat;
+ };
+ fetch("assets/planets/catalog.json",{cache:"no-cache"}).then(res=>{
+  if(!res.ok)throw new Error("catalog HTTP "+res.status);
+  return res.json();
+ }).then(catalog=>{
+  if(!catalog||!Array.isArray(catalog.planets))throw new Error("Некорректный catalog.json");
+  const used=new Set();
+  catalog.planets.forEach(entry=>{
+   if(!entry||typeof entry.id!=="string"||used.has(entry.id))return;
+   used.add(entry.id);
+   const planet=worldPlanets.find(p=>p.kind==="planet"&&p.id===entry.id);
+   const orbit=planetOrbits.find(o=>o.id===entry.id);
+   if(!planet||!orbit){console.warn("GLB-планета: неизвестный id",entry.id);return}
+   if(!validPath(entry.model)){console.warn("GLB-планета: недопустимый путь",entry.model);return}
+   loader.load(entry.model,gltf=>{
+    try{
+     const source=gltf.scene;source.updateMatrixWorld(true);
+     const bounds=new T.Box3().setFromObject(source),size=bounds.getSize(new T.Vector3()),center=bounds.getCenter(new T.Vector3());
+     const maxDim=Math.max(size.x,size.y,size.z);
+     if(!Number.isFinite(maxDim)||maxDim<1e-5)throw new Error("пустая геометрия GLB");
+     const multiplier=Number.isFinite(entry.scale)&&entry.scale>0?Math.min(100,Math.max(.01,entry.scale)):1;
+     const fitScale=planet.radius*2/maxDim*multiplier;
+     const fit=new T.Group();fit.scale.setScalar(fitScale);fit.position.copy(center).multiplyScalar(-fitScale);fit.add(source);
+     const model=new T.Group();model.add(fit);
+     const rot=Array.isArray(entry.rotation)?entry.rotation:[0,0,0];
+     model.rotation.set(0,1,2).map((i)=>Number.isFinite(+rot[i])?+rot[i]:0);
+     source.traverse(o=>{
+      if(!o.isMesh)return;
+      o.castShadow=true;o.receiveShadow=true;
+      if(Array.isArray(o.material))o.material=o.material.map(tuneMaterial);else o.material=tuneMaterial(o.material);
+     });
+     planet.mesh.add(model);
+     planet.mesh.material.visible=false;
+     planet.mesh.userData.glbModel=model;planet.mesh.userData.glbReady=true;
+     planet.glbPath=entry.model;
+     console.info("GLB-планета загружена:",entry.id,entry.model,"радиус:",planet.radius);
+    }catch(err){console.warn("GLB-планета: ошибка подготовки",entry.id,err)}
+   },undefined,err=>console.warn("GLB-планета не загружена:",entry.model,err));
+  });
+ }).catch(err=>console.warn("Каталог GLB-планет недоступен; используются процедурные модели:",err));
+}
+loadPlanetModels();
+
 const starTarget=new T.Mesh(new T.SphereGeometry(1200,48,32),new T.MeshBasicMaterial({color:0xff351b}));starTarget.position.copy(SYSTEM_CENTER);S.add(starTarget);
 const starHalo=new T.Sprite(new T.SpriteMaterial({map:gtex("rgba(255,70,28,.95)"),color:0xff3218,blending:T.AdditiveBlending,transparent:true,opacity:.96,depthWrite:false}));starHalo.position.copy(starTarget.position);starHalo.scale.set(10500,10500,1);S.add(starHalo);
 const coronaCanvas=document.createElement("canvas");coronaCanvas.width=coronaCanvas.height=512;{const cx=coronaCanvas.getContext("2d"),g=cx.createRadialGradient(256,256,28,256,256,256);g.addColorStop(0,"rgba(255,250,220,1)");g.addColorStop(.12,"rgba(255,190,110,.98)");g.addColorStop(.28,"rgba(255,65,24,.72)");g.addColorStop(.52,"rgba(220,24,12,.28)");g.addColorStop(1,"rgba(110,0,0,0)");cx.fillStyle=g;cx.fillRect(0,0,512,512);cx.save();cx.translate(256,256);for(let i=0;i<144;i++){const a=i/144*Math.PI*2,len=105+Math.random()*125,w=.7+Math.random()*2.5;cx.rotate(a);cx.beginPath();cx.moveTo(0,-92);cx.quadraticCurveTo(w*2,-150,Math.sin(i*12.7)*12,-len-35);cx.strokeStyle="rgba(255,92,38,"+(.08+Math.random()*.2)+")";cx.lineWidth=w;cx.stroke();cx.rotate(-a)}cx.restore()}const coronaMap=new T.CanvasTexture(coronaCanvas);
