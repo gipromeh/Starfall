@@ -7,16 +7,24 @@ const L = require('./lib');
   await page.click('#play');
   await page.waitForFunction(() => state === 'dock', null, { timeout: 60000 });
   await page.waitForFunction(() => pirateAssetsReady === true, null, { timeout: 60000 });
-  const scene = await page.evaluate(() => ({
-    ambient: S.children.find(o => o.isAmbientLight)?.intensity,
-    directional: sun.intensity,
-    stars: sky.children.filter(o => o.isPoints).length,
-    planets: worldPlanets.length,
-    atmosphereVectors: new Set(worldPlanets.map(p => p.mesh.children.find(o => o.material?.uniforms?.c && o.material?.uniforms?.s)?.material.uniforms.s.value)).size
-  }));
-  L.check('восстановлено мягкое общее освещение ранней сборки', scene.ambient >= .39 && scene.directional >= 1.29, scene);
+  const scene = await page.evaluate(() => {
+    const vectors = worldPlanets.slice(0, 6).map(p => p.mesh.children.find(o => o.material?.uniforms?.c && o.material?.uniforms?.s)?.material.uniforms.s.value);
+    const sunDir = sun.position.clone().normalize();
+    return {
+      ambient: S.children.find(o => o.isAmbientLight)?.intensity,
+      directional: sun.intensity,
+      hemisphere: S.children.find(o => o.isHemisphereLight)?.intensity,
+      cameraFill: C.children.find(o => o.isDirectionalLight)?.intensity,
+      bloom: CP.passes.find(p => p.strength !== undefined)?.strength,
+      stars: sky.children.filter(o => o.isPoints).length,
+      planets: worldPlanets.length,
+      atmosphereVectors: new Set(vectors).size,
+      atmosphereAligned: vectors.length === 6 && vectors.every(v => v && v.clone().normalize().dot(sunDir) > .999)
+    };
+  });
+  L.check('восстановлена равномерная световая схема ранней сборки', scene.ambient >= .39 && scene.directional >= 1.29 && scene.hemisphere >= .54 && scene.cameraFill >= .54 && scene.bloom >= .61, scene);
   L.check('звёздное поле и планетная система сохранены', scene.stars >= 2 && scene.planets >= 6, scene);
-  L.check('каждая планета имеет независимый вектор освещения атмосферы', scene.atmosphereVectors >= 6, scene);
+  L.check('атмосферы планет согласованы с направлением реального солнца', scene.atmosphereVectors >= 6 && scene.atmosphereAligned, scene);
   await page.evaluate(() => { lift(); QL.setMode('low'); pirateFleetInit(); });
   await page.waitForFunction(() => pirateFleet.length === 3, null, { timeout: 15000 });
 
@@ -29,13 +37,14 @@ const L = require('./lib');
   L.check('эскадрилья содержит два Головореза и один Шакал', composition.total === 3 && composition.golovorez === 2 && composition.jackal === 1, composition);
   L.check('все три корабля созданы', composition.spawned === 3, composition);
   const locators = await page.evaluate(() => {
-    const e = pirateFleet.find(p => p.ty === 0);
-    e.g.updateMatrixWorld(true);
-    const axis = e.g.getObjectByName('STARFALL_FORWARD_AXIS_FIX_RUNTIME');
+    const e = pirateFleet.find(p => p.ty === 0),jackal = pirateFleet.find(p => p.ty === 1);
+    e.g.updateMatrixWorld(true);jackal.g.updateMatrixWorld(true);
+    const axis = e.g.getObjectByName('STARFALL_FORWARD_AXIS_FIX_RUNTIME') || e.g.getObjectByName('STARFALL_FORWARD_AXIS_FIX');
     const axisForward = axis ? new THREE.Vector3(0,0,1).applyQuaternion(axis.getWorldQuaternion(new THREE.Quaternion())).dot(new THREE.Vector3(0,0,-1).applyQuaternion(e.g.quaternion)) : -1;
-    return { axis: !!axis, axisForward, guns: e.muzzleNodes.length, engines: e.engineNodes.length };
+    return { axis: !!axis, axisForward, guns: e.muzzleNodes.length, engines: e.engineNodes.length, jackalGuns: jackal.muzzleNodes.length, jackalEngines: jackal.engineNodes.length };
   });
   L.check('фактическая носовая ось совпадает с курсом; доступны 4 пушки и 2 двигателя', locators.axis && locators.axisForward > .98 && locators.guns === 4 && locators.engines === 2, locators);
+  L.check('«Шакал» имеет отдельные передний ствол и задний двигатель', locators.jackalGuns === 1 && locators.jackalEngines === 1, locators);
 
   const combat = await page.evaluate(() => {
     pirateFleet.forEach((e, i) => {
@@ -51,18 +60,23 @@ const L = require('./lib');
     const shots = eb.slice(before).filter(b => b.pirateFleetSlot === first.slot);
     const gunPositions = first.muzzleNodes.map(n => n.getWorldPosition(new THREE.Vector3()));
     const muzzleMatch = shots.length === 4 && shots.every((b, i) => b.m.position.distanceTo(gunPositions[i]) < .001);
-    const shotForward = shots.length === 4 && shots.every((b, i) => b.v.clone().normalize().dot(P.clone().sub(gunPositions[i]).normalize()) > .5);
+    const shotForward = shots.length === 4 && shots.every((b, i) => b.v.clone().normalize().dot(first.muzzleNodes[i].getWorldDirection(new THREE.Vector3())) > .98);
     const socketsForward = gunPositions.length === 4 && gunPositions.every(p => p.clone().sub(first.g.position).dot(new THREE.Vector3(0,0,-1).applyQuaternion(first.g.quaternion)) > 0);
+    const allPilotShots = pirateFleet.map(e => {
+      const own = eb.slice(before).filter(b => b.pirateFleetSlot === e.slot);
+      return { slot: e.slot, shots: own.length, guns: e.muzzleNodes.length, originsMatch: own.length === e.muzzleNodes.length && own.every((b, i) => b.m.position.distanceTo(e.muzzleNodes[i].getWorldPosition(new THREE.Vector3())) < .001) };
+    });
     const noseAlignment = pirateFleet.map(e => {
       e.g.updateMatrixWorld(true);
       const fix = e.g.getObjectByName('STARFALL_FORWARD_AXIS_FIX_RUNTIME') || e.g.getObjectByName('STARFALL_FORWARD_AXIS_FIX');
       return fix ? new THREE.Vector3(0, 0, 1).applyQuaternion(fix.getWorldQuaternion(new THREE.Quaternion())).dot(e.vel.clone().normalize()) : -1;
     });
-    return { before, after: eb.length, delta: eb.length - before, noseAlignment, firstShipShots: shots.length, muzzleMatch, shotForward, socketsForward };
+    return { before, after: eb.length, delta: eb.length - before, noseAlignment, firstShipShots: shots.length, muzzleMatch, shotForward, socketsForward, allPilotShots };
   });
   L.check('все три пилота стреляют на близкой дистанции', combat.delta >= 3, combat);
   L.check('фактический нос каждой модели совпадает с направлением движения', combat.noseAlignment.every(x => x > .98), combat.noseAlignment);
-  L.check('четыре лазера выходят из четырёх дульных маркеров', combat.firstShipShots === 4 && combat.muzzleMatch && combat.shotForward && combat.socketsForward, combat);
+  L.check('четыре лазера выходят из дульных маркеров вдоль оси стволов', combat.firstShipShots === 4 && combat.muzzleMatch && combat.shotForward && combat.socketsForward, combat);
+  L.check('каждый пират стреляет из собственного переднего сокета', combat.allPilotShots.every(x => x.shots === x.guns && x.shots > 0 && x.originsMatch), combat.allPilotShots);
 
   const pass = await page.evaluate(() => {
     pirateFleet.forEach(p => { p.fire = 99; p.burst = 0; p.burstGap = 0; });

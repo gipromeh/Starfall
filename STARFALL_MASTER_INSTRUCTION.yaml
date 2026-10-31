@@ -53,7 +53,7 @@ sanity_check:
 # ПРОЦЕСС РАБОТЫ С GITHUB (единственный источник правды)
 process:
   repo: https://github.com/gipromeh/Starfall   # ветка main
-  current_version: v76
+  current_version: v77
   files:
     game: STARFALL_CURRENT.html        # единственная актуальная версия игры
     passport: STARFALL_PASSPORT.md     # архитектура, переменные, таблицы, правила правок
@@ -550,3 +550,54 @@ pirate_fighter_002_v76:
     - "Есть четыре дульных сокета и два двигательных сокета даже если GLB не экспортировал Empty nodes."
     - "Каждый лазер начинается в точке соответствующего GUN socket; каждый двигатель оставляет след от ENG socket."
     - "Viewer и игровой загрузчик используют одинаковую проверку реального rotation.y."
+
+
+# ─────────────────────────────────────────────────────────────
+# v77 — СВЕТ И БОЕВАЯ ГЕОМЕТРИЯ ПИРАТОВ
+scene_lighting_v77:
+  ambient: 0.4
+  directional: 1.3
+  hemisphere: 0.55
+  camera_fill: 0.55
+  bloom: {strength: 0.62, radius: 0.55, threshold: 0.8}
+  planet_light_direction: [1, 0.6, 0.4]
+  constraints:
+    - "Не возвращать видимую центральную звезду; сохранить звёздное поле, туманности и планеты."
+    - "Ночные огни и атмосферные слои синхронизированы с направлением основного DirectionalLight."
+pirate_sockets_v77:
+  rust_skull:
+    fallback_guns: [[-2.74, -1.24, -3.565], [-2.46, -1.24, -3.565], [2.46, -1.24, -3.565], [2.74, -1.24, -3.565]]
+    fallback_engines: [[-0.62, -0.9, 6.535], [0.62, -0.9, 6.535]]
+    fallback_gun_yaw: 3.14159
+  jackal:
+    muzzle: "Передний экстремум Box3 запечённой модели; поворот сокета Y=π."
+    engine: "Задний экстремум Box3."
+  laser:
+    origin: "GUN socket getWorldPosition."
+    direction: "GUN socket getWorldDirection с 12% lead convergence."
+pirate_flight_ai_v77:
+  formation: {spawn_distance: [760, 850, 940], lateral: 110, vertical: 36}
+  maneuver:
+    states: [APPROACH, ATTACK_RUN, FIRING_PASS, OVERSHOOT, REPOSITION]
+    approach_distance: 900
+    attack_distance: 520
+    pass_distance: 420
+    pass_crossing_threshold: 140
+    lateral_offsets: {approach: 100, attack: 45, pass: 30, overshoot: 100, reposition: 100}
+    turn_rate_rad_s: {golovorez: 1.7, jackal: 1.9}
+    target_speed: {golovorez: 42, jackal: 50}
+    max_acceleration: {golovorez: 55, jackal: 68}
+  weapons:
+    fire_range: 1400
+    close_range: 760
+    aim_angle_rad: 0.9
+    close_aim_angle_rad: 1.35
+    burst_shots: 5
+    shot_interval_seconds: 0.12
+    reload_seconds: [0.48, 0.76]
+  acceptance:
+    - "Три активных пилота: два Головореза и один Шакал."
+    - "Нос каждой модели совпадает с фактическим вектором скорости."
+    - "Каждый пират стреляет из переднего сокета, каждый двигатель оставляет след сзади."
+    - "Лазеры выходят из стволов и направлены вдоль их оси."
+    - "Планеты и корабли читаемы на освещённой и затенённой сторонах."

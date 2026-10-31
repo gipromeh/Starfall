@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="claude:viewport-fit-sides" content="cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#02030a"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>STARFALL — Void Hunter</title>
-<meta name="starfall-version" content="v74">
+<meta name="starfall-version" content="v77">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#02030a;--fg:#cfe9ff;--ac:#3cf;--warn:#f54;color-scheme:dark}
@@ -1321,7 +1321,7 @@ const T=THREE,$=id=>document.getElementById(id);
 let state="menu",score=0,wave=1,hi=0,track=0;try{hi=+localStorage.getItem("sf_hi")||0}catch(e){}
 const R=new T.WebGLRenderer({antialias:true});R.setPixelRatio(Math.min(devicePixelRatio,1.5));document.body.prepend(R.domElement);
 const S=new T.Scene();S.background=new T.Color(0x02030a);const C=new T.PerspectiveCamera(70,1,2,90000);
-function rs(){R.setSize(innerWidth,innerHeight);if(CP)CP.setSize(innerWidth,innerHeight);C.aspect=innerWidth/innerHeight;C.updateProjectionMatrix()}let CP;addEventListener("resize",rs);rs();try{CP=new T.EffectComposer(R);CP.addPass(new T.RenderPass(S,C));CP.addPass(new T.UnrealBloomPass(new T.Vector2(innerWidth,innerHeight),.18,.32,1.18))}catch(e){CP={render:()=>R.render(S,C),setSize:()=>{}}}
+function rs(){R.setSize(innerWidth,innerHeight);if(CP)CP.setSize(innerWidth,innerHeight);C.aspect=innerWidth/innerHeight;C.updateProjectionMatrix()}let CP;addEventListener("resize",rs);rs();try{CP=new T.EffectComposer(R);CP.addPass(new T.RenderPass(S,C));CP.addPass(new T.UnrealBloomPass(new T.Vector2(innerWidth,innerHeight),.7,.6,.85))}catch(e){CP={render:()=>R.render(S,C),setSize:()=>{}}}
 S.add(new T.AmbientLight(0x6070a0,.4));const sun=new T.DirectionalLight(0xfff0dd,1.3);sun.position.set(1,.6,.4);S.add(sun);const SYSTEM_CENTER=new T.Vector3(0,0,-56000);const systemKeyLight=new T.PointLight(0xeaf2ff,0,132000,2);systemKeyLight.position.copy(SYSTEM_CENTER);S.add(systemKeyLight);
 const rd=()=>{const u=Math.random()*2-1,a=Math.random()*6.283,s=Math.sqrt(1-u*u);return new T.Vector3(s*Math.cos(a),u,s*Math.sin(a))};
 const gc={};function gtex(c){if(gc[c])return gc[c];const k=document.createElement("canvas");k.width=k.height=128;const x=k.getContext("2d"),g=x.createRadialGradient(64,64,0,64,64,64);g.addColorStop(0,c);g.addColorStop(1,"rgba(0,0,0,0)");x.fillStyle=g;x.fillRect(0,0,128,128);return gc[c]=new T.CanvasTexture(k)}
@@ -1330,7 +1330,7 @@ const sky=new T.Group();S.add(sky);
 {const n=2500,p=new Float32Array(n*3);for(let i=0;i<n;i++){const v=rd().multiplyScalar(1500+Math.random()*400);p.set([v.x,v.y,v.z],i*3)}
 const g=new T.BufferGeometry();g.setAttribute("position",new T.BufferAttribute(p,3));sky.add(new T.Points(g,new T.PointsMaterial({color:0xffffff,size:2,sizeAttenuation:false})))}
 var LTX;function ltex(){const k=document.createElement("canvas");k.width=512;k.height=256;const x=k.getContext("2d");x.fillStyle="#000";x.fillRect(0,0,512,256);for(let i=0;i<40;i++){const cx=Math.random()*512,cy=40+Math.random()*176;for(let j=0;j<60;j++){x.fillStyle="rgba(255,"+(190+Math.random()*50|0)+",120,"+(.4+Math.random()*.6)+")";x.fillRect(cx+(Math.random()-.5)*50,cy+(Math.random()-.5)*30,1.5,1.5)}}return new T.CanvasTexture(k)}
-function lights(r){LTX=LTX||ltex();return new T.Mesh(new T.SphereGeometry(r*1.003,48,32),new T.ShaderMaterial({uniforms:{t:{value:LTX},s:{value:new T.Vector3(0,0,1)}},vertexShader:"varying vec2 u;varying vec3 n;void main(){u=uv;n=normalize(mat3(modelMatrix)*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}",fragmentShader:"uniform sampler2D t;uniform vec3 s;varying vec2 u;varying vec3 n;void main(){float night=1.0-smoothstep(-.16,.10,dot(normalize(n),normalize(s)));gl_FragColor=vec4(texture2D(t,u).rgb*night*.62,night*.82);}",blending:T.AdditiveBlending,transparent:true,depthWrite:false}))}
+function lights(r){LTX=LTX||ltex();return new T.Mesh(new T.SphereGeometry(r*1.003,48,32),new T.ShaderMaterial({uniforms:{t:{value:LTX},s:{value:new T.Vector3(1,.6,.4).normalize()}},vertexShader:"varying vec2 u;varying vec3 n;void main(){u=uv;n=normalize(mat3(modelMatrix)*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}",fragmentShader:"uniform sampler2D t;uniform vec3 s;varying vec2 u;varying vec3 n;void main(){float night=1.0-smoothstep(-.16,.10,dot(normalize(n),normalize(s)));gl_FragColor=vec4(texture2D(t,u).rgb*night*.62,night*.82);}",blending:T.AdditiveBlending,transparent:true,depthWrite:false}))}
 const spl=[];function ptex(c1,c2,type=0){
 const k=document.createElement("canvas");k.width=512;k.height=256;const x=k.getContext("2d"),im=x.createImageData(512,256),a=new T.Color(c1),b=new T.Color(c2),white=new T.Color(0xffffff),seed=type*917+41;let seedR=seed;const rnd=()=>{seedR=(seedR*1664525+1013904223)>>>0;return seedR/4294967296};
 const makeGrid=(w,h)=>Array.from({length:h},()=>Array.from({length:w},rnd)),grids=[makeGrid(34,18),makeGrid(68,36),makeGrid(136,72)];
@@ -1661,16 +1661,23 @@ function planetNavUpdate(){
  navHud.style.display="block";navHud.textContent=selected.target.name+"  ·  "+Math.round(selected.distance).toLocaleString("ru-RU")+" игровых ед.";
 }
 
-// ===== STARFALL v76 — AXIS VALIDATION, RUNTIME SOCKETS AND SCENE LIGHTING =====
+// ===== STARFALL v77 — RESTORED LIGHTING, BARREL FIRE AND ATTACK AI =====
 const pirateFleet=[];
 let pirateFleetReady=false,pirateFleetTemplates=null,pirateFleetFlameMat=null,pirateFleetSmokeTex=null,pirateFleetFireTex=null;
 const pirateFleetForward=new T.Vector3(0,0,-1),pirateFleetUp=new T.Vector3(0,1,0),pirateFleetHeading=new T.Vector3();
 const pirateFleetGunNames=["GUN_0","GUN_1","GUN_2","GUN_3"],pirateFleetEngineNames=["ENG_0","ENG_1"];
 const pirateFleetGunFallback=[[-2.74,-1.24,-3.565],[-2.46,-1.24,-3.565],[2.46,-1.24,-3.565],[2.74,-1.24,-3.565]],pirateFleetEngineFallback=[[-.62,-.9,6.535],[.62,-.9,6.535]];
 function pirateFleetResolveSockets(g,ty){
- if(ty!==0)return{guns:[],engines:[]};
- const resolve=(names,positions)=>names.map((name,i)=>{let node=g.getObjectByName(name);if(!node){node=new T.Object3D();node.name=name;node.position.set(...positions[i]);g.add(node)}return node});
- return{guns:resolve(pirateFleetGunNames,pirateFleetGunFallback),engines:resolve(pirateFleetEngineNames,pirateFleetEngineFallback)};
+ const resolve=(names,positions,forward=false)=>names.map((name,i)=>{let node=g.getObjectByName(name);if(!node){node=new T.Object3D();node.name=name;node.position.set(...positions[i]);if(forward)node.rotation.y=Math.PI;g.add(node)}return node});
+ if(ty===0)return{guns:resolve(pirateFleetGunNames,pirateFleetGunFallback,true),engines:resolve(pirateFleetEngineNames,pirateFleetEngineFallback)};
+ // The baked Jackal has no authored weapon empties: derive sockets from its real local mesh bounds.
+ g.updateMatrixWorld(true);
+ const bounds=new T.Box3().setFromObject(g).applyMatrix4(g.matrixWorld.clone().invert()),center=bounds.getCenter(new T.Vector3());
+ const gun=g.getObjectByName("GUN_0")||new T.Object3D();
+ if(!gun.parent){gun.name="GUN_0";gun.position.set(center.x,center.y,bounds.min.z+.06);gun.rotation.y=Math.PI;g.add(gun)}
+ const engine=g.getObjectByName("ENG_0")||new T.Object3D();
+ if(!engine.parent){engine.name="ENG_0";engine.position.set(center.x,center.y,bounds.max.z-.06);g.add(engine)}
+ return{guns:[gun],engines:[engine]};
 }
 function pirateFleetPrepare(){
  if(pirateFleetTemplates)return;
@@ -1690,7 +1697,7 @@ function pirateFleetAttachFX(e){
 function pirateFleetSpawn(e,delay=0){
  pirateFleetPrepare();
  const g=pirateFleetTemplates[e.ty].clone(true),fw=new T.Vector3(0,0,-1).applyQuaternion(Q).normalize(),right=new T.Vector3(1,0,0).applyQuaternion(Q).normalize();
- g.position.copy(P).addScaledVector(fw,-(850+e.slot*100)).addScaledVector(right,(e.slot-1)*160).add(new T.Vector3(0,(e.slot-1)*52,0));
+ g.position.copy(P).addScaledVector(fw,-(760+e.slot*90)).addScaledVector(right,(e.slot-1)*110).add(new T.Vector3(0,(e.slot-1)*36,0));
  g.visible=false;S.add(g);e.g=g;const sockets=pirateFleetResolveSockets(g,e.ty);e.muzzleNodes=sockets.guns;e.engineNodes=sockets.engines;e.hp=e.mx=e.ty===0?92:78;e.r=e.ty===0?8.5:7.2;e.warp=.55+delay;e.state="APPROACH";e.stateT=0;e.side=e.slot-1;
  e.fire=.2+Math.random()*.22;e.burst=0;e.burstGap=0;e.trailT=.1;e.vel=P.clone().sub(g.position).normalize().multiplyScalar(e.ty===0?36:43);e.hd=e.vel.clone().normalize();e.speed=e.vel.length();e.runDir=null;e.dead=false;e.smoke=null;e.fireFx=null;e.flames=[];pirateFleetAttachFX(e);
 }
@@ -1723,15 +1730,15 @@ function pirateFleetUpdate(dt){
   if(e.warp>0){e.warp-=dt;if(e.warp<=0){e.g.visible=true;boom(e.g.position,22,8,0x88ccff,32,.7);ring(e.g.position,0x88ccff,5,2.4);sfx("e")}continue}
   const g=e.g,toPlayer=P.clone().sub(g.position),dist=toPlayer.length();if(dist<1)continue;
   const dir=toPlayer.multiplyScalar(1/dist),side=playerRight.clone().multiplyScalar(e.side);e.stateT+=dt;let aim;
-  if(e.state==="APPROACH"){aim=P.clone().addScaledVector(side,180).addScaledVector(pirateFleetUp,(e.slot-1)*52);if(dist<700){e.state="ATTACK_RUN";e.stateT=0}}
-  else if(e.state==="ATTACK_RUN"){aim=P.clone().addScaledVector(vel,Math.max(.45,Math.min(2.4,dist/190))).addScaledVector(side,85);if(dist<520){e.state="FIRING_PASS";e.stateT=0;e.runDir=dir.clone()}}
-  else if(e.state==="FIRING_PASS"){if(!e.runDir)e.runDir=e.hd.clone();aim=P.clone().addScaledVector(e.runDir,460).addScaledVector(side,70);const passed=P.clone().sub(g.position).dot(e.runDir)<-180;if((e.stateT>.8&&passed)||e.stateT>18){e.state="OVERSHOOT";e.stateT=0;e.runDir=e.hd.clone()}}
-  else if(e.state==="OVERSHOOT"){aim=P.clone().addScaledVector(e.runDir||e.hd,900).addScaledVector(side,220);if(g.position.distanceTo(aim)<250||e.stateT>5){e.state="REPOSITION";e.stateT=0}}
-  else{aim=P.clone().addScaledVector(playerForward,-760).addScaledVector(side,180);if(g.position.distanceTo(aim)<260||e.stateT>5.5){e.state="APPROACH";e.stateT=0;e.runDir=null}}
+  if(e.state==="APPROACH"){aim=P.clone().addScaledVector(side,100).addScaledVector(pirateFleetUp,(e.slot-1)*36);if(dist<900){e.state="ATTACK_RUN";e.stateT=0}}
+  else if(e.state==="ATTACK_RUN"){aim=P.clone().addScaledVector(vel,Math.max(.45,Math.min(2.2,dist/190))).addScaledVector(side,45);if(dist<520){e.state="FIRING_PASS";e.stateT=0;e.runDir=dir.clone()}}
+  else if(e.state==="FIRING_PASS"){if(!e.runDir)e.runDir=e.hd.clone();aim=P.clone().addScaledVector(e.runDir,420).addScaledVector(side,30);const passed=P.clone().sub(g.position).dot(e.runDir)<-140;if((e.stateT>.65&&passed)||e.stateT>12){e.state="OVERSHOOT";e.stateT=0}}
+  else if(e.state==="OVERSHOOT"){aim=P.clone().addScaledVector(e.runDir||e.hd,700).addScaledVector(side,100);if(g.position.distanceTo(aim)<220||e.stateT>4){e.state="REPOSITION";e.stateT=0}}
+  else{aim=P.clone().addScaledVector(playerForward,-560).addScaledVector(side,100);if(g.position.distanceTo(aim)<220||e.stateT>4){e.state="APPROACH";e.stateT=0;e.runDir=null}}
   const desiredDir=aim.sub(g.position).normalize(),angle=e.hd.angleTo(desiredDir),axis=e.hd.clone().cross(desiredDir);
-  if(angle>1e-4&&axis.lengthSq()>1e-8)e.hd.applyAxisAngle(axis.normalize(),Math.min(angle,(e.ty===0?1.25:1.45)*dt)).normalize();
-  const targetSpeed=e.ty===0?40:48;e.speed+=(targetSpeed-e.speed)*Math.min(1,.65*dt);
-  const desiredVel=e.hd.clone().multiplyScalar(e.speed),dv=desiredVel.sub(e.vel),maxA=(e.ty===0?32:42)*dt;if(dv.length()>maxA)dv.setLength(maxA);
+  if(angle>1e-4&&axis.lengthSq()>1e-8)e.hd.applyAxisAngle(axis.normalize(),Math.min(angle,(e.ty===0?1.7:1.9)*dt)).normalize();
+  const targetSpeed=e.ty===0?42:50;e.speed+=(targetSpeed-e.speed)*Math.min(1,.65*dt);
+  const desiredVel=e.hd.clone().multiplyScalar(e.speed),dv=desiredVel.sub(e.vel),maxA=(e.ty===0?55:68)*dt;if(dv.length()>maxA)dv.setLength(maxA);
   e.vel.add(dv);g.position.addScaledVector(e.vel,dt);
   // Keep the nose on the actual velocity vector so the ship never appears to fly backwards.
   pirateFleetHeading.copy(e.vel).normalize();g.quaternion.setFromUnitVectors(pirateFleetForward,pirateFleetHeading);g.rotateZ(Math.max(-.2,Math.min(.2,axis.y*-.12)));
@@ -1741,13 +1748,13 @@ function pirateFleetUpdate(dt){
   if(e.fireFx){e.fireFx.material.opacity=.48+.35*(.5+.5*Math.sin(performance.now()*.02+e.slot));e.fireFx.scale.set(3.5,5.2+.5*Math.sin(performance.now()*.018+e.slot),1)}
   const shotSpeed=e.ty===0?190:210,leadTime=Math.min(6.2,dist/shotSpeed);
   const targetPoint=P.clone().addScaledVector(vel,leadTime),aimAt=targetPoint.clone().sub(g.position).normalize(),fireAngle=pirateFleetHeading.angleTo(aimAt);
-  const canFire=dist<1300&&(fireAngle<1.0||(dist<720&&fireAngle<1.6));
+  const canFire=dist<1400&&(fireAngle<.9||(dist<760&&fireAngle<1.35));
   e.fire-=dt;e.burstGap=Math.max(0,e.burstGap-dt);if(canFire&&e.fire<=0&&e.burst<=0)e.burst=5;
   if(canFire&&e.burst>0&&e.burstGap<=0){
    const guns=e.muzzleNodes&&e.muzzleNodes.length?e.muzzleNodes:[null];
    for(const gun of guns){
     const muzzle=gun?gun.getWorldPosition(new T.Vector3()):g.localToWorld(new T.Vector3(0,-.25,-3.8));
-    const shotDir=targetPoint.clone().sub(muzzle).normalize();
+    const shotDir=gun?gun.getWorldDirection(new T.Vector3()).normalize().lerp(targetPoint.clone().sub(muzzle).normalize(),.12).normalize():targetPoint.clone().sub(muzzle).normalize();
     shoot(eb,muzzle,shotDir.multiplyScalar(shotSpeed),e.ty===0?0xff4b3c:0xffb13b,e.ty===0?5.5:4.8,7.0);
     eb[eb.length-1].pirateFleet=true;eb[eb.length-1].pirateFleetSlot=e.slot;
    }
@@ -1757,7 +1764,7 @@ function pirateFleetUpdate(dt){
 }
 const _updWithPirateFleet=upd;
 upd=function(dt){_updWithPirateFleet(dt);pirateFleetUpdate(dt)};
-// ===== END STARFALL v76 PIRATE FLEET =====
+// ===== END STARFALL v77 PIRATE FLEET =====
 
 const rc=$("radar").getContext("2d");
 function radar(){const c=85,s=75/700,iq=Q.clone().invert();rc.clearRect(0,0,170,170);rc.strokeStyle="#33ccff66";rc.lineWidth=1;[25,50,75].forEach(r=>{rc.beginPath();rc.arc(c,c,r,0,6.283);rc.stroke()});rc.beginPath();rc.moveTo(c,10);rc.lineTo(c,160);rc.moveTo(10,c);rc.lineTo(160,c);rc.stroke();
@@ -1806,7 +1813,7 @@ function starUpd(){}
 sky.children.filter(o=>o.isPoints).forEach(o=>sky.remove(o));
 [[1600,1.2,.9],[500,2.2,1]].forEach(([n,z,op])=>{const p=new Float32Array(n*3),c=new Float32Array(n*3);for(let i=0;i<n;i++){const v=rd().multiplyScalar(1700);p.set([v.x,v.y,v.z],i*3);const t=Math.random(),col=new T.Color().setHSL(t<.3?.6:t<.6?.12:.08,.5,.75+Math.random()*.25);c.set([col.r,col.g,col.b],i*3)}const g=new T.BufferGeometry();g.setAttribute("position",new T.BufferAttribute(p,3));g.setAttribute("color",new T.BufferAttribute(c,3));sky.add(new T.Points(g,new T.PointsMaterial({size:z,sizeAttenuation:false,vertexColors:true,transparent:true,opacity:op,depthWrite:false})))});
 // fresnel atmosphere
-const SUND=new T.Vector3(0,0,1);
+const SUND=new T.Vector3(1,.6,.4).normalize();
 function atmoMesh(r,col,k){return new T.Mesh(new T.SphereGeometry(r*(k||1.045),64,32),new T.ShaderMaterial({uniforms:{c:{value:new T.Color(col)},s:{value:SUND.clone()}},vertexShader:"varying vec3 vn,vv,vw;void main(){vec4 mv=modelViewMatrix*vec4(position,1.);vn=normalize(normalMatrix*normal);vv=normalize(-mv.xyz);vw=normalize(mat3(modelMatrix)*normal);gl_Position=projectionMatrix*mv;}",fragmentShader:"uniform vec3 c,s;varying vec3 vn,vv,vw;void main(){float r=pow(1.-max(dot(vn,vv),0.),2.6);float l=smoothstep(-.35,.5,dot(vw,s));gl_FragColor=vec4(c*r*(.15+1.4*l),1.);}",blending:T.AdditiveBlending,transparent:true,depthWrite:false}))}
 sky.children.filter(o=>o.isMesh&&o.material.side===T.BackSide).forEach(o=>sky.remove(o));
 spl.forEach((m,i)=>{m.add(atmoMesh(m.geometry.parameters.radius,[0x66aaff,0xffaa66,0xbb88ff][i]));m.material.envMapIntensity=.15});
@@ -1860,7 +1867,7 @@ spl.forEach((m,i)=>{m.add(atmoMesh(m.geometry.parameters.radius,[0x66aaff,0xffaa
 const HT=(()=>{const k=document.createElement("canvas");k.width=k.height=512;const x=k.getContext("2d");x.fillStyle="#e8eaee";x.fillRect(0,0,512,512);for(let i=0;i<70;i++){const w=30+Math.random()*140,h=20+Math.random()*90,px=Math.random()*512,py=Math.random()*512,g=205+Math.random()*45|0;x.fillStyle="rgb("+g+","+g+","+(g+4)+")";x.fillRect(px,py,w,h);x.strokeStyle="rgba(60,66,76,.55)";x.lineWidth=1.5;x.strokeRect(px,py,w,h)}x.fillStyle="rgba(50,55,65,.5)";for(let i=0;i<260;i++)x.fillRect(Math.random()*512,Math.random()*512,2,2);for(let i=0;i<14;i++){x.fillStyle="rgba(40,44,52,.35)";x.fillRect(Math.random()*512,Math.random()*512,4+Math.random()*30,3)}const t=new T.CanvasTexture(k);t.wrapS=t.wrapT=T.RepeatWrapping;t.anisotropy=4;return t})();
 const RT2=(()=>{const k=document.createElement("canvas");k.width=k.height=256;const x=k.getContext("2d");x.fillStyle="#9a958e";x.fillRect(0,0,256,256);for(let i=0;i<3000;i++){const v=110+Math.random()*90|0;x.fillStyle="rgba("+v+","+(v-4)+","+(v-10)+",.5)";x.fillRect(Math.random()*256,Math.random()*256,1+Math.random()*3,1+Math.random()*3)}for(let i=0;i<22;i++){const cx=Math.random()*256,cy=Math.random()*256,r=3+Math.random()*16;const g=x.createRadialGradient(cx,cy,r*.2,cx,cy,r);g.addColorStop(0,"rgba(40,36,32,.55)");g.addColorStop(.8,"rgba(70,66,60,.25)");g.addColorStop(1,"rgba(220,215,205,.35)");x.fillStyle=g;x.beginPath();x.arc(cx,cy,r,0,6.283);x.fill()}const t=new T.CanvasTexture(k);t.wrapS=t.wrapT=T.RepeatWrapping;return t})();
 function hullify(g,mt){g.traverse(o=>{if(o.isMesh&&o.material&&o.material.isMeshStandardMaterial&&!(o.material.emissiveIntensity>.5&&o.material.emissive&&o.material.emissive.getHex())){o.material.map=HT;o.material.envMapIntensity=1.1;if(mt){o.material.metalness=Math.min(o.material.metalness,.45);o.material.roughness=Math.max(o.material.roughness,.42)}o.material.needsUpdate=true}});return g}
-hullify(ship,1);{const hl=new T.HemisphereLight(0x9cc8ff,0x241c30,.16);S.add(hl);const kl=new T.DirectionalLight(0xbfd8ff,.18);C.add(kl);kl.position.set(0,1,2);S.add(C)}
+hullify(ship,1);{const hl=new T.HemisphereLight(0x9cc8ff,0x241c30,.55);S.add(hl);const kl=new T.DirectionalLight(0xbfd8ff,.55);C.add(kl);kl.position.set(0,1,2);kl.target.position.set(0,0,0);C.add(kl.target);S.add(C)}
 {const _a=mkEnemy;mkEnemy=function(s){return hullify(_a(s))};const _b=mkStation;mkStation=function(){return hullify(_b())};const _c=mkFreighter;mkFreighter=function(){return hullify(_c())};const _d=mkBoss;mkBoss=function(){return hullify(_d())}}
 rocks.forEach(m=>{m.material.map=RT2;m.material.envMapIntensity=.25;m.material.needsUpdate=true});
 // engine plumes
@@ -1880,7 +1887,7 @@ if(SYS[sy].t===2||SYS[sy].t===3){const ri=PR*1.6,ro=PR*2.3,g=new T.RingGeometry(
 {const _r=recolor;recolor=function(){_r();skyBuild();starUpd()}}
 starUpd();
 // post: colour grade + vignette
-try{if(CP.passes){const bp=CP.passes.find(p=>p.strength!==undefined);if(bp){bp.strength=.42;bp.radius=.42;bp.threshold=.92}
+try{if(CP.passes){const bp=CP.passes.find(p=>p.strength!==undefined);if(bp){bp.strength=.62;bp.radius=.55;bp.threshold=.8}
 CP.addPass(new T.ShaderPass({uniforms:{tDiffuse:{value:null},ca:{value:0}},vertexShader:"varying vec2 vu;void main(){vu=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}",fragmentShader:"uniform sampler2D tDiffuse;uniform float ca;varying vec2 vu;void main(){vec2 d=vu-.5;float r=dot(d,d);vec3 c=texture2D(tDiffuse,vu).rgb;c=c*c*(3.-2.*c)*.35+c*.65;float l=dot(c,vec3(.299,.587,.114));c=mix(vec3(l),c,1.12);c*=1.-.55*r*r*4.;c=pow(c,vec3(.95));gl_FragColor=vec4(c,1.);}"}))}}catch(e){}
 function gfxTick(dt){const sp=vel.length();plumes.forEach(p=>{const L=1.2+sp/22+thr*4.5;p.scale.set(1,L,1);p.position.z=3.7+L/2;p.material.opacity=.3+.25*thr+.08*Math.random()});
 if(shF>0){shF-=dt;shB.visible=true;shM.uniforms.a.value=Math.max(0,shF/.4)}else shB.visible=false}
