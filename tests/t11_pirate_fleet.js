@@ -47,6 +47,8 @@ const L = require('./lib');
     const first = pirateFleet[0];
     pirateFleetDamage(first, first.hp * .4, false);
     pirateFleetDamage(first, first.hp * .4, false);
+    // Warm the shared explosion/particle textures before measuring fleet-only growth.
+    xplode(P.clone(), new THREE.Vector3(), .72);
     R.render(S, C);
     const before = R.info.memory.textures;
     for (let i = 0; i < 3; i++) {
