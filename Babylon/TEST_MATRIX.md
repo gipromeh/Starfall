@@ -104,9 +104,9 @@
 
 ## B1 Chromium verification — 2026-10-31
 
-**PASS — 5/5 Playwright tests**
+**PASS — 7/7 Playwright tests**
 
-CI workflow: `Babylon Chromium QA`, run [41219584789](https://github.com/gipromeh/Starfall/actions/runs/41219584789).
+CI workflow: `Babylon Chromium QA`, run [41219954240](https://github.com/gipromeh/Starfall/actions/runs/41219954240).
 
 | Check | Result | Evidence |
 |---|---|---|
@@ -115,7 +115,7 @@ CI workflow: `Babylon Chromium QA`, run [41219584789](https://github.com/giprome
 | Pirate GLB asset | PASS | Existing v85 droid GLB loads and static geometry is batched by material |
 | Flight input | PASS | W thrust increases inertial velocity |
 | Combat damage / death / reward / respawn | PASS | Target health reaches zero, +250 CR, target returns at full health |
-| Homing missile | PASS | Projectile reaches target and reduces target hull |
+| Laser hit | PASS | Laser projectile hits pirate on swept trajectory and is removed |\n| Homing missile | PASS | Projectile reaches target and reduces target hull |\n| Enemy return fire | PASS | Incoming projectile hits player shield without bypassing it |
 | Mobile HUD | PASS | Touch joystick and FIRE/MISSILE controls are visible at 390×844 |
 
 This is a bounded B1 vertical-slice result, not a PASS for the full parity matrix above. Laser hit testing, all original control bindings, economy, traffic, dialogue, all five systems, long-session stability, WebGL recovery and physical iPhone Safari remain NOT RUN.
