@@ -31,6 +31,9 @@ test("Chromium boots Babylon and renders a playable scene",async({page})=>{
   expect(canvas.width).toBeGreaterThan(0);
   expect(canvas.height).toBeGreaterThan(0);
   expect(canvas.context).toBeTruthy();
+  const state=await page.evaluate(()=>window.__STARFALL_TEST__.state());
+  expect(state.playerForward[2]).toBeLessThan(-0.95);
+  expect(state.pirateAsset).toContain("material batches");
   await page.screenshot({path:"test-results/starfall-chromium.png"});
   expect(diagnostics.pageErrors).toEqual([]);
 });
