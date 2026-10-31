@@ -1816,7 +1816,7 @@ function collectRadarContacts(){
  worldPlanets.forEach(wp=>put(wp.mesh.position,wp.kind==="moon"?"moon":"planet",wp.kind==="moon"?"#d6dce6":"#568da8",wp.kind==="moon"?2.5:3.4,wp.kind==="moon"?"M":"P",wp,null,-1,false,false));
  if(stn&&stn.visible)put(stn.position,"station","#ffcf62",4.5,"S",stn,null,-1,false,false);
  nv.forEach((v,i)=>{if(v.g)put(v.g.position,v.tur?"turret":"neutral",v.tur?"#ffe81a":"#cbd5df",v.tur?3.6:2.8,"N"+(i+1),v,v.v,-1,false,false)});
- eb.forEach(b=>{if(b.m)put(b.m.position,"projectile","#ff9d43",1.7,"",b,b.v,-1,false,false)});
+ eb.forEach(b=>{if(b.hm&&b.m&&b.life>0)put(b.m.position,"missile","#fff04a",2.3,"!",b,b.v,-1,true,false)});
  mis.forEach(b=>{if(b.m)put(b.m.position,"missile","#fff04a",2.3,"",b,b.v,-1,false,false)});
  ali.forEach((a,i)=>{if(a.g&&a.life>0)put(a.g.position,"ally","#55ee99",2.8,"A"+(i+1),a,a.v,-1,false,false)});
  radarContacts.length=n;return radarContacts;
