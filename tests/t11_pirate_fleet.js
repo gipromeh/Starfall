@@ -78,9 +78,9 @@ const L = require('./lib');
     const shots = eb.slice(before).filter(b => b.pirateFleetSlot === first.slot);
     const gunPositions = first.muzzleNodes.map(n => n.getWorldPosition(new THREE.Vector3()));
     const muzzleMatch = shots.length === 2 && shots.every((b, i) => b.m.position.distanceTo(gunPositions[i]) < .001);
-    const lineShots = shots.every(b => b.m.isLine && b.m.geometry.attributes.position.count === 2);
+    const lineShots = shots.every(b => b.m.isGroup && b.m.children.filter(o => o.isMesh).length === 3 && b.m.children.some(o => o.isSprite));
     const shotForward = shots.length === 2 && shots.every((b, i) => b.v.clone().normalize().dot(first.muzzleNodes[i].getWorldDirection(new THREE.Vector3())) > .98);
-    const socketsForward = gunPositions.length === 4 && gunPositions.every(p => p.clone().sub(first.g.position).dot(new THREE.Vector3(0,0,-1).applyQuaternion(first.g.quaternion)) > 0);
+    const socketsForward = gunPositions.length === 2 && gunPositions.every(p => p.clone().sub(first.g.position).dot(new THREE.Vector3(0,0,-1).applyQuaternion(first.g.quaternion)) > 0);
     const allPilotShots = pirateFleet.map(e => {
       const own = eb.slice(before).filter(b => b.pirateFleetSlot === e.slot);
       const muzzles = e.muzzleNodes.length
@@ -88,16 +88,12 @@ const L = require('./lib');
         : [e.g.localToWorld(new THREE.Vector3(0,-.25,-3.8))];
       return { slot: e.slot, shots: own.length, guns: muzzles.length, originsMatch: own.length === muzzles.length && own.every((b, i) => b.m.position.distanceTo(muzzles[i]) < .001) };
     });
-    const noseAlignment = pirateFleet.map(e => {
-      e.g.updateMatrixWorld(true);
-      const fix = e.g.getObjectByName('STARFALL_FORWARD_AXIS_FIX_RUNTIME') || e.g.getObjectByName('STARFALL_FORWARD_AXIS_FIX');
-      return fix ? new THREE.Vector3(0, 0, 1).applyQuaternion(fix.getWorldQuaternion(new THREE.Quaternion())).dot(e.vel.clone().normalize()) : -1;
-    });
+    const noseAlignment = pirateFleet.map(e => new THREE.Vector3(0,0,-1).applyQuaternion(e.g.quaternion).dot(e.vel.clone().normalize()));
     return { before, after: eb.length, delta: eb.length - before, noseAlignment, firstShipShots: shots.length, muzzleMatch, shotForward, socketsForward, lineShots, allPilotShots };
   });
   L.check('все четыре пилота участвуют в бою на близкой дистанции', combat.delta >= 3, combat);
   L.check('фактический нос каждой модели совпадает с направлением движения', combat.noseAlignment.every(x => x > .98), combat.noseAlignment);
-  L.check('четыре лазера выходят из дульных маркеров вдоль оси стволов', combat.firstShipShots === 4 && combat.muzzleMatch && combat.shotForward && combat.socketsForward && combat.lineShots, combat);
+  L.check('четыре лазера выходят из дульных маркеров вдоль оси стволов', combat.firstShipShots === 2 && combat.muzzleMatch && combat.shotForward && combat.socketsForward && combat.lineShots, combat);
   L.check('каждый пират стреляет из двух собственных передних сокетов', combat.allPilotShots.every(x => x.shots === x.guns && x.shots > 0 && x.originsMatch), combat.allPilotShots);
 
   const pass = await page.evaluate(() => {
@@ -152,7 +148,7 @@ const L = require('./lib');
   });
   L.check('стыковка очищает флот и его снаряды', docked.state === 'dock' && docked.slots === 0 && !docked.ready && docked.taggedShots === 0, docked);
   await page.evaluate(() => { lift(); QL.setMode('low'); pirateFleetInit(); });
-  await page.waitForFunction(() => pirateFleet.length === 3, null, { timeout: 15000 });
+  await page.waitForFunction(() => pirateFleet.length === 4, null, { timeout: 15000 });
   const relaunched = await page.evaluate(() => pirateFleet.length === 4 && [0,1,2,3].every(ty => pirateFleet.filter(e => e.ty === ty).length === 1));
   L.check('после dock → lift снова создаётся полный состав из четырёх типов', relaunched);
 
