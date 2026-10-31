@@ -31,7 +31,7 @@ const L = require('./lib');
 
   const livery = await page.evaluate(() => {
     const models = [0, 1, 2, 3].map(i => mkPirate(i)).concat([mkBoss()]);
-    return models.map((g, i) => {let total=0,white=0;g.traverse(o=>{if(!o.isMesh)return;const mats=Array.isArray(o.material)?o.material:[o.material];mats.forEach(m=>{if(m?.isMeshStandardMaterial){total++;if(m.map===pirateLiveryTex&&m.color.getHex()===0xffffff)white++}})});return{type:i,total,white}});
+    return models.map((g, i) => {let total=0,white=0;g.traverse(o=>{if(!o.isMesh)return;const mats=Array.isArray(o.material)?o.material:[o.material];mats.forEach(m=>{if(m?.isMeshStandardMaterial){total++;if(m.map===window.pirateLiveryTex&&m.color.getHex()===0xffffff)white++}})});return{type:i,total,white}});
   });
   L.check('все четыре типа пиратов и флагман используют белую панельную ливрею', livery.every(x=>x.total>0&&x.white>0), livery);
   const laser=await page.evaluate(()=>{const a=[];shootLaser(a,new THREE.Vector3(),new THREE.Vector3(0,0,-420),0x44eeff,10,1);const b=a[0],p=b.m.geometry.attributes.position,forward=new THREE.Vector3(0,0,1).applyQuaternion(b.m.quaternion);const out={isLine:b.m.isLine,vertices:p.count,scaleLength:b.m.scale.z,forwardDot:forward.dot(new THREE.Vector3(0,0,-1))};S.remove(b.m);a.length=0;return out});
