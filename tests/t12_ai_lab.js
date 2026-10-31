@@ -10,7 +10,7 @@ const checks = [
   ['Aggression changes approach commitment', html.includes('105-(1-ag)*95') && html.includes('lane*(62-ag*30)')],
   ['Avoidance is independently weighted and bounded', html.includes("+$('avoid').value*.72") && !html.includes("+$('avoid').value*3")],
   ['Pirate spacing controls separation neighborhood', html.includes('v.neighborhoodRadius=70+spacing*42')],
-  ['Per-pirate visible laser fire', html.includes('const beam=new THREE.Line(') && html.includes('a.beam.visible=true') && html.includes('ОТКРЫЛ ОГОНЬ')],
+  ['Per-pirate visible laser fire', html.includes('const beam=new THREE.Line(') && html.includes('a.beam.visible=true') && html.includes('a.beamTime=.11')],
   ['Attack pass, overshoot and re-entry transitions', html.includes("transition(a,'FIRING_PASS')") && html.includes("transition(a,'OVERSHOOT')") && html.includes("transition(a,'REPOSITION')")],
   ['Keyboard flight controls and mobile touch controls', html.includes("keys.add(e.code)") && html.includes('data-key="KeyW"') && html.includes('id="fireBtn"')],
   ['Player laser and homing missile weapons', html.includes('function firePlayer()') && html.includes('function fireMissile()') && html.includes(",'player',3,true)")],
@@ -30,7 +30,7 @@ const checks = [
   ['Fighters start with visible forward momentum', html.includes('v.velocity.set(0,0,v.maxSpeed*.72)')],
   ['Planets and stars animate every frame', html.includes('for(const body of celestialBodies)') && html.includes('starField.rotation.y+=dt')],
   ['Three.js r128-compatible fighter geometry', !html.includes('THREE.CapsuleGeometry') && html.includes('new THREE.CylinderGeometry(3.5,4.1,21,10,1)')],
-  ['Runtime errors are visible in the lab UI', html.includes("window.addEventListener('error'") && html.includes("window.addEventListener('unhandledrejection'")]
+  ['Runtime errors are visible in the lab UI', html.includes("window.addEventListener('error'") && html.includes("window.addEventListener('unhandledrejection'")],
   ['Pirate fire requires forward firing arc and range', html.includes('function firingSolution(a,maxAngle=.72,maxRange=520)') && html.includes('dot>=Math.cos(maxAngle)')],
   ['Pirate fire requires unobstructed line of sight', html.includes('function hasLineOfSight(from,to)') && html.includes('hasLineOfSight(origin,player.position)')],
   ['Pirate laser heat gate and passive cooling', html.includes('a.laserHeat=Math.max(0,a.laserHeat-24*dt)') && html.includes('a.laserHeat<82')],
