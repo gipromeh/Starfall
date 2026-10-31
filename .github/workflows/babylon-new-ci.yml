@@ -1,0 +1,33 @@
+name: Babylon New — build and tests
+
+on:
+  push:
+    paths:
+      - "Babylon New/**"
+      - ".github/workflows/babylon-new-ci.yml"
+  pull_request:
+    paths:
+      - "Babylon New/**"
+      - ".github/workflows/babylon-new-ci.yml"
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: Babylon New
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: "Babylon New/package.json"
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Build production bundle
+        run: npm run build
+      - name: Run unit tests
+        run: npm test
