@@ -1806,7 +1806,7 @@ const shipCollisionNormal=new T.Vector3(),shipCollisionRelativeVelocity=new T.Ve
 function resolveShipCollisions(){
  let n=0;
  const add=(position,velocity,radius,mass)=>{const b=shipCollisionBodies[n]||(shipCollisionBodies[n]={});b.position=position;b.velocity=velocity;b.radius=radius;b.invMass=1/mass;n++};
- if(state==="play"||state==="dying")add(P,vel,8,1.35);
+ if(state==="play"&&rig.visible)add(P,vel,8,1.35);
  for(const e of [E,E2])if(e&&e.g&&e.warp<=0)add(e.g.position,e.vel,Math.max(7,(e.hitRadius||e.r||10)*.72),1);
  for(const e of pirateFleet)if(e.g&&e.hp>0&&e.warp<=0)add(e.g.position,e.vel,Math.max(7,(e.hitRadius||e.r||10)*.72),1);
  shipCollisionBodies.length=n;
