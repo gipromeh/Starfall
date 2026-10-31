@@ -28,6 +28,21 @@ const L = require('./lib');
   await page.evaluate(() => { lift(); QL.setMode('low'); pirateFleetInit(); });
   await page.waitForFunction(() => pirateFleet.length === 3, null, { timeout: 15000 });
 
+
+  const livery = await page.evaluate(() => {
+    const models = [0, 1, 2, 3].map(i => mkPirate(i)).concat([mkBoss()]);
+    return models.map((g, i) => {let total=0,white=0;g.traverse(o=>{if(!o.isMesh)return;const mats=Array.isArray(o.material)?o.material:[o.material];mats.forEach(m=>{if(m?.isMeshStandardMaterial){total++;if(m.map===pirateLiveryTex&&m.color.getHex()===0xffffff)white++}})});return{type:i,total,white}});
+  });
+  L.check('все четыре типа пиратов и флагман используют белую панельную ливрею', livery.every(x=>x.total>0&&x.white>0), livery);
+  const laser=await page.evaluate(()=>{const a=[];shootLaser(a,new THREE.Vector3(),new THREE.Vector3(0,0,-420),0x44eeff,10,1);const b=a[0],p=b.m.geometry.attributes.position,forward=new THREE.Vector3(0,0,1).applyQuaternion(b.m.quaternion);const out={isLine:b.m.isLine,vertices:p.count,scaleLength:b.m.scale.z,forwardDot:forward.dot(new THREE.Vector3(0,0,-1))};S.remove(b.m);a.length=0;return out});
+  L.check('лазер — один длинный продольный отрезок без поперечных элементов',laser.isLine&&laser.vertices===2&&laser.scaleLength>=60&&laser.forwardDot>.999,laser);
+  const boost=await page.evaluate(()=>{const old={ine,fuel,thr,key:keys.ShiftLeft};ine=0;fuel=0;thr=0;keys.ShiftLeft=true;upd(.1);const arcade={thr,fuel};keys.ShiftLeft=false;ine=1;fuel=0;thr=0;keys.ShiftLeft=true;upd(.1);const balanced={thr,fuel};ine=old.ine;fuel=old.fuel;thr=old.thr;keys.ShiftLeft=old.key;return{arcade,balanced}});
+  L.check('форсаж бесконечный только в режиме АРКАДА',boost.arcade.thr>.1&&boost.arcade.fuel===100&&boost.balanced.thr===0&&boost.balanced.fuel===0,boost);
+  const regularDamage=await page.evaluate(()=>{const saved={E,E2},g=mkPirate(2),max=Math.max(200,SHIPS[shp].hull*2),e={g,ty:2,boss:false,hp:max,mx:max,vel:new THREE.Vector3(),hits:0};S.add(g);E=e;E2=null;hurtEn(e,20,false);const first={hp:e.hp,alive:e.g.parent===S,burning:!!e.fireFx,smoking:!!e.smoke};hurtEn(e,20,false);const second={hp:e.hp,alive:e.g.parent===S};S.remove(g);pirateDamageFxClear(e);E=saved.E;E2=saved.E2;return{first,second,minimum:max>=SHIPS[shp].hull*2}});
+  L.check('обычный пират переживает первое попадание, загорается и принимает повторный урон',regularDamage.first.hp>0&&regularDamage.first.alive&&regularDamage.first.burning&&regularDamage.first.smoking&&regularDamage.second.hp<regularDamage.first.hp&&regularDamage.second.alive&&regularDamage.minimum,regularDamage);
+  const fleetFirstHit=await page.evaluate(()=>{const e=pirateFleet[0];e.hp=e.mx;e.hits=0;pirateFleetDamage(e,20,false);return{hp:e.hp,mx:e.mx,alive:!!e.g,burning:!!e.fireFx,smoking:!!e.smoke,minimum:e.mx>=SHIPS[shp].hull*2}});
+  L.check('пират эскадрильи после первого попадания горит, дымит и остаётся жив',fleetFirstHit.hp>0&&fleetFirstHit.alive&&fleetFirstHit.burning&&fleetFirstHit.smoking&&fleetFirstHit.minimum,fleetFirstHit);
+
   const composition = await page.evaluate(() => ({
     total: pirateFleet.length,
     golovorez: pirateFleet.filter(e => e.ty === 0).length,
@@ -36,6 +51,7 @@ const L = require('./lib');
   }));
   L.check('эскадрилья содержит два Головореза и один Шакал', composition.total === 3 && composition.golovorez === 2 && composition.jackal === 1, composition);
   L.check('все три корабля созданы', composition.spawned === 3, composition);
+  L.check('прочность каждого корабля эскадрильи не ниже двойной прочности игрока', pirateFleet.every(e => e.mx >= SHIPS[shp].hull * 2), pirateFleet.map(e => e.mx));
   const locators = await page.evaluate(() => {
     const e = pirateFleet.find(p => p.ty === 0),jackal = pirateFleet.find(p => p.ty === 1);
     e.g.updateMatrixWorld(true);jackal.g.updateMatrixWorld(true);
@@ -60,6 +76,7 @@ const L = require('./lib');
     const shots = eb.slice(before).filter(b => b.pirateFleetSlot === first.slot);
     const gunPositions = first.muzzleNodes.map(n => n.getWorldPosition(new THREE.Vector3()));
     const muzzleMatch = shots.length === 4 && shots.every((b, i) => b.m.position.distanceTo(gunPositions[i]) < .001);
+    const lineShots = shots.every(b => b.m.isLine && b.m.geometry.attributes.position.count === 2);
     const shotForward = shots.length === 4 && shots.every((b, i) => b.v.clone().normalize().dot(first.muzzleNodes[i].getWorldDirection(new THREE.Vector3())) > .98);
     const socketsForward = gunPositions.length === 4 && gunPositions.every(p => p.clone().sub(first.g.position).dot(new THREE.Vector3(0,0,-1).applyQuaternion(first.g.quaternion)) > 0);
     const allPilotShots = pirateFleet.map(e => {
@@ -71,11 +88,11 @@ const L = require('./lib');
       const fix = e.g.getObjectByName('STARFALL_FORWARD_AXIS_FIX_RUNTIME') || e.g.getObjectByName('STARFALL_FORWARD_AXIS_FIX');
       return fix ? new THREE.Vector3(0, 0, 1).applyQuaternion(fix.getWorldQuaternion(new THREE.Quaternion())).dot(e.vel.clone().normalize()) : -1;
     });
-    return { before, after: eb.length, delta: eb.length - before, noseAlignment, firstShipShots: shots.length, muzzleMatch, shotForward, socketsForward, allPilotShots };
+    return { before, after: eb.length, delta: eb.length - before, noseAlignment, firstShipShots: shots.length, muzzleMatch, shotForward, socketsForward, lineShots, allPilotShots };
   });
   L.check('все три пилота стреляют на близкой дистанции', combat.delta >= 3, combat);
   L.check('фактический нос каждой модели совпадает с направлением движения', combat.noseAlignment.every(x => x > .98), combat.noseAlignment);
-  L.check('четыре лазера выходят из дульных маркеров вдоль оси стволов', combat.firstShipShots === 4 && combat.muzzleMatch && combat.shotForward && combat.socketsForward, combat);
+  L.check('четыре лазера выходят из дульных маркеров вдоль оси стволов', combat.firstShipShots === 4 && combat.muzzleMatch && combat.shotForward && combat.socketsForward && combat.lineShots, combat);
   L.check('каждый пират стреляет из собственного переднего сокета', combat.allPilotShots.every(x => x.shots === x.guns && x.shots > 0 && x.originsMatch), combat.allPilotShots);
 
   const pass = await page.evaluate(() => {
