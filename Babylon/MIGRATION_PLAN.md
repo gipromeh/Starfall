@@ -26,14 +26,13 @@
 ### B0 — repository workspace
 - [x] Создать изолированный каталог документации Babylon.
 - [x] Зафиксировать v85 baseline и правила.
-- [ ] Добавить отдельный test runner и build entrypoint.
+- [x] Добавить отдельный Playwright test runner, Chromium CI и статический HTML entrypoint.
 
-### B1 — технический вертикальный срез
-- Babylon Engine/Scene/Camera, resize, context lost/restored.
-- Один существующий GLB корабль, планета, звёздное поле, HUD.
-- Desktop и iPhone touch input.
-- Измерить время инициализации, frame time, GPU/CPU ограничения.
-- Не менять root production.
+### B1 — технический вертикальный срез\n\n**Статус:** первый исполняемый боевой срез реализован; Chromium CI 5/5 PASS. B1 остаётся частично завершённым до измерений производительности на аппаратном GPU, проверки всех исходных controls и реального iPhone Safari. См. `TEST_MATRIX.md`.\n- [x] Babylon Engine/Scene/Camera, resize, context lost/restored handlers.
+- [x] Существующий pirate GLB (static mesh batching), планета, звёздное поле, HUD.
+- [x] Desktop и базовый iPhone touch input; полный control parity и физическое устройство ещё не проверены.
+- [ ] Измерить время инициализации, frame time, GPU/CPU ограничения на реальном GPU и iPhone. HUD telemetry присутствует; SwiftShader CI не является performance benchmark.
+- [x] Не менять root production.
 
 ### B2 — Core и платформенный слой
 - GameState, fixed timestep, input mapping, lifecycle, resource manager.
