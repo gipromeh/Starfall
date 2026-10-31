@@ -11,6 +11,11 @@ const checks = [
   ['Single and four-agent scenarios', /spawn\(1\)/.test(html) && /spawn\(4\)/.test(html)],
   ['Obstacle toggle and steering diagnostics', /id="obstacles"/.test(html) && /id="debug"/.test(html)],
   ['No production game import or mutation', !/STARFALL_CURRENT\.html/.test(html)]
+  ['SeekBehavior receives a Vector3 target', /new YUKA\\.SeekBehavior\\(seekTarget\\.position\\)/.test(html)],
+  ['EntityManager integrates all vehicles once per frame', /entityManager\\.update\\(dt\\)/.test(html) && !/v\\.update\\(dt\\)/.test(html)],
+  ['Separation neighborhood is limited to managed vehicles', /v\\.updateNeighborhood=true/.test(html) && !/entityManager\\.add\\(seekTarget\\)/.test(html) && !/entityManager\\.add\\(e\\)/.test(html)],
+  ['Planetary sphere visuals', /function planet\\(/.test(html) && /new THREE\\.SphereGeometry\\(r,64,48\\)/.test(html)],
+  ['Detailed fighter silhouette', /function shipMesh\\(color\\)/.test(html) && /new THREE\\.BoxGeometry\\(18,1\\.5,10\\)/.test(html)],
 ];
 let failed = 0;
 for (const [name, ok] of checks) { console.log((ok ? 'PASS ' : 'FAIL ') + name); if (!ok) failed++; }
