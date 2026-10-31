@@ -67,6 +67,11 @@ const L = require('./lib');
     pirateFleetDamage(first, first.hp * .4, false);
     // Warm the shared explosion/particle textures before measuring fleet-only growth.
     xplode(P.clone(), new THREE.Vector3(), .72);
+    // Warm the one-off reward/trail textures used by surrounding game systems.
+    gtex("rgba(255,255,255,.8)");
+    gtex("rgba(255,145,66,.9)");
+    gtex("rgba(55,55,60,.9)");
+    gtex("rgba(255,70,25,1)");
     R.render(S, C);
     const before = R.info.memory.textures;
     for (let i = 0; i < 3; i++) {
