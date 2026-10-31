@@ -29,7 +29,7 @@ const server = http.createServer((req, res) => {
     await page.waitForTimeout(300);
     await page.keyboard.up('KeyW');
     const afterMove = await page.evaluate(() => window.__AI_LAB_DEBUG.player.position.z);
-    if (afterMove <= beforeMove) throw new Error('W key did not move the player forward');
+    if (afterMove >= beforeMove) throw new Error('W key did not move the player forward');
     await page.keyboard.down('Space');
     await page.waitForTimeout(220);
     await page.keyboard.up('Space');
