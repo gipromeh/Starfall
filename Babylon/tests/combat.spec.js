@@ -56,3 +56,14 @@ test("mobile HUD and touch flight control are available",async({page})=>{
   await expect(page.locator('[data-action="fire"]')).toBeVisible();
   await expect(page.locator('[data-action="missile"]')).toBeVisible();
 });
+
+test("homing missile reaches target and applies weapon damage",async({page})=>{
+  await page.goto("/Babylon/?test=1");
+  await expect(page.locator("#start-button")).toBeEnabled({timeout:45000});
+  await page.locator("#start-button").click();
+  await page.evaluate(()=>window.__STARFALL_TEST__.fireMissile());
+  await page.waitForFunction(()=>window.__STARFALL_TEST__.state().enemyHealth<100,{timeout:10000});
+  const state=await page.evaluate(()=>window.__STARFALL_TEST__.state());
+  expect(state.enemyHealth).toBeLessThan(100);
+  expect(state.projectiles).toBe(0);
+});
