@@ -657,3 +657,15 @@ PV (конец скрипта): ангар-превью, обёртка hgrView;
 - Лазерный болт появляется в мировой позиции дульного сокета и летит вдоль оси ствола с небольшим упреждением, а не из центра корпуса.
 - Пиратский ИИ получил меньшие боковые смещения, более быстрый доворот и более короткий цикл атаки; направление огневого пролёта сохраняется до завершения overshoot.
 - Регрессионный тест проверяет световую схему, направление солнечного света, сокеты обоих типов, совпадение лазеров с осями стволов и прохождение ближней атаки.
+
+
+## AI Lab — Player Flight Test (2026-10-31)
+
+- Added an immersive flight presentation: laboratory side panels are hidden in flight mode, the chase camera moves closer, and the combat HUD and controls are compact.
+- Added explicit fullscreen control for supported desktop browsers and mobile browsers that permit the Fullscreen API.
+- AI Lab records flight snapshots at 5 Hz: player position, velocity, orientation and shield; enemy positions, velocities, states and hull; active projectile positions.
+- Projectile telemetry records launch, collision hit and expiration without collision (miss), including projectile identity, owner, type and coordinates.
+- Added JSON session export via the **ЗАПИСЬ JSON** control. The recording is local to the browser session; it is not streamed to ChatGPT.
+- Recording buffer is capped at 90,000 frames (approximately five hours at 5 Hz); excess frames are counted as dropped.
+- Production game `STARFALL_CURRENT.html` remains unchanged.
+- Commit: `5c7437733e3d2f6f9144651b1ae7ac77ccdcb8d2`.
