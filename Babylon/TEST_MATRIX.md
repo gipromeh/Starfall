@@ -115,7 +115,9 @@ CI workflow: `Babylon Chromium QA`, run [41220121129](https://github.com/giprome
 | Pirate GLB asset | PASS | Existing v85 droid GLB loads and static geometry is batched by material |
 | Flight input | PASS | W thrust increases inertial velocity |
 | Combat damage / death / reward / respawn | PASS | Target health reaches zero, +250 CR, target returns at full health |
-| Laser hit | PASS | Laser projectile hits pirate on swept trajectory and is removed |\n| Homing missile | PASS | Projectile reaches target and reduces target hull |\n| Enemy return fire | PASS | Incoming projectile hits player shield without bypassing it |
+| Laser hit | PASS | Laser projectile hits pirate on swept trajectory and is removed |
+| Homing missile | PASS | Projectile reaches target and reduces target hull |
+| Enemy return fire | PASS | Incoming projectile hits player shield without bypassing it |
 | Mobile HUD | PASS | Touch joystick and FIRE/MISSILE controls are visible at 390×844 |
 
 This is a bounded B1 vertical-slice result, not a PASS for the full parity matrix above. All original control bindings, economy, traffic, dialogue, all five systems, long-session stability, WebGL recovery and physical iPhone Safari remain NOT RUN.
