@@ -13,7 +13,7 @@ const checks = [
   ['Per-pirate visible laser fire', html.includes('const beam=new THREE.Line(') && html.includes('a.beam.visible=true') && html.includes('ОТКРЫЛ ОГОНЬ')],
   ['Attack pass, overshoot and re-entry transitions', html.includes("transition(a,'FIRING_PASS')") && html.includes("transition(a,'OVERSHOOT')") && html.includes("transition(a,'REPOSITION')")],
   ['Keyboard flight controls and mobile touch controls', html.includes("keys.add(e.code)") && html.includes('data-key="KeyW"') && html.includes('id="fireBtn"')],
-  ['Player laser and homing missile weapons', html.includes('function firePlayer()') && html.includes('function fireMissile()') && html.includes('homing:true')],
+  ['Player laser and homing missile weapons', html.includes('function firePlayer()') && html.includes('function fireMissile()') && html.includes(",'player',3,true)')],
   ['Pirates fire physical projectiles at the player', html.includes('function firePirate(a)') && html.includes("addBolt(start,dir.multiplyScalar(205),'pirate',5)")],
   ['Projectile collision, shield damage and pirate destruction', html.includes('playerShield=Math.max(0,playerShield-q.damage)') && html.includes('playerKills++') && html.includes('ЦЕЛЬ УНИЧТОЖЕНА')],
   ['Camera follows player ship', html.includes('const target=player.position.clone()')],
