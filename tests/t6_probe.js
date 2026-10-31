@@ -6,7 +6,7 @@ const ff = (page, sec) => page.evaluate(s => { const n = Math.round(s / .05); fo
   const ctx = await L.newCtx(browser, { viewport: { width: 400, height: 225 } });
   const page = await L.openGame(ctx);
   await page.click('#play'); await page.waitForFunction(() => state === 'dock', null, { timeout: 60000 }); await L.sleep(500);
-  await page.evaluate(() => { lift(); QL.setMode('low'); pirateFleetReady = true; }); await L.sleep(1500);
+  await page.evaluate(() => { lift(); QL.setMode('low'); pirateFleetClear(); pirateFleetReady = true; }); await L.sleep(1500);
   await page.evaluate(() => { enc = 0; });
   const ops = {
     'выстрелы лазера (3 с)': async () => { await page.evaluate(() => { firing = true; }); await ff(page, 3); await page.evaluate(() => { firing = false; }); await ff(page, 6); },
