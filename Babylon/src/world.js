@@ -7,7 +7,7 @@ export class World {
     this.player=this._makeShip("player-ship",[.42,.56,.66],[.08,.65,1]);
     this.player.position.set(0,0,0);this.player.rotation.y=Math.PI;
     this.pirate=this._makeShip("pirate-interceptor",[.42,.2,.1],[1,.34,.04]);
-    this.pirate.position.set(0,45,-850);
+    this.pirate.position.set(0,0,-850);
     this.pirateHealth=100;this.pirateMaxHealth=100;this.pirateDestroyed=false;
     this.pirateFlight=new FlightModel({maxSpeed:52,acceleration:25,drag:.12,lateralAcceleration:18});
     this.ai=new Vehicle();this.ai.maxSpeed=52;this.ai.maxForce=18;
@@ -183,7 +183,7 @@ export class World {
   }
   respawnPirate(){
     this.pirateDestroyed=false;this.pirateHealth=this.pirateMaxHealth;
-    this.pirate.position.copyFrom(this.player.position).addInPlace(V(0,55,-850));
+    this.pirate.position.copyFrom(this.player.position).addInPlace(V(0,0,-850));
     this.pirateFlight.reset();this.pirate.setEnabled(true);
   }
 }
