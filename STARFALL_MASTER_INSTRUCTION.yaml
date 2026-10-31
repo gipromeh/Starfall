@@ -53,7 +53,7 @@ sanity_check:
 # ПРОЦЕСС РАБОТЫ С GITHUB (единственный источник правды)
 process:
   repo: https://github.com/gipromeh/Starfall   # ветка main
-  current_version: v77
+  current_version: v78
   files:
     game: STARFALL_CURRENT.html        # единственная актуальная версия игры
     passport: STARFALL_PASSPORT.md     # архитектура, переменные, таблицы, правила правок
@@ -601,3 +601,32 @@ pirate_flight_ai_v77:
     - "Каждый пират стреляет из переднего сокета, каждый двигатель оставляет след сзади."
     - "Лазеры выходят из стволов и направлены вдоль их оси."
     - "Планеты и корабли читаемы на освещённой и затенённой сторонах."
+
+# v78 — ЛАЗЕРНЫЕ ОТРЕЗКИ, БЕЛАЯ ЛИВРЕЯ И ЖИВУЧЕСТЬ ПИРАТОВ
+pirate_visual_livery:
+  shared_texture: pirateLiveryTex
+  style: "Почти белая панельная окраска: тонкая сетка, швы, заклёпки, потёртости, царапины и кратеры микрометеоритов."
+  apply_to: [Головорез, Шакал, Мародёр, Гарпия, Флагман]
+  preserve: [emissive_engine_materials, cockpit_glass]
+  performance: "Одна CanvasTexture разделяется кэшированными моделями."
+laser_projectiles:
+  primitive: THREE.Line
+  geometry: "Один продольный сегмент с двумя вершинами; ось +Z направлена по скорости."
+  no_geometry: [crossbars, perpendicular_ticks, point_caps]
+  length: "clamp(speed * 0.16, 28, 72)"
+pirate_damage_model:
+  health: "max(200, selected_player_ship_hull * 2, difficulty_wave_health)"
+  first_hit: ["Сразу включить пламя и дым.", "Не останавливать движение и боевой ИИ."]
+  repeated_hits: "Каждое попадание снимает HP; уничтожение при исчерпании запаса."
+arcade_boost:
+  mode: "ine == 0"
+  fuel_consumption: 0
+  fuel_display: 100
+  other_modes: "БАЛАНС и РЕАЛИСТИЧНО без изменений."
+acceptance_v78:
+  - "Лазеры — продольные линии с двумя вершинами."
+  - "Белая ливрея на четырёх типах пиратов и флагмане."
+  - "Первое попадание оставляет корабль живым, горящим и дымящим."
+  - "Прочность пиратов не ниже удвоенной прочности корабля игрока."
+  - "Форсаж в АРКАДЕ работает при нулевом топливе."
+  - "Освещение и окружение не изменены."
