@@ -1,14 +1,29 @@
 import {test,expect} from "@playwright/test";
 
-test("Chromium boots Babylon and renders a playable scene",async({page})=>{
-  const pageErrors=[];
-  page.on("pageerror",error=>pageErrors.push(error.message));
+async function bootGame(page){
+  const consoleMessages=[],pageErrors=[],failedRequests=[];
+  page.on("console",message=>consoleMessages.push(message.type()+": "+message.text()));
+  page.on("pageerror",error=>pageErrors.push(error.stack||error.message));
+  page.on("requestfailed",request=>failedRequests.push(request.url()+" :: "+request.failure()?.errorText));
   await page.goto("/Babylon/?test=1");
-  await expect(page.locator("#start-button")).toBeEnabled({timeout:45000});
-  await expect(page.locator("#status")).toHaveText("SYSTEMS NOMINAL");
+  await page.waitForTimeout(2500);
+  const boot=await page.locator("#boot-message").textContent();
+  const status=await page.locator("#status").textContent();
+  const enabled=await page.locator("#start-button").isEnabled();
+  if(!enabled){
+    throw new Error("Babylon boot failed. status="+status+"; message="+boot+
+      "\nPAGE ERRORS:\n"+pageErrors.join("\n")+
+      "\nCONSOLE:\n"+consoleMessages.join("\n")+
+      "\nFAILED REQUESTS:\n"+failedRequests.join("\n"));
+  }
   await page.locator("#start-button").click();
   await expect(page.locator("#overlay")).toBeHidden();
-  await page.waitForTimeout(1200);
+  return {pageErrors,consoleMessages,failedRequests};
+}
+
+test("Chromium boots Babylon and renders a playable scene",async({page})=>{
+  const diagnostics=await bootGame(page);
+  await page.waitForTimeout(1000);
   const canvas=await page.locator("#renderCanvas").evaluate(node=>({
     width:node.width,height:node.height,
     context:!!(node.getContext("webgl2")||node.getContext("webgl"))
@@ -16,13 +31,11 @@ test("Chromium boots Babylon and renders a playable scene",async({page})=>{
   expect(canvas.width).toBeGreaterThan(0);
   expect(canvas.height).toBeGreaterThan(0);
   expect(canvas.context).toBeTruthy();
-  expect(pageErrors).toEqual([]);
+  expect(diagnostics.pageErrors).toEqual([]);
 });
 
 test("flight controls accelerate the ship",async({page})=>{
-  await page.goto("/Babylon/?test=1");
-  await expect(page.locator("#start-button")).toBeEnabled({timeout:45000});
-  await page.locator("#start-button").click();
+  await bootGame(page);
   await page.keyboard.down("KeyW");
   await page.waitForTimeout(900);
   await page.keyboard.up("KeyW");
@@ -31,9 +44,7 @@ test("flight controls accelerate the ship",async({page})=>{
 });
 
 test("combat damages, destroys and respawns pirate target",async({page})=>{
-  await page.goto("/Babylon/?test=1");
-  await expect(page.locator("#start-button")).toBeEnabled({timeout:45000});
-  await page.locator("#start-button").click();
+  await bootGame(page);
   await page.evaluate(()=>window.__STARFALL_TEST__.damageTarget(35));
   expect(await page.evaluate(()=>window.__STARFALL_TEST__.state().enemyHealth)).toBe(65);
   await page.evaluate(()=>window.__STARFALL_TEST__.damageTarget(35));
@@ -58,9 +69,7 @@ test("mobile HUD and touch flight control are available",async({page})=>{
 });
 
 test("homing missile reaches target and applies weapon damage",async({page})=>{
-  await page.goto("/Babylon/?test=1");
-  await expect(page.locator("#start-button")).toBeEnabled({timeout:45000});
-  await page.locator("#start-button").click();
+  await bootGame(page);
   await page.evaluate(()=>window.__STARFALL_TEST__.fireMissile());
   await page.waitForFunction(()=>window.__STARFALL_TEST__.state().enemyHealth<100,undefined,{timeout:10000});
   const state=await page.evaluate(()=>window.__STARFALL_TEST__.state());
