@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="claude:viewport-fit-sides" content="cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#02030a"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>STARFALL — Void Hunter</title>
-<meta name="starfall-version" content="v71">
+<meta name="starfall-version" content="v72">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#02030a;--fg:#cfe9ff;--ac:#3cf;--warn:#f54;color-scheme:dark}
@@ -1664,7 +1664,7 @@ function planetNavUpdate(){
 // ===== STARFALL v71 — THREE-SHIP PIRATE FLIGHT =====
 const pirateFleet=[];
 let pirateFleetReady=false,pirateFleetTemplates=null,pirateFleetFlameMat=null,pirateFleetSmokeTex=null,pirateFleetFireTex=null;
-const pirateFleetForward=new T.Vector3(0,0,-1),pirateFleetUp=new T.Vector3(0,1,0);
+const pirateFleetForward=new T.Vector3(0,0,-1),pirateFleetUp=new T.Vector3(0,1,0),pirateFleetHeading=new T.Vector3();
 function pirateFleetPrepare(){
  if(pirateFleetTemplates)return;
  pirateFleetTemplates=[mkPirate(0),mkPirate(1)];
@@ -1679,9 +1679,9 @@ function pirateFleetAttachFX(e){
 function pirateFleetSpawn(e,delay=0){
  pirateFleetPrepare();
  const g=pirateFleetTemplates[e.ty].clone(true),fw=new T.Vector3(0,0,-1).applyQuaternion(Q).normalize(),right=new T.Vector3(1,0,0).applyQuaternion(Q).normalize();
- g.position.copy(P).addScaledVector(fw,-(760+e.slot*115)).addScaledVector(right,(e.slot-1)*155).add(new T.Vector3(0,(e.slot-1)*48,0));
+ g.position.copy(P).addScaledVector(fw,-(520+e.slot*100)).addScaledVector(right,(e.slot-1)*130).add(new T.Vector3(0,(e.slot-1)*42,0));
  g.visible=false;S.add(g);e.g=g;e.hp=e.mx=e.ty===0?92:78;e.r=e.ty===0?8.5:7.2;e.warp=.55+delay;e.state="APPROACH";e.stateT=0;e.side=e.slot===1?1:-1;
- e.fire=.3+Math.random()*.25;e.burst=0;e.burstGap=0;e.trailT=.1;e.vel=P.clone().sub(g.position).normalize().multiplyScalar(e.ty===0?36:43);e.hd=e.vel.clone().normalize();e.speed=e.vel.length();e.runDir=null;e.dead=false;e.smoke=null;e.fireFx=null;e.flames=[];pirateFleetAttachFX(e);
+ e.fire=.2+Math.random()*.22;e.burst=0;e.burstGap=0;e.trailT=.1;e.vel=P.clone().sub(g.position).normalize().multiplyScalar(e.ty===0?36:43);e.hd=e.vel.clone().normalize();e.speed=e.vel.length();e.runDir=null;e.dead=false;e.smoke=null;e.fireFx=null;e.flames=[];pirateFleetAttachFX(e);
 }
 function pirateFleetClear(){
  for(let i=eb.length-1;i>=0;i--)if(eb[i].pirateFleet){S.remove(eb[i].m);eb.splice(i,1)}
@@ -1712,24 +1712,24 @@ function pirateFleetUpdate(dt){
   if(e.warp>0){e.warp-=dt;if(e.warp<=0){e.g.visible=true;boom(e.g.position,22,8,0x88ccff,32,.7);ring(e.g.position,0x88ccff,5,2.4);sfx("e")}continue}
   const g=e.g,toPlayer=P.clone().sub(g.position),dist=toPlayer.length();if(dist<1)continue;
   const dir=toPlayer.multiplyScalar(1/dist),side=playerRight.clone().multiplyScalar(e.side);e.stateT+=dt;let aim;
-  if(e.state==="APPROACH"){aim=P.clone().addScaledVector(side,150).addScaledVector(pirateFleetUp,(e.slot-1)*48);if(dist<1250){e.state="ATTACK_RUN";e.stateT=0}}
-  else if(e.state==="ATTACK_RUN"){aim=P.clone().addScaledVector(vel,Math.max(.35,Math.min(2,dist/180))).addScaledVector(side,85);if(dist<720){e.state="FIRING_PASS";e.stateT=0;e.runDir=dir.clone()}}
-  else if(e.state==="FIRING_PASS"){if(!e.runDir)e.runDir=e.hd.clone();aim=P.clone().addScaledVector(e.runDir,720).addScaledVector(side,90);if(e.stateT>1.6||dist>950){e.state="OVERSHOOT";e.stateT=0;e.runDir=e.hd.clone()}}
-  else if(e.state==="OVERSHOOT"){aim=P.clone().addScaledVector(e.runDir||e.hd,1000).addScaledVector(side,260);if(e.stateT>1.8){e.state="REPOSITION";e.stateT=0}}
-  else{aim=P.clone().addScaledVector(playerForward,-850).addScaledVector(side,180);if(g.position.distanceTo(aim)<220||e.stateT>3){e.state="APPROACH";e.stateT=0;e.runDir=null}}
+  if(e.state==="APPROACH"){aim=P.clone().addScaledVector(side,130).addScaledVector(pirateFleetUp,(e.slot-1)*42);if(dist<900){e.state="ATTACK_RUN";e.stateT=0}}
+  else if(e.state==="ATTACK_RUN"){aim=P.clone().addScaledVector(vel,Math.max(.35,Math.min(2,dist/180))).addScaledVector(side,55);if(dist<520){e.state="FIRING_PASS";e.stateT=0;e.runDir=dir.clone()}}
+  else if(e.state==="FIRING_PASS"){if(!e.runDir)e.runDir=e.hd.clone();aim=P.clone().addScaledVector(e.runDir,360).addScaledVector(side,45);const passed=P.clone().sub(g.position).dot(e.runDir)<-150;if((e.stateT>.8&&passed)||e.stateT>18){e.state="OVERSHOOT";e.stateT=0;e.runDir=e.hd.clone()}}
+  else if(e.state==="OVERSHOOT"){aim=P.clone().addScaledVector(e.runDir||e.hd,780).addScaledVector(side,160);if(e.stateT>2.5){e.state="REPOSITION";e.stateT=0}}
+  else{aim=P.clone().addScaledVector(playerForward,-650).addScaledVector(side,130);if(g.position.distanceTo(aim)<220||e.stateT>3.2){e.state="APPROACH";e.stateT=0;e.runDir=null}}
   const desiredDir=aim.sub(g.position).normalize(),angle=e.hd.angleTo(desiredDir),axis=e.hd.clone().cross(desiredDir);
   if(angle>1e-4&&axis.lengthSq()>1e-8)e.hd.applyAxisAngle(axis.normalize(),Math.min(angle,(e.ty===0?2.0:2.3)*dt)).normalize();
   const targetSpeed=e.ty===0?36:43;e.speed+=(targetSpeed-e.speed)*Math.min(1,.65*dt);
-  const desiredVel=e.hd.clone().multiplyScalar(e.speed),dv=desiredVel.sub(e.vel),maxA=(e.ty===0?48:58)*dt;if(dv.length()>maxA)dv.setLength(maxA);
+  const desiredVel=e.hd.clone().multiplyScalar(e.speed),dv=desiredVel.sub(e.vel),maxA=(e.ty===0?72:100)*dt;if(dv.length()>maxA)dv.setLength(maxA);
   e.vel.add(dv);g.position.addScaledVector(e.vel,dt);
-  // Model nose is local -Z: explicitly align it with the velocity heading.
-  g.quaternion.setFromUnitVectors(pirateFleetForward,e.hd);g.rotateZ(Math.max(-.2,Math.min(.2,axis.y*-.12)));
+  // Keep the nose on the actual velocity vector so the ship never appears to fly backwards.
+  pirateFleetHeading.copy(e.vel).normalize();g.quaternion.setFromUnitVectors(pirateFleetForward,pirateFleetHeading);g.rotateZ(Math.max(-.2,Math.min(.2,axis.y*-.12)));
   e.flames.forEach((f,i)=>{const pulse=.88+.12*Math.sin(performance.now()*.018+e.slot+i);f.scale.set(e.ty===0?1.05:1.3,(2.8+Math.min(1,e.speed/55)*2.2)*pulse,1)});
   e.trailT-=dt;if(e.trailT<=0){e.trailT=TCH?.34:.24;g.updateMatrixWorld(true);const exhaust=g.localToWorld(new T.Vector3(0,.05,e.ty===0?4.7:5.45));trail(exhaust,e.hp/e.mx<.42?"rgba(255,70,25,1)":"rgba(255,145,66,.9)",e.ty===0?2.2:2);if(e.hp/e.mx<.68&&Math.random()<.7)trail(exhaust,"rgba(55,55,60,.9)",2.8)}
   if(e.smoke)e.smoke.material.opacity=.25+.18*(.5+.5*Math.sin(performance.now()*.003+e.slot));
   if(e.fireFx){e.fireFx.material.opacity=.48+.35*(.5+.5*Math.sin(performance.now()*.02+e.slot));e.fireFx.scale.set(3.5,5.2+.5*Math.sin(performance.now()*.018+e.slot),1)}
   const shotSpeed=e.ty===0?148:166,leadTime=Math.min(4.5,dist/shotSpeed);
-  const aimAt=P.clone().addScaledVector(vel,leadTime).sub(g.position).normalize(),fireAngle=e.hd.angleTo(aimAt);
+  const aimAt=P.clone().addScaledVector(vel,leadTime).sub(g.position).normalize(),fireAngle=pirateFleetHeading.angleTo(aimAt);
   const canFire=dist<1500&&(fireAngle<.92||(dist<280&&fireAngle<1.35));
   e.fire-=dt;e.burstGap=Math.max(0,e.burstGap-dt);if(canFire&&e.fire<=0&&e.burst<=0)e.burst=5;
   if(canFire&&e.burst>0&&e.burstGap<=0){

@@ -28,11 +28,28 @@ const L = require('./lib');
     });
     const before = eb.length;
     pirateFleetUpdate(.05);
-    const noseAlignment = pirateFleet.map(e => new THREE.Vector3(0, 0, -1).applyQuaternion(e.g.quaternion).dot(e.hd));
+    const noseAlignment = pirateFleet.map(e => new THREE.Vector3(0, 0, -1).applyQuaternion(e.g.quaternion).dot(e.vel.clone().normalize()));
     return { before, after: eb.length, delta: eb.length - before, noseAlignment };
   });
   L.check('все три пилота стреляют на близкой дистанции', combat.delta >= 3, combat);
   L.check('носовая ось кораблей совпадает с направлением полёта', combat.noseAlignment.every(x => x > .98), combat.noseAlignment);
+
+  const pass = await page.evaluate(() => {
+    const e = pirateFleet[0];
+    e.warp = 0; e.g.visible = true;
+    e.g.position.copy(P).add(new THREE.Vector3(0, 0, -620));
+    e.hd.set(0, 0, 1); e.vel.set(0, 0, 36); e.speed = 36;
+    e.state = 'ATTACK_RUN'; e.stateT = 0; e.runDir = null;
+    e.fire = 99; e.burst = 0; e.burstGap = 0;
+    let minDistance = Infinity; const states = {};
+    for (let i = 0; i < 600; i++) {
+      pirateFleetUpdate(.05);
+      minDistance = Math.min(minDistance, e.g.position.distanceTo(P));
+      states[e.state] = true;
+    }
+    return { minDistance, states: Object.keys(states) };
+  });
+  L.check('пилот выполняет огневой пролёт через ближнюю зону и выходит из атаки', pass.minDistance < 220 && pass.states.includes('FIRING_PASS') && pass.states.includes('OVERSHOOT'), pass);
 
   const damage = await page.evaluate(() => {
     const e = pirateFleet[0], type = e.ty;

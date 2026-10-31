@@ -53,7 +53,7 @@ sanity_check:
 # ПРОЦЕСС РАБОТЫ С GITHUB (единственный источник правды)
 process:
   repo: https://github.com/gipromeh/Starfall   # ветка main
-  current_version: v71
+  current_version: v72
   files:
     game: STARFALL_CURRENT.html        # единственная актуальная версия игры
     passport: STARFALL_PASSPORT.md     # архитектура, переменные, таблицы, правила правок
@@ -439,15 +439,21 @@ pirate_fleet_combat_tuning:
     rule: "Quaternion.setFromUnitVectors(localForward, velocityHeading); нос модели, muzzle и вектор движения должны совпадать."
   maneuver:
     states: [APPROACH, ATTACK_RUN, FIRING_PASS, OVERSHOOT, REPOSITION]
-    approach_distance: 1250
-    attack_distance: 720
-    lateral_offsets: {approach: 150, attack: 85, pass: 90}
+    approach_distance: 900
+    attack_distance: 520
+    lateral_offsets: {approach: 130, attack: 55, pass: 45}
     turn_rate_rad_s: {golovorez: 2.0, jackal: 2.3}
+    max_acceleration: {golovorez: 72, jackal: 100}
+    heading_source: actual_velocity
     target_speed: {golovorez: 36, jackal: 43}
   weapons:
     fire_range: 1500
+    spawn_distance: [520, 620, 720]
+    pass_distance: 360
+    pass_crossing_threshold: 150
     close_range: 280
     aim_angle_rad: 0.92
+    fire_heading: actual_ship_forward
     close_aim_angle_rad: 1.35
     burst_shots: 5
     shot_interval_seconds: 0.16
