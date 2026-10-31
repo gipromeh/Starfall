@@ -1,6 +1,7 @@
 export class InputAdapter {
   constructor(canvas) {
     this.canvas=canvas;
+    this.active=false;
     this.keys=new Set();
     this.pointer={x:0,y:0,dx:0,dy:0,locked:false};
     this.touch={strafe:0,lift:0};
@@ -8,6 +9,7 @@ export class InputAdapter {
     this.down=e=>{this.keys.add(e.code);if(["Space","ArrowUp","ArrowDown"].includes(e.code))e.preventDefault();};
     this.up=e=>this.keys.delete(e.code);
     this.move=e=>{
+      if(!this.active)return;
       if(document.pointerLockElement===canvas){
         this.pointer.locked=true;
         this.pointer.dx+=e.movementX;
@@ -45,6 +47,7 @@ export class InputAdapter {
       if(pointerId===e.pointerId){pointerId=null;this.touch.strafe=0;this.touch.lift=0;pad.querySelector("i").style.transform="translate(0,0)";}
     }));
   }
+  activate(){this.active=true;this.resetAim();}
   resetAim(){this.pointer.x=0;this.pointer.y=0;this.pointer.dx=0;this.pointer.dy=0;}
   updateTouch(event){
     const rect=document.getElementById("touch-pad").getBoundingClientRect();
