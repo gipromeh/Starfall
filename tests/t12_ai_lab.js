@@ -1,22 +1,24 @@
 const fs = require('fs');
 const html = fs.readFileSync(require('path').join(__dirname, '..', 'AI_LAB.html'), 'utf8');
 const checks = [
-  ['Yuka ESM runtime', /yuka@0\.7\.8\/build\/yuka\.module\.js/.test(html)],
-  ['Yuka Vehicle steering', /new YUKA\.Vehicle\(\)/.test(html) && /v\.steering\.add\(seek\)/.test(html)],
-  ['Obstacle avoidance', /new YUKA\.ObstacleAvoidanceBehavior\(/.test(html)],
-  ['Separation behavior', /new YUKA\.SeparationBehavior\(/.test(html)],
-  ['Target memory and loss state', /lastSeen/.test(html) && /transition\(a,'SEARCH'\)/.test(html)],
-  ['Tactical FSM', /ATTACK_RUN/.test(html) && /REPOSITION/.test(html) && /EVADE/.test(html)],
-  ['Fuzzy tactical scoring', /function fuzzy\(/.test(html)],
-  ['Single and four-agent scenarios', /spawn\(1\)/.test(html) && /spawn\(4\)/.test(html)],
-  ['Obstacle toggle and steering diagnostics', /id="obstacles"/.test(html) && /id="debug"/.test(html)],
-  ['No production game import or mutation', !/STARFALL_CURRENT\.html/.test(html)]
-  ['SeekBehavior receives a Vector3 target', /new YUKA\\.SeekBehavior\\(seekTarget\\.position\\)/.test(html)],
-  ['EntityManager integrates all vehicles once per frame', /entityManager\\.update\\(dt\\)/.test(html) && !/v\\.update\\(dt\\)/.test(html)],
-  ['Separation neighborhood is limited to managed vehicles', /v\\.updateNeighborhood=true/.test(html) && !/entityManager\\.add\\(seekTarget\\)/.test(html) && !/entityManager\\.add\\(e\\)/.test(html)],
-  ['Planetary sphere visuals', /function planet\\(/.test(html) && /new THREE\\.SphereGeometry\\(r,64,48\\)/.test(html)],
-  ['Detailed fighter silhouette', /function shipMesh\\(color\\)/.test(html) && /new THREE\\.BoxGeometry\\(18,1\\.5,10\\)/.test(html)],
-];
+  ['Yuka ESM runtime', html.includes('yuka@0.7.8/build/yuka.module.js')],
+  ['Yuka Vehicle steering', html.includes('new YUKA.Vehicle()') && html.includes('v.steering.add(seek)')],
+  ['Obstacle avoidance', html.includes('new YUKA.ObstacleAvoidanceBehavior(')],
+  ['Separation behavior', html.includes('new YUKA.SeparationBehavior(')],
+  ['Target memory and loss state', html.includes('lastSeen') && html.includes("transition(a,'SEARCH')")],
+  ['Tactical FSM', html.includes('ATTACK_RUN') && html.includes('REPOSITION') && html.includes('EVADE')],
+  ['Fuzzy tactical scoring', html.includes('function fuzzy(')],
+  ['Single and four-agent scenarios', html.includes('spawn(1)') && html.includes('spawn(4)')],
+  ['Obstacle toggle and steering diagnostics', html.includes('id="obstacles"') && html.includes('id="debug"')],
+  ['No production game import or mutation', !html.includes('STARFALL_CURRENT.html')],
+  ['SeekBehavior receives a Vector3 target', html.includes('new YUKA.SeekBehavior(seekTarget.position)')],
+  ['EntityManager integrates all vehicles once per frame', html.includes('entityManager.update(dt)') && !html.includes('v.update(dt)')],
+  ['Separation neighborhood is limited to managed vehicles', html.includes('v.updateNeighborhood=true') && !html.includes('entityManager.add(seekTarget)') && !html.includes('entityManager.add(e)')],
+  ['Planetary sphere visuals', html.includes('function planet(') && html.includes('new THREE.SphereGeometry(r,64,48)')],
+  ['Detailed fighter silhouette', html.includes('function shipMesh(color)') && html.includes('new THREE.BoxGeometry(18,1.5,10)')],
+  ['Fighters start with visible forward momentum', html.includes('v.velocity.set(0,0,v.maxSpeed*.72)')],
+  ['Planets and stars animate every frame', html.includes('for(const body of celestialBodies)') && html.includes('starField.rotation.y+=dt')]
+];;
 let failed = 0;
 for (const [name, ok] of checks) { console.log((ok ? 'PASS ' : 'FAIL ') + name); if (!ok) failed++; }
 console.log(checks.length - failed + '/' + checks.length + ' AI Lab static checks passed');
