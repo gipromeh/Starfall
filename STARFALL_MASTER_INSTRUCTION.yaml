@@ -53,7 +53,7 @@ sanity_check:
 # ПРОЦЕСС РАБОТЫ С GITHUB (единственный источник правды)
 process:
   repo: https://github.com/gipromeh/Starfall   # ветка main
-  current_version: v66
+  current_version: v71
   files:
     game: STARFALL_CURRENT.html        # единственная актуальная версия игры
     passport: STARFALL_PASSPORT.md     # архитектура, переменные, таблицы, правила правок
@@ -364,15 +364,15 @@ asset_library:
 # v69 — НЕЗАВИСИМАЯ ПИРАТСКАЯ ЭСКАДРИЛЬ
 pirate_fleet:
   composition:
-    total_active_slots: 10
+    total_active_slots: 3
     ships:
       - type: 0
         name: "Головорез"
-        count: 5
+        count: 2
       - type: 1
         name: "Шакал"
-        count: 5
-    rule: "Не заменять десять пилотов декорациями или нестреляющими кораблями; каждый слот управляется самостоятельным ИИ."
+        count: 1
+    rule: "Сохранять три активных боевых пилота; каждый слот управляется самостоятельным ИИ и ведёт огонь."
   architecture:
     manager: pirateFleet
     isolated_from: [E, E2]
@@ -404,8 +404,8 @@ pirate_fleet:
     - "Ограничивать частоту trail/particle эффектов на touch-устройствах."
     - "После изменения проверять FPS, память и температуру на реальном iPhone; автоматический синтаксис-тест не заменяет визуальный прогон."
   acceptance:
-    - "Одновременно присутствуют пять Головорезов и пять Шакалов."
-    - "Все десять кораблей маневрируют и стреляют."
+    - "Одновременно присутствуют два Головореза и один Шакал."
+    - "Все три корабля маневрируют и стреляют, включая ближнюю дистанцию."
     - "Обычные пули и ракеты игрока поражают корабли флота."
     - "Повреждённые корабли дымят и горят; уничтожение начисляет награду."
     - "Существующие E/E2, боссы, волны, управление и SAVE 2.0 продолжают работать."
@@ -422,9 +422,43 @@ pirate_fleet_hardening:
   lifecycle:
     - "Очищать эскадрилью и её снаряды при стыковке dock."
     - "Очищать эскадрилью при arrive после перехода в новый сектор."
-    - "После lift/arrive создавать новую группу 5+5 при первом игровом обновлении."
+    - "После lift/arrive создавать новую группу из трёх кораблей (2+1) при первом игровом обновлении."
     - "Сохранять очистку при reset и toMenu."
   acceptance:
     - "Повторные циклы повреждение → уничтожение → респавн не увеличивают количество GPU-текстур."
-    - "После dock → lift снова создаются 5 Головорезов и 5 Шакалов."
+    - "После dock → lift снова создаются два Головореза и один Шакал."
     - "Снаряды флота не остаются в сцене после очистки."
+
+
+# ─────────────────────────────────────────────
+# v71 — КОМПАКТНАЯ ИСПРАВЛЕННАЯ ПИРАТСКАЯ ЭСКАДРИЛЬ
+pirate_fleet_combat_tuning:
+  composition: {total_active_slots: 3, golovorez: 2, jackal: 1}
+  orientation:
+    model_forward_axis: "-Z"
+    rule: "Quaternion.setFromUnitVectors(localForward, velocityHeading); нос модели, muzzle и вектор движения должны совпадать."
+  maneuver:
+    states: [APPROACH, ATTACK_RUN, FIRING_PASS, OVERSHOOT, REPOSITION]
+    approach_distance: 1250
+    attack_distance: 720
+    lateral_offsets: {approach: 150, attack: 85, pass: 90}
+    turn_rate_rad_s: {golovorez: 2.0, jackal: 2.3}
+    target_speed: {golovorez: 36, jackal: 43}
+  weapons:
+    fire_range: 1500
+    close_range: 280
+    aim_angle_rad: 0.92
+    close_aim_angle_rad: 1.35
+    burst_shots: 5
+    shot_interval_seconds: 0.16
+    reload_seconds: [0.72, 1.10]
+    lead: "Упреждение по скорости игрока; стрельба разрешена во всех фазах при попадании цели в огневой конус."
+  removed_visuals:
+    - "starTarget, starHalo, starCorona, starInnerCorona и центральные flare-спрайты"
+    - "Ссылка на центральную звезду в planetNavUpdate; навигация сохраняет только worldPlanets"
+  acceptance:
+    - "В сцене нет центральной красной звезды и её короны."
+    - "Одновременно работают три пилота в составе 2+1."
+    - "Нос корабля направлен по вектору движения; сопла находятся сзади."
+    - "Пираты стреляют очередями на дальней и ближней дистанции."
+    - "Существующие E/E2, боссы, волны, управление и SAVE 2.0 продолжают работать."

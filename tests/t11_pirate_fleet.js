@@ -7,7 +7,7 @@ const L = require('./lib');
   await page.click('#play');
   await page.waitForFunction(() => state === 'dock', null, { timeout: 60000 });
   await page.evaluate(() => { lift(); QL.setMode('low'); pirateFleetInit(); });
-  await page.waitForFunction(() => pirateFleet.length === 10, null, { timeout: 15000 });
+  await page.waitForFunction(() => pirateFleet.length === 3, null, { timeout: 15000 });
 
   const composition = await page.evaluate(() => ({
     total: pirateFleet.length,
@@ -15,22 +15,24 @@ const L = require('./lib');
     jackal: pirateFleet.filter(e => e.ty === 1).length,
     spawned: pirateFleet.filter(e => !!e.g).length
   }));
-  L.check('эскадрилья содержит ровно 5 Головорезов и 5 Шакалов', composition.total === 10 && composition.golovorez === 5 && composition.jackal === 5, composition);
-  L.check('все десять кораблей созданы', composition.spawned === 10, composition);
+  L.check('эскадрилья содержит два Головореза и один Шакал', composition.total === 3 && composition.golovorez === 2 && composition.jackal === 1, composition);
+  L.check('все три корабля созданы', composition.spawned === 3, composition);
 
-  const fire = await page.evaluate(() => {
+  const combat = await page.evaluate(() => {
     pirateFleet.forEach((e, i) => {
       e.warp = 0; e.g.visible = true;
-      e.g.position.copy(P).add(new THREE.Vector3((i - 5) * 14, 0, 520));
+      e.g.position.copy(P).add(new THREE.Vector3((i - 1) * 12, 0, -110));
       e.hd.copy(P.clone().sub(e.g.position).normalize());
       e.vel.copy(e.hd).multiplyScalar(40);
       e.state = 'ATTACK_RUN'; e.stateT = 0; e.fire = 0; e.burst = 0; e.burstGap = 0;
     });
     const before = eb.length;
     pirateFleetUpdate(.05);
-    return { before, after: eb.length, delta: eb.length - before };
+    const noseAlignment = pirateFleet.map(e => new THREE.Vector3(0, 0, -1).applyQuaternion(e.g.quaternion).dot(e.hd));
+    return { before, after: eb.length, delta: eb.length - before, noseAlignment };
   });
-  L.check('все десять пилотов самостоятельно открывают огонь', fire.delta >= 10, fire);
+  L.check('все три пилота стреляют на близкой дистанции', combat.delta >= 3, combat);
+  L.check('носовая ось кораблей совпадает с направлением полёта', combat.noseAlignment.every(x => x > .98), combat.noseAlignment);
 
   const damage = await page.evaluate(() => {
     const e = pirateFleet[0], type = e.ty;
@@ -39,7 +41,7 @@ const L = require('./lib');
     e.respawn = 0; pirateFleetUpdate(.05);
     return { destroyed, respawned: !!e.g, sameType: e.ty === type, slots: pirateFleet.length };
   });
-  L.check('уничтожение и восстановление корабля сохраняют слот и тип', damage.destroyed && damage.respawned && damage.sameType && damage.slots === 10, damage);
+  L.check('уничтожение и восстановление корабля сохраняют слот и тип', damage.destroyed && damage.respawned && damage.sameType && damage.slots === 3, damage);
 
   const textureReuse = await page.evaluate(() => {
     const first = pirateFleet[0];
@@ -47,7 +49,7 @@ const L = require('./lib');
     pirateFleetDamage(first, first.hp * .4, false);
     R.render(S, C);
     const before = R.info.memory.textures;
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 3; i++) {
       const e = pirateFleet[i];
       pirateFleetDamage(e, e.hp * .4, false);
       pirateFleetDamage(e, e.hp * .4, false);
@@ -66,15 +68,16 @@ const L = require('./lib');
   });
   L.check('стыковка очищает флот и его снаряды', docked.state === 'dock' && docked.slots === 0 && !docked.ready && docked.taggedShots === 0, docked);
   await page.evaluate(() => { lift(); QL.setMode('low'); pirateFleetInit(); });
-  await page.waitForFunction(() => pirateFleet.length === 10, null, { timeout: 15000 });
-  const relaunched = await page.evaluate(() => pirateFleet.length === 10 && pirateFleet.filter(e => e.ty === 0).length === 5 && pirateFleet.filter(e => e.ty === 1).length === 5);
-  L.check('после dock → lift снова создаётся состав 5+5', relaunched);
+  await page.waitForFunction(() => pirateFleet.length === 3, null, { timeout: 15000 });
+  const relaunched = await page.evaluate(() => pirateFleet.length === 3 && pirateFleet.filter(e => e.ty === 0).length === 2 && pirateFleet.filter(e => e.ty === 1).length === 1);
+  L.check('после dock → lift снова создаётся состав 2+1', relaunched);
 
   const cleanup = await page.evaluate(() => {
     toMenu();
     return { slots: pirateFleet.length, ready: pirateFleetReady };
   });
   L.check('возврат в меню полностью очищает эскадрилью', cleanup.slots === 0 && cleanup.ready === false, cleanup);
+  L.check('красная звезда полностью удалена из сцены и навигации', typeof starTarget === 'undefined', typeof starTarget);
   L.check('нет ошибок JavaScript', page.errors.length === 0, page.errors);
   process.exitCode = L.summary();
   await browser.close();
