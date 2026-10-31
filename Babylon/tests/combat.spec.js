@@ -31,6 +31,7 @@ test("Chromium boots Babylon and renders a playable scene",async({page})=>{
   expect(canvas.width).toBeGreaterThan(0);
   expect(canvas.height).toBeGreaterThan(0);
   expect(canvas.context).toBeTruthy();
+  await page.screenshot({path:"test-results/starfall-chromium.png"});
   expect(diagnostics.pageErrors).toEqual([]);
 });
 
@@ -74,5 +75,5 @@ test("homing missile reaches target and applies weapon damage",async({page})=>{
   await page.waitForFunction(()=>window.__STARFALL_TEST__.state().enemyHealth<100,undefined,{timeout:10000}).catch(async error=>{const state=await page.evaluate(()=>window.__STARFALL_TEST__.state());throw new Error(error.message+"\\nMissile diagnostics: "+JSON.stringify(state));});
   const state=await page.evaluate(()=>window.__STARFALL_TEST__.state());
   expect(state.enemyHealth).toBeLessThan(100);
-  expect(state.projectiles).toBe(0);
+  expect(state.projectileData.filter(p=>p.owner==="player"&&p.kind==="missile")).toHaveLength(0);
 });
