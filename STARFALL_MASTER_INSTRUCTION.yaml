@@ -53,7 +53,7 @@ sanity_check:
 # ПРОЦЕСС РАБОТЫ С GITHUB (единственный источник правды)
 process:
   repo: https://github.com/gipromeh/Starfall   # ветка main
-  current_version: v75
+  current_version: v76
   files:
     game: STARFALL_CURRENT.html        # единственная актуальная версия игры
     passport: STARFALL_PASSPORT.md     # архитектура, переменные, таблицы, правила правок
@@ -532,3 +532,21 @@ pirate_fleet_v75:
     - "Каждый лазер начинается в мировых координатах своего сокета и направлен на рассчитанную точку упреждения."
     - "Пламя/следы двигателя исходят из ENG_0 и ENG_1; для старых моделей остаётся резервная локальная позиция."
     - "Световая схема не возвращает видимый звёздный диск или красную центральную засветку."
+
+
+# ─────────────────────────────────────────────────────────────
+# v76 — LEGACY GLB AXIS + SOCKET FALLBACK
+pirate_fighter_002_v76:
+  forward_axis: "-Z"
+  axis_validation: "Проверять фактический rotation.y у STARFALL_FORWARD_AXIS_FIX. Наличие узла с нулевым вращением не означает, что модель развёрнута."
+  legacy_glb: "Если rotation.y не равен ±PI, добавить runtime pivot Y=PI вокруг GLTF scene; внешний root оставить свободным для ИИ."
+  sockets:
+    guns: [GUN_0, GUN_1, GUN_2, GUN_3]
+    engines: [ENG_0, ENG_1]
+    fallback_if_missing: true
+    fallback_rule: "Создавать Object3D сокеты в локальных координатах игрового root, не привязывать их к вращаемой внутренней оси."
+  acceptance:
+    - "Runtime pivot реально равен PI по Y для старого GLB."
+    - "Есть четыре дульных сокета и два двигательных сокета даже если GLB не экспортировал Empty nodes."
+    - "Каждый лазер начинается в точке соответствующего GUN socket; каждый двигатель оставляет след от ENG socket."
+    - "Viewer и игровой загрузчик используют одинаковую проверку реального rotation.y."

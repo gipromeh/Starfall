@@ -1661,11 +1661,17 @@ function planetNavUpdate(){
  navHud.style.display="block";navHud.textContent=selected.target.name+"  ·  "+Math.round(selected.distance).toLocaleString("ru-RU")+" игровых ед.";
 }
 
-// ===== STARFALL v75 — SCENE LIGHTING, GUN LOCATORS AND PIRATE FLIGHT =====
+// ===== STARFALL v76 — AXIS VALIDATION, RUNTIME SOCKETS AND SCENE LIGHTING =====
 const pirateFleet=[];
 let pirateFleetReady=false,pirateFleetTemplates=null,pirateFleetFlameMat=null,pirateFleetSmokeTex=null,pirateFleetFireTex=null;
 const pirateFleetForward=new T.Vector3(0,0,-1),pirateFleetUp=new T.Vector3(0,1,0),pirateFleetHeading=new T.Vector3();
 const pirateFleetGunNames=["GUN_0","GUN_1","GUN_2","GUN_3"],pirateFleetEngineNames=["ENG_0","ENG_1"];
+const pirateFleetGunFallback=[[-2.74,-1.24,-3.565],[-2.46,-1.24,-3.565],[2.46,-1.24,-3.565],[2.74,-1.24,-3.565]],pirateFleetEngineFallback=[[-.62,-.9,6.535],[.62,-.9,6.535]];
+function pirateFleetResolveSockets(g,ty){
+ if(ty!==0)return{guns:[],engines:[]};
+ const resolve=(names,positions)=>names.map((name,i)=>{let node=g.getObjectByName(name);if(!node){node=new T.Object3D();node.name=name;node.position.set(...positions[i]);g.add(node)}return node});
+ return{guns:resolve(pirateFleetGunNames,pirateFleetGunFallback),engines:resolve(pirateFleetEngineNames,pirateFleetEngineFallback)};
+}
 function pirateFleetPrepare(){
  if(pirateFleetTemplates)return;
  pirateFleetTemplates=[mkPirate(0),mkPirate(1)];
@@ -1685,7 +1691,7 @@ function pirateFleetSpawn(e,delay=0){
  pirateFleetPrepare();
  const g=pirateFleetTemplates[e.ty].clone(true),fw=new T.Vector3(0,0,-1).applyQuaternion(Q).normalize(),right=new T.Vector3(1,0,0).applyQuaternion(Q).normalize();
  g.position.copy(P).addScaledVector(fw,-(850+e.slot*100)).addScaledVector(right,(e.slot-1)*160).add(new T.Vector3(0,(e.slot-1)*52,0));
- g.visible=false;S.add(g);e.g=g;e.muzzleNodes=e.ty===0?pirateFleetGunNames.map(n=>g.getObjectByName(n)).filter(Boolean):[];e.engineNodes=e.ty===0?pirateFleetEngineNames.map(n=>g.getObjectByName(n)).filter(Boolean):[];e.hp=e.mx=e.ty===0?92:78;e.r=e.ty===0?8.5:7.2;e.warp=.55+delay;e.state="APPROACH";e.stateT=0;e.side=e.slot-1;
+ g.visible=false;S.add(g);e.g=g;const sockets=pirateFleetResolveSockets(g,e.ty);e.muzzleNodes=sockets.guns;e.engineNodes=sockets.engines;e.hp=e.mx=e.ty===0?92:78;e.r=e.ty===0?8.5:7.2;e.warp=.55+delay;e.state="APPROACH";e.stateT=0;e.side=e.slot-1;
  e.fire=.2+Math.random()*.22;e.burst=0;e.burstGap=0;e.trailT=.1;e.vel=P.clone().sub(g.position).normalize().multiplyScalar(e.ty===0?36:43);e.hd=e.vel.clone().normalize();e.speed=e.vel.length();e.runDir=null;e.dead=false;e.smoke=null;e.fireFx=null;e.flames=[];pirateFleetAttachFX(e);
 }
 function pirateFleetClear(){
@@ -1751,7 +1757,7 @@ function pirateFleetUpdate(dt){
 }
 const _updWithPirateFleet=upd;
 upd=function(dt){_updWithPirateFleet(dt);pirateFleetUpdate(dt)};
-// ===== END STARFALL v75 PIRATE FLEET =====
+// ===== END STARFALL v76 PIRATE FLEET =====
 
 const rc=$("radar").getContext("2d");
 function radar(){const c=85,s=75/700,iq=Q.clone().invert();rc.clearRect(0,0,170,170);rc.strokeStyle="#33ccff66";rc.lineWidth=1;[25,50,75].forEach(r=>{rc.beginPath();rc.arc(c,c,r,0,6.283);rc.stroke()});rc.beginPath();rc.moveTo(c,10);rc.lineTo(c,160);rc.moveTo(10,c);rc.lineTo(160,c);rc.stroke();
@@ -2599,10 +2605,10 @@ if(T.GLTFLoader&&location.protocol!=="file:"){
   try{
    let g=d.bake?bakeDroid(gl.scene):gl.scene;
    if(d.ty===0){
-    const nodes=gl.parser&&gl.parser.json&&gl.parser.json.nodes||[];
-    const forwardFixed=nodes.some(n=>n.name==="STARFALL_FORWARD_AXIS_FIX");
+    const existingFix=g.getObjectByName("STARFALL_FORWARD_AXIS_FIX");
+    const forwardFixed=!!existingFix&&Math.abs(Math.abs(existingFix.rotation.y)-Math.PI)<.01;
     const assetRoot=new T.Group();assetRoot.name="STARFALL_PIRATE_ASSET_ROOT";
-    if(!forwardFixed){const axisFix=new T.Group();axisFix.name="STARFALL_FORWARD_AXIS_FIX";axisFix.rotation.y=Math.PI;axisFix.add(g);assetRoot.add(axisFix)}
+    if(!forwardFixed){const axisFix=new T.Group();axisFix.name="STARFALL_FORWARD_AXIS_FIX_RUNTIME";axisFix.rotation.y=Math.PI;axisFix.add(g);assetRoot.add(axisFix)}
     else assetRoot.add(g);
     g=assetRoot;
    }

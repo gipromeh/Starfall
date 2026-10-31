@@ -130,9 +130,10 @@ async function loadModel(cfg,base){
   if(model)scene.remove(model);
   model=gltf.scene;
   if(cfg.id==='pirate_fighter_002'){
-    const nodes=gltf.parser&&gltf.parser.json&&gltf.parser.json.nodes||[];
-    if(!nodes.some(n=>n.name==='STARFALL_FORWARD_AXIS_FIX')){
-      const root=new THREE.Group(),fix=new THREE.Group();root.name='STARFALL_PIRATE_ASSET_ROOT';fix.name='STARFALL_FORWARD_AXIS_FIX';fix.rotation.y=Math.PI;fix.add(model);root.add(fix);model=root;
+    const existingFix=model.getObjectByName('STARFALL_FORWARD_AXIS_FIX');
+    const fixed=!!existingFix&&Math.abs(Math.abs(existingFix.rotation.y)-Math.PI)<.01;
+    if(!fixed){
+      const root=new THREE.Group(),fix=new THREE.Group();root.name='STARFALL_PIRATE_ASSET_ROOT';fix.name='STARFALL_FORWARD_AXIS_FIX_RUNTIME';fix.rotation.y=Math.PI;fix.add(model);root.add(fix);model=root;
     }
   }
   scene.add(model);
