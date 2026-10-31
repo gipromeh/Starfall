@@ -7,7 +7,6 @@ const L = require('./lib');
   await page.click('#play');
   await page.waitForFunction(() => state === 'dock', null, { timeout: 60000 });
   await page.waitForFunction(() => pirateAssetsReady === true, null, { timeout: 60000 });
-  await page.waitForFunction(() => MC['p0'] && MC['p0'].getObjectByName('STARFALL_FORWARD_AXIS_FIX_RUNTIME'), null, { timeout: 60000 });
   const scene = await page.evaluate(() => ({
     ambient: S.children.find(o => o.isAmbientLight)?.intensity,
     directional: sun.intensity,
@@ -54,7 +53,7 @@ const L = require('./lib');
     const socketsForward = gunPositions.length === 4 && gunPositions.every(p => p.clone().sub(first.g.position).dot(new THREE.Vector3(0,0,-1).applyQuaternion(first.g.quaternion)) > 0);
     const noseAlignment = pirateFleet.map(e => {
       e.g.updateMatrixWorld(true);
-      const fix = e.g.getObjectByName('STARFALL_FORWARD_AXIS_FIX_RUNTIME');
+      const fix = e.g.getObjectByName('STARFALL_FORWARD_AXIS_FIX_RUNTIME') || e.g.getObjectByName('STARFALL_FORWARD_AXIS_FIX');
       return fix ? new THREE.Vector3(0, 0, 1).applyQuaternion(fix.getWorldQuaternion(new THREE.Quaternion())).dot(e.vel.clone().normalize()) : -1;
     });
     return { before, after: eb.length, delta: eb.length - before, noseAlignment, firstShipShots: shots.length, muzzleMatch, shotForward, socketsForward };
