@@ -54,7 +54,7 @@ function hasLineOfSight(from,to){const segment=to.clone().sub(from),len=segment.
  if(a.state==='EVADE')t.set(px-v.position.x*.8,py+80-v.position.y,pz-v.position.z*.65+80);
  if(a.state==='SEARCH')t.set(px,py,pz-260);
  // Maintain a real standoff envelope: never steer through or orbit on top of the player.
- if(a.distance<125){const away=new THREE.Vector3(v.position.x-px,v.position.y-py,v.position.z-pz);if(away.lengthSq()<1)away.set(lane||1,.25,1);away.normalize();t.copy(player.position).addScaledVector(away,190);if(a.state!=='EVADE')transition(a,'REPOSITION');}
+ if(a.distance<125){const away=new THREE.Vector3(v.position.x-px,v.position.y-py,v.position.z-pz);if(away.lengthSq()<1)away.set(lane||1,.25,1);away.normalize();t.set(px+away.x*190,py+away.y*190,pz+away.z*190);if(a.state!=='EVADE')transition(a,'REPOSITION');}
  // Weapon decisions are independent from FSM phase: firing requires nose alignment and unobstructed LOS.
  if(solution.valid&&a.fireCooldown<=0&&a.laserHeat<82){firePirate(a);a.fireCooldown=.24;a.laserHeat=Math.min(100,a.laserHeat+29);a.shots++;recordEvent('laser',a.i,'heat='+Math.round(a.laserHeat));}
  else if(solution.valid&&a.laserHeat>=82&&a.fireCooldown<=0){combatStats.laserHeatEvents++;a.fireCooldown=.25;}
