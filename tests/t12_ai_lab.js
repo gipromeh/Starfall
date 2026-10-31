@@ -47,6 +47,11 @@ const checks = [
   ['All missiles are unguided after launch', !html.includes('q.homing') && !html.includes('targetPoint') && html.includes("kind==='missile'?")],
   ['Immersive flight mode keeps controls and hides lab panels', html.includes('body.flight-mode #left,body.flight-mode #right{display:none}') && html.includes("classList.toggle('flight-mode')")],
   ['Combat telemetry records events and exports CSV', html.includes('const combatStats=') && html.includes("$('export').onclick") && html.includes('starfall-combat-')],
+
+  ['Flight recorder captures player, enemy and projectile state at 5 Hz', html.includes('function recordFlightFrame(dt)') && html.includes('samplingIntervalSeconds:.2') && html.includes('flightRecorder.frames')],
+  ['Projectile telemetry classifies launch, hit and miss', html.includes("recordEvent('projectile-launch'") && html.includes("recordEvent('projectile-hit'") && html.includes("recordEvent('projectile-miss'")],
+  ['Flight recording exports a structured JSON session', html.includes('function exportFlightRecording()') && html.includes('STARFALL_AI_LAB_FLIGHT_RECORDING') && html.includes("$('record-export').onclick=exportFlightRecording")],
+  ['Immersive flight mode has dedicated fullscreen control', html.includes('id="fullscreen-btn"') && html.includes("$('fullscreen-btn').onclick") && html.includes('body.flight-mode #record-export')],
 ];;
 let failed = 0;
 for (const [name, ok] of checks) { console.log((ok ? 'PASS ' : 'FAIL ') + name); if (!ok) failed++; }
