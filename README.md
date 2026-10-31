@@ -11,9 +11,9 @@
 | `CHANGELOG.md` | История версий |
 | `STARFALL_MASTER_INSTRUCTION.yaml` | Мастер-инструкция по этапам (stages) и чек-лист приёмки |
 
-## Отдельные 3D-эксперименты
+## Библиотека игровых ресурсов
 
-| [`Droids/`](https://gipromeh.github.io/Starfall/Droids/) | Отдельная веб-лаборатория процедурных 3D-моделей (не подключена к игровому коду) |
+Все игровые ассеты хранятся в `assets/` и распределяются по категориям: `ships/`, `droids/`, `planets/`, `weapons/`, `artifacts/`. Описание структуры и правила размещения: [`assets/README.md`](assets/README.md). Каталог дроидов: [`assets/droids/`](assets/droids/); просмотрщик моделей кораблей: [`assets/ships/viewer.html`](assets/ships/viewer.html). Корневой каталог `Droids/` удалён — единственный актуальный путь находится внутри `assets/`.
 
 ## Единственный источник правды
 
