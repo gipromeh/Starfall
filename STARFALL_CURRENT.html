@@ -1792,7 +1792,7 @@ function pirateFleetUpdate(dt){
    for(const gun of guns){
     const muzzle=gun?gun.getWorldPosition(new T.Vector3()):g.localToWorld(new T.Vector3(0,-.25,-3.8));
     const shotDir=gun?gun.getWorldDirection(new T.Vector3()).normalize().lerp(targetPoint.clone().sub(muzzle).normalize(),.12).normalize():targetPoint.clone().sub(muzzle).normalize();
-    shootLaser(eb,muzzle,shotDir.multiplyScalar(shotSpeed),0xffc34a,5.2,7.0;
+    shootLaser(eb,muzzle,shotDir.multiplyScalar(shotSpeed),0xffc34a,5.2,7.0);
     eb[eb.length-1].pirateFleet=true;eb[eb.length-1].pirateFleetSlot=e.slot;
    }
    e.burst--;e.burstGap=.18;if(e.burst<=0)e.fire=.7+Math.random()*.4;sfx("l2");
