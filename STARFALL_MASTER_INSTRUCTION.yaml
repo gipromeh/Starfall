@@ -560,10 +560,10 @@ scene_lighting_v77:
   hemisphere: 0.55
   camera_fill: 0.55
   bloom: {strength: 0.62, radius: 0.55, threshold: 0.8}
-  planet_light_direction: [1, 0.6, 0.4]
+  planet_light_direction: "SYSTEM_CENTER - planet.position"
   constraints:
     - "Не возвращать видимую центральную звезду; сохранить звёздное поле, туманности и планеты."
-    - "Ночные огни и атмосферные слои синхронизированы с направлением основного DirectionalLight."
+    - "Ночные огни и атмосферные слои каждого тела направлены к SYSTEM_CENTER; global fill light не подменяет локальный источник планетной системы."
 pirate_sockets_v77:
   rust_skull:
     fallback_guns: [[-2.74, -1.24, -3.565], [-2.46, -1.24, -3.565], [2.46, -1.24, -3.565], [2.74, -1.24, -3.565]]

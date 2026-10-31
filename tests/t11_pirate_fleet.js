@@ -9,7 +9,7 @@ const L = require('./lib');
   await page.waitForFunction(() => pirateAssetsReady === true, null, { timeout: 60000 });
   const scene = await page.evaluate(() => {
     const vectors = worldPlanets.slice(0, 6).map(p => p.mesh.children.find(o => o.material?.uniforms?.c && o.material?.uniforms?.s)?.material.uniforms.s.value);
-    const sunDir = sun.position.clone().normalize();
+    const aligned = vectors.length === 6 && vectors.every((v,i) => v && v.clone().normalize().dot(SYSTEM_CENTER.clone().sub(worldPlanets[i].mesh.position).normalize()) > .999);
     return {
       ambient: S.children.find(o => o.isAmbientLight)?.intensity,
       directional: sun.intensity,
@@ -19,7 +19,7 @@ const L = require('./lib');
       stars: sky.children.filter(o => o.isPoints).length,
       planets: worldPlanets.length,
       atmosphereVectors: new Set(vectors).size,
-      atmosphereAligned: vectors.length === 6 && vectors.every(v => v && v.clone().normalize().dot(sunDir) > .999)
+      atmosphereAligned: aligned
     };
   });
   L.check('восстановлена равномерная световая схема ранней сборки', scene.ambient >= .39 && scene.directional >= 1.29 && scene.hemisphere >= .54 && scene.cameraFill >= .54 && scene.bloom >= .61, scene);
