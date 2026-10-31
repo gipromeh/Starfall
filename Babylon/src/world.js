@@ -75,14 +75,80 @@ export class World {
     }
     return g;
   }
+  bakePirateMeshes(result,position){
+    const groups=new Map();
+    const min=V(Infinity,Infinity,Infinity),max=V(-Infinity,-Infinity,-Infinity);
+    for(const source of result.meshes){
+      if(!source||source.getTotalVertices()===0||source.skeleton||source.morphTargetManager)continue;
+      const material=source.material;
+      if(material&&material.subMaterials)continue;
+      const positions=source.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+      if(!positions||positions.length<9)continue;
+      const normals=source.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+      const uvs=source.getVerticesData(BABYLON.VertexBuffer.UVKind);
+      source.computeWorldMatrix(true);
+      const world=source.getWorldMatrix();
+      const normalMatrix=world.clone();normalMatrix.invert();normalMatrix.transpose();
+      const flip=world.determinant()<0;
+      let group=groups.get(material);
+      if(!group){group={material,positions:[],normals:[],uvs:[],indices:[],count:0};groups.set(material,group);}
+      const offset=group.count,vertexCount=positions.length/3;
+      for(let i=0;i<positions.length;i+=3){
+        const point=BABYLON.Vector3.TransformCoordinates(V(positions[i],positions[i+1],positions[i+2]),world);
+        point.x=-point.x;point.z=-point.z;
+        group.positions.push(point.x,point.y,point.z);
+        min.minimizeInPlace(point);max.maximizeInPlace(point);
+        let normal=normals?BABYLON.Vector3.TransformNormal(V(normals[i],normals[i+1],normals[i+2]),normalMatrix).normalize():V(0,1,0);
+        normal.x=-normal.x;normal.z=-normal.z;
+        group.normals.push(normal.x,normal.y,normal.z);
+        const uvIndex=(i/3)*2;
+        group.uvs.push(uvs?uvs[uvIndex]:0,uvs?uvs[uvIndex+1]:0);
+      }
+      const indices=source.getIndices();
+      if(indices){
+        for(let i=0;i+2<indices.length;i+=3){
+          const a=indices[i],b=indices[i+1],c=indices[i+2];
+          if(flip)group.indices.push(offset+a,offset+c,offset+b);
+          else group.indices.push(offset+a,offset+b,offset+c);
+        }
+      }else{
+        for(let i=0;i+2<vertexCount;i+=3){
+          if(flip)group.indices.push(offset+i,offset+i+2,offset+i+1);
+          else group.indices.push(offset+i,offset+i+1,offset+i+2);
+        }
+      }
+      group.count+=vertexCount;
+    }
+    if(groups.size===0)throw new Error("GLB has no mergeable static geometry");
+    const center=min.add(max).scale(.5);
+    const root=new BABYLON.TransformNode("pirate-droid-optimized",this.scene);
+    root.position.copyFrom(position);root.scaling.setAll(.8);
+    let drawCalls=0;
+    for(const group of groups.values()){
+      for(let i=0;i<group.positions.length;i+=3){
+        group.positions[i]-=center.x;group.positions[i+1]-=center.y;group.positions[i+2]-=center.z;
+      }
+      const merged=new BABYLON.Mesh("pirate-droid-material-"+drawCalls,this.scene);
+      merged.setVerticesData(BABYLON.VertexBuffer.PositionKind,group.positions,false,3);
+      merged.setVerticesData(BABYLON.VertexBuffer.NormalKind,group.normals,false,3);
+      merged.setVerticesData(BABYLON.VertexBuffer.UVKind,group.uvs,false,2);
+      merged.setIndices(group.indices,group.count);
+      merged.material=group.material;merged.parent=root;merged.isPickable=false;
+      merged.alwaysSelectAsActiveMesh=true;drawCalls++;
+    }
+    for(const source of result.meshes)source.dispose(true,false);
+    return {root,drawCalls,sourceMeshes:result.meshes.length};
+  }
   async loadPirateAsset(){
     try{
       const result=await BABYLON.SceneLoader.ImportMeshAsync("","../assets/ships/pirate/pirate_fighter_001/","pirate_droid_001.glb",this.scene);
-      const root=new BABYLON.TransformNode("pirate-glb-root",this.scene);
-      result.meshes.filter(mesh=>mesh.parent===null).forEach(mesh=>{mesh.parent=root;});
-      root.position.copyFrom(this.pirate.position);root.scaling.setAll(.8);
-      this.pirate.setEnabled(false);this.pirate=root;this.pirateAsset="v85 pirate_droid_001.glb";
-    }catch(error){console.warn("[STARFALL] Pirate GLB unavailable; procedural fighter retained",error);}
+      const optimized=this.bakePirateMeshes(result,this.pirate.position);
+      this.pirate.setEnabled(false);this.pirate=optimized.root;
+      this.pirateAsset="v85 pirate_droid_001.glb · "+optimized.drawCalls+" material batches";
+      console.info("[STARFALL] Pirate GLB optimized",optimized.sourceMeshes,"meshes →",optimized.drawCalls,"batches");
+    }catch(error){
+      console.warn("[STARFALL] Pirate GLB optimization unavailable; procedural fighter retained",error);
+    }
   }
   updateAI(dt){
     if(this.pirateDestroyed)return;
