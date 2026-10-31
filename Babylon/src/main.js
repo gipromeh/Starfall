@@ -16,7 +16,8 @@ const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
 
 let engine,scene,world,input,camera;
 let running=false,paused=false,gameOver=false;
-let lastTime=0,fps=0,frameCount=0,fpsWindow=0,frameMs=0;
+let lastTime=0,fps=0,frameCount=0,fpsWindow=0,frameMs=0,accumulator=0;
+const FIXED_DT=1/60,MAX_FRAME_DELTA=.2,MAX_STEPS=8;
 let fireCooldown=0,missileCooldown=0,enemyFireCooldown=0,respawnTimer=0,saveTimer=0;
 let hull=100,shield=100,kills=0,credits=0;
 let projectiles=[];
@@ -180,8 +181,6 @@ function update(dt,now){
     kills,credits,fps,engine:true,projectiles:projectiles.length,
     frameMs,physics:"SWEPT COLLISION"
   });
-  frameCount++;
-  if(now-fpsWindow>=500){fps=frameCount*1000/(now-fpsWindow);frameCount=0;fpsWindow=now;}
 }
 
 async function boot(){
@@ -236,14 +235,14 @@ async function boot(){
       event.preventDefault();paused=true;hud.toast("WEBGL CONTEXT LOST");
     });
     canvas.addEventListener("webglcontextrestored",()=>{
-      engine.resize();paused=false;lastTime=performance.now();hud.toast("GRAPHICS RESTORED");
+      engine.resize();paused=false;lastTime=performance.now();accumulator=0;hud.toast("GRAPHICS RESTORED");
     });
     document.addEventListener("visibilitychange",()=>{
-      paused=document.hidden;lastTime=performance.now();
+      paused=document.hidden;lastTime=performance.now();accumulator=0;
     });
     addEventListener("keydown",event=>{
       if((event.code==="Escape"||event.code==="KeyP")&&!event.repeat&&running&&!gameOver){
-        paused=!paused;lastTime=performance.now();hud.toast(paused?"PAUSED":"RESUMED");
+        paused=!paused;lastTime=performance.now();accumulator=0;hud.toast(paused?"PAUSED":"RESUMED");
       }
       if((event.code==="F3"||event.code==="Backquote")&&!event.repeat){
         document.getElementById("diagnostics").hidden=!document.getElementById("diagnostics").hidden;
@@ -253,9 +252,15 @@ async function boot(){
     engine.runRenderLoop(()=>{
       if(!running||paused||!scene)return;
       const now=performance.now();
-      const dt=Math.min((now-lastTime)/1000||0,.05);lastTime=now;
+      const elapsed=Math.max(0,(now-lastTime)/1000);lastTime=now;
+      accumulator+=Math.min(elapsed,MAX_FRAME_DELTA);
+      let steps=0;
+      while(accumulator>=FIXED_DT&&steps<MAX_STEPS){update(FIXED_DT,now);accumulator-=FIXED_DT;steps++;}
+      if(steps===MAX_STEPS&&accumulator>=FIXED_DT)accumulator=0;
       frameMs=engine.getDeltaTime();
-      update(dt,now);scene.render();
+      scene.render();
+      frameCount++;
+      if(now-fpsWindow>=500){fps=frameCount*1000/(now-fpsWindow);frameCount=0;fpsWindow=now;}
     });
 
     startButton.disabled=false;
@@ -263,7 +268,7 @@ async function boot(){
     if(gameOver)startButton.textContent="ПЕРЕЗАПУСК";
     startButton.addEventListener("click",()=>{
       if(gameOver){location.reload();return;}
-      overlay.hidden=true;running=true;paused=false;lastTime=performance.now();
+      overlay.hidden=true;running=true;paused=false;lastTime=performance.now();accumulator=0;input.resetAim();
       if(matchMedia("(pointer:fine)").matches)canvas.requestPointerLock?.();
     });
     hud.toast("COMBAT SYSTEM READY");
