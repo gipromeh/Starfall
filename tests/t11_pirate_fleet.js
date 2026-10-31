@@ -81,7 +81,10 @@ const L = require('./lib');
     const socketsForward = gunPositions.length === 4 && gunPositions.every(p => p.clone().sub(first.g.position).dot(new THREE.Vector3(0,0,-1).applyQuaternion(first.g.quaternion)) > 0);
     const allPilotShots = pirateFleet.map(e => {
       const own = eb.slice(before).filter(b => b.pirateFleetSlot === e.slot);
-      return { slot: e.slot, shots: own.length, guns: e.muzzleNodes.length, originsMatch: own.length === e.muzzleNodes.length && own.every((b, i) => b.m.position.distanceTo(e.muzzleNodes[i].getWorldPosition(new THREE.Vector3())) < .001) };
+      const muzzles = e.muzzleNodes.length
+        ? e.muzzleNodes.map(n => n.getWorldPosition(new THREE.Vector3()))
+        : [e.g.localToWorld(new THREE.Vector3(0,-.25,-3.8))];
+      return { slot: e.slot, shots: own.length, guns: muzzles.length, originsMatch: own.length === muzzles.length && own.every((b, i) => b.m.position.distanceTo(muzzles[i]) < .001) };
     });
     const noseAlignment = pirateFleet.map(e => {
       e.g.updateMatrixWorld(true);
