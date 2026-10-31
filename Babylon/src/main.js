@@ -199,8 +199,8 @@ async function boot(){
 
     world=new World(scene);
     camera=new BABYLON.FollowCamera("chase-camera",new BABYLON.Vector3(0,8,30),scene);
-    camera.lockedTarget=world.player;camera.radius=38;camera.heightOffset=10;
-    camera.rotationOffset=180;camera.cameraAcceleration=.045;camera.maxCameraSpeed=38;
+    camera.lockedTarget=world.player;camera.radius=46;camera.heightOffset=11;
+    camera.targetOffset=new BABYLON.Vector3(0,5,0);camera.rotationOffset=180;camera.cameraAcceleration=.045;camera.maxCameraSpeed=38;
     scene.activeCamera=camera;
     const glow=new BABYLON.GlowLayer("combat-glow",scene,{blurKernelSize:24});
     glow.intensity=.42;
