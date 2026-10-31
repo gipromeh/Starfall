@@ -17,7 +17,9 @@ const checks = [
   ['Planetary sphere visuals', html.includes('function planet(') && html.includes('new THREE.SphereGeometry(r,64,48)')],
   ['Detailed fighter silhouette', html.includes('function shipMesh(color)') && html.includes('new THREE.BoxGeometry(18,1.5,10)')],
   ['Fighters start with visible forward momentum', html.includes('v.velocity.set(0,0,v.maxSpeed*.72)')],
-  ['Planets and stars animate every frame', html.includes('for(const body of celestialBodies)') && html.includes('starField.rotation.y+=dt')]
+  ['Planets and stars animate every frame', html.includes('for(const body of celestialBodies)') && html.includes('starField.rotation.y+=dt')],
+  ['Three.js r128-compatible fighter geometry', !html.includes('THREE.CapsuleGeometry') && html.includes('new THREE.CylinderGeometry(3.5,4.1,21,10,1)')],
+  ['Runtime errors are visible in the lab UI', html.includes("window.addEventListener('error'") && html.includes("window.addEventListener('unhandledrejection'")]
 ];;
 let failed = 0;
 for (const [name, ok] of checks) { console.log((ok ? 'PASS ' : 'FAIL ') + name); if (!ok) failed++; }
