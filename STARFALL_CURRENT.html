@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="claude:viewport-fit-sides" content="cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#02030a"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>STARFALL — Void Hunter</title>
-<meta name="starfall-version" content="v82">
+<meta name="starfall-version" content="v83">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#02030a;--fg:#cfe9ff;--ac:#3cf;--warn:#f54;color-scheme:dark}
@@ -1679,7 +1679,7 @@ function pirateFleetResolveSockets(g,ty){
 }
 function pirateFleetPrepare(){
  if(pirateFleetTemplates)return;
- pirateFleetTemplates=[mkPirate(0),mkPirate(1)];
+ pirateFleetTemplates=[mkPirate(0),mkPirate(1),mkPirate(2),mkPirate(3)];
  pirateFleetTemplates.forEach(g=>{g.visible=false;g.traverse(o=>{if(o.isMesh){o.frustumCulled=true;o.castShadow=false;o.receiveShadow=false}})});
  pirateFleetFlameMat=new T.SpriteMaterial({map:gtex("rgba(255,135,48,1)"),color:0xff8a38,transparent:true,opacity:.72,blending:T.AdditiveBlending,depthWrite:false});
  pirateFleetSmokeTex=gtex("rgba(55,55,58,.92)");pirateFleetFireTex=gtex("rgba(255,75,18,1)");
@@ -1695,7 +1695,7 @@ function pirateFleetAttachFX(e){
 function pirateFleetSpawn(e,delay=0){
  pirateFleetPrepare();
  const g=pirateFleetTemplates[e.ty].clone(true),fw=new T.Vector3(0,0,-1).applyQuaternion(Q).normalize(),right=new T.Vector3(1,0,0).applyQuaternion(Q).normalize();
- g.position.copy(P).addScaledVector(fw,-(760+e.slot*90)).addScaledVector(right,(e.slot-1)*110).add(new T.Vector3(0,(e.slot-1)*36,0));
+ g.position.copy(P).addScaledVector(fw,-(760+e.slot*90)).addScaledVector(right,(e.slot-1.5)*110).add(new T.Vector3(0,(e.slot-1.5)*36,0));
  g.visible=false;S.add(g);e.g=g;const hit=pirateHitBounds(g);Object.assign(e,hit);const sockets=pirateFleetResolveSockets(g,e.ty);e.muzzleNodes=sockets.guns;e.engineNodes=sockets.engines;e.hp=e.mx=Math.max(200,SHIPS[shp].hull*2);e.r=e.ty===0?8.5:7.2;e.warp=.55+delay;e.state="APPROACH";e.stateT=0;e.side=e.slot-1;
  e.fire=.2+Math.random()*.22;e.burst=0;e.burstGap=0;e.trailT=.1;e.hits=0;e.vel=P.clone().sub(g.position).normalize().multiplyScalar(e.ty===0?36:43);e.hd=e.vel.clone().normalize();e.speed=e.vel.length();e.runDir=null;e.dead=false;e.smoke=null;e.fireFx=null;e.flames=[];pirateFleetAttachFX(e);
 }
@@ -1707,8 +1707,8 @@ function pirateFleetClear(){
 function pirateFleetInit(){
  if(pirateFleetReady||state!=="play"||!pirateAssetsReady)return;
  pirateFleetPrepare();pirateFleetReady=true;
- [0,0,1].forEach((ty,i)=>{const e={slot:i,ty,g:null,hp:0,mx:0,respawn:0,dead:false,flames:[]};pirateFleet.push(e);pirateFleetSpawn(e,i*.18)});
- say("ПИРАТСКАЯ ТРОЙКА: 2 ГОЛОВОРЕЗА · 1 ШАКАЛ",3);
+ [0,1,2,3].forEach((ty,i)=>{const e={slot:i,ty,g:null,hp:0,mx:0,respawn:0,dead:false,flames:[]};pirateFleet.push(e);pirateFleetSpawn(e,i*.18)});
+ say("ПИРАТСКАЯ АТАКА: 4 КОРАБЛЯ · ВСЕ ТИПЫ",3);
 }
 function pirateDamageFxPrepare(){if(!pirateFleetSmokeTex)pirateFleetSmokeTex=gtex("rgba(55,55,58,.92)");if(!pirateFleetFireTex)pirateFleetFireTex=gtex("rgba(255,75,18,1)")}
 function pirateIgnite(e){if(!e||!e.g)return;pirateDamageFxPrepare();e.hits=(e.hits||0)+1;const c=e.hitCenter||new T.Vector3(),r=e.hitFxRadius||e.r||8;if(!e.fireFx){e.fireFx=new T.Sprite(new T.SpriteMaterial({map:pirateFleetFireTex,color:0xff6724,transparent:true,opacity:.96,blending:T.AdditiveBlending,depthWrite:false,depthTest:false}));e.fireFx.position.copy(c).add(new T.Vector3(0,r*.18,-r*.24));e.fireFx.scale.set(r*1.15,r*1.55,1);e.g.add(e.fireFx)}if(!e.damageFlames){e.damageFlames=[];for(let i=0;i<3;i++){const f=new T.Sprite(new T.SpriteMaterial({map:pirateFleetFireTex,color:[0xff4b18,0xff8a24,0xffc05a][i],transparent:true,opacity:.78,blending:T.AdditiveBlending,depthWrite:false,depthTest:false}));f.position.copy(c).add(new T.Vector3((i-1)*r*.42,r*(i===1?.12:-.08),r*(i===0?.35:-.28)));f.scale.set(r*(.62+i*.08),r*(.9+i*.12),1);e.g.add(f);e.damageFlames.push(f)}}if(!e.smoke){e.smoke=new T.Sprite(new T.SpriteMaterial({map:pirateFleetSmokeTex,transparent:true,opacity:.62,depthWrite:false,depthTest:false}));e.smoke.position.copy(c).add(new T.Vector3(0,r*.62,r*.04));e.smoke.scale.set(r*1.05,r*1.35,1);e.g.add(e.smoke)}e.fireTrailT=0}
@@ -1719,7 +1719,7 @@ function pirateFleetDamage(e,d,missile){
  if(!e||e.dead||!e.g)return;e.hp=Math.max(0,e.hp-d);pirateIgnite(e);if(e.hp>0)return;
  e.dead=true;const p=e.g.position.clone(),v=e.vel.clone();xplode(p,v,.72);boom(p,42,5,0xff873c,34,1.05);boom(p,14,10,0xffe0b0,12,.45);ring(p,0xff8a38,3.2,3);
  shk=Math.max(shk,.48);sfx("e");pirateDamageFxClear(e);S.remove(e.g);e.g=null;e.respawn=7.5+Math.random()*3.5;e.hits=0;e.flames.length=0;if(e.muzzleNodes)e.muzzleNodes.length=0;if(e.engineNodes)e.engineNodes.length=0;
- combo++;score+=Math.round(100+(missile?160:0));cr+=80+wave*5;if(nuke<3&&++kills>=10){nuke++;kills=0}if(Math.random()<.18)drop(p);say((e.ty===0?"ГОЛОВОРЕЗ":"ШАКАЛ")+" УНИЧТОЖЕН · +100",1.5);
+ combo++;score+=Math.round(100+(missile?160:0));cr+=80+wave*5;if(nuke<3&&++kills>=10){nuke++;kills=0}if(Math.random()<.18)drop(p);say((["ГОЛОВОРЕЗ","ШАКАЛ","МАРОДЁР","ГАРПИЯ"][e.ty]||"ПИРАТ")+" УНИЧТОЖЕН · +100",1.5);
 }
 function pirateFleetUpdate(dt){
  if(state==="play"&&!pirateFleetReady&&pirateAssetsReady)pirateFleetInit();if(!pirateFleetReady||state!=="play")return;
@@ -1730,10 +1730,10 @@ function pirateFleetUpdate(dt){
   const g=e.g,toPlayer=P.clone().sub(g.position),dist=toPlayer.length();if(dist<1)continue;
   if(dist<320&&e.state!="FIRING_PASS"&&e.state!="OVERSHOOT"){e.state="REPOSITION";e.stateT=0;e.runDir=null}
   const dir=toPlayer.multiplyScalar(1/dist),side=playerRight.clone().multiplyScalar(e.side);e.stateT+=dt;let aim;
-  if(e.state==="APPROACH"){aim=P.clone().addScaledVector(side,100).addScaledVector(pirateFleetUp,(e.slot-1)*36);if(dist<900){e.state="ATTACK_RUN";e.stateT=0}}
+  if(e.state==="APPROACH"){aim=P.clone().addScaledVector(side,100).addScaledVector(pirateFleetUp,(e.slot-1.5)*36);if(dist<900){e.state="ATTACK_RUN";e.stateT=0}}
   else if(e.state==="ATTACK_RUN"){aim=P.clone().addScaledVector(vel,Math.max(.45,Math.min(2.2,dist/190))).addScaledVector(side,45);if(dist<520){e.state="FIRING_PASS";e.stateT=0;e.runDir=dir.clone()}}
   else if(e.state==="FIRING_PASS"){e.runDir.lerp(dir,0.14);aim=P.clone().addScaledVector(e.runDir,420).addScaledVector(side,30);const passed=P.clone().sub(g.position).dot(e.runDir)<-140;if((e.stateT>.65&&passed)||e.stateT>12){e.state="OVERSHOOT";e.stateT=0}}
-  else if(e.state==="OVERSHOOT"){aim=P.clone().addScaledVector(e.runDir||e.hd,700).addScaledVector(side,100).addScaledVector(pirateFleetUp,(e.slot-1)*220+Math.sin(e.stateT*2)*400);if(g.position.distanceTo(aim)<220||e.stateT>4){e.state="REPOSITION";e.stateT=0}}
+  else if(e.state==="OVERSHOOT"){aim=P.clone().addScaledVector(e.runDir||e.hd,700).addScaledVector(side,100).addScaledVector(pirateFleetUp,(e.slot-1.5)*220+Math.sin(e.stateT*2)*400);if(g.position.distanceTo(aim)<220||e.stateT>4){e.state="REPOSITION";e.stateT=0}}
   else{aim=P.clone().addScaledVector(playerForward,-560).addScaledVector(side,100);if(g.position.distanceTo(aim)<220||e.stateT>4){e.state="APPROACH";e.stateT=0;e.runDir=null}}
   // уклонение от снарядов игрока
   for(let b=bul.length-1;b>=0;b--){const bp=bul[b].m.position;if(bp.distanceTo(g.position)<120){aim.addScaledVector(dir.clone().cross(new T.Vector3(0,1,0)).normalize(),55);break}}

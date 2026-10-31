@@ -26,7 +26,7 @@ const L = require('./lib');
   L.check('звёздное поле и планетная система сохранены', scene.stars >= 2 && scene.planets >= 6, scene);
   L.check('атмосферы планет согласованы с направлением реального солнца', scene.atmosphereVectors >= 6 && scene.atmosphereAligned, scene);
   await page.evaluate(() => { lift(); QL.setMode('low'); pirateFleetInit(); });
-  await page.waitForFunction(() => pirateFleet.length === 3, null, { timeout: 15000 });
+  await page.waitForFunction(() => pirateFleet.length === 4, null, { timeout: 15000 });
 
 
   const livery = await page.evaluate(() => {
@@ -45,12 +45,11 @@ const L = require('./lib');
 
   const composition = await page.evaluate(() => ({
     total: pirateFleet.length,
-    golovorez: pirateFleet.filter(e => e.ty === 0).length,
-    jackal: pirateFleet.filter(e => e.ty === 1).length,
+    types: [0,1,2,3].map(ty => pirateFleet.filter(e => e.ty === ty).length),
     spawned: pirateFleet.filter(e => !!e.g).length
   }));
-  L.check('эскадрилья содержит два Головореза и один Шакал', composition.total === 3 && composition.golovorez === 2 && composition.jackal === 1, composition);
-  L.check('все три корабля созданы', composition.spawned === 3, composition);
+  L.check('атака содержит по одному кораблю каждого из четырёх типов', composition.total === 4 && composition.types.every(n => n === 1), composition);
+  L.check('все четыре корабля созданы', composition.spawned === 4, composition);
   const fleetHealth = await page.evaluate(() => pirateFleet.every(e => e.mx >= SHIPS[shp].hull * 2));
   L.check('прочность каждого корабля эскадрильи не ниже двойной прочности игрока', fleetHealth, fleetHealth);
   const locators = await page.evaluate(() => {
@@ -91,7 +90,7 @@ const L = require('./lib');
     });
     return { before, after: eb.length, delta: eb.length - before, noseAlignment, firstShipShots: shots.length, muzzleMatch, shotForward, socketsForward, lineShots, allPilotShots };
   });
-  L.check('все три пилота стреляют на близкой дистанции', combat.delta >= 3, combat);
+  L.check('все четыре пилота участвуют в бою на близкой дистанции', combat.delta >= 3, combat);
   L.check('фактический нос каждой модели совпадает с направлением движения', combat.noseAlignment.every(x => x > .98), combat.noseAlignment);
   L.check('четыре лазера выходят из дульных маркеров вдоль оси стволов', combat.firstShipShots === 4 && combat.muzzleMatch && combat.shotForward && combat.socketsForward && combat.lineShots, combat);
   L.check('каждый пират стреляет из собственного переднего сокета', combat.allPilotShots.every(x => x.shots === x.guns && x.shots > 0 && x.originsMatch), combat.allPilotShots);
@@ -121,7 +120,7 @@ const L = require('./lib');
     e.respawn = 0; pirateFleetUpdate(.05);
     return { destroyed, respawned: !!e.g, sameType: e.ty === type, slots: pirateFleet.length };
   });
-  L.check('уничтожение и восстановление корабля сохраняют слот и тип', damage.destroyed && damage.respawned && damage.sameType && damage.slots === 3, damage);
+  L.check('уничтожение и восстановление корабля сохраняют слот и тип', damage.destroyed && damage.respawned && damage.sameType && damage.slots === 4, damage);
 
   const textureReuse = await page.evaluate(() => {
     for (const e of pirateFleet) {
@@ -140,7 +139,7 @@ const L = require('./lib');
       fireTexture: pirateFleetFireTex.uuid
     };
   });
-  L.check('все три пилота используют общие текстуры двигателя, дыма и огня', textureReuse.shared, textureReuse);
+  L.check('все четыре пилота используют общие текстуры двигателя, дыма и огня', textureReuse.shared, textureReuse);
 
   const docked = await page.evaluate(() => {
     dock();
@@ -149,8 +148,8 @@ const L = require('./lib');
   L.check('стыковка очищает флот и его снаряды', docked.state === 'dock' && docked.slots === 0 && !docked.ready && docked.taggedShots === 0, docked);
   await page.evaluate(() => { lift(); QL.setMode('low'); pirateFleetInit(); });
   await page.waitForFunction(() => pirateFleet.length === 3, null, { timeout: 15000 });
-  const relaunched = await page.evaluate(() => pirateFleet.length === 3 && pirateFleet.filter(e => e.ty === 0).length === 2 && pirateFleet.filter(e => e.ty === 1).length === 1);
-  L.check('после dock → lift снова создаётся состав 2+1', relaunched);
+  const relaunched = await page.evaluate(() => pirateFleet.length === 4 && [0,1,2,3].every(ty => pirateFleet.filter(e => e.ty === ty).length === 1));
+  L.check('после dock → lift снова создаётся полный состав из четырёх типов', relaunched);
 
   const cleanup = await page.evaluate(() => {
     toMenu();
