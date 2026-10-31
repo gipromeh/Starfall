@@ -14,7 +14,7 @@ const flight=new FlightModel();
 const saves=new SaveSystem();
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
 
-let engine,scene,world,input,camera;
+let engine,scene,world,input,camera,cameraTarget;
 let running=false,paused=false,gameOver=false;
 let lastTime=0,fps=0,frameCount=0,fpsWindow=0,frameMs=0,accumulator=0;
 const FIXED_DT=1/60,MAX_FRAME_DELTA=.2,MAX_STEPS=8;
@@ -145,6 +145,7 @@ function update(dt,now){
   flight.step(dt,action,player);
   player.position.addInPlace(flight.velocity.scale(dt));
   player.computeWorldMatrix(true);
+  if(cameraTarget){cameraTarget.position.copyFrom(player.position);cameraTarget.position.y+=5;cameraTarget.rotation.copyFrom(player.rotation);cameraTarget.computeWorldMatrix(true);}
 
   const enemyFires=world.updateAI(dt);
   if(enemyFires&&!world.pirateDestroyed){
@@ -186,10 +187,13 @@ function update(dt,now){
 async function boot(){
   try{
     if(!BABYLON)throw new Error("Babylon.js 7.0 CDN не загружен");
-    engine=new BABYLON.Engine(canvas,true,{
-      stencil:true,antialias:true,powerPreference:"high-performance",
-      adaptToDeviceRatio:true,preserveDrawingBuffer:false
+    const touchDevice=matchMedia("(pointer:coarse)").matches;
+    engine=new BABYLON.Engine(canvas,!touchDevice,{
+      stencil:true,antialias:!touchDevice,powerPreference:"high-performance",
+      adaptToDeviceRatio:false,preserveDrawingBuffer:false
     });
+    const renderRatio=Math.min(window.devicePixelRatio||1,1.5);
+    engine.setHardwareScalingLevel(1/renderRatio);
     scene=new BABYLON.Scene(engine);
     scene.clearColor=new BABYLON.Color4(.002,.006,.018,1);
     const ambient=new BABYLON.HemisphericLight("ambient",new BABYLON.Vector3(0,1,0),scene);
@@ -198,12 +202,14 @@ async function boot(){
     key.intensity=1.35;
 
     world=new World(scene);
-    camera=new BABYLON.FollowCamera("chase-camera",new BABYLON.Vector3(0,8,30),scene);
-    camera.lockedTarget=world.player;camera.radius=46;camera.heightOffset=11;
-    camera.targetOffset=new BABYLON.Vector3(0,5,0);camera.rotationOffset=180;camera.cameraAcceleration=.045;camera.maxCameraSpeed=38;
+    cameraTarget=new BABYLON.TransformNode("chase-camera-target",scene);
+    cameraTarget.position.copyFrom(world.player.position);cameraTarget.position.y+=5;cameraTarget.rotation.copyFrom(world.player.rotation);
+    camera=new BABYLON.FollowCamera("chase-camera",new BABYLON.Vector3(0,10,36),scene);
+    camera.lockedTarget=cameraTarget;camera.radius=62;camera.heightOffset=13;
+    camera.rotationOffset=180;camera.cameraAcceleration=.045;camera.maxCameraSpeed=42;
     scene.activeCamera=camera;
-    const glow=new BABYLON.GlowLayer("combat-glow",scene,{blurKernelSize:24});
-    glow.intensity=.42;
+    const glow=new BABYLON.GlowLayer("combat-glow",scene,{blurKernelSize:touchDevice?12:16});
+    glow.intensity=touchDevice?.26:.34;
 
     input=new InputAdapter(canvas);
     if(new URLSearchParams(location.search).has("test")){
