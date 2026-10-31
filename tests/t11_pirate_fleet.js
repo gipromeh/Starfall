@@ -30,10 +30,12 @@ const L = require('./lib');
   L.check('все три корабля созданы', composition.spawned === 3, composition);
   const locators = await page.evaluate(() => {
     const e = pirateFleet.find(p => p.ty === 0);
+    e.g.updateMatrixWorld(true);
     const axis = e.g.getObjectByName('STARFALL_FORWARD_AXIS_FIX_RUNTIME');
-    return { axis: !!axis, axisY: axis?.rotation.y, guns: e.muzzleNodes.length, engines: e.engineNodes.length };
+    const axisForward = axis ? new THREE.Vector3(0,0,1).applyQuaternion(axis.getWorldQuaternion(new THREE.Quaternion())).dot(new THREE.Vector3(0,0,-1).applyQuaternion(e.g.quaternion)) : -1;
+    return { axis: !!axis, axisForward, guns: e.muzzleNodes.length, engines: e.engineNodes.length };
   });
-  L.check('нос «Ржавого черепа» развёрнут вперёд, доступны 4 пушки и 2 двигателя', locators.axis && Math.abs(Math.abs(locators.axisY) - Math.PI) < .001 && locators.guns === 4 && locators.engines === 2, locators);
+  L.check('фактическая носовая ось совпадает с курсом; доступны 4 пушки и 2 двигателя', locators.axis && locators.axisForward > .98 && locators.guns === 4 && locators.engines === 2, locators);
 
   const combat = await page.evaluate(() => {
     pirateFleet.forEach((e, i) => {
