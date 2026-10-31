@@ -2633,7 +2633,7 @@ if(T.GLTFLoader&&location.protocol!=="file:"){
   }catch(e){console.warn("GLB",d.url,e);pirateAssetDone()}
  },undefined,e=>{console.warn("GLB не загружен:",d.url,e);pirateAssetDone()}));
 }else pirateAssetsReady=true;
-mkBoss=function(){return cached("boss",()=>SKIT.mkBoss(gtex))};
+mkBoss=function(){return cached("boss",()=>applyPirateLivery(SKIT.mkBoss(gtex)))};
 mkStation=function(){return SKIT.mkStation(gtex)};
 mkFreighter=function(){const k=Math.random()<.6?0:1,g=cached("f"+k,()=>{const f=SKIT.mkFreighter(k,gtex);f.userData.sc=1.6;return f});return g};
 // ангар: шкалы под новые корабли
