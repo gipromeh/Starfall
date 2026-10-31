@@ -2,10 +2,10 @@
 date: 2026-10-31
 topic: STARFALL — Void Hunter: паспорт проекта (архитектура, технологии, механика, сохранения, качество)
 tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура]
-game_version: "v78"
+game_version: "v80"
 last_update: 2026-10-31
 main_file: STARFALL_CURRENT.html
-main_file_sha256: "c745f685c16c97319de40ed55e8968a773855ff7d616129d2db77004cf6d7d56"
+main_file_sha256: "79f0ebd4c615c7b01b349941cfc94724ce3ba9ed13ba6e76718a0b59976ec840"
 save_format_version: 2
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"
