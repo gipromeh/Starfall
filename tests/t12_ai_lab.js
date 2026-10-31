@@ -38,7 +38,11 @@ const checks = [
   ['Pirate missiles home on player', html.includes("else targetPoint=player.position.clone()") && html.includes('if(q.homing){')],
   ['Pirates commit to fly-through and never reverse at point-blank range', html.includes('relZ>390') && html.includes('relZ<-325') && html.includes('pz+dir*455') && !html.includes('if(a.distance<125)') && !html.includes('t.copy(player.position).addScaledVector')],
   ['Evasive maneuvers trigger on incoming player fire', html.includes('function incomingThreat(a)') && html.includes("recordEvent('evasion',a.i")],
-  ['Barrel roll visual is restricted to evasion state', html.includes("a.state==='EVADE'?Math.sin(tick*13+a.i)*.72")],
+  ['No artificial barrel-roll animation', html.includes('a.mesh.rotation.z=0;') && !html.includes("Math.sin(tick*13+a.i)*.72")],
+  ['Pirate turning is rate-limited with a minimum cruise speed', html.includes('function constrainFlightDynamics(a,dt)') && html.includes('a.maxTurnRate*dt') && html.includes('a.cruiseSpeed*.88')],
+  ['Turn radius follows speed and lateral acceleration', html.includes('a.turnRadius=commandedSpeed/a.maxTurnRate') && html.includes('a.lateralAccel=commandedSpeed*a.maxTurnRate')],
+  ['Evasion is a lateral flight path change, not a roll', html.includes('const side=new THREE.Vector3(-away.z,0,away.x)') && html.includes('t.set(v.position.x+away.x*180+side.x')],
+  ['Immersive flight mode keeps controls and hides lab panels', html.includes('body.flight-mode #left,body.flight-mode #right{display:none}') && html.includes("classList.toggle('flight-mode')")],
   ['Combat telemetry records events and exports CSV', html.includes('const combatStats=') && html.includes("$('export').onclick") && html.includes('starfall-combat-')],
 ];;
 let failed = 0;
