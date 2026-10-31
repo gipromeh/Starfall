@@ -207,6 +207,14 @@ async function boot(){
     glow.intensity=.42;
 
     input=new InputAdapter(canvas);
+    if(new URLSearchParams(location.search).has("test")){
+      globalThis.__STARFALL_TEST__={
+        state:()=>({hull,shield,kills,credits,enemyHealth:world.pirateHealth,enemyDestroyed:world.pirateDestroyed,projectiles:projectiles.length,speed:flight.velocity.length()}),
+        damageTarget:amount=>damagePirate(amount,world.pirate.position.clone()),
+        damagePlayer:amount=>damagePlayer(amount),
+        save:()=>saves.saveSlice(snapshot())
+      };
+    }
     const loaded=saves.load();
     if(loaded.slice?.data){
       const saved=loaded.slice.data;
