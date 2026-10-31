@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="claude:viewport-fit-sides" content="cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#02030a"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>STARFALL — Void Hunter</title>
-<meta name="starfall-version" content="v66">
+<meta name="starfall-version" content="v67">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#02030a;--fg:#cfe9ff;--ac:#3cf;--warn:#f54;color-scheme:dark}
@@ -1721,6 +1721,52 @@ const SUND=new T.Vector3(0,0,1);
 function atmoMesh(r,col,k){return new T.Mesh(new T.SphereGeometry(r*(k||1.045),64,32),new T.ShaderMaterial({uniforms:{c:{value:new T.Color(col)},s:{value:SUND}},vertexShader:"varying vec3 vn,vv,vw;void main(){vec4 mv=modelViewMatrix*vec4(position,1.);vn=normalize(normalMatrix*normal);vv=normalize(-mv.xyz);vw=normalize(mat3(modelMatrix)*normal);gl_Position=projectionMatrix*mv;}",fragmentShader:"uniform vec3 c,s;varying vec3 vn,vv,vw;void main(){float r=pow(1.-max(dot(vn,vv),0.),2.6);float l=smoothstep(-.35,.5,dot(vw,s));gl_FragColor=vec4(c*r*(.15+1.4*l),1.);}",blending:T.AdditiveBlending,transparent:true,depthWrite:false}))}
 sky.children.filter(o=>o.isMesh&&o.material.side===T.BackSide).forEach(o=>sky.remove(o));
 spl.forEach((m,i)=>{m.add(atmoMesh(m.geometry.parameters.radius,[0x66aaff,0xffaa66,0xbb88ff][i]));m.material.envMapIntensity=.15});
+
+// GLB planet from assets/planets: a full 3D body in the orbital system.
+{
+  const purpleLoader = new T.GLTFLoader();
+  purpleLoader.load("assets/planets/purple_planet.glb", gltf => {
+    const model = gltf.scene;
+    const targetRadius = 2520;
+    const bounds = new T.Box3().setFromObject(model);
+    const dimensions = bounds.getSize(new T.Vector3());
+    const maxDimension = Math.max(dimensions.x, dimensions.y, dimensions.z) || 1;
+    model.scale.setScalar((targetRadius * 2) / maxDimension);
+    model.updateMatrixWorld(true);
+    const centeredBounds = new T.Box3().setFromObject(model);
+    model.position.sub(centeredBounds.getCenter(new T.Vector3()));
+
+    const body = new T.Group();
+    body.add(model);
+    body.add(atmoMesh(targetRadius, 0xb58cff, 1.055));
+    const orbitRadius = 62000;
+    const phase = 0.45;
+    const tilt = 850;
+    body.position.set(
+      SYSTEM_CENTER.x + Math.cos(phase) * orbitRadius,
+      SYSTEM_CENTER.y + Math.sin(phase * 0.7) * tilt,
+      SYSTEM_CENTER.z + Math.sin(phase) * orbitRadius
+    );
+    body.userData.worldPlanet = 6;
+    body.traverse(o => {
+      if (!o.isMesh) return;
+      o.castShadow = false;
+      o.receiveShadow = false;
+      if (o.material) {
+        const materials = Array.isArray(o.material) ? o.material : [o.material];
+        materials.forEach(m => {
+          if ("envMapIntensity" in m) m.envMapIntensity = 0.28;
+          m.needsUpdate = true;
+        });
+      }
+    });
+    worldBodies.add(body);
+    planetOrbits.push({ mesh: body, y: 0, tilt, phase, radius: orbitRadius, speed: 0.0012 * Math.pow(15000 / orbitRadius, 1.5) });
+    worldPlanets.push({ mesh: body, name: "ПУРПУРНАЯ ПЛАНЕТА", radius: targetRadius, kind: "planet" });
+  }, undefined, error => {
+    console.warn("[STARFALL] Не удалось загрузить assets/planets/purple_planet.glb:", error);
+  });
+}
 // hull panel texture
 const HT=(()=>{const k=document.createElement("canvas");k.width=k.height=512;const x=k.getContext("2d");x.fillStyle="#e8eaee";x.fillRect(0,0,512,512);for(let i=0;i<70;i++){const w=30+Math.random()*140,h=20+Math.random()*90,px=Math.random()*512,py=Math.random()*512,g=205+Math.random()*45|0;x.fillStyle="rgb("+g+","+g+","+(g+4)+")";x.fillRect(px,py,w,h);x.strokeStyle="rgba(60,66,76,.55)";x.lineWidth=1.5;x.strokeRect(px,py,w,h)}x.fillStyle="rgba(50,55,65,.5)";for(let i=0;i<260;i++)x.fillRect(Math.random()*512,Math.random()*512,2,2);for(let i=0;i<14;i++){x.fillStyle="rgba(40,44,52,.35)";x.fillRect(Math.random()*512,Math.random()*512,4+Math.random()*30,3)}const t=new T.CanvasTexture(k);t.wrapS=t.wrapT=T.RepeatWrapping;t.anisotropy=4;return t})();
 const RT2=(()=>{const k=document.createElement("canvas");k.width=k.height=256;const x=k.getContext("2d");x.fillStyle="#9a958e";x.fillRect(0,0,256,256);for(let i=0;i<3000;i++){const v=110+Math.random()*90|0;x.fillStyle="rgba("+v+","+(v-4)+","+(v-10)+",.5)";x.fillRect(Math.random()*256,Math.random()*256,1+Math.random()*3,1+Math.random()*3)}for(let i=0;i<22;i++){const cx=Math.random()*256,cy=Math.random()*256,r=3+Math.random()*16;const g=x.createRadialGradient(cx,cy,r*.2,cx,cy,r);g.addColorStop(0,"rgba(40,36,32,.55)");g.addColorStop(.8,"rgba(70,66,60,.25)");g.addColorStop(1,"rgba(220,215,205,.35)");x.fillStyle=g;x.beginPath();x.arc(cx,cy,r,0,6.283);x.fill()}const t=new T.CanvasTexture(k);t.wrapS=t.wrapT=T.RepeatWrapping;return t})();
