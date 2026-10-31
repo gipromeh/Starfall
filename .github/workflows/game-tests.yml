@@ -27,3 +27,5 @@ jobs:
         run: SF_NM="$PWD/node_modules" node tests/t6_probe.js
       - name: Pirate fleet regression test
         run: SF_NM="$PWD/node_modules" node tests/t11_pirate_fleet.js
+      - name: STARFALL radar and ship collision regression
+        run: node tests/t14_radar_collision_regression.js
