@@ -14,7 +14,7 @@ const checks = [
   ['Attack pass, overshoot and re-entry transitions', html.includes("transition(a,'FIRING_PASS')") && html.includes("transition(a,'OVERSHOOT')") && html.includes("transition(a,'REPOSITION')") && html.includes('passDirection:1') && html.includes('a.passDirection=-dir')],
   ['Keyboard flight controls and mobile touch controls', html.includes("keys.add(e.code)") && html.includes('data-key="KeyW"') && html.includes('id="fireBtn"')],
   ['Player laser and ballistic lead missile weapons', html.includes('function firePlayer()') && html.includes('function fireMissile()') && html.includes("'player',3,'missile'") && html.includes('function interceptPoint(')],
-  ['Pirates fire physical projectiles at the player', html.includes('function firePirate(a)') && html.includes("addBolt(start,dir.multiplyScalar(205),'pirate',5,'laser')")],
+  ['Pirates fire physical projectiles at the player', html.includes('function firePirate(a,aim)') && html.includes("addBolt(start,dir.multiplyScalar(205),'pirate',5,'laser')")],
   ['Projectile collision, shield damage and pirate destruction', html.includes('playerShield=Math.max(0,playerShield-q.damage)') && html.includes('playerKills++') && html.includes('ЦЕЛЬ УНИЧТОЖЕНА')],
   ['Camera follows player ship', html.includes('const target=player.position.clone()')],
   ['Browser smoke-test readiness marker', html.includes('window.__AI_LAB_READY=true')],
