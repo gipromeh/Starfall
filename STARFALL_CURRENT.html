@@ -1802,7 +1802,7 @@ function pirateFleetUpdate(dt){
 }
 // Physical ship-to-ship collision resolution. Runs after both enemy controllers.
 const shipCollisionBodies=[];
-const shipCollisionNormal=new T.Vector3();
+const shipCollisionNormal=new T.Vector3(),shipCollisionRelativeVelocity=new T.Vector3();
 function resolveShipCollisions(){
  let n=0;
  const add=(position,velocity,radius,mass)=>{const b=shipCollisionBodies[n]||(shipCollisionBodies[n]={});b.position=position;b.velocity=velocity;b.radius=radius;b.invMass=1/mass;n++};
@@ -1819,10 +1819,10 @@ function resolveShipCollisions(){
   if(dist>1e-4)shipCollisionNormal.multiplyScalar(1/dist);
   else shipCollisionNormal.set(i%2?1:-1,0,j%2?.25:-.25).normalize();
   const invSum=a.invMass+b.invMass,penetration=minDist-dist;
-  const correction=(penetration+.02)*.86/invSum;
+  const correction=(penetration+.02)/invSum;
   a.position.addScaledVector(shipCollisionNormal,-correction*a.invMass);
   b.position.addScaledVector(shipCollisionNormal,correction*b.invMass);
-  const relativeNormal=b.velocity.clone().sub(a.velocity).dot(shipCollisionNormal);
+  const relativeNormal=shipCollisionRelativeVelocity.subVectors(b.velocity,a.velocity).dot(shipCollisionNormal);
   if(relativeNormal<0){
    const impulse=-(1.12)*relativeNormal/invSum;
    a.velocity.addScaledVector(shipCollisionNormal,-impulse*a.invMass);
