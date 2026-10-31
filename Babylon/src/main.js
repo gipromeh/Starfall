@@ -53,7 +53,7 @@ function spawnProjectile(origin,direction,owner,kind="laser"){
   mesh.position.copyFrom(origin).addInPlace(normalized.scale(owner==="player"?9:11));
   const speed=kind==="missile"?220:owner==="player"?420:145;
   projectiles.push({
-    mesh,owner,kind,velocity:normalized.scale(speed),ttl:kind==="missile"?5:2.2,
+    mesh,owner,kind,velocity:normalized.scale(speed),ttl:kind==="missile"?5:owner==="enemy"?7:2.2,
     damage:kind==="missile"?28:owner==="player"?9:8,
     previous:mesh.position.clone()
   });
@@ -211,6 +211,8 @@ async function boot(){
       globalThis.__STARFALL_TEST__={
         state:()=>({hull,shield,kills,credits,enemyHealth:world.pirateHealth,enemyDestroyed:world.pirateDestroyed,projectiles:projectiles.length,speed:flight.velocity.length()}),
         damageTarget:amount=>damagePirate(amount,world.pirate.position.clone()),
+        fireMissile:()=>spawnProjectile(world.player.position,world.player.forward,"player","missile"),
+        fireLaser:()=>spawnProjectile(world.player.position,world.player.forward,"player","laser"),
         damagePlayer:amount=>damagePlayer(amount),
         save:()=>saves.saveSlice(snapshot())
       };
