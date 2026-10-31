@@ -669,3 +669,13 @@ PV (конец скрипта): ангар-превью, обёртка hgrView;
 - Recording buffer is capped at 90,000 frames (approximately five hours at 5 Hz); excess frames are counted as dropped.
 - Production game `STARFALL_CURRENT.html` remains unchanged.
 - Commit: `5c7437733e3d2f6f9144651b1ae7ac77ccdcb8d2`.
+
+
+### AI Lab controls correction — v85 flight model (2026-10-31)
+
+- Player steering now follows the v85 model: mouse position relative to viewport center controls smoothed pitch/yaw; Q/Z control roll.
+- W/S change forward throttle; A/D apply lateral acceleration; R/C provide vertical translation; Shift enables boost; X increases braking/drag.
+- Left mouse button holds player laser fire; right mouse button launches one missile per press. Context menu is suppressed during combat.
+- Chase camera is aligned to the player's ship orientation and follows from the rear, replacing independent orbit-camera drag.
+- Touch buttons and keyboard fallback remain available.
+- This is an isolated AI Lab implementation inspired by the actual v85 control equations; the production file remains unchanged.
