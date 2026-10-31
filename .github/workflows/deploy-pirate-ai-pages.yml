@@ -1,0 +1,43 @@
+name: Deploy STARFALL Pirate AI v1.2.1
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "STARFALL_PIRATE_AI_v1.2.1.html"
+      - ".github/workflows/deploy-pirate-ai-pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages-pirate-ai
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - name: Prepare static site
+        run: |
+          mkdir -p _site
+          cp STARFALL_PIRATE_AI_v1.2.1.html _site/index.html
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

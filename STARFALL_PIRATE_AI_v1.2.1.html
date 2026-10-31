@@ -1,0 +1,56 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit-cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden].until-found i){display:none!important}</style></head><body>
+<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="claude:viewport-fit-sides" content="cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#02030a"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>STARFALL — Void Hunter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#02030a;--fg:#cfe9ff;--ac:#3cf;--warn:#f54;color-scheme:dark}
+*{box-sizing:border-box;-webkit-touch-callout:none;-webkit-user-select:none}body{touch-action:none}#menu{background:linear-gradient(#02030a88,#02030acc)}
+:root{--ac:#4fd0ff;--fg:#d6f1ff}
+body{font-family:"Exo 2","Segoe UI",Roboto,sans-serif;letter-spacing:.04em}
+body::before{content:"";position:fixed;inset:0;background:repeating-linear-gradient(transparent 0 2px,#4fd0ff09 2px 3px);pointer-events:none;z-index:40}
+h1,h2{font-family:"Russo One","Exo 2",sans-serif;text-shadow:0 0 18px #4fd0ff}
+.ov{backdrop-filter:blur(2px);touch-action:pan-y}#radar{top:auto;left:auto;width:min(170px,30vh);height:min(170px,30vh)}@media (max-height:540px){.ov{justify-content:flex-start!important;overflow-y:auto;gap:6px!important;padding-top:10px}h1{font-size:34px!important}}
+button{font-family:inherit;font-weight:700;text-transform:uppercase;background:linear-gradient(#0b2a4acc,#06182ccc);border:1px solid #4fd0ff99;clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);box-shadow:inset 0 0 12px #4fd0ff44;text-shadow:0 0 6px #4fd0ff}
+button:hover,button.on{background:#4fd0ffdd;color:#001824;text-shadow:none}
+.t{color:#c8ecff;text-shadow:0 0 8px #4fd0ff;font-weight:600}
+.bar{height:10px;border:1px solid #4fd0ff99;background:#04121fa0;box-shadow:0 0 8px #4fd0ff55,inset 0 0 6px #000}
+#hud::before{content:"";position:absolute;left:8px;top:8px;width:270px;height:152px;border-left:2px solid #4fd0ff99;background:linear-gradient(90deg,#06223a99,transparent);clip-path:polygon(0 0,100% 0,100% 62%,88% 100%,0 100%)}
+#hull::after,#shield::after,#heat::after,#fuel::after{position:absolute;left:228px;top:-2px;font-size:10px;color:#9fdcff;letter-spacing:.1em}
+#hull::after{content:"КОРПУС";color:#ffb0a0}#shield::after{content:"ЩИТ"}#heat::after{content:"НАГРЕВ";color:#ffd080}#fuel::after{content:"ТОПЛИВО";color:#b8ffa0}
+#radar{border:2px solid #4fd0ffbb!important;box-shadow:0 0 18px #4fd0ff77,inset 0 0 22px #4fd0ff44;background:radial-gradient(#06304fa0,#02101ca0)!important}
+#cross{border:1px dashed #4fd0ffcc;box-shadow:0 0 8px #4fd0ff88}
+#tgt,#lead{display:none!important}
+#cross.on{border:2px solid #ff2a2a!important;box-shadow:0 0 10px #f22,inset 0 0 6px #f22!important;opacity:1!important}
+#hm{font-size:0!important;color:transparent!important;border:3px solid #ff3030;border-radius:50%;width:70px!important;height:70px!important;margin:-35px!important;box-shadow:0 0 16px #f22,inset 0 0 12px #f22}
+#tgt{border-style:dashed!important;border-width:2px!important;box-shadow:0 0 12px #f548}
+#mkt>div:first-child{border-bottom:1px solid #4fd0ff88;padding-bottom:6px}
+.bar{height:6px!important}#hull{top:16px!important}#shield{top:28px!important}#heat{top:40px!important;height:4px!important}#fuel{top:48px!important;height:4px!important}
+#miss{top:58px!important;font-size:12px}#aux{top:76px!important;font-size:11px;max-width:300px;opacity:.85;font-weight:500}#sc{font-size:12px!important}#tinfo{font-size:11px}
+#hud::before{height:98px!important;width:250px!important}#hull::after,#shield::after,#heat::after,#fuel::after{font-size:9px!important;top:-4px!important}
+#pbtn{background:transparent!important;border:1px solid #4fd0ff77!important}@media (orientation:portrait) and (pointer:coarse){body::after{content:"Поверни телефон горизонтально";position:fixed;left:0;right:0;top:45%;text-align:center;color:#fd4;font-size:20px;z-index:50;text-shadow:0 0 8px #000}}html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:Consolas,Menlo,monospace;overflow:hidden;user-select:none}
+canvas{display:block;position:fixed;inset:0}
+#hud{position:fixed;inset:0;pointer-events:none;display:none}
+.bar{position:absolute;left:20px;width:220px;height:12px;border:1px solid var(--ac);background:#0008}
+.bar i{display:block;height:100%;width:100%}
+#hull{top:20px}#hull i{background:#f64}#shield{top:40px}#shield i{background:var(--ac)}
+.t{position:absolute;font-size:14px;letter-spacing:2px;text-shadow:0 0 6px var(--ac)}
+#msg{left:0;right:0;top:20%;text-align:center;font-size:26px}
+#cross{position:absolute;left:50%;top:50%;width:26px;height:26px;margin:-13px;border:1px solid var(--ac);border-radius:50%;opacity:.7}
+#stick{position:absolute;width:6px;height:6px;margin:-3px;background:var(--ac);border-radius:50%;opacity:.8}
+#tgt{position:absolute;width:46px;height:46px;margin:-23px;border:2px solid var(--warn);display:none}
+#flash{position:absolute;inset:0;background:radial-gradient(transparent 40%,#f004);opacity:0}
+.ov{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:#02030acc;text-align:center;padding:16px}
+h1{font-size:clamp(36px,8vw,72px);letter-spacing:.2em;margin:0;color:var(--ac);text-shadow:0 0 24px var(--ac)}
+h2{margin:0;letter-spacing:.3em;color:var(--warn)}
+button{font:inherit;font-size:18px;color:var(--fg);background:#0a1830;border:1px solid var(--ac);padding:10px 28px;cursor:pointer;min-width:260px}
+button:hover,button.on{background:var(--ac);color:#001}
+.row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.row button{min-width:0;padding:8px 14px;font-size:15px}
+small{opacity:.75;max-width:600px;line-height:1.6}
+.hide{display:none!important}
+#hull,#shield{left:16px!important;width:150px!important;height:5px!important}#hull{top:14px!important}#shield{top:23px!important}
+#hull::after,#shield::after{left:156px!important;top:-4px!important;font-size:8px!important}
+#heat,#fuel{left:50%!important;margin-left:-40px;width:80px!important;height:3px!important;border-width:0!important;background:#0007!important;box-shadow:none!important}
+#heat{top:calc(50% + 24px)!important}#fuel{top:calc(50% + 30px)!important}#heat::after,#fuel::after{display:none}
+#miss{top:32px!important;left:16px!important;font-size:11px!important}#aux{top:48px!important;left:16px!important;font-size:10px!important;opacity:.85;font-weight:600}
+#hud::before{width:210px!important;height:64px!important}
+#mkt{padding:0!important;justify-content:center!important;align-items:center;background:radial-gradient(#06142acc,#02030af0)!important;overflow:hidden!important}
+.stn{width:min(980px,97vw);height:min(580px,95vh);display:
