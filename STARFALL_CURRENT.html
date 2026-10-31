@@ -1839,6 +1839,7 @@ function pirateFleetDamage(e,d,missile){
  shk=Math.max(shk,.48);sfx("e");pirateDamageFxClear(e);S.remove(e.g);e.g=null;e.respawn=7.5+Math.random()*3.5;e.hits=0;e.flames.length=0;if(e.muzzleNodes)e.muzzleNodes.length=0;if(e.engineNodes)e.engineNodes.length=0;
  combo++;score+=Math.round(100+(missile?160:0));cr+=80+wave*5;if(nuke<3&&++kills>=10){nuke++;kills=0}if(Math.random()<.18)drop(p);say((["ГОЛОВОРЕЗ","ШАКАЛ","МАРОДЁР","ГАРПИЯ"][e.ty]||"ПИРАТ")+" УНИЧТОЖЕН · +100",1.5);
 }
+function pirateFleetMotionProfile(e){return{targetSpeed:46*(e.ty===0?1.12:1),turnRate:e.ty===0?2.25:1.8,acceleration:60}}
 function pirateFleetUpdate(dt){
  if(state==="play"&&!pirateFleetReady&&pirateAssetsReady)pirateFleetInit();if(!pirateFleetReady||state!=="play")return;
  const playerForward=new T.Vector3(0,0,-1).applyQuaternion(Q).normalize(),playerRight=new T.Vector3(1,0,0).applyQuaternion(Q).normalize();
@@ -1855,10 +1856,10 @@ function pirateFleetUpdate(dt){
   else{aim=P.clone().addScaledVector(playerForward,-560).addScaledVector(side,100);if(g.position.distanceTo(aim)<220||e.stateT>4){e.state="APPROACH";e.stateT=0;e.runDir=null}}
   // уклонение от снарядов игрока
   for(let b=bul.length-1;b>=0;b--){const bp=bul[b].m.position;if(bp.distanceTo(g.position)<120){aim.addScaledVector(dir.clone().cross(new T.Vector3(0,1,0)).normalize(),55);break}}
-  const desiredDir=aim.sub(g.position).normalize(),angle=e.hd.angleTo(desiredDir),axis=e.hd.clone().cross(desiredDir);
-  if(angle>1e-4&&axis.lengthSq()>1e-8)e.hd.applyAxisAngle(axis.normalize(),Math.min(angle,(e.ty===0?2.25:1.8)*dt)).normalize();
-  const targetSpeed=46*(e.ty===0?1.12:1);e.speed+=(targetSpeed-e.speed)*Math.min(1,.65*dt);
-  const desiredVel=e.hd.clone().multiplyScalar(e.speed),dv=desiredVel.sub(e.vel),maxA=60*dt;if(dv.length()>maxA)dv.setLength(maxA);
+  const motion=pirateFleetMotionProfile(e),desiredDir=aim.sub(g.position).normalize(),angle=e.hd.angleTo(desiredDir),axis=e.hd.clone().cross(desiredDir);
+  if(angle>1e-4&&axis.lengthSq()>1e-8)e.hd.applyAxisAngle(axis.normalize(),Math.min(angle,motion.turnRate*dt)).normalize();
+  const targetSpeed=motion.targetSpeed;e.speed+=(targetSpeed-e.speed)*Math.min(1,.65*dt);
+  const desiredVel=e.hd.clone().multiplyScalar(e.speed),dv=desiredVel.sub(e.vel),maxA=motion.acceleration*dt;if(dv.length()>maxA)dv.setLength(maxA);
   e.vel.add(dv);g.position.addScaledVector(e.vel,dt);
   // Keep the nose on the actual velocity vector so the ship never appears to fly backwards.
   pirateFleetHeading.copy(e.vel).normalize();g.quaternion.setFromUnitVectors(pirateFleetForward,pirateFleetHeading);g.rotateZ(Math.max(-.2,Math.min(.2,axis.y*-.12)));
