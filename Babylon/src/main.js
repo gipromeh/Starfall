@@ -212,6 +212,7 @@ async function boot(){
         damageTarget:amount=>damagePirate(amount,world.pirate.position.clone()),
         fireMissile:()=>{world.player.computeWorldMatrix(true);spawnProjectile(world.player.position,world.player.getDirection(BABYLON.Axis.Z),"player","missile");},
         fireLaser:()=>{world.player.computeWorldMatrix(true);spawnProjectile(world.player.position,world.player.getDirection(BABYLON.Axis.Z),"player","laser");},
+        fireEnemy:()=>{const forward=world.player.getDirection(BABYLON.Axis.Z);spawnProjectile(world.player.position.add(forward.scale(35)),forward.scale(-1),"enemy","laser");},
         damagePlayer:amount=>damagePlayer(amount),
         save:()=>saves.saveSlice(snapshot())
       };
