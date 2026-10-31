@@ -127,7 +127,15 @@ async function loadModel(cfg,base){
   const loader=new THREE.GLTFLoader();
   if(THREE.DRACOLoader){const d=new THREE.DRACOLoader();d.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/libs/draco/');loader.setDRACOLoader(d)}
   const gltf=await new Promise((ok,no)=>loader.parse(buf,url.replace(/[^/]*$/,''),ok,no));
-  if(model)scene.remove(model);model=gltf.scene;scene.add(model);
+  if(model)scene.remove(model);
+  model=gltf.scene;
+  if(cfg.id==='pirate_fighter_002'){
+    const nodes=gltf.parser&&gltf.parser.json&&gltf.parser.json.nodes||[];
+    if(!nodes.some(n=>n.name==='STARFALL_FORWARD_AXIS_FIX')){
+      const root=new THREE.Group(),fix=new THREE.Group();root.name='STARFALL_PIRATE_ASSET_ROOT';fix.name='STARFALL_FORWARD_AXIS_FIX';fix.rotation.y=Math.PI;fix.add(model);root.add(fix);model=root;
+    }
+  }
+  scene.add(model);
   const box=new THREE.Box3().setFromObject(model);box.getCenter(center);radius=box.getBoundingSphere(new THREE.Sphere()).radius||1;
   axes.scale.setScalar(radius*1.1);axes.position.copy(center);
   camera.near=radius/100;camera.far=radius*100;camera.updateProjectionMatrix();

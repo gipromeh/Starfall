@@ -7,7 +7,7 @@ STARFALL — пиратский истребитель v2 (Blender 5.0, запу
 
 Что внутри: корпус-лофт, шестиугольные крылья, 4 орудия (двуствольные на каждом крыле), гондолы, сопла, шипы, плавник,
 кабина; текстуры: покраска, панели и заклёпки, ржавчина, сколы краски по кромкам, царапины, череп с костями,
-надписи «ARRR» и «VOID 13», метки побед, жёлто-чёрные полосы. Контракт STARFALL: нос по +Y, верх +Z, 1 ед. = 1 м, центр в нуле.
+надписи «ARRR» и «VOID 13», метки побед, жёлто-чёрные полосы. Контракт STARFALL: после осевой коррекции игровой нос glTF направлен по -Z; 1 ед. = 1 м, центр в нуле.
 """
 import bpy, bmesh, math, os
 import numpy as np
@@ -427,14 +427,27 @@ def empty(name, pos, rz=0.0):
     e.location = Vector(pos) - ctr; e.rotation_euler = (0, 0, rz)
     coll.objects.link(e)
 for i, sx in enumerate((1, -1)):
-    empty(f"ENG_{i}", (sx * .62, -5.5, 0), math.pi)       # +Y метки смотрит назад
+    empty(f"ENG_{i}", (sx * .62, -5.5, 0), math.pi)       # метка разворачивается вместе с узлом осевой коррекции
 k = 0
 for sx in (1, -1):
     for dx in (-.14, .14):
         empty(f"GUN_{k}", (sx * GUN_X + dx, GUN_Y + 3.0, GUN_Z)); k += 1
 
+# ---------------------------------------------------------------- ось игрового полёта: вытянутый нос направлен вперёд
+# Внутренний узел разворачивает модель на 180°; внешний корень остаётся свободным для quaternion ИИ.
+axis_root = bpy.data.objects.new("STARFALL_PIRATE_ASSET_ROOT", None)
+axis_fix = bpy.data.objects.new("STARFALL_FORWARD_AXIS_FIX", None)
+coll.objects.link(axis_root); coll.objects.link(axis_fix)
+axis_root["starfallForwardAxis"] = "NEGATIVE_Z"
+axis_fix["starfallForwardAxis"] = "NEGATIVE_Z"
+axis_fix.parent = axis_root
+axis_fix.rotation_euler[2] = math.pi
+for obj in list(coll.objects):
+    if obj not in (axis_root, axis_fix):
+        obj.parent = axis_fix
+
 # ---------------------------------------------------------------- отчёт по ТЗ
-print("PIRATE: треугольников %d (лимит 9000) | материалов 3 (лимит 3) | габариты X×Y×Z = %.1f × %.1f × %.1f м | нос +Y | текстуры: цвет %d, ORM и нормали %d px"
+print("PIRATE: треугольников %d (лимит 9000) | материалов 3 (лимит 3) | габариты X×Y×Z = %.1f × %.1f × %.1f м | нос -Y Blender / -Z glTF | текстуры: цвет %d, ORM и нормали %d px"
       % (tris, span.x, span.y, span.z, ATLAS, ATLAS // 2))
 
 # ---------------------------------------------------------------- экспорт GLB

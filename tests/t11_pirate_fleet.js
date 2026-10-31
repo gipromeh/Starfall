@@ -6,6 +6,7 @@ const L = require('./lib');
   const page = await L.openGame(ctx);
   await page.click('#play');
   await page.waitForFunction(() => state === 'dock', null, { timeout: 60000 });
+  await page.waitForFunction(() => MC['p0'] && MC['p0'].getObjectByName('STARFALL_FORWARD_AXIS_FIX'), null, { timeout: 60000 });
   await page.evaluate(() => { lift(); QL.setMode('low'); pirateFleetInit(); });
   await page.waitForFunction(() => pirateFleet.length === 3, null, { timeout: 15000 });
 
@@ -21,18 +22,22 @@ const L = require('./lib');
   const combat = await page.evaluate(() => {
     pirateFleet.forEach((e, i) => {
       e.warp = 0; e.g.visible = true;
-      e.g.position.copy(P).add(new THREE.Vector3((i - 1) * 12, 0, -110));
+      e.g.position.copy(P).add(new THREE.Vector3((i - 1) * 12, 0, -520));
       e.hd.copy(P.clone().sub(e.g.position).normalize());
       e.vel.copy(e.hd).multiplyScalar(40);
       e.state = 'ATTACK_RUN'; e.stateT = 0; e.fire = 0; e.burst = 0; e.burstGap = 0;
     });
     const before = eb.length;
     pirateFleetUpdate(.05);
-    const noseAlignment = pirateFleet.map(e => new THREE.Vector3(0, 0, -1).applyQuaternion(e.g.quaternion).dot(e.vel.clone().normalize()));
+    const noseAlignment = pirateFleet.map(e => {
+      e.g.updateMatrixWorld(true);
+      const fix = e.g.getObjectByName('STARFALL_FORWARD_AXIS_FIX');
+      return fix ? new THREE.Vector3(0, 0, 1).applyQuaternion(fix.getWorldQuaternion(new THREE.Quaternion())).dot(e.vel.clone().normalize()) : -1;
+    });
     return { before, after: eb.length, delta: eb.length - before, noseAlignment };
   });
   L.check('все три пилота стреляют на близкой дистанции', combat.delta >= 3, combat);
-  L.check('носовая ось кораблей совпадает с направлением полёта', combat.noseAlignment.every(x => x > .98), combat.noseAlignment);
+  L.check('фактический нос каждой модели совпадает с направлением движения', combat.noseAlignment.every(x => x > .98), combat.noseAlignment);
 
   const pass = await page.evaluate(() => {
     pirateFleet.forEach(p => { p.fire = 99; p.burst = 0; p.burstGap = 0; });
@@ -102,7 +107,7 @@ const L = require('./lib');
     return { slots: pirateFleet.length, ready: pirateFleetReady };
   });
   L.check('возврат в меню полностью очищает эскадрилью', cleanup.slots === 0 && cleanup.ready === false, cleanup);
-  L.check('красная звезда полностью удалена из сцены и навигации', typeof starTarget === 'undefined', typeof starTarget);
+  L.check('все видимые звёздные диски удалены из сцены', typeof starTarget === 'undefined' && typeof star2 === 'undefined', { starTarget: typeof starTarget, star2: typeof star2 });
   L.check('нет ошибок JavaScript', page.errors.length === 0, page.errors);
   process.exitCode = L.summary();
   await browser.close();

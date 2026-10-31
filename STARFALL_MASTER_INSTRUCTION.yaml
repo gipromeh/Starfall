@@ -53,7 +53,7 @@ sanity_check:
 # ПРОЦЕСС РАБОТЫ С GITHUB (единственный источник правды)
 process:
   repo: https://github.com/gipromeh/Starfall   # ветка main
-  current_version: v72
+  current_version: v73
   files:
     game: STARFALL_CURRENT.html        # единственная актуальная версия игры
     passport: STARFALL_PASSPORT.md     # архитектура, переменные, таблицы, правила правок
@@ -468,3 +468,29 @@ pirate_fleet_combat_tuning:
     - "Нос корабля направлен по вектору движения; сопла находятся сзади."
     - "Пираты стреляют очередями на дальней и ближней дистанции."
     - "Существующие E/E2, боссы, волны, управление и SAVE 2.0 продолжают работать."
+
+# ─────────────────────────────────────────────────────────────
+# v73 — КОРРЕКЦИЯ ОСИ PIRATE_FIGHTER_002, УЧАЩЁННЫЙ ОГОНЬ И УДАЛЕНИЕ ЗВЁЗДНЫХ ДИСКОВ
+pirate_fighter_002_orientation:
+  asset: assets/ships/pirate/pirate_fighter_002/model.glb
+  forward_axis: "-Z"
+  required_nodes: [STARFALL_PIRATE_ASSET_ROOT, STARFALL_FORWARD_AXIS_FIX]
+  rule: "Внутренняя группа STARFALL_FORWARD_AXIS_FIX повёрнута на 180° вокруг Y; внешний корень не вращать — он получает quaternion направления от ИИ."
+  legacy_glb: "Если GLB не содержит маркера STARFALL_FORWARD_AXIS_FIX, добавить вложенную runtime-группу Y=PI; если маркер есть, не применять коррекцию повторно."
+  rebuild: "build_blender.py экспортирует нейтральный корень и вложенную группу коррекции; viewer.html использует ту же проверку маркера."
+pirate_fleet_v73:
+  composition: {total_active_slots: 3, golovorez: 2, jackal: 1}
+  firing:
+    range: 1300
+    close_range: 720
+    angle_radians: {normal: 1.0, close: 1.6}
+    burst: {shots: 5, gap_seconds: 0.12, cooldown_seconds: "0.48–0.76"}
+    projectile: {speed: {golovorez: 190, jackal: 210}, lifetime_seconds: 7.0}
+  star_removal:
+    - "Не создавать starTarget, star2, st2 или sun2; starUpd оставлять пустым, если вызовы используются переходами системы."
+    - "Сохранять нейтральный невидимый systemKeyLight для планет."
+  acceptance:
+    - "Мировой вектор реального носа каждой модели совпадает с фактической скоростью корабля."
+    - "Legacy GLB и GLB после Blender-пересборки не получают двойной поворот."
+    - "Пираты открывают огонь в ближней зоне до 720 единиц, а не только на огневом проходе."
+    - "Видимые диски звёзд и их дополнительные короны отсутствуют."
