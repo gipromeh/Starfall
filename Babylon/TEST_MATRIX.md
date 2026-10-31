@@ -106,7 +106,7 @@
 
 **PASS — 7/7 Playwright tests**
 
-CI workflow: `Babylon Chromium QA`, run [41219954240](https://github.com/gipromeh/Starfall/actions/runs/41219954240).
+CI workflow: `Babylon Chromium QA`, run [41220121129](https://github.com/gipromeh/Starfall/actions/runs/41220121129).
 
 | Check | Result | Evidence |
 |---|---|---|
@@ -118,6 +118,6 @@ CI workflow: `Babylon Chromium QA`, run [41219954240](https://github.com/giprome
 | Laser hit | PASS | Laser projectile hits pirate on swept trajectory and is removed |\n| Homing missile | PASS | Projectile reaches target and reduces target hull |\n| Enemy return fire | PASS | Incoming projectile hits player shield without bypassing it |
 | Mobile HUD | PASS | Touch joystick and FIRE/MISSILE controls are visible at 390×844 |
 
-This is a bounded B1 vertical-slice result, not a PASS for the full parity matrix above. Laser hit testing, all original control bindings, economy, traffic, dialogue, all five systems, long-session stability, WebGL recovery and physical iPhone Safari remain NOT RUN.
+This is a bounded B1 vertical-slice result, not a PASS for the full parity matrix above. All original control bindings, economy, traffic, dialogue, all five systems, long-session stability, WebGL recovery and physical iPhone Safari remain NOT RUN.
 
 The CI browser uses SwiftShader software rendering. Its FPS is not accepted as a hardware performance measurement; a desktop GPU and physical iPhone report are still required for performance sign-off.
