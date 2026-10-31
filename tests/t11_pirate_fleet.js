@@ -51,7 +51,8 @@ const L = require('./lib');
   }));
   L.check('эскадрилья содержит два Головореза и один Шакал', composition.total === 3 && composition.golovorez === 2 && composition.jackal === 1, composition);
   L.check('все три корабля созданы', composition.spawned === 3, composition);
-  L.check('прочность каждого корабля эскадрильи не ниже двойной прочности игрока', pirateFleet.every(e => e.mx >= SHIPS[shp].hull * 2), pirateFleet.map(e => e.mx));
+  const fleetHealth = await page.evaluate(() => pirateFleet.every(e => e.mx >= SHIPS[shp].hull * 2));
+  L.check('прочность каждого корабля эскадрильи не ниже двойной прочности игрока', fleetHealth, fleetHealth);
   const locators = await page.evaluate(() => {
     const e = pirateFleet.find(p => p.ty === 0),jackal = pirateFleet.find(p => p.ty === 1);
     e.g.updateMatrixWorld(true);jackal.g.updateMatrixWorld(true);
