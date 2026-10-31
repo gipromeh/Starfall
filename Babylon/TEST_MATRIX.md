@@ -100,3 +100,24 @@
 - Все отклонения от v85 должны быть согласованы и описаны.
 - Синтаксис и unit tests — только часть проверки, не доказательство parity.
 - Реальный iPhone Safari report обязателен перед production promotion.
+
+
+## B1 Chromium verification — 2026-10-31
+
+<badge>PASS · 5/5 Playwright tests</badge>
+
+CI workflow: `Babylon Chromium QA`, run [41219584789](https://github.com/gipromeh/Starfall/actions/runs/41219584789).
+
+| Check | Result | Evidence |
+|---|---|---|
+| Babylon bootstrap / WebGL canvas | PASS | Chromium boots engine, scene and HUD; no page errors |
+| Player initial forward vector | PASS | World-space forward points toward target lane after launch |
+| Pirate GLB asset | PASS | Existing v85 droid GLB loads and static geometry is batched by material |
+| Flight input | PASS | W thrust increases inertial velocity |
+| Combat damage / death / reward / respawn | PASS | Target health reaches zero, +250 CR, target returns at full health |
+| Homing missile | PASS | Projectile reaches target and reduces target hull |
+| Mobile HUD | PASS | Touch joystick and FIRE/MISSILE controls are visible at 390×844 |
+
+This is a bounded B1 vertical-slice result, not a PASS for the full parity matrix above. Laser hit testing, all original control bindings, economy, traffic, dialogue, all five systems, long-session stability, WebGL recovery and physical iPhone Safari remain NOT RUN.
+
+The CI browser uses SwiftShader software rendering. Its FPS is not accepted as a hardware performance measurement; a desktop GPU and physical iPhone report are still required for performance sign-off.
