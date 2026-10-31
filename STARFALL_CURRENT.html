@@ -1400,9 +1400,9 @@ function setTrack(i){track=i;step=0;if(AC)nt=AC.currentTime+.05;document.querySe
 [...TR.map((t,i)=>[t.n,i]),["ВЫКЛ",-1]].forEach(([n,i])=>{const b=document.createElement("button");b.textContent=n;b.dataset.i=i;b.onclick=()=>{ensureAC();setTrack(i)};$("mus").appendChild(b)});setTrack(0);
 $("hi").textContent="РЕКОРД: "+hi;
 // weapons & fx
-const bm={},lm={},bg=new T.BoxGeometry(.18,.18,3.2),laserGeometry=new T.BufferGeometry().setFromPoints([new T.Vector3(0,0,0),new T.Vector3(0,0,1)]),laserForward=new T.Vector3(0,0,1);
+const bm={},lm={},bg=new T.BoxGeometry(.18,.18,3.2),laserGeometry=new T.BufferGeometry().setFromPoints([new T.Vector3(0,0,0),new T.Vector3(0,0,1)]),laserForward=new T.Vector3(0,0,1),laserBg=new T.BoxGeometry(.22,.22,1);
 function shoot(arr,p,v,col,dmg,life){const m=new T.Mesh(bg,bm[col]||(bm[col]=new T.MeshBasicMaterial({color:col})));m.position.copy(p);m.lookAt(p.clone().add(v));S.add(m);arr.push({m,v,dmg,life})}
-function shootLaser(arr,p,v,col,dmg,life){const m=new T.Line(laserGeometry,lm[col]||(lm[col]=new T.LineBasicMaterial({color:col,transparent:true,opacity:.96,depthWrite:false})));m.position.copy(p);m.quaternion.setFromUnitVectors(laserForward,v.clone().normalize());m.scale.z=Math.max(28,Math.min(72,v.length()*.16));S.add(m);arr.push({m,v,dmg,life})}
+function shootLaser(arr,p,v,col,dmg,life){const m=new T.Mesh(laserBg,bm[col]||(bm[col]=new T.MeshBasicMaterial({color:col})));m.position.copy(p);m.lookAt(p.clone().add(v));m.scale.z=Math.max(28,Math.min(72,v.length()*.16));m.scale.x=m.scale.y=.55;S.add(m);arr.push({m,v,dmg,life})}
 function seg(a,b,c,r){const ab=b.clone().sub(a),t=Math.max(0,Math.min(1,c.clone().sub(a).dot(ab)/(ab.lengthSq()||1)));return a.clone().addScaledVector(ab,t).distanceTo(c)<r}
 function boom(p,n,sz,col,sp,life){const pos=new Float32Array(n*3),vs=[];for(let i=0;i<n;i++){pos.set([p.x,p.y,p.z],i*3);vs.push(rd().multiplyScalar(sp*(.3+Math.random())))}
 const g=new T.BufferGeometry();g.setAttribute("position",new T.BufferAttribute(pos,3));const o=new T.Points(g,new T.PointsMaterial({size:sz,color:col,map:gtex("rgba(255,255,255,1)"),transparent:true,blending:T.AdditiveBlending,depthWrite:false}));o.frustumCulled=false;S.add(o);fx.push({o,vs,life,max:life})}
@@ -1749,7 +1749,7 @@ function pirateFleetUpdate(dt){
   const shotSpeed=e.ty===0?190:210,leadTime=Math.min(6.2,dist/shotSpeed);
   const targetPoint=P.clone().addScaledVector(vel,leadTime),aimAt=targetPoint.clone().sub(g.position).normalize(),fireAngle=pirateFleetHeading.angleTo(aimAt);
   const canFire=dist<1400&&(fireAngle<.9||(dist<760&&fireAngle<1.35));
-  e.fire-=dt;e.burstGap=Math.max(0,e.burstGap-dt);if(canFire&&e.fire<=0&&e.burst<=0)e.burst=5;
+  e.fire-=dt;e.burstGap=Math.max(0,e.burstGap-dt);if(canFire&&e.fire<=0&&e.burst<=0)e.burst=3;
   if(canFire&&e.burst>0&&e.burstGap<=0){
    const guns=e.muzzleNodes&&e.muzzleNodes.length?e.muzzleNodes:[null];
    for(const gun of guns){
@@ -1758,7 +1758,7 @@ function pirateFleetUpdate(dt){
     shootLaser(eb,muzzle,shotDir.multiplyScalar(shotSpeed),e.ty===0?0xff4b3c:0xffb13b,e.ty===0?5.5:4.8,7.0);
     eb[eb.length-1].pirateFleet=true;eb[eb.length-1].pirateFleetSlot=e.slot;
    }
-   e.burst--;e.burstGap=.12;if(e.burst<=0)e.fire=.48+Math.random()*.28;sfx("l2");
+   e.burst--;e.burstGap=.18;if(e.burst<=0)e.fire=.7+Math.random()*.4;sfx("l2");
   }
  }
 }
