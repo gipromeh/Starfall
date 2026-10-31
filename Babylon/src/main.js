@@ -1,12 +1,10 @@
-import * as BABYLON from "https://esm.sh/@babylonjs/core@7.0.0";
-import "https://esm.sh/@babylonjs/loaders@7.0.0/glTF";
+const BABYLON=globalThis.BABYLON;
 import {FlightModel} from "./flight-model.js";
 import {InputAdapter} from "./input.js";
 import {SaveSystem} from "./save.js";
 import {HUD} from "./ui.js";
 import {World} from "./world.js";
 
-globalThis.BABYLON=BABYLON;
 const canvas=document.getElementById("renderCanvas");
 const overlay=document.getElementById("overlay");
 const startButton=document.getElementById("start-button");
@@ -187,6 +185,7 @@ function update(dt,now){
 
 async function boot(){
   try{
+    if(!BABYLON)throw new Error("Babylon.js 7.0 CDN не загружен");
     engine=new BABYLON.Engine(canvas,true,{
       stencil:true,antialias:true,powerPreference:"high-performance",
       adaptToDeviceRatio:true,preserveDrawingBuffer:false
