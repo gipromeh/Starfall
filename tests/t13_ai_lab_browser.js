@@ -24,6 +24,23 @@ const server = http.createServer((req, res) => {
     await page.goto(`http://127.0.0.1:${server.address().port}/AI_LAB.html`, { waitUntil: 'domcontentloaded', timeout: 20000 });
     await page.waitForFunction(() => window.__AI_LAB_READY === true, { timeout: 45000 });
     await page.waitForTimeout(1200);
+    const beforeMove = await page.evaluate(() => window.__AI_LAB_DEBUG.player.position.z);
+    await page.keyboard.down('KeyW');
+    await page.waitForTimeout(300);
+    await page.keyboard.up('KeyW');
+    const afterMove = await page.evaluate(() => window.__AI_LAB_DEBUG.player.position.z);
+    if (afterMove <= beforeMove) throw new Error('W key did not move the player forward');
+    await page.keyboard.down('Space');
+    await page.waitForTimeout(220);
+    await page.keyboard.up('Space');
+    await page.keyboard.press('KeyF');
+    await page.waitForTimeout(120);
+    const combat = await page.evaluate(() => ({
+      projectiles: window.__AI_LAB_DEBUG.projectiles.length,
+      ammo: document.querySelector('#ammo')?.textContent
+    }));
+    if (combat.projectiles < 2) throw new Error('Player laser/missile did not spawn projectiles: ' + JSON.stringify(combat));
+    if (combat.ammo !== '5') throw new Error('Missile ammo did not decrement: ' + JSON.stringify(combat));
     const state = await page.evaluate(() => ({
       canvas: !!document.querySelector('#view canvas'),
       width: document.querySelector('#view canvas')?.width || 0,
@@ -37,7 +54,7 @@ const server = http.createServer((req, res) => {
     if (!state.renderCalls) throw new Error('Three.js rendered no draw calls: ' + JSON.stringify(state));
     if (state.fatal) throw new Error('AI Lab fatal overlay: ' + state.fatal);
     if (pageErrors.length) throw new Error('Browser JavaScript errors: ' + pageErrors.join(' | '));
-    console.log('PASS AI Lab browser smoke test: canvas ' + state.width + 'x' + state.height + ', agents=' + state.agents + ', drawCalls=' + state.renderCalls);
+    console.log('PASS AI Lab browser combat test: movement, laser, missile, canvas ' + state.width + 'x' + state.height + ', agents=' + state.agents + ', drawCalls=' + state.renderCalls);
   } finally {
     await browser.close();
     await new Promise(resolve => server.close(resolve));
