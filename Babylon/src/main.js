@@ -18,7 +18,7 @@ let engine,scene,world,input,camera;
 let running=false,paused=false,gameOver=false;
 let lastTime=0,fps=0,frameCount=0,fpsWindow=0,frameMs=0,accumulator=0;
 const FIXED_DT=1/60,MAX_FRAME_DELTA=.2,MAX_STEPS=8;
-let fireCooldown=0,missileCooldown=0,enemyFireCooldown=0,respawnTimer=0,saveTimer=0;
+let fireCooldown=0,missileCooldown=0,enemyFireCooldown=0,respawnTimer=0,respawnAt=0,saveTimer=0;
 let hull=100,shield=100,kills=0,credits=0;
 let projectiles=[];
 const projectilePool=[];
@@ -91,7 +91,7 @@ function damagePirate(amount,position){
     kills++;credits+=250;
     explode(position,0xff7b35);
     hud.toast("ЦЕЛЬ УНИЧТОЖЕНА · +250 CR");
-    respawnTimer=4;
+    respawnTimer=4;respawnAt=performance.now()+4000;
     saves.saveSlice(snapshot());
   }else{
     explode(position,0x55dfff);
@@ -163,9 +163,9 @@ function update(dt,now){
   }
 
   updateProjectiles(dt);
-  if(respawnTimer>0){
-    respawnTimer-=dt;
-    if(respawnTimer<=0){world.respawnPirate();hud.toast("НОВАЯ ПИРАТСКАЯ ЦЕЛЬ");}
+  if(respawnAt>0){
+    respawnTimer=Math.max(0,(respawnAt-now)/1000);
+    if(now>=respawnAt){respawnAt=0;respawnTimer=0;world.respawnPirate();hud.toast("НОВАЯ ПИРАТСКАЯ ЦЕЛЬ");}
   }
   if(shield<100&&!gameOver)shield=Math.min(100,shield+2.2*dt);
   if(!gameOver&&hull<100&&shield>=100)hull=Math.min(100,hull+.15*dt);
