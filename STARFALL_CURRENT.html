@@ -1726,12 +1726,15 @@ function pirateFleetUpdate(dt){
   if(!e.g){e.respawn-=dt;if(e.respawn<=0)pirateFleetSpawn(e,0);continue}
   if(e.warp>0){e.warp-=dt;if(e.warp<=0){e.g.visible=true;boom(e.g.position,22,8,0x88ccff,32,.7);ring(e.g.position,0x88ccff,5,2.4);sfx("e")}continue}
   const g=e.g,toPlayer=P.clone().sub(g.position),dist=toPlayer.length();if(dist<1)continue;
+  if(dist<320&&e.state!="FIRING_PASS"&&e.state!="OVERSHOOT"){e.state="REPOSITION";e.stateT=0;e.runDir=null}
   const dir=toPlayer.multiplyScalar(1/dist),side=playerRight.clone().multiplyScalar(e.side);e.stateT+=dt;let aim;
   if(e.state==="APPROACH"){aim=P.clone().addScaledVector(side,100).addScaledVector(pirateFleetUp,(e.slot-1)*36);if(dist<900){e.state="ATTACK_RUN";e.stateT=0}}
   else if(e.state==="ATTACK_RUN"){aim=P.clone().addScaledVector(vel,Math.max(.45,Math.min(2.2,dist/190))).addScaledVector(side,45);if(dist<520){e.state="FIRING_PASS";e.stateT=0;e.runDir=dir.clone()}}
-  else if(e.state==="FIRING_PASS"){if(!e.runDir)e.runDir=e.hd.clone();aim=P.clone().addScaledVector(e.runDir,420).addScaledVector(side,30);const passed=P.clone().sub(g.position).dot(e.runDir)<-140;if((e.stateT>.65&&passed)||e.stateT>12){e.state="OVERSHOOT";e.stateT=0}}
-  else if(e.state==="OVERSHOOT"){aim=P.clone().addScaledVector(e.runDir||e.hd,700).addScaledVector(side,100);if(g.position.distanceTo(aim)<220||e.stateT>4){e.state="REPOSITION";e.stateT=0}}
+  else if(e.state==="FIRING_PASS"){e.runDir.lerp(dir,0.14);aim=P.clone().addScaledVector(e.runDir,420).addScaledVector(side,30);const passed=P.clone().sub(g.position).dot(e.runDir)<-140;if((e.stateT>.65&&passed)||e.stateT>12){e.state="OVERSHOOT";e.stateT=0}}
+  else if(e.state==="OVERSHOOT"){aim=P.clone().addScaledVector(e.runDir||e.hd,700).addScaledVector(side,100).addScaledVector(pirateFleetUp,(e.slot-1)*220+Math.sin(e.stateT*2)*400);if(g.position.distanceTo(aim)<220||e.stateT>4){e.state="REPOSITION";e.stateT=0}}
   else{aim=P.clone().addScaledVector(playerForward,-560).addScaledVector(side,100);if(g.position.distanceTo(aim)<220||e.stateT>4){e.state="APPROACH";e.stateT=0;e.runDir=null}}
+  // уклонение от снарядов игрока
+  for(let b=bul.length-1;b>=0;b--){const bp=bul[b].m.position;if(bp.distanceTo(g.position)<120){aim.addScaledVector(dir.clone().cross(new T.Vector3(0,1,0)).normalize(),55);break}}
   const desiredDir=aim.sub(g.position).normalize(),angle=e.hd.angleTo(desiredDir),axis=e.hd.clone().cross(desiredDir);
   if(angle>1e-4&&axis.lengthSq()>1e-8)e.hd.applyAxisAngle(axis.normalize(),Math.min(angle,(e.ty===0?1.7:1.9)*dt)).normalize();
   const targetSpeed=e.ty===0?42:50;e.speed+=(targetSpeed-e.speed)*Math.min(1,.65*dt);
