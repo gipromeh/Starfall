@@ -1,6 +1,6 @@
 let chromium; try { ({ chromium } = require('playwright')); } catch (e) { ({ chromium } = require('/opt/npm-tools/node_modules/playwright')); }
 const fs = require('fs'), path = require('path');
-const NM = path.join(__dirname, 'node_modules');
+const NM = process.env.SF_NM || path.join(__dirname, 'node_modules');
 const GAME = path.join(__dirname, '..', 'STARFALL_CURRENT.html');
 const ORIGIN = 'http://game.local';
 const MAP = [
@@ -37,7 +37,7 @@ async function openGame(ctx, o = {}) {
   page.on('console', m => { const t = m.text(); if (m.type() === 'error' && !/Failed to load resource|net::ERR|ERR_FAILED/.test(t)) page.errors.push('console.error: ' + t.slice(0, 300)); else page.logs.push(m.type() + ': ' + t.slice(0, 200)); });
   page.on('dialog', d => { page.lastDialog = d.message(); (page.dialogHandler || (x => x.accept()))(d); });
   await page.goto(ORIGIN + '/', { waitUntil: 'domcontentloaded', timeout: 120000 });
-  await page.waitForFunction(() => typeof SV !== 'undefined' && typeof state !== 'undefined', null, { timeout: 120000 });
+  await page.waitForFunction(() => { try { return typeof SV !== 'undefined' && typeof state !== 'undefined'; } catch (e) { return false; } }, null, { timeout: 120000 });
   return page;
 }
 const sleep = ms => new Promise(r => setTimeout(r, ms));
