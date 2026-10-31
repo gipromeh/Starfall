@@ -1373,7 +1373,7 @@ addMoons("НЕЙРЕЯ",[[125,5200,.0045,0xaaa0b9]]);
 function loadPlanetModels(){
  if(!T.GLTFLoader||location.protocol==="file:")return;
  const loader=new T.GLTFLoader();
- const validPath=p=>typeof p==="string"&&/^assets\\/planets\\/[a-z0-9_-]+\\/[^?#]+\\.glb$/i.test(p);
+ const validPath=p=>typeof p==="string"&&p.startsWith("assets/planets/")&&p.toLowerCase().endsWith(".glb")&&!p.includes("..")&&!p.includes("\\\\")&&!p.includes("?")&&!p.includes("#");
  const tuneMaterial=mat=>{
   if(!mat)return mat;
   if(mat.isMeshBasicMaterial){
@@ -1416,7 +1416,7 @@ function loadPlanetModels(){
      const fit=new T.Group();fit.scale.setScalar(fitScale);fit.position.copy(center).multiplyScalar(-fitScale);fit.add(source);
      const model=new T.Group();model.add(fit);
      const rot=Array.isArray(entry.rotation)?entry.rotation:[0,0,0];
-     model.rotation.set(0,1,2).map((i)=>Number.isFinite(+rot[i])?+rot[i]:0);
+     model.rotation.set(...[0,1,2].map(i=>Number.isFinite(+rot[i])?+rot[i]:0));
      source.traverse(o=>{
       if(!o.isMesh)return;
       o.castShadow=true;o.receiveShadow=true;
