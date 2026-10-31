@@ -1,0 +1,1 @@
+export class HUD { update(data) { document.getElementById('status').textContent = data.engine ? 'SYSTEMS NOMINAL' : 'ENGINE LOST'; document.getElementById('speed-value').textContent = Math.round(data.speed); } toast(message) { document.getElementById('toast').textContent = message; } }
