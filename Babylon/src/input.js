@@ -2,6 +2,7 @@ export class InputAdapter {
   constructor(canvas) {
     this.canvas=canvas;
     this.active=false;
+    this.ignorePointerUntil=0;
     this.keys=new Set();
     this.pointer={x:0,y:0,dx:0,dy:0,locked:false};
     this.touch={strafe:0,lift:0};
@@ -9,7 +10,7 @@ export class InputAdapter {
     this.down=e=>{this.keys.add(e.code);if(["Space","ArrowUp","ArrowDown"].includes(e.code))e.preventDefault();};
     this.up=e=>this.keys.delete(e.code);
     this.move=e=>{
-      if(!this.active)return;
+      if(!this.active||performance.now()<this.ignorePointerUntil)return;
       if(document.pointerLockElement===canvas){
         this.pointer.locked=true;
         this.pointer.dx+=e.movementX;
@@ -19,7 +20,7 @@ export class InputAdapter {
         this.pointer.y=(e.clientY/innerHeight-.5)*2;
       }
     };
-    this.lock=()=>{this.pointer.locked=document.pointerLockElement===canvas;this.resetAim();};
+    this.lock=()=>{this.pointer.locked=document.pointerLockElement===canvas;this.ignorePointerUntil=performance.now()+300;this.resetAim();};
     addEventListener("keydown",this.down);
     addEventListener("keyup",this.up);
     addEventListener("mousemove",this.move);
@@ -47,7 +48,7 @@ export class InputAdapter {
       if(pointerId===e.pointerId){pointerId=null;this.touch.strafe=0;this.touch.lift=0;pad.querySelector("i").style.transform="translate(0,0)";}
     }));
   }
-  activate(){this.active=true;this.resetAim();}
+  activate(){this.active=true;this.ignorePointerUntil=performance.now()+300;this.resetAim();}
   resetAim(){this.pointer.x=0;this.pointer.y=0;this.pointer.dx=0;this.pointer.dy=0;}
   updateTouch(event){
     const rect=document.getElementById("touch-pad").getBoundingClientRect();
