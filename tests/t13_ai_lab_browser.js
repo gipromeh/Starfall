@@ -25,15 +25,15 @@ const server = http.createServer((req, res) => {
     await page.waitForFunction(() => window.__AI_LAB_READY === true, { timeout: 45000 });
     await page.waitForTimeout(1200);
     const beforeMove = await page.evaluate(() => window.__AI_LAB_DEBUG.player.position.z);
-    await page.keyboard.down('KeyW');
+    await page.keyboard.down('w');
     await page.waitForTimeout(300);
-    await page.keyboard.up('KeyW');
+    await page.keyboard.up('w');
     const afterMove = await page.evaluate(() => window.__AI_LAB_DEBUG.player.position.z);
     if (afterMove >= beforeMove) throw new Error('W key did not move the player forward');
     await page.keyboard.down('Space');
     await page.waitForTimeout(220);
     await page.keyboard.up('Space');
-    await page.keyboard.press('KeyF');
+    await page.keyboard.press('f');
     await page.waitForTimeout(120);
     const combat = await page.evaluate(() => ({
       projectiles: window.__AI_LAB_DEBUG.projectiles.length,
