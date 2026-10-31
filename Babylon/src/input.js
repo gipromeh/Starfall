@@ -17,7 +17,7 @@ export class InputAdapter {
         this.pointer.y=(e.clientY/innerHeight-.5)*2;
       }
     };
-    this.lock=()=>{this.pointer.locked=document.pointerLockElement===canvas;};
+    this.lock=()=>{this.pointer.locked=document.pointerLockElement===canvas;this.resetAim();};
     addEventListener("keydown",this.down);
     addEventListener("keyup",this.up);
     addEventListener("mousemove",this.move);
@@ -45,6 +45,7 @@ export class InputAdapter {
       if(pointerId===e.pointerId){pointerId=null;this.touch.strafe=0;this.touch.lift=0;pad.querySelector("i").style.transform="translate(0,0)";}
     }));
   }
+  resetAim(){this.pointer.x=0;this.pointer.y=0;this.pointer.dx=0;this.pointer.dy=0;}
   updateTouch(event){
     const rect=document.getElementById("touch-pad").getBoundingClientRect();
     const x=Math.max(-1,Math.min(1,(event.clientX-rect.left-rect.width/2)/(rect.width*.42)));
