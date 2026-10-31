@@ -143,6 +143,7 @@ function update(dt,now){
   if(action.brake)flight.velocity.scaleInPlace(Math.exp(-2.7*dt));
   flight.step(dt,action,player);
   player.position.addInPlace(flight.velocity.scale(dt));
+  player.computeWorldMatrix(true);
 
   const enemyFires=world.updateAI(dt);
   if(enemyFires&&!world.pirateDestroyed){
@@ -153,11 +154,11 @@ function update(dt,now){
   fireCooldown-=dt;missileCooldown-=dt;
   if(action.fire&&fireCooldown<=0){
     fireCooldown=.115;
-    spawnProjectile(player.position,player.forward,"player","laser");
+    spawnProjectile(player.position,player.getDirection(BABYLON.Axis.Z),"player","laser");
   }
   if(action.missile&&missileCooldown<=0){
     missileCooldown=1.15;
-    spawnProjectile(player.position,player.forward,"player","missile");
+    spawnProjectile(player.position,player.getDirection(BABYLON.Axis.Z),"player","missile");
   }
 
   updateProjectiles(dt);
@@ -208,10 +209,10 @@ async function boot(){
     input=new InputAdapter(canvas);
     if(new URLSearchParams(location.search).has("test")){
       globalThis.__STARFALL_TEST__={
-        state:()=>({hull,shield,kills,credits,enemyHealth:world.pirateHealth,enemyDestroyed:world.pirateDestroyed,projectiles:projectiles.length,speed:flight.velocity.length()}),
+        state:()=>({hull,shield,kills,credits,enemyHealth:world.pirateHealth,enemyDestroyed:world.pirateDestroyed,projectiles:projectiles.length,speed:flight.velocity.length(),respawnTimer,running,paused,playerPosition:world.player.position.asArray(),playerForward:world.player.getDirection(BABYLON.Axis.Z).asArray(),targetPosition:world.pirate.position.asArray(),projectileData:projectiles.map(p=>({position:p.mesh.position.asArray(),velocity:p.velocity.asArray(),ttl:p.ttl,owner:p.owner,kind:p.kind}))}),
         damageTarget:amount=>damagePirate(amount,world.pirate.position.clone()),
-        fireMissile:()=>spawnProjectile(world.player.position,world.player.forward,"player","missile"),
-        fireLaser:()=>spawnProjectile(world.player.position,world.player.forward,"player","laser"),
+        fireMissile:()=>{world.player.computeWorldMatrix(true);spawnProjectile(world.player.position,world.player.getDirection(BABYLON.Axis.Z),"player","missile");},
+        fireLaser:()=>{world.player.computeWorldMatrix(true);spawnProjectile(world.player.position,world.player.getDirection(BABYLON.Axis.Z),"player","laser");},
         damagePlayer:amount=>damagePlayer(amount),
         save:()=>saves.saveSlice(snapshot())
       };
