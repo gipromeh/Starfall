@@ -6,7 +6,7 @@ const L = require('./lib');
   const page = await L.openGame(ctx);
   await page.click('#play');
   await page.waitForFunction(() => state === 'dock', null, { timeout: 60000 });
-  await page.waitForFunction(() => MC['p0'] && MC['p0'].getObjectByName('STARFALL_FORWARD_AXIS_FIX'), null, { timeout: 60000 });
+  await page.waitForFunction(() => pirateAssetsReady === true, null, { timeout: 60000 });
   await page.evaluate(() => { lift(); QL.setMode('low'); pirateFleetInit(); });
   await page.waitForFunction(() => pirateFleet.length === 3, null, { timeout: 15000 });
 
