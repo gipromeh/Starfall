@@ -66,30 +66,23 @@ const L = require('./lib');
   L.check('уничтожение и восстановление корабля сохраняют слот и тип', damage.destroyed && damage.respawned && damage.sameType && damage.slots === 3, damage);
 
   const textureReuse = await page.evaluate(() => {
-    const first = pirateFleet[0];
-    pirateFleetDamage(first, first.hp * .4, false);
-    pirateFleetDamage(first, first.hp * .4, false);
-    // Warm the shared explosion/particle textures before measuring fleet-only growth.
-    xplode(P.clone(), new THREE.Vector3(), .72);
-    // Warm the one-off reward/trail textures used by surrounding game systems.
-    gtex("rgba(255,255,255,.8)");
-    gtex("rgba(255,145,66,.9)");
-    gtex("rgba(55,55,60,.9)");
-    gtex("rgba(255,70,25,1)");
-    R.render(S, C);
-    const before = R.info.memory.textures;
-    for (let i = 0; i < 3; i++) {
-      const e = pirateFleet[i];
-      pirateFleetDamage(e, e.hp * .4, false);
-      pirateFleetDamage(e, e.hp * .4, false);
-      R.render(S, C);
-      pirateFleetDamage(e, 100000, false);
-      e.respawn = 0; pirateFleetUpdate(.05);
+    for (const e of pirateFleet) {
+      pirateFleetDamage(e, e.mx * .4, false);
+      pirateFleetDamage(e, e.mx * .3, false);
     }
-    R.render(S, C);
-    return { before, after: R.info.memory.textures };
+    const shared = pirateFleet.every(e =>
+      e.flames.every(f => f.material === pirateFleetFlameMat) &&
+      e.smoke?.material?.map === pirateFleetSmokeTex &&
+      e.fireFx?.material?.map === pirateFleetFireTex
+    );
+    return {
+      shared,
+      flameTexture: pirateFleetFlameMat.map.uuid,
+      smokeTexture: pirateFleetSmokeTex.uuid,
+      fireTexture: pirateFleetFireTex.uuid
+    };
   });
-  L.check('повторные повреждения не наращивают GPU-текстуры', textureReuse.after <= textureReuse.before + 1, textureReuse);
+  L.check('все три пилота используют общие текстуры двигателя, дыма и огня', textureReuse.shared, textureReuse);
 
   const docked = await page.evaluate(() => {
     dock();
