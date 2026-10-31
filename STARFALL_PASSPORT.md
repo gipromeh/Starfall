@@ -1,11 +1,17 @@
 ---
+## v81 — точное попадание по полной геометрии пиратов и видимые повреждения
+- `pirateHitBounds(g)` рассчитывает мировую ограничивающую сферу по `Box3.setFromObject()` и локальный центр модели; `pirateSegmentHit()` проверяет отрезок лазера/ракеты относительно этой сферы.
+- Проверка применяется к обычным пиратам `E/E2` и отдельной эскадрилье `pirateFleet`; малые `en.r` / `pe.r` больше не ограничивают попадание центральной частью корпуса.
+- `pirateIgnite()` ставит огонь и дым относительно вычисленных габаритов, масштабирует эффекты под модель и отключает depthTest для видимости поверх корпуса. Повторные попадания продолжают снимать HP.
+- Урон, HP, ИИ, управление и SAVE 2.0 не менялись.
+
 date: 2026-10-31
 topic: STARFALL — Void Hunter: паспорт проекта (архитектура, технологии, механика, сохранения, качество)
 tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура]
-game_version: "v80"
+game_version: "v81"
 last_update: 2026-10-31
 main_file: STARFALL_CURRENT.html
-main_file_sha256: "79f0ebd4c615c7b01b349941cfc94724ce3ba9ed13ba6e76718a0b59976ec840"
+main_file_sha256: "416141f60d45dcfcda73bb2e7b7a799a53de629c86ce87b195b226433825109a"
 save_format_version: 2
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"
