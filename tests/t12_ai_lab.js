@@ -31,6 +31,15 @@ const checks = [
   ['Planets and stars animate every frame', html.includes('for(const body of celestialBodies)') && html.includes('starField.rotation.y+=dt')],
   ['Three.js r128-compatible fighter geometry', !html.includes('THREE.CapsuleGeometry') && html.includes('new THREE.CylinderGeometry(3.5,4.1,21,10,1)')],
   ['Runtime errors are visible in the lab UI', html.includes("window.addEventListener('error'") && html.includes("window.addEventListener('unhandledrejection'")]
+  ['Pirate fire requires forward firing arc and range', html.includes('function firingSolution(a,maxAngle=.72,maxRange=520)') && html.includes('dot>=Math.cos(maxAngle)')],
+  ['Pirate fire requires unobstructed line of sight', html.includes('function hasLineOfSight(from,to)') && html.includes('hasLineOfSight(origin,player.position)')],
+  ['Pirate laser heat gate and passive cooling', html.includes('a.laserHeat=Math.max(0,a.laserHeat-24*dt)') && html.includes('a.laserHeat<82')],
+  ['Pirate missiles require ammo and cooldown', html.includes('a.missileAmmo>0&&a.missileCooldown<=0') && html.includes('a.missileAmmo--')],
+  ['Pirate missiles home on player', html.includes("else targetPoint=player.position.clone()") && html.includes('if(q.homing){')],
+  ['Pirates maintain standoff distance from player', html.includes('if(a.distance<125)') && html.includes('addScaledVector(away,190)')],
+  ['Evasive maneuvers trigger on incoming player fire', html.includes('function incomingThreat(a)') && html.includes("recordEvent('evasion',a.i")],
+  ['Barrel roll visual is restricted to evasion state', html.includes("a.state==='EVADE'?Math.sin(tick*13+a.i)*.72")],
+  ['Combat telemetry records events and exports CSV', html.includes('const combatStats=') && html.includes("$('export').onclick") && html.includes('starfall-combat-')],
 ];;
 let failed = 0;
 for (const [name, ok] of checks) { console.log((ok ? 'PASS ' : 'FAIL ') + name); if (!ok) failed++; }
