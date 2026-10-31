@@ -19,6 +19,8 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: STARFALL AI Lab architecture regression
         run: node tests/t12_ai_lab.js
+      - name: STARFALL v87 radar, pirate balance and ship collision regression
+        run: node tests/t14_ship_collision_radar.js
       - name: STARFALL AI Lab browser runtime smoke test
         run: node tests/t13_ai_lab_browser.js
       - name: Nuclear impact performance test
