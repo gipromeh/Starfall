@@ -104,7 +104,7 @@
 
 ## B1 Chromium verification — 2026-10-31
 
-<badge>PASS · 5/5 Playwright tests</badge>
+**PASS — 5/5 Playwright tests**
 
 CI workflow: `Babylon Chromium QA`, run [41219584789](https://github.com/gipromeh/Starfall/actions/runs/41219584789).
 
