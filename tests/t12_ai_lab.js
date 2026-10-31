@@ -36,7 +36,7 @@ const checks = [
   ['Pirate laser heat gate and passive cooling', html.includes('a.laserHeat=Math.max(0,a.laserHeat-24*dt)') && html.includes('a.laserHeat<82')],
   ['Pirate missiles require ammo and cooldown', html.includes('a.missileAmmo>0&&a.missileCooldown<=0') && html.includes('a.missileAmmo--')],
   ['Pirate missiles home on player', html.includes("else targetPoint=player.position.clone()") && html.includes('if(q.homing){')],
-  ['Pirates maintain standoff distance from player', html.includes('if(a.distance<125)') && html.includes('addScaledVector(away,190)')],
+  ['Pirates maintain standoff distance using Yuka Vector3 API', html.includes('if(a.distance<125)') && html.includes('t.set(px+away.x*190,py+away.y*190,pz+away.z*190)') && !html.includes('t.copy(player.position).addScaledVector')],
   ['Evasive maneuvers trigger on incoming player fire', html.includes('function incomingThreat(a)') && html.includes("recordEvent('evasion',a.i")],
   ['Barrel roll visual is restricted to evasion state', html.includes("a.state==='EVADE'?Math.sin(tick*13+a.i)*.72")],
   ['Combat telemetry records events and exports CSV', html.includes('const combatStats=') && html.includes("$('export').onclick") && html.includes('starfall-combat-')],
