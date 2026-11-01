@@ -91,7 +91,7 @@ meta:
   project: STARFALL "Void Hunter"
   entry_point: STARFALL_CURRENT.html
   passport: STARFALL_PASSPORT.md   # сначала прочитать, не переоткрывать архитектуру
-  stack: "HTML5 + Three.js r128; один production HTML с основным игровым скриптом и отдельным скриптом 3D-бара; часть библиотек, моделей и шрифтов загружается с CDN"
+  stack: "HTML5 + Three.js r128; один production HTML с основным игровым скриптом и отдельным скриптом 3D-бара; библиотеки и шрифты загружаются с CDN, GLB-модели — из assets/"
   platforms: [PC (клавиатура+мышь), iPhone (тач, Safari)]
   network: "Для штатной загрузки CDN-зависимостей требуется интернет; автономная работа из одного HTML не гарантируется."
   ui_language: ru
