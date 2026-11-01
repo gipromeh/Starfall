@@ -92,7 +92,7 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   L.check('6. старое сохранение: кредиты, трюм, система, корабль, волна, тюнинг, фракции', s.cr === 4321 && s.cargo.join() === '1,2,0,0,0' && s.sy === 2 && s.shp === 2 && s.wave === 17 && s.uh === 1.6 && s.ud === 2.56 && s.fr.gld === 12, s);
   L.check('6. массив кораблей дорос до 5 без потери владения', s.owS.length === 5 && s.owS[0] === 1 && s.owS[2] === 1, s.owS);
   const mig = await page.evaluate(() => ({ A: localStorage.getItem('sf_sv2a') ? JSON.parse(localStorage.getItem('sf_sv2a')).v : null, legacyKept: !!localStorage.getItem('sf_sv') }));
-  L.check('6. после загрузки записан формат v2, старый ключ не тронут', mig.A === 2 && mig.legacyKept, mig);
+  L.check('6. после загрузки записан формат v3, старый ключ не тронут', mig.A === 3 && mig.legacyKept, mig);
 
   console.log('\n[7] Повреждённые данные');
   await page.evaluate(() => { localStorage.clear(); });
