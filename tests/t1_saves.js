@@ -182,13 +182,14 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   page.dialogHandler = d => d.accept();
   await page.evaluate(() => {
     const original = Storage.prototype.setItem;
+    Storage.prototype.__sfOriginalSetItem = original;
     Storage.prototype.setItem = function(k,v) { if (k === 'sf_sv_arc') throw new DOMException('quota', 'QuotaExceededError'); return original.call(this,k,v); };
   });
   await page.click('#play');
   await L.sleep(250);
   const afterFailedNewGame = await best(page);
   const failedNewGameState = await page.evaluate(() => state);
-  await page.evaluate(() => { Storage.prototype.setItem = Storage.prototype.__sfOriginalSetItem || Storage.prototype.setItem; });
+  await page.evaluate(() => { const original = Storage.prototype.__sfOriginalSetItem; if (original) Storage.prototype.setItem = original; delete Storage.prototype.__sfOriginalSetItem; });
   L.check('12b. ошибка резервного копирования отменяет новую игру и сохраняет прежний прогресс', failedNewGameState === 'menu' && beforeFailedNewGame && afterFailedNewGame && beforeFailedNewGame.d.cr === afterFailedNewGame.d.cr, { state: failedNewGameState, before: beforeFailedNewGame && beforeFailedNewGame.d.cr, after: afterFailedNewGame && afterFailedNewGame.d.cr });
   L.check('нет ошибок страницы за весь прогон', page.errors.length === 0, page.errors);
   process.exitCode = L.summary(); await browser.close();
