@@ -161,6 +161,36 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   const rest = await page.evaluate(() => { const ok = SV.restoreArchive(); const r = SV.load(); return { ok, cr: r.ok && r.d.cr }; });
   L.check('restoreArchive возвращает прошлый прогресс', rest.ok && rest.cr === crKeep, rest);
 
+  console.log('\\n[12] Сбой записи резервной копии не должен уничтожать сохранение');
+  await page.evaluate(() => { cr = 54321; stnDraw(); });
+  const restoreFailure = await page.evaluate(() => {
+    const target = SV.info().slot === 'sf_sv2a' ? 'sf_sv2b' : 'sf_sv2a';
+    const original = Storage.prototype.setItem;
+    Storage.prototype.setItem = function(k,v) { if (k === target) throw new DOMException('quota', 'QuotaExceededError'); return original.call(this,k,v); };
+    let ok; try { ok = SV.restoreArchive(); } finally { Storage.prototype.setItem = original; }
+    const r = SV.load();
+    return { ok, target, current: r.ok && r.d.cr, slot: SV.info().slot };
+  });
+  L.check('12a. ошибка записи архива не удаляет и не подменяет текущий слот', restoreFailure.ok === false && restoreFailure.current === 54321, restoreFailure);
+
+  await page.evaluate(() => { if (state === 'dock') lift(); });
+  await L.sleep(300);
+  await page.evaluate(() => pause(true));
+  await page.click('#men1');
+  await page.waitForFunction(() => state === 'menu');
+  const beforeFailedNewGame = await best(page);
+  page.dialogHandler = d => d.accept();
+  await page.evaluate(() => {
+    const original = Storage.prototype.setItem;
+    Storage.prototype.__sfOriginalSetItem = original;
+    Storage.prototype.setItem = function(k,v) { if (k === 'sf_sv_arc') throw new DOMException('quota', 'QuotaExceededError'); return original.call(this,k,v); };
+  });
+  await page.click('#play');
+  await L.sleep(250);
+  const afterFailedNewGame = await best(page);
+  const failedNewGameState = await page.evaluate(() => state);
+  await page.evaluate(() => { const original = Storage.prototype.__sfOriginalSetItem; if (original) Storage.prototype.setItem = original; delete Storage.prototype.__sfOriginalSetItem; });
+  L.check('12b. ошибка резервного копирования отменяет новую игру и сохраняет прежний прогресс', failedNewGameState === 'menu' && beforeFailedNewGame && afterFailedNewGame && beforeFailedNewGame.d.cr === afterFailedNewGame.d.cr, { state: failedNewGameState, before: beforeFailedNewGame && beforeFailedNewGame.d.cr, after: afterFailedNewGame && afterFailedNewGame.d.cr });
   L.check('нет ошибок страницы за весь прогон', page.errors.length === 0, page.errors);
   process.exitCode = L.summary(); await browser.close();
 })().catch(e => { console.error('CRASH', e); process.exit(2); });

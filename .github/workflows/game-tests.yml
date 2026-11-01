@@ -1,31 +1,257 @@
 name: game-tests
+
 on:
+  pull_request:
+    branches: [main]
   push:
     branches: [main]
-  pull_request:
   workflow_dispatch:
+
+# Новые коммиты отменяют устаревшие запуски той же ветки.
+concurrency:
+  group: starfall-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  actions: read
+
 jobs:
-  chromium:
+  quick-checks:
+    name: quick-checks
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Install test dependencies
-        run: npm install --no-save playwright@1.56.1 three@0.128.0 tsparticles@2.12.0
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-      - name: STARFALL AI Lab architecture regression
+      - name: Check embedded JavaScript syntax
+        run: |
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+
+          class Scripts(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.active = False
+                  self.current = []
+                  self.scripts = []
+              def handle_starttag(self, tag, attrs):
+                  if tag.lower() == "script" and not dict(attrs).get("src"):
+                      self.active = True
+                      self.current = []
+              def handle_data(self, data):
+                  if self.active:
+                      self.current.append(data)
+              def handle_endtag(self, tag):
+                  if tag.lower() == "script" and self.active:
+                      source = "".join(self.current)
+                      if source.strip():
+                          self.scripts.append(source)
+                      self.active = False
+
+          parser = Scripts()
+          parser.feed(Path("STARFALL_CURRENT.html").read_text(encoding="utf-8"))
+          if not parser.scripts:
+              raise SystemExit("No inline JavaScript blocks found")
+          for index, source in enumerate(parser.scripts):
+              Path(f"/tmp/starfall-inline-{index}.js").write_text(source, encoding="utf-8")
+          print(f"Extracted {len(parser.scripts)} inline JavaScript blocks")
+          PY
+          for script in /tmp/starfall-inline-*.js; do node --check "$script"; done
+      - name: AI Lab architecture regression (static)
         run: node tests/t12_ai_lab.js
-      - name: STARFALL AI Lab browser runtime smoke test
-        run: node tests/t13_ai_lab_browser.js
-      - name: Nuclear impact performance test
-        run: SF_NM="$PWD/node_modules" node tests/t8_nuke.js
-      - name: Existing graphics probe
-        run: SF_NM="$PWD/node_modules" node tests/t6_probe.js
-      - name: Pirate fleet regression test
-        run: SF_NM="$PWD/node_modules" node tests/t11_pirate_fleet.js
-      - name: STARFALL radar and ship collision regression
+      - name: Radar and collision regression (static)
         run: node tests/t14_radar_collision_regression.js
+
+  prepare-browser:
+    name: prepare-browser
+    needs: quick-checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Cache npm packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: starfall-npm-${{ runner.os }}-node22-playwright1.56.1-three0.128.0-tsparticles2.12.0
+      - name: Cache Playwright Chromium
+        id: chromium-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: starfall-playwright-${{ runner.os }}-1.56.1-chromium-webkit
+      - name: Install test dependencies
+        run: npm install --no-save --no-package-lock playwright@1.56.1 three@0.128.0 tsparticles@2.12.0
+      - name: Install Chromium and WebKit (cache miss only)
+        if: steps.chromium-cache.outputs.cache-hit != 'true'
+        run: npx playwright install chromium webkit
+
+  browser-tests:
+    name: browser-tests (${{ matrix.test }})
+    needs: [quick-checks, prepare-browser]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        test:
+          - ai-lab-browser
+          - nuclear-performance
+          - graphics-probe
+          - pirate-fleet
+          - saves-regression
+          - performance-leak
+          - iphone-chromium
+          - iphone-webkit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Restore npm package cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: starfall-npm-${{ runner.os }}-node22-playwright1.56.1-three0.128.0-tsparticles2.12.0
+      - name: Restore Playwright Chromium cache
+        id: chromium-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: starfall-playwright-${{ runner.os }}-1.56.1-chromium-webkit
+      - name: Install test dependencies
+        run: npm install --no-save --no-package-lock playwright@1.56.1 three@0.128.0 tsparticles@2.12.0
+      - name: Install Chromium fallback (cache unavailable)
+        if: steps.chromium-cache.outputs.cache-hit != 'true' && matrix.test != 'iphone-webkit'
+        run: npx playwright install chromium
+      - name: Install WebKit fallback (cache unavailable)
+        if: steps.chromium-cache.outputs.cache-hit != 'true' && matrix.test == 'iphone-webkit'
+        run: npx playwright install webkit
+      - name: Install WebKit system dependencies
+        if: matrix.test == 'iphone-webkit'
+        run: npx playwright install-deps webkit
+      - name: Run selected browser test
+        env:
+          SF_NM: ${{ github.workspace }}/node_modules
+        run: |
+          case "${{ matrix.test }}" in
+            ai-lab-browser)
+              node tests/t13_ai_lab_browser.js
+              ;;
+            nuclear-performance)
+              node tests/t8_nuke.js
+              ;;
+            graphics-probe)
+              node tests/t6_probe.js
+              ;;
+            pirate-fleet)
+              node tests/t11_pirate_fleet.js
+              ;;
+            saves-regression)
+              node tests/t1_saves.js
+              ;;
+            performance-leak)
+              node tests/t5_leak.js
+              ;;
+            iphone-chromium)
+              node tests/t7_iphone.js
+              ;;
+            iphone-webkit)
+              node tests/t15_iphone_webkit.js
+              ;;
+            *)
+              echo "::error::Unknown test: ${{ matrix.test }}"
+              exit 2
+              ;;
+          esac
+
+  ci-metrics:
+    name: ci-metrics
+    if: always()
+    needs: [quick-checks, prepare-browser, browser-tests]
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - name: Collect duration and failure statistics
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const { owner, repo } = context.repo;
+            const { data } = await github.rest.actions.listJobsForWorkflowRun({
+              owner,
+              repo,
+              run_id: context.runId,
+              per_page: 100
+            });
+            const duration = (start, end) => {
+              if (!start || !end) return null;
+              return Math.max(0, Math.round((Date.parse(end) - Date.parse(start)) / 1000));
+            };
+            const jobs = data.jobs
+              .filter(job => job.name !== 'ci-metrics')
+              .map(job => ({
+                name: job.name,
+                status: job.conclusion || job.status,
+                duration_seconds: duration(job.started_at, job.completed_at),
+                failed_steps: (job.steps || [])
+                  .filter(step => step.conclusion === 'failure')
+                  .map(step => step.name),
+                steps: (job.steps || []).map(step => ({
+                  name: step.name,
+                  status: step.conclusion || step.status,
+                  duration_seconds: duration(step.started_at, step.completed_at)
+                }))
+              }));
+            const metrics = {
+              repository: context.repo.owner + '/' + context.repo.repo,
+              run_id: context.runId,
+              run_number: context.runNumber,
+              commit: context.sha,
+              branch: context.ref,
+              recorded_at: new Date().toISOString(),
+              jobs
+            };
+            fs.writeFileSync('ci-metrics.json', JSON.stringify(metrics, null, 2));
+            const summary = core.summary
+              .addHeading('STARFALL CI — duration and failure report')
+              .addRaw('Run #' + context.runNumber + ' · commit ' + context.sha.slice(0, 12))
+              .addTable([
+                [{data:'Job',header:true},{data:'Result',header:true},{data:'Duration',header:true},{data:'Failed steps',header:true}],
+                ...jobs.map(job => [
+                  job.name,
+                  job.status,
+                  job.duration_seconds == null ? 'in progress' : job.duration_seconds + ' s',
+                  job.failed_steps.length ? job.failed_steps.join(', ') : '—'
+                ])
+              ]);
+            for (const job of jobs) {
+              if (job.steps.length) {
+                summary.addHeading(job.name + ' — step timings', 3)
+                  .addTable([
+                    [{data:'Step',header:true},{data:'Result',header:true},{data:'Duration',header:true}],
+                    ...job.steps.map(step => [
+                      step.name,
+                      step.status,
+                      step.duration_seconds == null ? '—' : step.duration_seconds + ' s'
+                    ])
+                  ]);
+              }
+            }
+            await summary.write();
+      - name: Store machine-readable CI metrics
+        uses: actions/upload-artifact@v4
+        with:
+          name: starfall-ci-metrics-${{ github.run_number }}
+          path: ci-metrics.json
+          if-no-files-found: error
+          retention-days: 90
