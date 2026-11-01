@@ -1,5 +1,13 @@
 # STARFALL — Decision Log
 
+## 2026-11-01 — Explicit replacement of the production HTML baseline
+- User explicitly selected the uploaded `STARFALL — Void Hunter.html` as a full replacement for `STARFALL_CURRENT.html`.
+- The exported outer wrapper was stripped; the inner standalone HTML document was committed as the game entry file.
+- This intentionally replaces the previous v90 implementation. Historical v89/v90 passport and research notes remain archival and must not be interpreted as proof that those systems exist in the replacement build.
+- Local validation: all inline JavaScript blocks passed `node --check`. CI, gameplay regression, SAVE migration/compatibility, and physical iPhone Safari validation are pending.
+- Status: IMPLEMENTED, NOT VERIFIED.
+
+
 Canonical record of durable gameplay, architecture, UI and workflow decisions. New entries are appended at the top. Statuses distinguish an accepted design decision from a verified implementation.
 
 ## 2026-11-01 — Elite OCS controller integration (implementation pending CI)
