@@ -120,8 +120,20 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   const ctx2 = await L.newCtx(browser);
   await ctx2.addInitScript(() => { const boom = () => { throw new DOMException('denied', 'SecurityError'); }; Object.defineProperty(window, 'localStorage', { get: boom, configurable: true }); });
   const p2 = await L.openGame(ctx2);
-  // The click handler starts the game in-place; do not make Playwright wait for a navigation that is not part of this flow.
-  await p2.click('#play', { noWaitAfter: true }); await p2.waitForFunction(() => state === 'dock', null, { timeout: 10000 }); await L.sleep(500);
+  // Storage denial can expose a startup exception before dock(); capture runtime state instead of masking it with a generic timeout.
+  await p2.click('#play', { noWaitAfter: true });
+  await L.sleep(700);
+  const deniedStart = await p2.evaluate(() => ({
+    state: typeof state === 'undefined' ? 'undefined' : state,
+    save: typeof SV !== 'undefined' ? SV.info() : null,
+    menuHidden: document.getElementById('menu')?.classList.contains('hide'),
+    dockVisible: document.getElementById('mkt')?.classList.contains('hide') === false,
+    playDisabled: document.getElementById('play')?.disabled
+  }));
+  console.log('   storage-denied startup diagnostic:', JSON.stringify({ ...deniedStart, errors: p2.errors, dialog: p2.lastDialog || null }));
+  L.check('9. запуск без localStorage переходит в dock', deniedStart.state === 'dock', deniedStart);
+  if (deniedStart.state !== 'dock') throw new Error('Storage-denied startup did not reach dock; see diagnostic above.');
+  await L.sleep(500);
   const inf = await p2.evaluate(() => SV.info());
   L.check('9. игра работает без localStorage, persist=false, ошибок нет', inf.persist === false && p2.errors.length === 0, { inf, errs: p2.errors });
   L.check('9. пользователь предупреждён (toast)', await p2.evaluate(() => { const t = document.getElementById('svt'); return !!t && /недоступно/.test(t.textContent); }));
