@@ -5,6 +5,8 @@
 - Исправлена траектория `FIRING_PASS`: корабль проходит за игрока по сохранённому направлению атаки и переходит в `OVERSHOOT`, вместо разворота перед целью.
 - HP, урон, щиты, скорость/точность ИИ, оружие и управление не менялись. Добавлены регрессионные проверки.
 
+- CI расширен: добавлены SAVE 2.0 regression, memory-leak regression, iPhone Chromium emulation и WebKit mobile-engine test; WebKit не подменяет реальный iOS Safari.
+
 ---
 
 ## v88 — 3D-радар в стиле Elite Dangerous

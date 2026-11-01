@@ -51,12 +51,12 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: starfall-playwright-${{ runner.os }}-1.56.1-chromium
+          key: starfall-playwright-${{ runner.os }}-1.56.1-chromium-webkit
       - name: Install test dependencies
         run: npm install --no-save --no-package-lock playwright@1.56.1 three@0.128.0 tsparticles@2.12.0
-      - name: Install Chromium (cache miss only)
+      - name: Install Chromium and WebKit (cache miss only)
         if: steps.chromium-cache.outputs.cache-hit != 'true'
-        run: npx playwright install chromium
+        run: npx playwright install --with-deps chromium webkit
 
   browser-tests:
     name: browser-tests (${{ matrix.test }})
@@ -71,6 +71,10 @@ jobs:
           - nuclear-performance
           - graphics-probe
           - pirate-fleet
+          - saves-regression
+          - performance-leak
+          - iphone-chromium
+          - iphone-webkit
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -90,8 +94,11 @@ jobs:
       - name: Install test dependencies
         run: npm install --no-save --no-package-lock playwright@1.56.1 three@0.128.0 tsparticles@2.12.0
       - name: Install Chromium fallback (cache unavailable)
-        if: steps.chromium-cache.outputs.cache-hit != 'true'
+        if: steps.chromium-cache.outputs.cache-hit != 'true' && matrix.test != 'iphone-webkit'
         run: npx playwright install chromium
+      - name: Install WebKit fallback (cache unavailable)
+        if: steps.chromium-cache.outputs.cache-hit != 'true' && matrix.test == 'iphone-webkit'
+        run: npx playwright install --with-deps webkit
       - name: Run selected browser test
         env:
           SF_NM: ${{ github.workspace }}/node_modules
@@ -108,6 +115,18 @@ jobs:
               ;;
             pirate-fleet)
               node tests/t11_pirate_fleet.js
+              ;;
+            saves-regression)
+              node tests/t1_saves.js
+              ;;
+            performance-leak)
+              node tests/t5_leak.js
+              ;;
+            iphone-chromium)
+              node tests/t7_iphone.js
+              ;;
+            iphone-webkit)
+              node tests/t15_iphone_webkit.js
               ;;
             *)
               echo "::error::Unknown test: ${{ matrix.test }}"

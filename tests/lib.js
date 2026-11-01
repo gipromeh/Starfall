@@ -1,4 +1,5 @@
-let chromium; try { ({ chromium } = require('playwright')); } catch (e) { ({ chromium } = require('/opt/npm-tools/node_modules/playwright')); }
+let playwright; try { playwright = require('playwright'); } catch (e) { playwright = require('/opt/npm-tools/node_modules/playwright'); }
+const { chromium, webkit } = playwright;
 const fs = require('fs'), path = require('path');
 const NM = process.env.SF_NM || path.join(__dirname, 'node_modules');
 const GAME = path.join(__dirname, '..', 'STARFALL_CURRENT.html');
@@ -11,6 +12,9 @@ const MAP = [
 async function launch(opts = {}) {
   const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-webgl'] });
   return browser;
+}
+async function launchWebKit() {
+  return webkit.launch({ headless: true });
 }
 async function newCtx(browser, o = {}) {
   const ctx = await browser.newContext({ viewport: o.viewport || { width: 800, height: 450 }, deviceScaleFactor: o.dpr || 1, hasTouch: !!o.touch, isMobile: !!o.touch, userAgent: o.ua });
@@ -44,4 +48,4 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 let pass = 0, fail = 0; const lines = [];
 function check(name, cond, extra) { if (cond) { pass++; lines.push('  PASS ' + name); } else { fail++; lines.push('  FAIL ' + name + (extra !== undefined ? '  -> ' + JSON.stringify(extra) : '')); } console.log(lines[lines.length - 1]); }
 function summary() { console.log(`\n${pass} passed, ${fail} failed`); return fail; }
-module.exports = { launch, newCtx, openGame, sleep, check, summary, ORIGIN };
+module.exports = { launch, launchWebKit, newCtx, openGame, sleep, check, summary, ORIGIN };

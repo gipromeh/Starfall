@@ -11,19 +11,23 @@ Workflow: `.github/workflows/game-tests.yml`.
 1. **quick-checks** — быстрые проверки без запуска браузера:
    - `tests/t12_ai_lab.js` — архитектурные регрессии AI Lab;
    - `tests/t14_radar_collision_regression.js` — статические проверки радара, столкновений и боевой механики.
-2. **prepare-browser** — один раз устанавливает тестовые зависимости и прогревает общий npm/Chromium cache.
+2. **prepare-browser** — один раз устанавливает тестовые зависимости и прогревает общий npm/Chromium/WebKit cache.
 3. **browser-tests** — запускаются только после успешных `quick-checks` и `prepare-browser`; каждый сценарий выполняется в отдельной matrix job:
    - `tests/t13_ai_lab_browser.js` — браузерный smoke test;
    - `tests/t8_nuke.js` — производительность ядерного удара;
    - `tests/t6_probe.js` — графические ресурсы и очистка объектов;
-   - `tests/t11_pirate_fleet.js` — регрессии пиратской эскадрильи.
+   - `tests/t11_pirate_fleet.js` — регрессии пиратской эскадрильи;
+   - `tests/t1_saves.js` — SAVE 2.0: покупки, reload, два слота, повреждение данных, миграция, резерв, localStorage недоступен;
+   - `tests/t5_leak.js` — регрессия утечек в бою и проверка профилей качества;
+   - `tests/t7_iphone.js` — мобильный профиль и геометрия сенсорных кнопок в Chromium;
+   - `tests/t15_iphone_webkit.js` — WebKit с iPhone UA/viewport/touch: WebGL, мобильные кнопки, pointer input и resize. Это WebKit Linux, не реальный iOS Safari.
 4. **passport-check** — отдельный workflow проверяет SHA паспорта и совместное обновление игры, паспорта и CHANGELOG.
 
 ## Кэширование
 
 - npm cache: `~/.npm`, ключ привязан к ОС, Node.js и закреплённым версиям зависимостей.
-- Playwright cache: `~/.cache/ms-playwright`, ключ привязан к ОС и версии Playwright.
-- Chromium скачивается только при cache miss. На cache hit повторная загрузка браузера пропускается.
+- Playwright browser cache: `~/.cache/ms-playwright`, ключ привязан к ОС и версии Playwright; включает Chromium и WebKit.
+- Chromium и WebKit скачиваются только при cache miss. На cache hit повторная загрузка браузеров пропускается.
 - Зависимости тестов закреплены точными версиями в workflow. Не обновлять их автоматически без отдельной проверки.
 
 ## Повторные запуски
@@ -43,7 +47,11 @@ Workflow: `.github/workflows/game-tests.yml`.
 - `game-tests / browser-tests (ai-lab-browser)`;
 - `game-tests / browser-tests (nuclear-performance)`;
 - `game-tests / browser-tests (graphics-probe)`;
-- `game-tests / browser-tests (pirate-fleet)`.
+- `game-tests / browser-tests (pirate-fleet)`;
+- `game-tests / browser-tests (saves-regression)`;
+- `game-tests / browser-tests (performance-leak)`;
+- `game-tests / browser-tests (iphone-chromium)`;
+- `game-tests / browser-tests (iphone-webkit)`.
 
 `ci-metrics` — диагностическая job; она не заменяет тесты и не должна быть обязательным gate.
 
@@ -61,4 +69,4 @@ Workflow: `.github/workflows/game-tests.yml`.
 
 ## Ручные проверки
 
-Зелёный CI подтверждает только автоматические сценарии на Ubuntu/Chromium. Он не заменяет проверку реального Safari на iPhone, сенсорного управления, GPU/FPS, нагрева и сохранения прогресса на реальном устройстве.
+Зелёный CI подтверждает автоматические сценарии на Ubuntu/Chromium и WebKit. WebKit под Linux с мобильными viewport/UA/touch не эквивалентен Safari на iOS: он не воспроизводит iOS GPU-драйвер, энергосбережение, системные ограничения памяти и поведение вкладки при блокировке экрана. Он не заменяет проверку реального iPhone, GPU/FPS, нагрева, длительной сессии и сохранения после выгрузки приложения.
