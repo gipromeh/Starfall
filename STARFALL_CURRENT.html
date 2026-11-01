@@ -16,8 +16,8 @@ button:hover,button.on{background:#4fd0ffdd;color:#001824;text-shadow:none}
 #hud::before{content:"";position:absolute;left:8px;top:8px;width:270px;height:152px;border-left:2px solid #4fd0ff99;background:linear-gradient(90deg,#06223a99,transparent);clip-path:polygon(0 0,100% 0,100% 62%,88% 100%,0 100%)}
 #hull::after,#shield::after,#heat::after,#fuel::after{position:absolute;left:228px;top:-2px;font-size:10px;color:#9fdcff;letter-spacing:.1em}
 #hull::after{content:"КОРПУС";color:#ffb0a0}#shield::after{content:"ЩИТ"}#heat::after{content:"НАГРЕВ";color:#ffd080}#fuel::after{content:"ТОПЛИВО";color:#b8ffa0}
-#radar{border:2px solid #4fd0ffbb!important;box-shadow:0 0 18px #4fd0ff77,inset 0 0 22px #4fd0ff44;background:radial-gradient(#06304fa0,#02101ca0)!important}
-#radar-controls button{background:#06182cdd;border:1px solid #4fd0ff88;color:#cfefff;box-shadow:0 0 6px #4fd0ff33;font-family:inherit;font-weight:700}#radar-controls button.on{background:#4fd0ffdd;color:#001824;box-shadow:0 0 10px #4fd0ff99}
+#radar{border:2px solid #ffad63bb!important;box-shadow:0 0 18px #ff9b4a77,inset 0 0 22px #ff9b4a44;background:radial-gradient(#3b1d08a0,#080502a0)!important}
+#radar-controls button{background:#1c1009ee;border:1px solid #ffad6388;color:#ffe2c4;box-shadow:0 0 6px #ff9b4a33;font-family:inherit;font-weight:700}#radar-controls button.on{background:#ffb66ddd;color:#241004;box-shadow:0 0 10px #ff9b4a99}
 #cross{border:0;box-shadow:none}
 #tgt,#lead{display:none!important}
 #cross.on{opacity:1!important}#cross.on::before,#cross.on::after{background:#ff2a2a;box-shadow:0 0 8px #f22}
@@ -1841,16 +1841,16 @@ function radar(){
  const c=85,R0=72,scale=R0/radarRange,iq=Q.clone().invert(),contacts=collectRadarContacts(),now=performance.now();
  radarSweepAngle=(now*.00048)%(Math.PI*2);
  rc.clearRect(0,0,170,170);rc.save();
- rc.beginPath();rc.arc(c,c,82,0,Math.PI*2);rc.fillStyle="#020c17f2";rc.fill();rc.strokeStyle="#55dfff99";rc.lineWidth=1.4;rc.stroke();
+ rc.beginPath();rc.arc(c,c,82,0,Math.PI*2);rc.fillStyle="#0c0805f2";rc.fill();rc.strokeStyle="#ffad6388";rc.lineWidth=1.4;rc.stroke();
  rc.save();rc.beginPath();rc.arc(c,c,78,0,Math.PI*2);rc.clip();
- const bg=rc.createRadialGradient(c,c,4,c,c,78);bg.addColorStop(0,"#0a2940aa");bg.addColorStop(1,"#03101ddd");rc.fillStyle=bg;rc.fillRect(7,7,156,156);
- for(let i=1;i<=3;i++){const rr=R0*i/3;rc.beginPath();rc.arc(c,c,rr,0,Math.PI*2);rc.strokeStyle=i===3?"#6bdfff66":"#64c9ed38";rc.lineWidth=i===3?1.1:.8;rc.stroke();if(i<3){rc.fillStyle="#a9eaff88";rc.font="7px monospace";rc.textAlign="left";rc.fillText(radarDistanceLabel(radarRange*i/3),c+rr+2,c-2)}}
- rc.beginPath();rc.moveTo(c,14);rc.lineTo(c,156);rc.moveTo(14,c);rc.lineTo(156,c);rc.strokeStyle="#70d5f044";rc.lineWidth=.7;rc.stroke();
- rc.fillStyle="#bfefff";rc.font="bold 8px monospace";rc.textAlign="center";rc.fillText("F",c,20);rc.fillText("A",c,153);rc.fillText("L",18,c+3);rc.fillText("R",152,c+3);
+ const bg=rc.createRadialGradient(c,c,4,c,c,78);bg.addColorStop(0,"#39200aaa");bg.addColorStop(1,"#0f0903dd");rc.fillStyle=bg;rc.fillRect(7,7,156,156);
+ for(let i=1;i<=3;i++){const rr=R0*i/3;rc.beginPath();rc.arc(c,c,rr,0,Math.PI*2);rc.strokeStyle=i===3?"#ffc07866":"#e4a65b38";rc.lineWidth=i===3?1.1:.8;rc.stroke();if(i<3){rc.fillStyle="#a9eaff88";rc.font="7px monospace";rc.textAlign="left";rc.fillText(radarDistanceLabel(radarRange*i/3),c+rr+2,c-2)}}
+ rc.beginPath();rc.moveTo(c,14);rc.lineTo(c,156);rc.moveTo(14,c);rc.lineTo(156,c);rc.strokeStyle="#ffc07844";rc.lineWidth=.7;rc.stroke();
+ rc.fillStyle="#ffd4a3";rc.font="bold 8px monospace";rc.textAlign="center";rc.fillText("F",c,20);rc.fillText("A",c,153);rc.fillText("L",18,c+3);rc.fillText("R",152,c+3);
  const sweep=radarSweepAngle;rc.save();rc.translate(c,c);rc.rotate(sweep);
- const wedge=rc.createRadialGradient(0,0,3,0,0,R0);wedge.addColorStop(0,"#36f5c000");wedge.addColorStop(.75,"#36f5c018");wedge.addColorStop(1,"#36f5c000");
+ const wedge=rc.createRadialGradient(0,0,3,0,0,R0);wedge.addColorStop(0,"#ffb35c00");wedge.addColorStop(.75,"#ffb35c18");wedge.addColorStop(1,"#36f5c000");
  rc.beginPath();rc.moveTo(0,0);rc.arc(0,0,R0,-.42,.025);rc.closePath();rc.fillStyle=wedge;rc.fill();
- rc.beginPath();rc.moveTo(0,0);rc.lineTo(R0,0);rc.strokeStyle="#69ffe0bb";rc.lineWidth=1.2;rc.shadowColor="#5fffd8";rc.shadowBlur=7;rc.stroke();rc.restore();
+ rc.beginPath();rc.moveTo(0,0);rc.lineTo(R0,0);rc.strokeStyle="#ffc078cc";rc.lineWidth=1.2;rc.shadowColor="#ff9d3d";rc.shadowBlur=7;rc.stroke();rc.restore();
  let hostileCount=0,targetText="",targetDistance=0;
  for(const q of contacts){
   if(q.hostile)hostileCount++;
@@ -1880,9 +1880,9 @@ function radar(){
   }
   if(q.selected&&!outside){rc.beginPath();rc.arc(px,markerY,q.radius+4,0,Math.PI*2);rc.strokeStyle="#fff";rc.lineWidth=1.2;rc.stroke()}
  }
- rc.save();rc.translate(c,c);rc.beginPath();rc.moveTo(0,-7);rc.lineTo(5,6);rc.lineTo(0,3);rc.lineTo(-5,6);rc.closePath();rc.fillStyle="#d8fbff";rc.shadowColor="#7ceaff";rc.shadowBlur=6;rc.fill();rc.restore();
+ rc.save();rc.translate(c,c);rc.beginPath();rc.moveTo(0,-7);rc.lineTo(5,6);rc.lineTo(0,3);rc.lineTo(-5,6);rc.closePath();rc.fillStyle="#fff0d5";rc.shadowColor="#ffbb66";rc.shadowBlur=6;rc.fill();rc.restore();
  rc.restore();
- rc.fillStyle="#c9eaff";rc.font="8px monospace";rc.textAlign="center";rc.fillText(targetText?"ЦЕЛЬ "+targetText+" · "+Math.round(targetDistance)+"м":"КОНТАКТЫ · ВРАГИ "+hostileCount,c,168);rc.restore();
+ rc.fillStyle="#ffd8ad";rc.font="8px monospace";rc.textAlign="center";rc.fillText(targetText?"ЦЕЛЬ "+targetText+" · "+Math.round(targetDistance)+"м":"КОНТАКТЫ · ВРАГИ "+hostileCount,c,168);rc.restore();
 }
 function setRadarRange(value){radarRange=Math.max(500,Math.min(2000,Number(value)||1000));radarRangeButtons.forEach(b=>b.classList.toggle("on",Number(b.dataset.radarRange)===radarRange));radar()}
 radarRangeButtons.forEach(b=>b.addEventListener("click",e=>{e.stopPropagation();setRadarRange(b.dataset.radarRange)}));radarRangeButtons.forEach(b=>b.classList.toggle("on",Number(b.dataset.radarRange)===radarRange));
