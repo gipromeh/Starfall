@@ -53,6 +53,12 @@ const L = require('./lib');
   }));
   L.check('стартовая атака содержит ровно Головореза и Шакала', composition.total === 2 && composition.types.every(n => n === 1), composition);
   L.check('оба корабля стартовой атаки созданы', composition.spawned === 2, composition);
+  const initialSpawn = await page.evaluate(() => pirateFleet.map(e => {
+    const forward = new THREE.Vector3(0,0,-1).applyQuaternion(Q).normalize();
+    const offset = e.g.position.clone().sub(P);
+    return { type:e.ty, distance:offset.length(), ahead:offset.normalize().dot(forward) };
+  }));
+  L.check('стартовая эскадрилья появляется впереди игрока на заданной дистанции', initialSpawn.length===2&&initialSpawn.every(x=>x.distance>=750&&x.distance<=870&&x.ahead>.98), initialSpawn);
   const fleetHealth = await page.evaluate(() => pirateFleet.every(e => e.mx >= SHIPS[shp].hull * 2));
   L.check('прочность каждого корабля эскадрильи не ниже двойной прочности игрока', fleetHealth, fleetHealth);
   const locators = await page.evaluate(() => pirateFleet.map(e => {
