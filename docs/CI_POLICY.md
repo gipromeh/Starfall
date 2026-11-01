@@ -11,12 +11,13 @@ Workflow: `.github/workflows/game-tests.yml`.
 1. **quick-checks** — быстрые проверки без запуска браузера:
    - `tests/t12_ai_lab.js` — архитектурные регрессии AI Lab;
    - `tests/t14_radar_collision_regression.js` — статические проверки радара, столкновений и боевой механики.
-2. **browser-tests** — запускаются только после успешного `quick-checks`; каждый сценарий выполняется в отдельной matrix job:
+2. **prepare-browser** — один раз устанавливает тестовые зависимости и прогревает общий npm/Chromium cache.
+3. **browser-tests** — запускаются только после успешных `quick-checks` и `prepare-browser`; каждый сценарий выполняется в отдельной matrix job:
    - `tests/t13_ai_lab_browser.js` — браузерный smoke test;
    - `tests/t8_nuke.js` — производительность ядерного удара;
    - `tests/t6_probe.js` — графические ресурсы и очистка объектов;
    - `tests/t11_pirate_fleet.js` — регрессии пиратской эскадрильи.
-3. **passport-check** — отдельный workflow проверяет SHA паспорта и совместное обновление игры, паспорта и CHANGELOG.
+4. **passport-check** — отдельный workflow проверяет SHA паспорта и совместное обновление игры, паспорта и CHANGELOG.
 
 ## Кэширование
 
