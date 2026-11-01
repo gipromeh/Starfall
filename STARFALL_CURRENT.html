@@ -1732,8 +1732,8 @@ function pirateFleetAttachFX(e){
 function pirateFleetSpawn(e,delay=0){
  pirateFleetPrepare();
  const g=pirateFleetTemplates[e.ty].clone(true),fw=new T.Vector3(0,0,-1).applyQuaternion(Q).normalize(),right=new T.Vector3(1,0,0).applyQuaternion(Q).normalize();
- g.position.copy(P).addScaledVector(fw,(760+e.slot*90)).addScaledVector(right,(e.slot-1.5)*110).add(new T.Vector3(0,(e.slot-1.5)*36,0));
- g.visible=false;S.add(g);e.g=g;const hit=pirateHitBounds(g);Object.assign(e,hit);const sockets=pirateFleetResolveSockets(g,e.ty);e.muzzleNodes=sockets.guns;e.engineNodes=sockets.engines;e.hp=e.mx=Math.max(200,SHIPS[shp].hull*2);e.r=e.ty===0?8.5:7.2;e.warp=.55+delay;e.state="APPROACH";e.stateT=0;e.side=e.slot-1.5;
+ g.position.copy(P).addScaledVector(fw,(760+e.slot*90)).addScaledVector(right,(e.slot-.5)*110).add(new T.Vector3(0,(e.slot-.5)*36,0));
+ g.visible=false;S.add(g);e.g=g;const hit=pirateHitBounds(g);Object.assign(e,hit);const sockets=pirateFleetResolveSockets(g,e.ty);e.muzzleNodes=sockets.guns;e.engineNodes=sockets.engines;e.hp=e.mx=Math.max(200,SHIPS[shp].hull*2);e.r=e.ty===0?8.5:7.2;e.warp=.55+delay;e.state="APPROACH";e.stateT=0;e.side=e.slot-.5;
  e.fire=.2+Math.random()*.22;e.burst=0;e.burstGap=0;e.trailT=.1;e.hits=0;e.vel=P.clone().sub(g.position).normalize().multiplyScalar([46,34.5,46,46][e.ty]||46);e.hd=e.vel.clone().normalize();e.speed=e.vel.length();e.runDir=null;e.dead=false;e.smoke=null;e.fireFx=null;e.flames=[];pirateFleetAttachFX(e);
 }
 function pirateFleetClear(){
