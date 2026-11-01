@@ -17,7 +17,7 @@ Workflow: `.github/workflows/game-tests.yml`.
    - `tests/t13_ai_lab_browser.js` — браузерный smoke test;
    - `tests/t8_nuke.js` — производительность ядерного удара;
    - `tests/t6_probe.js` — графические ресурсы и очистка объектов;
-   - `tests/t11_pirate_fleet.js` — регрессии пиратской эскадрильи;
+   - `tests/t11_pirate_fleet.js` — регрессии пиратской эскадрильи, Elite-inspired AI tick (15 Гц), локальных проекций, PRNG и покадрового движения;
    - `tests/t1_saves.js` — SAVE 2.0: покупки, reload, два слота, повреждение данных, миграция, резерв, localStorage недоступен;
    - `tests/t5_leak.js` — регрессия утечек в бою и проверка профилей качества;
    - `tests/t7_iphone.js` — мобильный профиль и геометрия сенсорных кнопок в Chromium;
