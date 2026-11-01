@@ -1631,7 +1631,7 @@ sinceHit+=dt;if(sinceHit>2)shield=Math.min(100,shield+5*us*SH[shd].rg*dt);
 fireT-=dt;heat=Math.max(0,heat-(((firing&&!mnm)||mhit)&&!hot?0:30)*dt);if(heat>=100)hot=true;if(hot&&heat<35)hot=false;if(firing&&!mnm&&!hot&&fireT<=0){fireT=0;{const ad=aimDir();for(let i=0;i<SHIPS[shp].wp;i++){st[i]-=dt;const w=WP[gw[i]];if(st[i]<=0){st[i]=w.iv;heat+=w.h*uh/SHIPS[shp].wp;shootLaser(bul,new T.Vector3([-1.8,1.8,-3,3][i],-.1,-2).applyQuaternion(Q).add(P),ad.clone().multiplyScalar(w.v),w.c,w.d*ud*1.2/Math.sqrt(SHIPS[shp].wp),w.l);if(i===0)sfx("l")}}}}
 if(!E&&E2){E=E2;E2=null}
 if(E&&E2&&E.warp<=0&&E2.warp<=0){const fw_=new T.Vector3(0,0,-1).applyQuaternion(Q);if(fw_.angleTo(E2.g.position.clone().sub(P))<fw_.angleTo(E.g.position.clone().sub(P))-.05){const t_=E;E=E2;E2=t_}}
-if(E&&!E2&&!E.boss&&enc>0&&wave%5!==4){E.pt=(E.pt||0)+dt;if(E.pt>.6&&wave%5!==0){if(firstWaveSpawn<2&&!pirateAssetsReady)E.pt=.6;else{enc--;spawnE()}}}
+if(!pirateFleet.some(pe=>pe.g&&pe.hp>0&&!pe.dead)&&E&&!E2&&!E.boss&&enc>0&&wave%5!==4){E.pt=(E.pt||0)+dt;if(E.pt>.6&&wave%5!==0){if(firstWaveSpawn<2&&!pirateAssetsReady)E.pt=.6;else{enc--;spawnE()}}}
 if(!E&&!pirateFleet.some(pe=>pe.g&&pe.hp>0&&!pe.dead)){if(enc>0){spawnT-=dt;if(spawnT<=0){if(firstWaveSpawn<2&&!pirateAssetsReady)spawnT=.25;else{enc--;spawnE()}}}else{amb-=dt*(bty&&bty.sys===sy?3:1);if(amb<=0){enc=2+Math.floor(Math.random()*2)+GAL.extra();amb=(70+Math.random()*50)*GAL.ambK();spawnT=2;say("СИГНАЛ ТРЕВОГИ: пираты на подходе!",3)}}}
 for(let _p=0;_p<2;_p++){if(_p){if(!E2)break;const t_=E;E=E2;E2=t_}
 if(E&&E.warp>0){E.warp-=dt;if(E.warp<=0){E.g.visible=true;E.r=E.r0;boom(E.g.position,50,14,0x88ccff,60,1.2);ring(E.g.position,0x88ccff,8,3.5);sfx("e")}}
