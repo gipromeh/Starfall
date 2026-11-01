@@ -59,10 +59,10 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   L.check('награда начислена один раз, контракт закрыт', s.cr === crPre + 500 && s.ct === null && s.cargo[1] === 0, s);
   await goMenu(page);
   L.check('в меню появилась ПРОДОЛЖИТЬ', await page.evaluate(() => { const c = document.getElementById('cont'); return !!c && c.style.display !== 'none'; }));
-  await page.click('#cont'); await page.waitForFunction(() => state === 'dock'); await L.sleep(300);
+  await page.click('#cont', { noWaitAfter: true }); await page.waitForFunction(() => state === 'dock'); await L.sleep(300);
   let s2 = await page.evaluate(() => ({ cr, ct }));
   L.check('4. после меню и возврата: кредиты те же, контракта нет', s2.cr === s.cr && s2.ct === null, { s, s2 });
-  for (let i = 0; i < 3; i++) { await goMenu(page); await page.click('#cont'); await page.waitForFunction(() => state === 'dock'); }
+  for (let i = 0; i < 3; i++) { await goMenu(page); await page.click('#cont', { noWaitAfter: true }); await page.waitForFunction(() => state === 'dock'); }
   s2 = await page.evaluate(() => ({ cr, ct }));
   L.check('8. три загрузки подряд — награда не дублируется', s2.cr === s.cr && s2.ct === null, { s, s2 });
 
@@ -87,7 +87,7 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   console.log('\n[6] Загрузка старого сохранения (формат sf_sv до v42)');
   const legacy = { gal: [{ sec: 40, eco: 35, pir: 65, rep: 0, inf: { gld: 44, bur: 18, mec: 18, pir: 30 }, evt: null }], fr: { gld: 12, bur: 0, mec: -5, pir: 0 }, cr: 4321, cargo: [1, 2, 0], pp: [10, 20, 0], sy: 2, uh: 1.6, uf: 1, ud: 2.56, us: 1, wave: 17, ct: null, shp: 2, gw: [1, 2, 0, 0], shd: 1, mt: 1, owS: [1, 0, 1], owW: [1, 1, 1], owH: [1, 1, 0], owM: [1, 1] };
   await page.evaluate(L_ => { localStorage.clear(); localStorage.setItem('sf_sv', JSON.stringify(L_)); }, legacy);
-  await page.reload(); await page.waitForFunction(() => typeof SV !== 'undefined'); await page.waitForSelector('#cont', { state: 'visible' }); await page.click('#cont'); await page.waitForFunction(() => state === 'dock'); await L.sleep(300);
+  await page.reload(); await page.waitForFunction(() => typeof SV !== 'undefined'); await page.waitForSelector('#cont', { state: 'visible' }); await page.click('#cont', { noWaitAfter: true }); await page.waitForFunction(() => state === 'dock'); await L.sleep(300);
   s = await page.evaluate(() => ({ cr, cargo: cargo.slice(), sy, shp, wave, gw: gw.slice(), owS: owS.slice(), uh, ud, fr: GAL.fr, miss, nuke, hull }));
   L.check('6. старое сохранение: кредиты, трюм, система, корабль, волна, тюнинг, фракции', s.cr === 4321 && s.cargo.join() === '1,2,0,0,0' && s.sy === 2 && s.shp === 2 && s.wave === 17 && s.uh === 1.6 && s.ud === 2.56 && s.fr.gld === 12, s);
   L.check('6. массив кораблей дорос до 5 без потери владения', s.owS.length === 5 && s.owS[0] === 1 && s.owS[2] === 1, s.owS);
