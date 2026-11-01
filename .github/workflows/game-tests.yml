@@ -91,7 +91,7 @@ jobs:
         run: npm install --no-save --no-package-lock playwright@1.56.1 three@0.128.0 tsparticles@2.12.0
       - name: Install Chromium and WebKit (cache miss only)
         if: steps.chromium-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps chromium webkit
+        run: npx playwright install chromium webkit
 
   browser-tests:
     name: browser-tests (${{ matrix.test }})
@@ -133,7 +133,10 @@ jobs:
         run: npx playwright install chromium
       - name: Install WebKit fallback (cache unavailable)
         if: steps.chromium-cache.outputs.cache-hit != 'true' && matrix.test == 'iphone-webkit'
-        run: npx playwright install --with-deps webkit
+        run: npx playwright install webkit
+      - name: Install WebKit system dependencies
+        if: matrix.test == 'iphone-webkit'
+        run: npx playwright install-deps webkit
       - name: Run selected browser test
         env:
           SF_NM: ${{ github.workspace }}/node_modules
