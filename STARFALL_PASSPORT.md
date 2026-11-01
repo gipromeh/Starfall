@@ -9,7 +9,7 @@
 | Production-сборка | STARFALL_CURRENT.html, версия v87 |
 | Entry point | index.html перенаправляет на production HTML |
 | Рендеринг | Three.js r128; WebGL; отдельный скрипт 3D-бара |
-| Внешние зависимости | Three.js, tsParticles, Babylon.js для 3D-бара и шрифты загружаются с CDN; требуется интернет |
+| Внешние зависимости | Three.js, tsParticles, Babylon.js для 3D-бара и шрифты загружаются с CDN; GLB-модели — из assets/; требуется интернет |
 | Платформы | ПК (мышь/клавиатура), iPhone Safari (сенсорное управление) |
 | Сохранения | SAVE 2.0 в localStorage: sf_sv2a / sf_sv2b; legacy sf_sv; резерв sf_sv_arc |
 | Игровые корабли игрока | 3: «Стриж», «Ястреб», «Мамонт» |
