@@ -9,9 +9,9 @@
 | Research finding | Elite passport location | STARFALL implementation |
 |---|---|---|
 | AI decision and movement are separate loops; ordinary NPC decisions occur once per four frames | §§5.2, 13.6, 14.4 | `EAI.think()`: tactical decision tick at 15 Hz; steering and position integration remain per rendered simulation frame |
-| Ship orientation is a local basis; target direction is projected onto its axes | §§5.1, 13.2, 13.4, 14.3, 14.7 | `EAI.project()`: right/up/forward projections; the local components are used by the firing-cone gate |
-| NPC steering changes orientation and speed progressively | §§5.3, 13.5–13.7, 14.7 | Existing Starfall heading/velocity controller retained; decision cadence is separated from per-frame integration |
-| NPC fire is conditional and probabilistic, not a guaranteed hit from geometric alignment | §§13.9, 14.11 | `EAI.fireChance()`: probability combines forward-axis alignment and normalized range; the existing projectile collision system still resolves hits |
+| Ship orientation is a local basis; target direction is projected onto its axes | §§5.1, 13.2, 13.4, 14.3, 14.7 | `EAI.projectOCS()`: normalized relative vector, half-scale and inverted dot products on right/up/forward axes |
+| NPC steering uses discrete OCS commands; movement is a separate pass | §§13.5–13.7, 14.7, 14.12 | `EAI.command()` quantizes yaw/pitch and acceleration on the 15 Hz decision tick; `EAI.integrate()` applies local-axis rotation, speed limits and position integration every frame |
+| NPC fire uses orientation gates, distance and a descriptor probability | §§13.9, 14.11 | `EAI.fireGate()`: sign-XOR, projection and range gates precede the seeded PRNG threshold; `EAI.fireChance()` supplies the adapted descriptor probability |
 | Random AI decisions share a reproducible sequence | §§5.4, 14.12–14.14 | Shared xorshift32 AI stream, seeded from system/wave/score; visual randomness remains separate |
 
 ## Existing STARFALL systems retained
@@ -19,7 +19,7 @@
 - Three-dimensional flight and quaternion orientation.
 - Existing ship classes, acceleration limits, HP, shields, weapons, projectile collision and damage.
 - Trading, equipment purchases, station interactions and SAVE 2.0.
-- v89 opening pirate formation, firing ranges and attack-pass corrections.
+- v89 opening pirate formation, firing ranges and attack-pass corrections; both ordinary E/E2 pirates and the opening fleet now share the OCS steering/integration controller.
 - Mobile quality profiles, WebGL lifecycle handling and touch controls.
 
 ## Deliberately not copied literally
