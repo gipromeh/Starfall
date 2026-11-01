@@ -33,7 +33,7 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   let eq = await page.evaluate(() => ({ gw: gw.slice(), owW: owW.slice(), cr }));
   if (!(eq.owW[1] === 1)) { await page.evaluate(() => { cr -= 400; owW[1] = 1; gw[0] = 1; stnDraw(); }); console.log('   (кнопка не найдена, повторил мутацию + stnDraw)'); }
   eq = await page.evaluate(() => ({ gw: gw.slice(), owW: owW.slice(), cr }));
-  await page.reload(); await page.waitForFunction(() => typeof SV !== 'undefined'); await page.waitForSelector('#cont', { state: 'visible' }); await page.click('#cont'); await page.waitForFunction(() => state === 'dock'); await L.sleep(300);
+  await page.reload(); await page.waitForFunction(() => typeof SV !== 'undefined'); await page.waitForSelector('#cont', { state: 'visible' }); await page.click('#cont', { noWaitAfter: true }); await page.waitForFunction(() => state === 'dock'); await L.sleep(300);
   s = await page.evaluate(() => ({ gw: gw.slice(), owW: owW.slice(), cr }));
   L.check('2. оружие и деньги после reload', s.owW[1] === 1 && s.gw[0] === 1 && s.cr === eq.cr, { eq, s });
 
