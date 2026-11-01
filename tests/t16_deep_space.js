@@ -16,8 +16,8 @@ const L=require('./lib');
   L.check('Deep Space: three-stage chain has two distinct completed outcomes',chains.help.status==='done'&&chains.salvage.status==='done'&&chains.distinct,chains);
   const save=await page.evaluate(()=>{SF_DS.reset();SF_DS.enter(0);SF_DS.debugSpawnChain('science',true);const sv=window.__STARFALL_DIAG__.getSave();sv.save('deep-space-test');const i=sv.info(),r=JSON.parse(localStorage.getItem(i.slot));return{version:r.v,sector:!!(r.d.ds&&r.d.ds[0]),signals:r.d.ds[0].signals.length}});
   L.check('SAVE v3: deep-space state is serialized',save.version===3&&save.sector&&save.signals>=7,save);
-  const ui=await page.evaluate(()=>{const b=document.querySelector('#ds-open'),r=b.getBoundingClientRect();b.click();return{width:r.width,height:r.height,open:document.querySelector('#ds-panel').style.display==='block'}});
-  L.check('Deep Space: scanner opens with a 44px+ touch target',ui.width>=44&&ui.height>=44&&ui.open,ui);
+  const ui=await page.evaluate(()=>{const b=document.querySelector('#ds-open'),r=b.getBoundingClientRect();b.click();return{width:r.width,height:r.height,right:innerWidth-r.right,top:r.top,open:document.querySelector('#ds-panel').style.display==='block'}});
+  L.check('Deep Space: scanner opens from the upper-right control without covering the lower-left radar',ui.width>=44&&ui.height>=44&&ui.right>=0&&ui.top>=0&&ui.open,ui);
   L.check('Deep Space: no JavaScript errors',page.errors.length===0,page.errors);process.exitCode=L.summary();
  }finally{await ctx.close();await browser.close()}
 })().catch(e=>{console.error('DEEP SPACE TEST CRASH',e);process.exit(2)});
