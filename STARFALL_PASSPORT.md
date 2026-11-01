@@ -16,7 +16,7 @@
 - Полный набор запускается на каждом PR в `main` и push в `main`. Перед слиянием должны быть зелёными `passport-check / check`, `game-tests / quick-checks`, `game-tests / prepare-browser` и все восемь matrix checks.
 - `ci-metrics` публикует длительность jobs/шагов и список ошибок в GitHub Job Summary, а также сохраняет `ci-metrics.json` artifact на 90 дней.
 - Для технического запрета слияния при красных проверках необходимо отдельно включить перечисленные required status checks в GitHub Ruleset / branch protection для `main`. Текущая GitHub-интеграция не предоставляет операцию изменения branch protection.
-- CI в Ubuntu/Chromium не заменяет ручной тест Safari на реальном iPhone.
+- CI в Ubuntu/Chromium + macOS/Playwright WebKit не заменяет ручной тест Safari на реальном iPhone.
 
 ---
 
@@ -602,7 +602,7 @@ PV (конец скрипта): ангар-превью, обёртка hgrView;
 - **Память:** общая геометрия ракеты/ядерки (`MSG/MSM/NKG/NKM`); обломки пиратов освобождают геометрию по счётчику ссылок (`gRef/gRel`), неиспользованные части модели освобождаются при убийстве; тест `tests/t5_leak.js`: после серии убийств геометрии (±15) и текстуры (±6) возвращаются к исходному уровню.
 
 ## 16. Проверка и тесты (v89 CI follow-up)
-Стенд: Playwright + Chromium/WebKit headless. CDN-адреса Three.js r128 и tsParticles 2.12.0 маршрутизируются на локальные npm-пакеты; Babylon и шрифты в тестовом маршрутизаторе блокируются, поэтому 3D-бар Babylon проверяется только на реальном подключении к CDN. Chromium запускается с SwiftShader; WebKit — Linux WebKit с мобильным viewport, iPhone user-agent и touch context.
+Стенд: Playwright + Chromium/WebKit headless. CDN-адреса Three.js r128 и tsParticles 2.12.0 маршрутизируются на локальные npm-пакеты; Babylon блокируется, поэтому 3D-бар Babylon проверяется только на реальном подключении к CDN. Google Fonts stylesheet в тесте подменяется пустым CSS: игра использует локальные font fallbacks. Chromium запускается на Ubuntu с SwiftShader; WebKit — на macOS runner с мобильным viewport, iPhone user-agent и touch context.
 
 **Браузерные сценарии:**
 - `tests/t1_saves.js` — SAVE 2.0: покупка корабля и оборудования, продажа груза, награды без повторного начисления, reload, цены станции, охота/контракт, старый формат, повреждённые слоты, checksum, отсутствие localStorage, автосохранение в полёте, смерть, скрытие вкладки, архив/восстановление и отказ от удаления/подмены активных сохранений при QuotaExceededError.
@@ -613,13 +613,13 @@ PV (конец скрипта): ангар-превью, обёртка hgrView;
 - `tests/t8_nuke.js` — CPU-длительность ядерного удара и разрыв кадров rAF.
 - `tests/t11_pirate_fleet.js` — боевые регрессии стартовой эскадрильи.
 - `tests/t13_ai_lab_browser.js` — browser smoke test AI Lab.
-- `tests/t15_iphone_webkit.js` — WebKit Linux с мобильным профилем: WebGL, touch controls, pointerdown/up, движение прицела и resize.
+- `tests/t15_iphone_webkit.js` — Playwright WebKit на macOS с мобильным профилем: WebGL, touch controls, pointerdown/up, движение прицела и resize.
 
 **Статические проверки:** `node --check` всех встроенных JS-блоков `STARFALL_CURRENT.html`, `tests/t12_ai_lab.js`, `tests/t14_radar_collision_regression.js`.
 
 **CI:** `.github/workflows/game-tests.yml` запускается на PR в `main` и push в `main`. Quick checks отделены от браузерной матрицы; Playwright browser/npm cache прогревается один раз. `ci-metrics` публикует длительности и ошибки. `.github/workflows/passport-check.yml` проверяет SHA-256 и согласованность основного файла, паспорта и CHANGELOG.
 
-**Ограничения проверки:** WebKit Linux не является iOS Safari. Нельзя по нему подтвердить реальный GPU-драйвер iPhone, термальный режим, выгрузку процесса iOS, 30-минутную стабильность и реальный сенсорный UX. Нужен ручной прогон на физическом iPhone и ПК. Babylon 3D-бар не покрыт browser test, поскольку тестовый стенд блокирует внешние CDN.
+**Ограничения проверки:** Playwright WebKit на macOS ближе к Safari, чем Linux WebKit, но не является брендированным Safari и не является iOS Safari. Нельзя по нему подтвердить реальный GPU-драйвер iPhone, термальный режим, выгрузку процесса iOS, 30-минутную стабильность и реальный сенсорный UX. Нужен ручной прогон на физическом iPhone и ПК. Babylon 3D-бар не покрыт browser test, поскольку тестовый стенд блокирует внешние CDN.
 
 ## 17. Единая библиотека игровых ресурсов
 
@@ -736,6 +736,6 @@ PV (конец скрипта): ангар-превью, обёртка hgrView;
 ## CI regression harness correction — PR #12 (2026-11-01)
 
 - SAVE regression scenario 10 dispatches the in-game **ПРОДОЛЖИТЬ** button through page evaluation, then explicitly waits for `state === 'dock'`. This avoids Playwright's 30-second implicit navigation wait after a successful click; the game state remains the actual assertion.
-- The WebKit test harness fulfils the optional Google Fonts stylesheet with empty CSS (the game has local font fallbacks), then waits for `DOMContentLoaded` before checking the inline game API (`SV`, `state`). The previous `waitUntil: 'commit'` returned before document scripts were guaranteed to execute, causing a readiness timeout.
-- These are test-harness synchronization fixes, not changes to gameplay or SAVE semantics. The failed run #353 is retained as historical evidence; the fixes require a fresh CI run.
-- WebKit coverage remains Linux Playwright WebKit emulation, not a physical iPhone/iOS Safari test.
+- The WebKit test harness fulfils the optional Google Fonts stylesheet with empty CSS (the game has local font fallbacks), then waits for `DOMContentLoaded` before checking the inline game API (`SV`, `state`). Linux WebKit did not reach `DOMContentLoaded` while initializing the game's WebGL renderer; the WebKit matrix job now runs on macOS, the closer Playwright platform for Safari-like testing.
+- These are test-harness and runner corrections, not changes to gameplay or SAVE semantics. Linux WebKit run #353 and the subsequent Linux retry are retained as failure evidence; a fresh macOS WebKit run is required.
+- WebKit coverage remains Playwright macOS WebKit emulation, not branded Safari or a physical iPhone/iOS Safari test.
