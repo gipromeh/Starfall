@@ -27,8 +27,8 @@ Workflow: `.github/workflows/game-tests.yml`.
 ## Кэширование
 
 - npm cache: `~/.npm`, ключ привязан к ОС, Node.js и закреплённым версиям зависимостей.
-- Playwright browser cache: `~/.cache/ms-playwright`, ключ привязан к ОС и версии Playwright; включает Chromium и WebKit.
-- Chromium и WebKit скачиваются только при cache miss. На cache hit повторная загрузка браузеров пропускается.
+- Playwright browser cache: `~/.cache/ms-playwright`, ключ привязан к ОС и версии Playwright; включает бинарники Chromium и WebKit. Системные библиотеки WebKit устанавливаются в самом `iphone-webkit` runner, поскольку apt-пакеты между jobs не кэшируются.
+- Chromium и WebKit скачиваются только при cache miss. На cache hit повторная загрузка браузеров пропускается; WebKit runtime dependencies устанавливаются отдельно в job, которая запускает WebKit.
 - Зависимости тестов закреплены точными версиями в workflow. Не обновлять их автоматически без отдельной проверки.
 
 ## Повторные запуски
