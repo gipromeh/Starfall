@@ -1,5 +1,13 @@
 # STARFALL — Decision Log
 
+## 2026-11-01 — Restore and publish the v90 release candidate
+- User explicitly requested publication of v90 after the temporary v91 replacement.
+- Restored `STARFALL_CURRENT.html` byte-for-byte from commit `35632d263ddec37702b0989d252f7b7d3b90260c`, the v90 candidate containing the OCS controller and Deep Space simulation.
+- Restored the v90 passport version and checksum; removed the temporary v91 status from current release documentation. The v91 replacement remains in Git history.
+- Publication gate: passport CI and the complete game-tests workflow must pass before merging PR #13 into `main`.
+- Status: RESTORED; publication pending CI.
+
+
 ## 2026-11-01 — Explicit replacement of the production HTML baseline
 - User explicitly selected the uploaded `STARFALL — Void Hunter.html` as a full replacement for `STARFALL_CURRENT.html`.
 - The exported outer wrapper was stripped; the inner standalone HTML document was committed as the game entry file.
