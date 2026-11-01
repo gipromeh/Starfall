@@ -2,7 +2,7 @@ const L = require('./lib');
 const best = page => page.evaluate(() => { const r = SV.load(); return r.ok ? { src: r.src, d: r.d } : null; });
 const raw = (page, k) => page.evaluate(k => localStorage.getItem(k), k);
 async function startNew(page) { await page.click('#play'); await page.waitForFunction(() => state === 'dock', null, { timeout: 30000 }); await L.sleep(300); }
-async function reopen(ctx, old) { await old.close(); const p = await L.openGame(ctx); await p.waitForSelector('#cont', { state: 'visible', timeout: 5000 }); await p.click('#cont'); await p.waitForFunction(() => state === 'dock', null, { timeout: 30000 }); await L.sleep(300); return p; }
+async function reopen(ctx, old) { await old.close(); const p = await L.openGame(ctx); await p.waitForSelector('#cont', { state: 'visible', timeout: 5000 }); await p.evaluate(() => document.getElementById('cont').click()); await p.waitForFunction(() => state === 'dock', null, { timeout: 30000 }); await L.sleep(300); return p; }
 async function goMenu(page) { await page.evaluate(() => { if (state === 'dock') lift(); }); await L.sleep(500); await page.evaluate(() => pause(true)); await page.click('#men1'); await page.waitForFunction(() => state === 'menu'); await L.sleep(200); }
 async function clickText(page, scope, re) { return page.evaluate(([s, src]) => { const r = new RegExp(src); const b = [...document.querySelectorAll(s + ' button, ' + s + ' .chip, ' + s + ' [onclick]')].find(x => r.test(x.textContent)); if (b) { b.click(); return b.textContent; } return null; }, [scope, re.source]); }
 
@@ -33,7 +33,7 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   let eq = await page.evaluate(() => ({ gw: gw.slice(), owW: owW.slice(), cr }));
   if (!(eq.owW[1] === 1)) { await page.evaluate(() => { cr -= 400; owW[1] = 1; gw[0] = 1; stnDraw(); }); console.log('   (кнопка не найдена, повторил мутацию + stnDraw)'); }
   eq = await page.evaluate(() => ({ gw: gw.slice(), owW: owW.slice(), cr }));
-  await page.reload(); await page.waitForFunction(() => typeof SV !== 'undefined'); await page.waitForSelector('#cont', { state: 'visible' }); await page.click('#cont'); await page.waitForFunction(() => state === 'dock'); await L.sleep(300);
+  await page.reload(); await page.waitForFunction(() => typeof SV !== 'undefined'); await page.waitForSelector('#cont', { state: 'visible' }); await page.click('#cont', { noWaitAfter: true }); await page.waitForFunction(() => state === 'dock'); await L.sleep(300);
   s = await page.evaluate(() => ({ gw: gw.slice(), owW: owW.slice(), cr }));
   L.check('2. оружие и деньги после reload', s.owW[1] === 1 && s.gw[0] === 1 && s.cr === eq.cr, { eq, s });
 
@@ -59,10 +59,10 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   L.check('награда начислена один раз, контракт закрыт', s.cr === crPre + 500 && s.ct === null && s.cargo[1] === 0, s);
   await goMenu(page);
   L.check('в меню появилась ПРОДОЛЖИТЬ', await page.evaluate(() => { const c = document.getElementById('cont'); return !!c && c.style.display !== 'none'; }));
-  await page.click('#cont'); await page.waitForFunction(() => state === 'dock'); await L.sleep(300);
+  await page.click('#cont', { noWaitAfter: true }); await page.waitForFunction(() => state === 'dock'); await L.sleep(300);
   let s2 = await page.evaluate(() => ({ cr, ct }));
   L.check('4. после меню и возврата: кредиты те же, контракта нет', s2.cr === s.cr && s2.ct === null, { s, s2 });
-  for (let i = 0; i < 3; i++) { await goMenu(page); await page.click('#cont'); await page.waitForFunction(() => state === 'dock'); }
+  for (let i = 0; i < 3; i++) { await goMenu(page); await page.click('#cont', { noWaitAfter: true }); await page.waitForFunction(() => state === 'dock'); }
   s2 = await page.evaluate(() => ({ cr, ct }));
   L.check('8. три загрузки подряд — награда не дублируется', s2.cr === s.cr && s2.ct === null, { s, s2 });
 
@@ -87,7 +87,7 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   console.log('\n[6] Загрузка старого сохранения (формат sf_sv до v42)');
   const legacy = { gal: [{ sec: 40, eco: 35, pir: 65, rep: 0, inf: { gld: 44, bur: 18, mec: 18, pir: 30 }, evt: null }], fr: { gld: 12, bur: 0, mec: -5, pir: 0 }, cr: 4321, cargo: [1, 2, 0], pp: [10, 20, 0], sy: 2, uh: 1.6, uf: 1, ud: 2.56, us: 1, wave: 17, ct: null, shp: 2, gw: [1, 2, 0, 0], shd: 1, mt: 1, owS: [1, 0, 1], owW: [1, 1, 1], owH: [1, 1, 0], owM: [1, 1] };
   await page.evaluate(L_ => { localStorage.clear(); localStorage.setItem('sf_sv', JSON.stringify(L_)); }, legacy);
-  await page.reload(); await page.waitForFunction(() => typeof SV !== 'undefined'); await page.waitForSelector('#cont', { state: 'visible' }); await page.click('#cont'); await page.waitForFunction(() => state === 'dock'); await L.sleep(300);
+  await page.reload(); await page.waitForFunction(() => typeof SV !== 'undefined'); await page.waitForSelector('#cont', { state: 'visible' }); await page.click('#cont', { noWaitAfter: true }); await page.waitForFunction(() => state === 'dock'); await L.sleep(300);
   s = await page.evaluate(() => ({ cr, cargo: cargo.slice(), sy, shp, wave, gw: gw.slice(), owS: owS.slice(), uh, ud, fr: GAL.fr, miss, nuke, hull }));
   L.check('6. старое сохранение: кредиты, трюм, система, корабль, волна, тюнинг, фракции', s.cr === 4321 && s.cargo.join() === '1,2,0,0,0' && s.sy === 2 && s.shp === 2 && s.wave === 17 && s.uh === 1.6 && s.ud === 2.56 && s.fr.gld === 12, s);
   L.check('6. массив кораблей дорос до 5 без потери владения', s.owS.length === 5 && s.owS[0] === 1 && s.owS[2] === 1, s.owS);
@@ -126,12 +126,12 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   L.check('9. пользователь предупреждён (toast)', await p2.evaluate(() => { const t = document.getElementById('svt'); return !!t && /недоступно/.test(t.textContent); }));
   await p2.evaluate(() => { cr = 4242; stnDraw(); }); await p2.evaluate(() => lift()); await L.sleep(500); await p2.evaluate(() => pause(true)); await p2.click('#men1'); await L.sleep(300);
   L.check('9. в рамках сессии ПРОДОЛЖИТЬ работает через память', await p2.evaluate(() => { const c = document.getElementById('cont'); return !!c && c.style.display !== 'none'; }));
-  await p2.click('#cont'); await p2.waitForFunction(() => state === 'dock');
+  await p2.click('#cont', { noWaitAfter: true }); await p2.waitForFunction(() => state === 'dock');
   L.check('9. значение восстановлено из памяти сессии', (await p2.evaluate(() => cr)) === 4242);
   await ctx2.close();
 
   console.log('\n[10] Автосохранение в полёте, смерть, скрытие вкладки');
-  page = await L.openGame(ctx); await page.waitForSelector('#cont', { state: 'visible' }); await page.click('#cont'); await page.waitForFunction(() => state === 'dock');
+  page = await L.openGame(ctx); await page.waitForSelector('#cont', { state: 'visible' }); await page.evaluate(() => document.getElementById('cont').click()); await page.waitForFunction(() => state === 'dock');
   await page.evaluate(() => lift()); await L.sleep(600);
   L.check('вылет: state=play', (await page.evaluate(() => state)) === 'play');
   const q0 = (await page.evaluate(() => SV.info())).seq;
@@ -161,6 +161,36 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   const rest = await page.evaluate(() => { const ok = SV.restoreArchive(); const r = SV.load(); return { ok, cr: r.ok && r.d.cr }; });
   L.check('restoreArchive возвращает прошлый прогресс', rest.ok && rest.cr === crKeep, rest);
 
+  console.log('\\n[12] Сбой записи резервной копии не должен уничтожать сохранение');
+  await page.evaluate(() => { cr = 54321; stnDraw(); });
+  const restoreFailure = await page.evaluate(() => {
+    const target = SV.info().slot === 'sf_sv2a' ? 'sf_sv2b' : 'sf_sv2a';
+    const original = Storage.prototype.setItem;
+    Storage.prototype.setItem = function(k,v) { if (k === target) throw new DOMException('quota', 'QuotaExceededError'); return original.call(this,k,v); };
+    let ok; try { ok = SV.restoreArchive(); } finally { Storage.prototype.setItem = original; }
+    const r = SV.load();
+    return { ok, target, current: r.ok && r.d.cr, slot: SV.info().slot };
+  });
+  L.check('12a. ошибка записи архива не удаляет и не подменяет текущий слот', restoreFailure.ok === false && restoreFailure.current === 54321, restoreFailure);
+
+  await page.evaluate(() => { if (state === 'dock') lift(); });
+  await L.sleep(300);
+  await page.evaluate(() => pause(true));
+  await page.click('#men1');
+  await page.waitForFunction(() => state === 'menu');
+  const beforeFailedNewGame = await best(page);
+  page.dialogHandler = d => d.accept();
+  await page.evaluate(() => {
+    const original = Storage.prototype.setItem;
+    Storage.prototype.__sfOriginalSetItem = original;
+    Storage.prototype.setItem = function(k,v) { if (k === 'sf_sv_arc') throw new DOMException('quota', 'QuotaExceededError'); return original.call(this,k,v); };
+  });
+  await page.click('#play');
+  await L.sleep(250);
+  const afterFailedNewGame = await best(page);
+  const failedNewGameState = await page.evaluate(() => state);
+  await page.evaluate(() => { const original = Storage.prototype.__sfOriginalSetItem; if (original) Storage.prototype.setItem = original; delete Storage.prototype.__sfOriginalSetItem; });
+  L.check('12b. ошибка резервного копирования отменяет новую игру и сохраняет прежний прогресс', failedNewGameState === 'menu' && beforeFailedNewGame && afterFailedNewGame && beforeFailedNewGame.d.cr === afterFailedNewGame.d.cr, { state: failedNewGameState, before: beforeFailedNewGame && beforeFailedNewGame.d.cr, after: afterFailedNewGame && afterFailedNewGame.d.cr });
   L.check('нет ошибок страницы за весь прогон', page.errors.length === 0, page.errors);
   process.exitCode = L.summary(); await browser.close();
 })().catch(e => { console.error('CRASH', e); process.exit(2); });
