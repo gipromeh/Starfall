@@ -23,6 +23,7 @@ const ff = (page, sec) => page.evaluate(s => { const n = Math.round(s / .05); fo
 
   console.log('\n[Q9] утечки в бою: прогрев, затем 8 раундов «спавн → убийство», перемотка 40 с игрового времени');
   await page.evaluate(() => QL.setMode('low'));
+  await page.waitForFunction(() => pirateAssetsReady, null, { timeout: 15000 });
   // Прогреваем все классы E/E2 и босса до baseline: их процедурные геометрии и FX-кэши
   // создаются лениво. Иначе случайный порядок появления классов выглядит как утечка.
   for (const [type, sequence] of [[0,[.9]],[1,[.1,.9,.1]],[2,[.1,.9,.99]],[3,[.1,.1]]]) {
@@ -52,6 +53,8 @@ const ff = (page, sec) => page.evaluate(s => { const n = Math.round(s / .05); fo
   L.check('объекты сцены после затухания эффектов вернулись к исходному уровню (±15)', Math.abs(b1.ch - b0.ch) <= 15, { c0: b0.ch, c1: b1.ch });
   L.check('геометрии (±15) и текстуры (±6) не растут', b1.g <= b0.g + 15 && b1.t <= b0.t + 6, { g: [b0.g, b1.g], t: [b0.t, b1.t] });
   L.check('массивы эффектов очищены (fx/deb/trs/ali/pk/bul/eb/mis)', b1.fx <= 2 && b1.deb <= 2 && b1.ali <= 2 && b1.bul <= 2 && b1.eb <= 12 && b1.trs <= b0.trs + 30, b1);
+  const cacheOwned = await page.evaluate(() => ['p0','p1','p2','p3','boss'].every(key => { const g = MC[key]; if (!g) return false; let ok = true; g.traverse(o => { if (o.isMesh && o.geometry && !o.geometry.userData.keep) ok = false; }); return ok; }));
+  L.check('кэш моделей сохраняет общую геометрию после боевых циклов', cacheOwned, cacheOwned);
   L.check('нет ошибок страницы', page.errors.length === 0, page.errors);
   process.exitCode = L.summary(); await browser.close();
 })().catch(e => { console.error('CRASH', e); process.exit(2); });
