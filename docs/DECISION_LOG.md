@@ -1,5 +1,12 @@
 # STARFALL — Decision Log
 
+## 2026-11-02 — SAVE regression: storage-denied browser click
+- Полный лог CI показал, что сценарии 1–8 проходят. Падение происходит в сценарии 9 после успешного клика по `#play`: Playwright ждёт завершения навигации (`page.click` timeout 30 s), хотя тесту требуется дождаться перехода игрового state в `dock`.
+- Для клика в контексте с заблокированным `localStorage` отключено ожидание навигации (`noWaitAfter: true`); отдельно оставлено явное ожидание `state === 'dock'` с тайм-аутом 10 s.
+- Игровой код и механизм SAVE не менялись. Повторный CI обязателен.
+- Статус: исправление тестового ожидания внесено, не верифицировано.
+
+
 ## 2026-11-01 — Restore and publish the v90 release candidate
 - User explicitly requested publication of v90 after the temporary v91 replacement.
 - Restored `STARFALL_CURRENT.html` byte-for-byte from commit `35632d263ddec37702b0989d252f7b7d3b90260c`, the v90 candidate containing the OCS controller and Deep Space simulation.
