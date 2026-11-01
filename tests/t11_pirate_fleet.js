@@ -79,7 +79,8 @@ const L = require('./lib');
       e.state = 'ATTACK_RUN'; e.stateT = 0; e.fire = 0; e.burst = 0; e.burstGap = 0; e.aiClock = EAI.STEP; e.aiTicks = 0;
     });
     const before = eb.length;
-    pirateFleetUpdate(.05);
+    const randomAI = EAI.rand; EAI.rand = () => 0;
+    try { pirateFleetUpdate(.05); } finally { EAI.rand = randomAI; }
     const first = pirateFleet.find(e => e.ty === 0);
     const shots = eb.slice(before).filter(b => b.pirateFleetSlot === first.slot);
     const gunPositions = first.muzzleNodes.map(n => n.getWorldPosition(new THREE.Vector3()));
