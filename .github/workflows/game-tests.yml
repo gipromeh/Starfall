@@ -7,7 +7,7 @@ on:
     branches: [main]
   workflow_dispatch:
 
-# Новые коммиты отменяют устаревший запуск той же ветки.
+# Новые коммиты отменяют устаревшие запуски той же ветки.
 concurrency:
   group: starfall-ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -31,9 +31,36 @@ jobs:
       - name: Radar and collision regression (static)
         run: node tests/t14_radar_collision_regression.js
 
+  prepare-browser:
+    name: prepare-browser
+    needs: quick-checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Cache npm packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: starfall-npm-${{ runner.os }}-node22-playwright1.56.1-three0.128.0-tsparticles2.12.0
+      - name: Cache Playwright Chromium
+        id: chromium-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: starfall-playwright-${{ runner.os }}-1.56.1-chromium
+      - name: Install test dependencies
+        run: npm install --no-save --no-package-lock playwright@1.56.1 three@0.128.0 tsparticles@2.12.0
+      - name: Install Chromium (cache miss only)
+        if: steps.chromium-cache.outputs.cache-hit != 'true'
+        run: npx playwright install chromium
+
   browser-tests:
     name: browser-tests (${{ matrix.test }})
-    needs: quick-checks
+    needs: [quick-checks, prepare-browser]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
@@ -49,27 +76,22 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-
-      - name: Cache npm packages
+      - name: Restore npm package cache
         uses: actions/cache@v4
         with:
           path: ~/.npm
           key: starfall-npm-${{ runner.os }}-node22-playwright1.56.1-three0.128.0-tsparticles2.12.0
-
-      - name: Cache Playwright Chromium
+      - name: Restore Playwright Chromium cache
         id: chromium-cache
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
           key: starfall-playwright-${{ runner.os }}-1.56.1-chromium
-
       - name: Install test dependencies
         run: npm install --no-save --no-package-lock playwright@1.56.1 three@0.128.0 tsparticles@2.12.0
-
-      - name: Install Chromium (cache miss only)
+      - name: Install Chromium fallback (cache unavailable)
         if: steps.chromium-cache.outputs.cache-hit != 'true'
         run: npx playwright install chromium
-
       - name: Run selected browser test
         env:
           SF_NM: ${{ github.workspace }}/node_modules
@@ -96,7 +118,7 @@ jobs:
   ci-metrics:
     name: ci-metrics
     if: always()
-    needs: [quick-checks, browser-tests]
+    needs: [quick-checks, prepare-browser, browser-tests]
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -169,7 +191,6 @@ jobs:
               }
             }
             await summary.write();
-
       - name: Store machine-readable CI metrics
         uses: actions/upload-artifact@v4
         with:
