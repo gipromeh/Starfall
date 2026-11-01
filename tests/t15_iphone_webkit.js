@@ -25,29 +25,18 @@ const L = require('./lib');
     // Wait until the document has parsed and inline game scripts have executed.
     // Blocked external fonts/CDNs do not prevent DOMContentLoaded.
     await page.goto(L.ORIGIN + '/', { waitUntil: 'commit', timeout: 30000 });
-    await page.waitForFunction(() => typeof SV !== 'undefined' && typeof state !== 'undefined', null, { timeout: 90000 });
+    await page.waitForFunction(() => !!window.__STARFALL_READY__ && !!window.__STARFALL_DIAG__, null, { timeout: 90000 });
     await page.evaluate(() => localStorage.clear());
     await L.sleep(1500); // дать завершиться ленивой инициализации интерфейса
-    const initial = await page.evaluate(() => ({
-      state,
-      touch: TCH,
-      dpr: R.getPixelRatio(),
-      webgl: !!R.getContext(),
-      viewport: {
-        width: innerWidth,
-        height: innerHeight,
-        visualWidth: visualViewport?.width || 0,
-        visualHeight: visualViewport?.height || 0
-      }
-    }));
+    const initial = await page.evaluate(() => window.__STARFALL_DIAG__.initial());
     L.check('WebKit: игра и WebGL renderer инициализированы', initial.webgl, initial);
     L.check('WebKit: мобильный профиль определён как touch', initial.touch === true, initial.touch);
     L.check('WebKit: DPR ограничен мобильным профилем', initial.dpr <= 1.5, initial.dpr);
 
     await page.click('#play');
-    await page.waitForFunction(() => state === 'dock', null, { timeout: 90000 });
-    await page.evaluate(() => lift());
-    await page.waitForFunction(() => state === 'play', null, { timeout: 15000 });
+    await page.waitForFunction(() => window.__STARFALL_DIAG__.state() === 'dock', null, { timeout: 90000 });
+    await page.evaluate(() => window.__STARFALL_DIAG__.lift());
+    await page.waitForFunction(() => window.__STARFALL_DIAG__.state() === 'play', null, { timeout: 15000 });
 
     const controls = await page.evaluate(() => {
       const wanted = ['ОГОНЬ', 'РАКЕТА', 'ФОРСАЖ', 'СОПР.', 'ЛАЗЕР'];
@@ -64,42 +53,14 @@ const L = require('./lib');
     const undersized = Object.entries(controls).filter(([, r]) => !r.visible || r.width < 44 || r.height < 44);
     L.check('WebKit: сенсорные кнопки не меньше 44×44 CSS px', undersized.length === 0, undersized);
 
-    const fire = await page.evaluate(() => [...document.querySelectorAll('#hud button')].find(x => x.textContent.trim() === 'ОГОНЬ'));
-    const fireState = await page.evaluate(() => {
-      const el = [...document.querySelectorAll('#hud button')].find(x => x.textContent.trim() === 'ОГОНЬ');
-      const event = (type) => el.dispatchEvent(new PointerEvent(type, {
-        bubbles: true, cancelable: true, pointerId: 71, pointerType: 'touch', isPrimary: true,
-        clientX: 20, clientY: 20
-      }));
-      event('pointerdown');
-      const down = firing;
-      event('pointerup');
-      return { down, up: firing };
-    });
-    L.check('WebKit: pointerdown/pointerup корректно включает и отпускает огонь', fireState.down === true && fireState.up === false, fireState);
-
-    const aim = await page.evaluate(() => {
-      const cv = R.domElement;
-      const p = (type, x) => cv.dispatchEvent(new PointerEvent(type, {
-        bubbles: true, cancelable: true, pointerId: 72, pointerType: 'touch', isPrimary: true,
-        clientX: x, clientY: 120
-      }));
-      p('pointerdown', 100);
-      p('pointermove', 190);
-      const moved = mouse.x;
-      p('pointerup', 190);
-      return { moved, reset: mouse.x };
-    });
+    const fireState = await page.evaluate(() => window.__STARFALL_DIAG__.firePointer());
+    L.check('WebKit: pointerdown/pointerup корректно включает и отпускает огонь', !!fireState && fireState.down === true && fireState.up === false, fireState);
+    const aim = await page.evaluate(() => window.__STARFALL_DIAG__.aimPointer());
     L.check('WebKit: сенсорное движение управляет прицелом и сбрасывается при отпускании', aim.moved > .8 && aim.reset === 0, aim);
 
     await page.setViewportSize({ width: 430, height: 932 });
     await L.sleep(350);
-    const portrait = await page.evaluate(() => ({
-      width: R.domElement.width,
-      height: R.domElement.height,
-      innerWidth,
-      innerHeight
-    }));
+    const portrait = await page.evaluate(() => ({ ...window.__STARFALL_DIAG__.canvas(), innerWidth, innerHeight }));
     L.check('WebKit: resize/orientation обновляет размер WebGL canvas', portrait.width > 0 && portrait.height > 0, portrait);
 
     L.check('WebKit: нет ошибок JavaScript', page.errors.length === 0, page.errors);

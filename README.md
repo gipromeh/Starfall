@@ -11,6 +11,7 @@
 | `STARFALL_PASSPORT.md` | Паспорт: архитектура, переменные, таблицы баланса, правила правок |
 | `docs/reference/ELITE_GAME_PASSPORT.md` | Исследовательский паспорт Elite (ZX Spectrum 128K): реконструкция AI, математики движения, наведения и ограничений исходных данных |
 | `docs/reference/ELITE_TO_STARFALL_V90.md` | Карта переноса исследовательских алгоритмов Elite в STARFALL v90 и backlog следующих этапов |
+| `docs/DEEP_SPACE_SIMULATION_SPEC.md` | ТЗ исследовательского слоя дальнего космоса v90 |
 | `CHANGELOG.md` | История версий |
 | `STARFALL_MASTER_INSTRUCTION.yaml` | Мастер-инструкция по этапам (stages) и чек-лист приёмки |
 

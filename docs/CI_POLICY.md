@@ -18,7 +18,7 @@ Workflow: `.github/workflows/game-tests.yml`.
    - `tests/t8_nuke.js` — производительность ядерного удара;
    - `tests/t6_probe.js` — графические ресурсы и очистка объектов;
    - `tests/t11_pirate_fleet.js` — регрессии пиратской эскадрильи, Elite-inspired AI tick (15 Гц), локальных проекций, PRNG и покадрового движения;
-   - `tests/t1_saves.js` — SAVE 2.0: покупки, reload, два слота, повреждение данных, миграция, резерв, localStorage недоступен;
+   - `tests/t1_saves.js` — SAVE v3: покупки, reload, два слота, повреждение данных, миграция, резерв, localStorage недоступен;
    - `tests/t5_leak.js` — регрессия утечек в бою и проверка профилей качества;
    - `tests/t7_iphone.js` — мобильный профиль и геометрия сенсорных кнопок в Chromium;
    - `tests/t15_iphone_webkit.js` — Playwright WebKit на macOS с iPhone UA/viewport/touch: WebGL, мобильные кнопки, pointer input и resize. Это WebKit emulation, не реальный iOS Safari.
@@ -71,3 +71,8 @@ Workflow: `.github/workflows/game-tests.yml`.
 ## Ручные проверки
 
 Зелёный CI подтверждает автоматические сценарии на Ubuntu/Chromium и macOS/Playwright WebKit. macOS WebKit ближе к Safari, чем Linux WebKit, но не является брендированным Safari и не воспроизводит iOS GPU-драйвер, энергосбережение, системные ограничения памяти и поведение вкладки при блокировке экрана. Он не заменяет проверку реального iPhone, GPU/FPS, нагрева, длительной сессии и сохранения после выгрузки приложения.
+
+
+## Deep Space v90
+
+`tests/t16_deep_space.js` проверяет каталоги сигналов/NPC, детерминированную генерацию, отсутствие начального спавна в переднем конусе, фазирование AI, маршруты, два исхода цепочек, SAVE v3 и UI сканера. WebKit job использует диагностический bridge; это не физический iPhone test.

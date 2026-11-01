@@ -2,7 +2,7 @@ name: game-tests
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, fix-v89-pirate-combat-density]
   push:
     branches: [main]
   workflow_dispatch:
@@ -65,6 +65,8 @@ jobs:
         run: node tests/t12_ai_lab.js
       - name: Radar and collision regression (static)
         run: node tests/t14_radar_collision_regression.js
+      - name: Deep Space test syntax
+        run: node --check tests/t16_deep_space.js
 
   prepare-browser:
     name: prepare-browser
@@ -110,6 +112,7 @@ jobs:
           - performance-leak
           - iphone-chromium
           - iphone-webkit
+          - deep-space
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -165,6 +168,9 @@ jobs:
               ;;
             iphone-webkit)
               node tests/t15_iphone_webkit.js
+              ;;
+            deep-space)
+              node tests/t16_deep_space.js
               ;;
             *)
               echo "::error::Unknown test: ${{ matrix.test }}"

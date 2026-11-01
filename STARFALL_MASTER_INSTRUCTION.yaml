@@ -1,4 +1,4 @@
-# STARFALL "Void Hunter" — МАСТЕР-ИНСТРУКЦИЯ v2.4 (2026-10-31)
+# STARFALL "Void Hunter" — МАСТЕР-ИНСТРУКЦИЯ v2.5 (2026-11-01)
 # Единственная актуальная инструкция. Лежит в репозитории gipromeh/Starfall, ветка main.
 # Claude читает её ПЕРВОЙ в каждом чате, перед любой правкой, без напоминаний.
 # Все прежние версии инструкции (в проекте Claude, в старых чатах) — архив.
@@ -7,6 +7,16 @@
 # ★★★ ЗОЛОТОЕ ПРАВИЛО ★★★
 # НЕ ПЕРЕПИСЫВАТЬ КОД. ТОЛЬКО ТОЧЕЧНЫЕ ИЗМЕНЕНИЯ И ДОБАВЛЕНИЯ.
 # ВСЁ, ЧТО РАБОТАЕТ, — НЕ ТРОГАЕМ.
+research_references:
+  elite_reconstruction: docs/reference/ELITE_GAME_PASSPORT.md
+  elite_to_starfall_map: docs/reference/ELITE_TO_STARFALL_V90.md
+  deep_space_specification: docs/DEEP_SPACE_SIMULATION_SPEC.md
+  application_rules:
+    - Elite использовать как исследовательский источник алгоритмических принципов, не как физическую спецификацию для прямого копирования.
+    - Переносить OCS/vector steering и разделение decision/movement ticks только при совместимости с текущей архитектурой Three.js.
+    - Не переносить внутренние единицы Elite, Z80 fixed-point коэффициенты и неподтверждённые численные пороги.
+    - Deep Space Simulation — добавочный слой; сохранять существующие полёт, бой, радар и экономику.
+
 # ═════════════════════════════════════════════════════════════
 golden_rule:
   statement: >
