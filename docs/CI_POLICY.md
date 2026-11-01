@@ -9,6 +9,7 @@ CI — автоматический контроль качества перед
 Workflow: `.github/workflows/game-tests.yml`.
 
 1. **quick-checks** — быстрые проверки без запуска браузера:
+   - `node --check` для каждого встроенного JavaScript-блока `STARFALL_CURRENT.html` (извлечение HTMLParser, проверка синтаксиса Node.js);
    - `tests/t12_ai_lab.js` — архитектурные регрессии AI Lab;
    - `tests/t14_radar_collision_regression.js` — статические проверки радара, столкновений и боевой механики.
 2. **prepare-browser** — один раз устанавливает тестовые зависимости и прогревает общий npm/Chromium/WebKit cache.
