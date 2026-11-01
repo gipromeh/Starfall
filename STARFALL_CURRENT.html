@@ -1731,6 +1731,7 @@ const EAI=(function(){
   const projection=projectOCS(direction,e.hd||new T.Vector3(0,0,-1));
   const quantize=v=>Math.sign(v)*Math.min(15,Math.floor(Math.abs(v)*30+.5));
   e.ocsProjection=projection;
+  e.speed=e.speed||e.sp2||e.vel?.length()||0;
   e.ocsYaw=quantize(projection.h);
   e.ocsPitch=-quantize(projection.l);
   const rangeByte=Math.min(255,Math.floor(Math.max(0,distance)/32));
@@ -1745,20 +1746,25 @@ const EAI=(function(){
  /* Orientation and translation are integrated every frame between AI decisions. */
  function integrate(e,dt,object,up=UP){
   if(!e.hd)e.hd=new T.Vector3(0,0,-1);
-  const yaw=(e.ocsYaw||0)/15*(e.ocsTurnRate||1)*dt;
-  if(yaw)e.hd.applyAxisAngle(up,yaw);
+  e.speed=e.speed||e.sp2||e.vel?.length()||0;
+  const turnRate=e.ocsTurnRate||1,maxAcceleration=e.ocsMaxAcceleration||40;
+  const right0=new T.Vector3().crossVectors(e.hd,up);
+  if(right0.lengthSq()>1e-8)right0.normalize();else right0.set(1,0,0);
+  const localUp=new T.Vector3().crossVectors(right0,e.hd).normalize();
+  const yaw=(e.ocsYaw||0)/15*turnRate*dt;
+  if(yaw)e.hd.applyAxisAngle(localUp,yaw);
   const right=new T.Vector3().crossVectors(e.hd,up);
   if(right.lengthSq()>1e-8){
    right.normalize();
-   const pitch=(e.ocsPitch||0)/15*(e.ocsTurnRate||1)*dt;
+   const pitch=(e.ocsPitch||0)/15*turnRate*dt;
    if(pitch)e.hd.applyAxisAngle(right,pitch);
   }
   e.hd.normalize();
-  const throttle=e.ocsAccel===2?1:e.ocsAccel===1?.92:e.ocsAccel===0?.78:.55;
+  const throttle=e.ocsAccel==null?1:e.ocsAccel===2?1:e.ocsAccel===1?.92:e.ocsAccel===0?.78:.55;
   const targetSpeed=(e.ocsTargetSpeed||e.speed||0)*throttle;
-  e.speed=Math.max(0,e.speed||0)+clamp(targetSpeed-(e.speed||0),-e.ocsMaxAcceleration*dt,e.ocsMaxAcceleration*dt);
+  e.speed=Math.max(0,e.speed)+clamp(targetSpeed-e.speed,-maxAcceleration*dt,maxAcceleration*dt);
   const desired=e.hd.clone().multiplyScalar(e.speed),delta=desired.sub(e.vel);
-  const limit=e.ocsMaxAcceleration*dt;
+  const limit=maxAcceleration*dt;
   if(delta.length()>limit)delta.setLength(limit);
   e.vel.add(delta);
   object.position.addScaledVector(e.vel,dt);
