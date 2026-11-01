@@ -57,3 +57,12 @@ STARFALL uses Three.js world units and its existing simulation scale. The v90 AI
 ## Research integrity
 
 The Elite passport distinguishes facts supported by the annotated 128K listing from hypotheses and unknowns. STARFALL must preserve that distinction. In particular, physical conversions to m/s, exact player missile-lock geometry and exact player laser behavior must not be represented as recovered facts unless separately verified.
+
+
+## 2026-11-01 — Shared OCS controller work in progress
+
+- The shared controller is now used by ordinary E/E2 pirates and the opening `pirateFleet` squadron.
+- Tactical commands are refreshed on the 15 Hz decision tick; orientation, velocity and position are integrated each simulation frame. AI clocks receive slot phase offsets.
+- The controller calculates half-scale, inverted local-axis projections and derives quantized yaw/pitch/acceleration commands. NPC fire now passes orientation/range gates and a seeded PRNG threshold.
+- Regression coverage was extended in `tests/t11_pirate_fleet.js` for projection signs/scale, discrete commands, per-frame integration, fire gates and staggered ticks.
+- **Acceptance status: pending.** This is a structural adaptation, not a bit-exact Elite port. Do not claim full research fidelity or balance stability until the complete browser test matrix passes and the attack behavior is reviewed.
