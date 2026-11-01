@@ -16,15 +16,15 @@ const L = require('./lib');
     if (m.type() === 'error' && !/Failed to load resource|net::ERR|ERR_FAILED/.test(t)) page.errors.push('console.error: ' + t.slice(0, 300));
     else page.logs.push(m.type() + ': ' + t.slice(0, 200));
   });
-  page.on('request', r => { if (/\\.js(?:\\?|$)/.test(r.url())) page.logs.push('request: ' + r.url().slice(0, 180)); });
-  page.on('response', r => { if (/\\.js(?:\\?|$)/.test(r.url())) page.logs.push('response: ' + r.status() + ' ' + r.url().slice(0, 180)); });
+  page.on('request', r => page.logs.push('request: ' + r.url().slice(0, 180)));
+  page.on('response', r => page.logs.push('response: ' + r.status() + ' ' + r.url().slice(0, 180)));
   page.on('requestfailed', r => page.logs.push('requestfailed: ' + r.url() + ' ' + (r.failure()?.errorText || '')));
   page.on('domcontentloaded', () => page.logs.push('event:DOMContentLoaded'));
   page.on('dialog', d => { page.lastDialog = d.message(); (page.dialogHandler || (x => x.accept()))(d); });
   try {
     // Wait until the document has parsed and inline game scripts have executed.
     // Blocked external fonts/CDNs do not prevent DOMContentLoaded.
-    await page.goto(L.ORIGIN + '/', { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.goto(L.ORIGIN + '/', { waitUntil: 'commit', timeout: 30000 });
     await page.waitForFunction(() => typeof SV !== 'undefined' && typeof state !== 'undefined', null, { timeout: 90000 });
     await page.evaluate(() => localStorage.clear());
     await L.sleep(1500); // дать завершиться ленивой инициализации интерфейса
@@ -105,7 +105,9 @@ const L = require('./lib');
     L.check('WebKit: нет ошибок JavaScript', page.errors.length === 0, page.errors);
     process.exitCode = L.summary();
   } catch (e) {
-    console.error('WEBKIT DIAGNOSTICS', page.logs.slice(-40), page.errors);
+    let runtime = null;
+    try { runtime = await page.evaluate(() => ({ readyState: document.readyState, href: location.href, scripts: [...document.scripts].map(s => s.src || '[inline]').slice(0,20), three: typeof THREE, save: typeof SV, gameState: typeof state, bodyLength: document.body?.innerHTML.length || 0 })); } catch (_) {}
+    console.error('WEBKIT DIAGNOSTICS', page.logs.slice(-80), page.errors, runtime);
     throw e;
   } finally {
     await ctx.close();
