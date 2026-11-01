@@ -74,7 +74,7 @@ process:
     - При изменении поведения/архитектуры обновить паспорт; при изменении продукта обновить CHANGELOG. Для docs-only изменений не менять версию игры и не трогать HTML.
     - Создать commit с предметным сообщением, открыть PR в main, указать scope, сохранённые инварианты и фактически выполненные проверки.
     - Не выполнять merge и не заявлять о публикации без явного разрешения пользователя.
-  phone_check: https://gipromeh.github.io/Starfall/   # GitHub Pages, ~1 мин после push
+  phone_check: https://gipromeh.github.io/Starfall/   # Проверять после merge PR и завершения публикации GitHub Pages
 
 # ─────────────────────────────────────────────
 source_of_truth:
@@ -347,7 +347,7 @@ how_to_use:
     Подключи репозиторий gipromeh/Starfall, прочитай STARFALL_MASTER_INSTRUCTION.yaml и STARFALL_PASSPORT.md.
     Работай по золотому правилу: ничего не переписывай, только точечные правки; то, что работает, не трогай.
     Задача: <что нужно>.
-    В конце: пройди acceptance_checklist по затронутому, обнови паспорт и CHANGELOG.md, закоммить «vNN: что сделано», запушь в main.
+    В конце: пройди acceptance_checklist по затронутому; обнови паспорт и CHANGELOG.md по правилам scope; создай feature-ветку и PR в main. Не выполнять merge без явного разрешения.
 
 
 # ─────────────────────────────────────────────
@@ -517,8 +517,8 @@ historical_archive_v69_v78: |
   # ─────────────────────────────────────────────────────────────
   # v74 — ПОРЯДОК ЗАГРУЗКИ ПИРАТСКИХ МОДЕЛЕЙ
   pirate_fleet_asset_readiness:
-    init_guard: "pirateFleetInit и pirateFleetUpdate не создают шаблоны до pirateAssetsчтениеy=true."
-    fallback: "pirateAssetsчтениеy выставляется после загрузки обеих GLB либо после обработки ошибки загрузки; процедурная модель остаётся резервом."
+    init_guard: "pirateFleetInit и pirateFleetUpdate не создают шаблоны до pirateAssetsReady=true."
+    fallback: "pirateAssetsReady выставляется после загрузки обеих GLB либо после обработки ошибки загрузки; процедурная модель остаётся резервом."
     reason: "Не кэшировать процедурный fallback до прихода GLB и не требовать доступа тестов к закрытому кэшу MC."
     acceptance:
       - "После lift эскадрилья создаётся автоматически после завершения загрузки ассетов."
