@@ -19,10 +19,12 @@ async function goMenu(page) { await page.evaluate(() => { if (state === 'dock') 
 async function clickText(page, scope, re) { return page.evaluate(([s, src]) => { const r = new RegExp(src); const b = [...document.querySelectorAll(s + ' button, ' + s + ' .chip, ' + s + ' [onclick]')].find(x => r.test(x.textContent)); if (b) { b.click(); return b.textContent; } return null; }, [scope, re.source]); }
 
 (async () => {
+  stage('launch browser and create context');
   const browser = await L.launch(); const ctx = await L.newCtx(browser);
   let page = await L.openGame(ctx);
   await startNew(page);
 
+  stage("scenario 1: purchase ship and reload");
   console.log('\n[1] Купить корабль -> закрыть вкладку -> открыть');
   await page.evaluate(() => { cr = 20000; stTab = 'hgr'; stnDraw(); });
   await L.sleep(500);
@@ -36,6 +38,7 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   let s = await page.evaluate(() => ({ shp, cr, owS: owS.slice(), state }));
   L.check('1. после перезапуска корабль и кредиты на месте', s.shp === 1 && s.cr === 17500 && s.owS[1] === 1, s);
 
+  stage("scenario 2: equipment purchase and reload");
   console.log('\n[2] Купить оборудование -> перезагрузить страницу');
   await page.evaluate(() => { stTab = 'hgr'; stnDraw(); });
   await L.sleep(400);
@@ -49,6 +52,7 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   s = await page.evaluate(() => ({ gw: gw.slice(), owW: owW.slice(), cr }));
   L.check('2. оружие и деньги после reload', s.owW[1] === 1 && s.gw[0] === 1 && s.cr === eq.cr, { eq, s });
 
+  stage("scenario 3: cargo sale and reload");
   console.log('\n[3] Продать груз -> закрыть игру');
   await page.evaluate(() => { cargo = [0, 4, 0, 0, 0]; pp = [0, 80, 0, 0, 0]; stTab = 'mkt'; stnDraw(); });
   await L.sleep(400);
@@ -62,6 +66,7 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   s = await page.evaluate(() => ({ cargo: cargo.slice(), cr }));
   L.check('3. проданный груз и выручка сохранены', s.cargo[1] === sold.cargo[1] && s.cr === sold.cr, { sold, s });
 
+  stage("scenarios 4 and 8: mission reward idempotency");
   console.log('\n[4]+[8] Награда -> меню -> вернуться; нет повторного начисления');
   await page.evaluate(() => { ct = { g: 1, n: 2, to: sy, rw: 500 }; cargo = [0, 2, 0, 0, 0]; stTab = 'hall'; stnDraw(); talk(0); });
   await L.sleep(300);
@@ -78,24 +83,28 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   s2 = await page.evaluate(() => ({ cr, ct }));
   L.check('8. три загрузки подряд — награда не дублируется', s2.cr === s.cr && s2.ct === null, { s, s2 });
 
+  stage("scenario 5: station economy persistence");
   console.log('\n[5] Перезагрузка на станции — цены/предложения не перебрасываются');
   const before = await page.evaluate(() => ({ g: SYS[sy].g.slice(), ofb: JSON.stringify(ofb), ofr: JSON.stringify(ofr), ev, sy }));
   page = await reopen(ctx, page);
   const after = await page.evaluate(() => ({ g: SYS[sy].g.slice(), ofb: JSON.stringify(ofb), ofr: JSON.stringify(ofr), ev, sy, state }));
   L.check('5. цены, предложения Зорга/Весы и событие те же, state=dock', JSON.stringify(before.g) === JSON.stringify(after.g) && before.ofb === after.ofb && before.ofr === after.ofr && before.ev === after.ev && after.state === 'dock', { before, after });
 
+  stage("bounty persistence");
   console.log('\n[охота] bty сохраняется');
   await page.evaluate(() => { bty = { n: 3, k: 1, sys: sy, rw: 660 }; stnDraw(); });
   page = await reopen(ctx, page);
   s = await page.evaluate(() => bty);
   L.check('охота (bty) восстановлена', s && s.n === 3 && s.k === 1 && s.rw === 660, s);
 
+  stage("consumables persistence");
   console.log('\n[расходники] ракеты/ядерка/корпус');
   await page.evaluate(() => { miss = 11; nuke = 0; kills = 7; hull = 55; stnDraw(); });
   page = await reopen(ctx, page);
   s = await page.evaluate(() => ({ miss, nuke, kills, hull }));
   L.check('miss/nuke/kills/hull сохранены', s.miss === 11 && s.nuke === 0 && s.kills === 7 && s.hull === 55, s);
 
+  stage("scenario 6: legacy save migration");
   console.log('\n[6] Загрузка старого сохранения (формат sf_sv до v42)');
   const legacy = { gal: [{ sec: 40, eco: 35, pir: 65, rep: 0, inf: { gld: 44, bur: 18, mec: 18, pir: 30 }, evt: null }], fr: { gld: 12, bur: 0, mec: -5, pir: 0 }, cr: 4321, cargo: [1, 2, 0], pp: [10, 20, 0], sy: 2, uh: 1.6, uf: 1, ud: 2.56, us: 1, wave: 17, ct: null, shp: 2, gw: [1, 2, 0, 0], shd: 1, mt: 1, owS: [1, 0, 1], owW: [1, 1, 1], owH: [1, 1, 0], owM: [1, 1] };
   await page.evaluate(L_ => { localStorage.clear(); localStorage.setItem('sf_sv', JSON.stringify(L_)); }, legacy);
@@ -106,6 +115,7 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   const mig = await page.evaluate(() => ({ A: localStorage.getItem('sf_sv2a') ? JSON.parse(localStorage.getItem('sf_sv2a')).v : null, legacyKept: !!localStorage.getItem('sf_sv') }));
   L.check('6. после загрузки записан формат v3, старый ключ не тронут', mig.A === 3 && mig.legacyKept, mig);
 
+  stage("scenario 7: corrupted save recovery");
   console.log('\n[7] Повреждённые данные');
   await page.evaluate(() => { localStorage.clear(); });
   await page.reload(); await page.waitForFunction(() => typeof SV !== 'undefined'); await startNew(page);
@@ -128,6 +138,7 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   await startNew(page);
   L.check('7e. после повреждения «ИГРАТЬ» без подтверждения и новая запись создаётся', (await page.evaluate(() => SV.has())) === true);
 
+  stage("scenario 9: localStorage denied");
   console.log('\n[9] localStorage недоступен');
   const ctx2 = await L.newCtx(browser);
   await ctx2.addInitScript(() => { const boom = () => { throw new DOMException('denied', 'SecurityError'); }; Object.defineProperty(window, 'localStorage', { get: boom, configurable: true }); });
@@ -155,6 +166,7 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   L.check('9. значение восстановлено из памяти сессии', (await p2.evaluate(() => cr)) === 4242);
   await ctx2.close();
 
+  stage("scenario 10: autosave, death and visibility");
   console.log('\n[10] Автосохранение в полёте, смерть, скрытие вкладки');
   page = await L.openGame(ctx); await page.waitForSelector('#cont', { state: 'visible' }); await page.evaluate(() => document.getElementById('cont').click()); await page.waitForFunction(() => state === 'dock');
   await page.evaluate(() => lift()); await L.sleep(600);
@@ -180,9 +192,11 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   L.check('уход вкладки в фон (visibilitychange) сохраняет немедленно', dsk && dsk.d.cr === crSafe + 50, dsk && dsk.d.cr);
   await page.evaluate(() => { delete document.hidden; });
 
+  stage("scenario 11: new game confirmation and archive");
   console.log('\n[11] Новая игра: подтверждение и резерв');
-  // После искусственного dying игра штатно перешла в экран поражения.
-  // Используем его собственную кнопку меню, а не перекрытую кнопку HUD.
+  // Сценарий 10 завершает проверку в state=play. Явно запускаем штатный таймер гибели,
+  // затем используем кнопку меню полноэкранного экрана поражения (#men2).
+  await page.evaluate(() => { state = 'dying'; dyT = 0.15; });
   await page.waitForFunction(() => state === 'over', null, { timeout: 5000 });
   await page.click('#men2');
   await page.waitForFunction(() => state === 'menu', null, { timeout: 5000 });
@@ -196,7 +210,7 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   const rest = await page.evaluate(() => { const ok = SV.restoreArchive(); const r = SV.load(); return { ok, cr: r.ok && r.d.cr }; });
   L.check('restoreArchive возвращает прошлый прогресс', rest.ok && rest.cr === crKeep, rest);
 
-  stage('[12] отказ записи резервной копии');
+  stage('scenario 12: archive write failure and rollback');
   await page.evaluate(() => { cr = 54321; stnDraw(); });
   const restoreFailure = await page.evaluate(() => {
     const target = SV.info().slot === 'sf_sv2a' ? 'sf_sv2b' : 'sf_sv2a';
