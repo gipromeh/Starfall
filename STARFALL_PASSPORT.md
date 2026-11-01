@@ -585,7 +585,7 @@ PV (конец скрипта): ангар-превью, обёртка hgrView;
 Стенд: Playwright + Chromium/WebKit headless. CDN-адреса Three.js r128 и tsParticles 2.12.0 маршрутизируются на локальные npm-пакеты; Babylon и шрифты в тестовом маршрутизаторе блокируются, поэтому 3D-бар Babylon проверяется только на реальном подключении к CDN. Chromium запускается с SwiftShader; WebKit — Linux WebKit с мобильным viewport, iPhone user-agent и touch context.
 
 **Браузерные сценарии:**
-- `tests/t1_saves.js` — SAVE 2.0: покупка корабля и оборудования, продажа груза, награды без повторного начисления, reload, цены станции, охота/контракт, старый формат, повреждённые слоты, checksum, отсутствие localStorage, автосохранение в полёте, смерть, скрытие вкладки, архив/восстановление.
+- `tests/t1_saves.js` — SAVE 2.0: покупка корабля и оборудования, продажа груза, награды без повторного начисления, reload, цены станции, охота/контракт, старый формат, повреждённые слоты, checksum, отсутствие localStorage, автосохранение в полёте, смерть, скрытие вкладки, архив/восстановление и отказ от удаления/подмены активных сохранений при QuotaExceededError.
 - `tests/t2_flight.js` — резервный/повторный сценарий localStorage, автосохранение, смерть и новая игра.
 - `tests/t5_leak.js` — циклы spawn/kill, стабильность геометрий/текстур/объектов и профили качества.
 - `tests/t6_probe.js` — измерение прироста ресурсов для эффектов, ракет, пиратов и ядерного удара.
@@ -595,7 +595,7 @@ PV (конец скрипта): ангар-превью, обёртка hgrView;
 - `tests/t13_ai_lab_browser.js` — browser smoke test AI Lab.
 - `tests/t15_iphone_webkit.js` — WebKit Linux с мобильным профилем: WebGL, touch controls, pointerdown/up, движение прицела и resize.
 
-**Статические проверки:** `tests/t12_ai_lab.js`, `tests/t14_radar_collision_regression.js`.
+**Статические проверки:** `node --check` всех встроенных JS-блоков `STARFALL_CURRENT.html`, `tests/t12_ai_lab.js`, `tests/t14_radar_collision_regression.js`.
 
 **CI:** `.github/workflows/game-tests.yml` запускается на PR в `main` и push в `main`. Quick checks отделены от браузерной матрицы; Playwright browser/npm cache прогревается один раз. `ci-metrics` публикует длительности и ошибки. `.github/workflows/passport-check.yml` проверяет SHA-256 и согласованность основного файла, паспорта и CHANGELOG.
 
