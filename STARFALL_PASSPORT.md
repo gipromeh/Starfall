@@ -731,3 +731,11 @@ PV (конец скрипта): ангар-превью, обёртка hgrView;
 - Chase camera is aligned to the player's ship orientation and follows from the rear, replacing independent orbit-camera drag.
 - Touch buttons and keyboard fallback remain available.
 - This is an isolated AI Lab implementation inspired by the actual v85 control equations; the production file remains unchanged.
+
+
+## CI regression harness correction — PR #12 (2026-11-01)
+
+- SAVE regression scenario 10 now clicks the in-game **ПРОДОЛЖИТЬ** control with Playwright `noWaitAfter: true`, then explicitly waits for `state === 'dock'`. This avoids the test runner's 30-second implicit navigation wait after a successful click; the game state remains the actual assertion.
+- iPhone WebKit regression now waits for `DOMContentLoaded` before checking the inline game API (`SV`, `state`). The previous `waitUntil: 'commit'` returned before document scripts were guaranteed to execute, causing a readiness timeout.
+- These are test-harness synchronization fixes, not changes to gameplay or SAVE semantics. The failed run #353 is retained as historical evidence; the fixes require a fresh CI run.
+- WebKit coverage remains Linux Playwright WebKit emulation, not a physical iPhone/iOS Safari test.
