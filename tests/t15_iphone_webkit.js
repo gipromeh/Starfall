@@ -8,8 +8,22 @@ const L = require('./lib');
     touch: true,
     ua: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1'
   });
-  const page = await L.openGame(ctx);
+  const page = await ctx.newPage();
+  page.errors = []; page.logs = [];
+  page.on('pageerror', e => page.errors.push('pageerror: ' + e.message));
+  page.on('console', m => {
+    const t = m.text();
+    if (m.type() === 'error' && !/Failed to load resource|net::ERR|ERR_FAILED/.test(t)) page.errors.push('console.error: ' + t.slice(0, 300));
+    else page.logs.push(m.type() + ': ' + t.slice(0, 200));
+  });
+  page.on('requestfailed', r => page.logs.push('requestfailed: ' + r.url() + ' ' + (r.failure()?.errorText || '')));
+  page.on('domcontentloaded', () => page.logs.push('event:DOMContentLoaded'));
+  page.on('dialog', d => { page.lastDialog = d.message(); (page.dialogHandler || (x => x.accept()))(d); });
   try {
+    // WebKit may keep the load event pending for blocked external font/CDN requests.
+    // Wait for response commit, then for the actual game API to become ready.
+    await page.goto(L.ORIGIN + '/', { waitUntil: 'commit', timeout: 30000 });
+    await page.waitForFunction(() => typeof SV !== 'undefined' && typeof state !== 'undefined', null, { timeout: 90000 });
     await page.evaluate(() => localStorage.clear());
     await L.sleep(1500); // дать завершиться ленивой инициализации интерфейса
     const initial = await page.evaluate(() => ({
@@ -88,6 +102,9 @@ const L = require('./lib');
 
     L.check('WebKit: нет ошибок JavaScript', page.errors.length === 0, page.errors);
     process.exitCode = L.summary();
+  } catch (e) {
+    console.error('WEBKIT DIAGNOSTICS', page.logs.slice(-40), page.errors);
+    throw e;
   } finally {
     await ctx.close();
     await browser.close();
