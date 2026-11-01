@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="claude:viewport-fit-sides" content="cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#02030a"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>STARFALL — Void Hunter</title>
-<meta name="starfall-version" content="v87">
+<meta name="starfall-version" content="v88">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#02030a;--fg:#cfe9ff;--ac:#3cf;--warn:#f54;color-scheme:dark}
@@ -1820,7 +1820,7 @@ upd=function(dt){_updWithPirateFleet(dt);pirateFleetUpdate(dt);resolvePirateShip
 // ===== END STARFALL v77 PIRATE FLEET =====
 
 
-const rc=$("radar").getContext("2d");let radarRange=1000;
+const rc=$("radar").getContext("2d");let radarRange=1000,radarSweepAngle=0;
 const radarRangeButtons=Array.from(document.querySelectorAll("#radar-controls [data-radar-range]")),radarContacts=[],radarPosition=new T.Vector3(),radarVelocity=new T.Vector3();
 function collectRadarContacts(){
  let n=0;const put=(position,kind,color,radius,label,entity,velocity,ty,hostile,selected)=>{if(!position)return;const c=radarContacts[n]||(radarContacts[n]={});Object.assign(c,{position,kind,color,radius,label,entity,velocity,ty,hostile:!!hostile,selected:!!selected});n++};
@@ -1838,23 +1838,52 @@ function collectRadarContacts(){
 }
 function radarDistanceLabel(d){return d>=1000?(d/1000).toFixed(1)+"км":Math.round(d)+"м"}
 function radar(){
- const c=85,R0=72,scale=R0/radarRange,iq=Q.clone().invert(),contacts=collectRadarContacts();rc.clearRect(0,0,170,170);rc.save();rc.beginPath();rc.arc(c,c,82,0,Math.PI*2);rc.fillStyle="#021220e8";rc.fill();rc.strokeStyle="#48cfff55";rc.lineWidth=1;
- for(let i=1;i<=3;i++){const rr=R0*i/3;rc.beginPath();rc.arc(c,c,rr,0,Math.PI*2);rc.stroke();rc.fillStyle="#a9eaff99";rc.font="8px monospace";rc.textAlign="left";rc.fillText(radarDistanceLabel(radarRange*i/3),c+rr+2,c-2)}
- rc.beginPath();rc.moveTo(c,12);rc.lineTo(c,158);rc.moveTo(12,c);rc.lineTo(158,c);rc.stroke();rc.fillStyle="#bfefff";rc.font="bold 8px monospace";rc.textAlign="center";rc.fillText("РАДАР · "+radarDistanceLabel(radarRange),c,10);
+ const c=85,R0=72,scale=R0/radarRange,iq=Q.clone().invert(),contacts=collectRadarContacts(),now=performance.now();
+ radarSweepAngle=(now*.00048)%(Math.PI*2);
+ rc.clearRect(0,0,170,170);rc.save();
+ rc.beginPath();rc.arc(c,c,82,0,Math.PI*2);rc.fillStyle="#020c17f2";rc.fill();rc.strokeStyle="#55dfff99";rc.lineWidth=1.4;rc.stroke();
+ rc.save();rc.beginPath();rc.arc(c,c,78,0,Math.PI*2);rc.clip();
+ const bg=rc.createRadialGradient(c,c,4,c,c,78);bg.addColorStop(0,"#0a2940aa");bg.addColorStop(1,"#03101ddd");rc.fillStyle=bg;rc.fillRect(7,7,156,156);
+ for(let i=1;i<=3;i++){const rr=R0*i/3;rc.beginPath();rc.arc(c,c,rr,0,Math.PI*2);rc.strokeStyle=i===3?"#6bdfff66":"#64c9ed38";rc.lineWidth=i===3?1.1:.8;rc.stroke();if(i<3){rc.fillStyle="#a9eaff88";rc.font="7px monospace";rc.textAlign="left";rc.fillText(radarDistanceLabel(radarRange*i/3),c+rr+2,c-2)}}
+ rc.beginPath();rc.moveTo(c,14);rc.lineTo(c,156);rc.moveTo(14,c);rc.lineTo(156,c);rc.strokeStyle="#70d5f044";rc.lineWidth=.7;rc.stroke();
+ rc.fillStyle="#bfefff";rc.font="bold 8px monospace";rc.textAlign="center";rc.fillText("F",c,20);rc.fillText("A",c,153);rc.fillText("L",18,c+3);rc.fillText("R",152,c+3);
+ const sweep=radarSweepAngle;rc.save();rc.translate(c,c);rc.rotate(sweep);
+ const wedge=rc.createRadialGradient(0,0,3,0,0,R0);wedge.addColorStop(0,"#36f5c000");wedge.addColorStop(.75,"#36f5c018");wedge.addColorStop(1,"#36f5c000");
+ rc.beginPath();rc.moveTo(0,0);rc.arc(0,0,R0,-.42,.025);rc.closePath();rc.fillStyle=wedge;rc.fill();
+ rc.beginPath();rc.moveTo(0,0);rc.lineTo(R0,0);rc.strokeStyle="#69ffe0bb";rc.lineWidth=1.2;rc.shadowColor="#5fffd8";rc.shadowBlur=7;rc.stroke();rc.restore();
  let hostileCount=0,targetText="",targetDistance=0;
- for(const q of contacts){if(q.hostile)hostileCount++;radarPosition.copy(q.position).sub(P).applyQuaternion(iq);const planar=Math.hypot(radarPosition.x,radarPosition.z),distance=radarPosition.length(),outside=planar>radarRange;if(outside&&!q.hostile)continue;let x=radarPosition.x*scale,y=-radarPosition.z*scale;if(outside){const k=R0/Math.max(1,planar);x=radarPosition.x*k;y=-radarPosition.z*k}const px=c+x,py=c+y;if(q.hostile&&q.selected){targetText=q.label;targetDistance=distance}
-  if(outside){const a=Math.atan2(y,x);rc.save();rc.translate(c,c);rc.rotate(a);rc.beginPath();rc.moveTo(R0,0);rc.lineTo(R0-8,-5);rc.lineTo(R0-8,5);rc.closePath();rc.fillStyle=q.color;rc.fill();rc.restore()}
-  else{if(q.velocity){radarVelocity.copy(q.velocity).applyQuaternion(iq);const vl=Math.hypot(radarVelocity.x,radarVelocity.z);if(vl>2){rc.beginPath();rc.moveTo(px,py);rc.lineTo(px+radarVelocity.x/vl*8,py-radarVelocity.z/vl*8);rc.strokeStyle=q.color;rc.lineWidth=1.2;rc.stroke()}}
+ for(const q of contacts){
+  if(q.hostile)hostileCount++;
+  radarPosition.copy(q.position).sub(P).applyQuaternion(iq);
+  const planar=Math.hypot(radarPosition.x,radarPosition.z),distance=radarPosition.length(),outside=planar>radarRange;
+  if(outside&&!q.hostile)continue;
+  let x=radarPosition.x*scale,y=-radarPosition.z*scale;
+  if(outside){const k=R0/Math.max(1,planar);x=radarPosition.x*k;y=-radarPosition.z*k}
+  const px=c+x,py=c+y,height=radarPosition.y;
+  if(q.hostile&&q.selected){targetText=q.label;targetDistance=distance}
+  if(outside){
+   const a=Math.atan2(y,x);rc.save();rc.translate(c,c);rc.rotate(a);rc.beginPath();rc.moveTo(R0,0);rc.lineTo(R0-8,-5);rc.lineTo(R0-8,5);rc.closePath();rc.fillStyle=q.color;rc.fill();rc.restore();
+  }else{
+   if(Math.abs(height)>15){
+    const h=Math.min(25,4+Math.abs(height)/radarRange*34),dir=height>0?-1:1,tipY=py+dir*h;
+    rc.beginPath();rc.moveTo(px,py);rc.lineTo(px,tipY);rc.strokeStyle=q.color;rc.globalAlpha=.92;rc.lineWidth=1.35;rc.stroke();rc.globalAlpha=1;
+    rc.beginPath();rc.arc(px,tipY,2.2,0,Math.PI*2);rc.strokeStyle=q.color;rc.lineWidth=1.1;rc.stroke();
+    rc.beginPath();rc.moveTo(px-3,tipY);rc.lineTo(px+3,tipY);rc.strokeStyle=q.color;rc.lineWidth=1;rc.stroke();
+   }
+   if(q.velocity){radarVelocity.copy(q.velocity).applyQuaternion(iq);const vl=Math.hypot(radarVelocity.x,radarVelocity.z);if(vl>2){rc.beginPath();rc.moveTo(px,py);rc.lineTo(px+radarVelocity.x/vl*8,py-radarVelocity.z/vl*8);rc.strokeStyle=q.color;rc.lineWidth=1.2;rc.globalAlpha=.75;rc.stroke();rc.globalAlpha=1}}
    rc.save();rc.translate(px,py);rc.fillStyle=q.color;
    if(q.kind==="enemy"||q.kind==="boss"){if(q.kind==="boss"||q.ty===1){rc.rotate(Math.PI/4);rc.fillRect(-q.radius*.72,-q.radius*.72,q.radius*1.44,q.radius*1.44)}else if(q.ty===2)rc.fillRect(-q.radius,-q.radius,q.radius*2,q.radius*2);else if(q.ty===3){rc.beginPath();rc.moveTo(0,-q.radius*1.25);rc.lineTo(q.radius,q.radius);rc.lineTo(-q.radius,q.radius);rc.closePath();rc.fill()}else{rc.beginPath();rc.arc(0,0,q.radius,0,Math.PI*2);rc.fill()}}
    else if(q.kind==="station"){rc.rotate(Math.PI/4);rc.fillRect(-q.radius,-q.radius,q.radius*2,q.radius*2)}
-   else if(q.kind==="missile"){rc.beginPath();rc.moveTo(0,-q.radius);rc.lineTo(q.radius,q.radius);rc.lineTo(-q.radius,q.radius);rc.closePath();rc.fill()}else{rc.beginPath();rc.arc(0,0,q.radius,0,Math.PI*2);rc.fill()}rc.restore();
+   else if(q.kind==="missile"){rc.beginPath();rc.moveTo(0,-q.radius);rc.lineTo(q.radius,q.radius);rc.lineTo(-q.radius,q.radius);rc.closePath();rc.fill()}
+   else{rc.beginPath();rc.arc(0,0,q.radius,0,Math.PI*2);rc.fill()}
+   rc.restore();
    if(q.hostile&&(q.selected||planar<radarRange*.58)){rc.fillStyle="#f4fbff";rc.font="8px monospace";rc.textAlign="left";rc.fillText(q.label,px+5,py-4)}
   }
-  if(Math.abs(radarPosition.y)>25){rc.fillStyle=q.color;rc.font="8px monospace";rc.textAlign="center";rc.fillText(radarPosition.y>0?"▲":"▼",px,py+(radarPosition.y>0?-7:12))}
-  if(q.selected&&!outside){rc.beginPath();rc.arc(px,py,q.radius+3,0,Math.PI*2);rc.strokeStyle="#fff";rc.lineWidth=1.2;rc.stroke()}
+  if(q.selected&&!outside){rc.beginPath();rc.arc(px,py,q.radius+4,0,Math.PI*2);rc.strokeStyle="#fff";rc.lineWidth=1.2;rc.stroke()}
  }
- rc.save();rc.translate(c,c);rc.beginPath();rc.moveTo(0,-6);rc.lineTo(4,5);rc.lineTo(0,3);rc.lineTo(-4,5);rc.closePath();rc.fillStyle="#bdf4ff";rc.fill();rc.restore();rc.fillStyle="#c9eaff";rc.font="8px monospace";rc.textAlign="center";rc.fillText(targetText?"ЦЕЛЬ "+targetText+" · "+Math.round(targetDistance)+"м":"ВРАЖДЕБНЫХ: "+hostileCount,c,168);rc.restore();
+ rc.save();rc.translate(c,c);rc.beginPath();rc.moveTo(0,-7);rc.lineTo(5,6);rc.lineTo(0,3);rc.lineTo(-5,6);rc.closePath();rc.fillStyle="#d8fbff";rc.shadowColor="#7ceaff";rc.shadowBlur=6;rc.fill();rc.restore();
+ rc.restore();
+ rc.fillStyle="#c9eaff";rc.font="8px monospace";rc.textAlign="center";rc.fillText(targetText?"ЦЕЛЬ "+targetText+" · "+Math.round(targetDistance)+"м":"КОНТАКТЫ · ВРАГИ "+hostileCount,c,168);rc.restore();
 }
 function setRadarRange(value){radarRange=Math.max(500,Math.min(2000,Number(value)||1000));radarRangeButtons.forEach(b=>b.classList.toggle("on",Number(b.dataset.radarRange)===radarRange));radar()}
 radarRangeButtons.forEach(b=>b.addEventListener("click",e=>{e.stopPropagation();setRadarRange(b.dataset.radarRange)}));radarRangeButtons.forEach(b=>b.classList.toggle("on",Number(b.dataset.radarRange)===radarRange));
