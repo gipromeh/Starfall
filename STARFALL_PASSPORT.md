@@ -2,7 +2,7 @@
 
 - `.github/workflows/game-tests.yml` запускает быстрые статические проверки отдельно от тяжёлых браузерных сценариев.
 - Быстрый этап: `tests/t12_ai_lab.js`, `tests/t14_radar_collision_regression.js`.
-- Браузерный этап выполняется только после успешного быстрого этапа; каждый сценарий Playwright изолирован в отдельной matrix job: AI Lab smoke, nuclear performance, graphics/resource probe, pirate fleet regression.
+- `prepare-browser` один раз прогревает npm/Chromium cache; браузерный этап выполняется после успешных быстрых проверок и подготовки; каждый сценарий Playwright изолирован в отдельной matrix job: AI Lab smoke, nuclear performance, graphics/resource probe, pirate fleet regression.
 - npm-кэш хранится в `~/.npm`; браузер Playwright — в `~/.cache/ms-playwright`. Chromium скачивается только при отсутствии cache hit.
 - Новые коммиты отменяют устаревшие запуски той же ветки. Для ручного повтора использовать GitHub **Re-run failed jobs**, чтобы не перезапускать успешно пройденные matrix jobs.
 - Полный набор запускается на каждом PR в `main` и push в `main`. Перед слиянием должны быть зелёными `passport-check / check`, `game-tests / quick-checks` и четыре matrix checks: `ai-lab-browser`, `nuclear-performance`, `graphics-probe`, `pirate-fleet`.
