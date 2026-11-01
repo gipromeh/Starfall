@@ -11,7 +11,7 @@ const checks = [
  ['radar uses Elite amber scanner palette', html.includes('rc.strokeStyle="#ffc078cc"')&&html.includes('#ffad63bb')],
  ['radar places altitude marker at end of stalk', html.includes('markerY=py+(height>0?-verticalOffset:verticalOffset)')],
  ['radar clips contacts to the circular scanner plane', html.includes('rc.arc(c,c,78,0,Math.PI*2);rc.clip()')],
- ['game metadata is v89', html.includes('<meta name="starfall-version" content="v88">')],
+ ['game metadata is v89', html.includes('<meta name="starfall-version" content="v89">')],
  ['radar filters eb by hostile missile type', html.includes('b.kind==="hostile-missile"&&b.hm===1')],
  ['Jackal has the slowest E/E2 speed multiplier', html.includes('*[1,.75,.85,.9][e.ty]')],
  ['Jackal has the slowest E/E2 initial speed', html.includes('multiplyScalar([18,10,12,16][ty]||18)')],
@@ -22,8 +22,7 @@ const checks = [
  ['NPC collision solver exists', html.includes('function resolvePirateShipCollisions()')],
  ['NPC collision solver separates overlapping ships', html.includes('penetration=minimum-distance+.05')],
  ['NPC collision solver includes neutral transports', html.includes('n.g&&!n.tur&&n.g.visible!==false&&n.v')],
- ['collision solver runs every frame', html.includes('pirateFleetUpdate(dt);resolvePirateShipCollisions();')]
-,
+ ['collision solver runs every frame', html.includes('pirateFleetUpdate(dt);resolvePirateShipCollisions();')],
  ['pirate fleet has only two initial attackers', html.includes('[0,1].forEach((ty,i)=>{const e={slot:i,ty,g:null,hp:0,mx:0,respawn:Infinity,dead:false,flames:[]};pirateFleet.push(e);pirateFleetSpawn(e,i*.18)});')],
  ['pirate fleet spawns ahead of the player', html.includes('addScaledVector(fw,(760+e.slot*90))')],
  ['pirate fleet does not respawn after destruction', html.includes('e.respawn=Infinity;e.hits=0;')],
