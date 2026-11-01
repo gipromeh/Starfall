@@ -21,14 +21,14 @@ Workflow: `.github/workflows/game-tests.yml`.
    - `tests/t1_saves.js` — SAVE 2.0: покупки, reload, два слота, повреждение данных, миграция, резерв, localStorage недоступен;
    - `tests/t5_leak.js` — регрессия утечек в бою и проверка профилей качества;
    - `tests/t7_iphone.js` — мобильный профиль и геометрия сенсорных кнопок в Chromium;
-   - `tests/t15_iphone_webkit.js` — WebKit с iPhone UA/viewport/touch: WebGL, мобильные кнопки, pointer input и resize. Это WebKit Linux, не реальный iOS Safari.
+   - `tests/t15_iphone_webkit.js` — Playwright WebKit на macOS с iPhone UA/viewport/touch: WebGL, мобильные кнопки, pointer input и resize. Это WebKit emulation, не реальный iOS Safari.
 4. **passport-check** — отдельный workflow проверяет SHA паспорта и совместное обновление игры, паспорта и CHANGELOG.
 
 ## Кэширование
 
 - npm cache: `~/.npm`, ключ привязан к ОС, Node.js и закреплённым версиям зависимостей.
-- Playwright browser cache: `~/.cache/ms-playwright`, ключ привязан к ОС и версии Playwright; включает бинарники Chromium и WebKit. Системные библиотеки WebKit устанавливаются в самом `iphone-webkit` runner, поскольку apt-пакеты между jobs не кэшируются.
-- Chromium и WebKit скачиваются только при cache miss. На cache hit повторная загрузка браузеров пропускается; WebKit runtime dependencies устанавливаются отдельно в job, которая запускает WebKit.
+- Playwright browser cache: `~/.cache/ms-playwright`, ключ привязан к ОС и версии Playwright. Linux jobs используют общий Linux cache; `iphone-webkit` работает на macOS и устанавливает WebKit в свой macOS cache при cache miss. Linux system libraries WebKit устанавливаются только в Linux jobs.
+- Chromium и WebKit скачиваются только при cache miss. На cache hit повторная загрузка браузеров пропускается; Linux WebKit runtime dependencies устанавливаются только для Linux jobs. macOS runner использует системные библиотеки macOS.
 - Зависимости тестов закреплены точными версиями в workflow. Не обновлять их автоматически без отдельной проверки.
 
 ## Повторные запуски
@@ -70,4 +70,4 @@ Workflow: `.github/workflows/game-tests.yml`.
 
 ## Ручные проверки
 
-Зелёный CI подтверждает автоматические сценарии на Ubuntu/Chromium и WebKit. WebKit под Linux с мобильными viewport/UA/touch не эквивалентен Safari на iOS: он не воспроизводит iOS GPU-драйвер, энергосбережение, системные ограничения памяти и поведение вкладки при блокировке экрана. Он не заменяет проверку реального iPhone, GPU/FPS, нагрева, длительной сессии и сохранения после выгрузки приложения.
+Зелёный CI подтверждает автоматические сценарии на Ubuntu/Chromium и macOS/Playwright WebKit. macOS WebKit ближе к Safari, чем Linux WebKit, но не является брендированным Safari и не воспроизводит iOS GPU-драйвер, энергосбережение, системные ограничения памяти и поведение вкладки при блокировке экрана. Он не заменяет проверку реального iPhone, GPU/FPS, нагрева, длительной сессии и сохранения после выгрузки приложения.
