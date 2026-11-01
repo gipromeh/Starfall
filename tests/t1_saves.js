@@ -131,7 +131,7 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   await ctx2.close();
 
   console.log('\n[10] Автосохранение в полёте, смерть, скрытие вкладки');
-  page = await L.openGame(ctx); await page.waitForSelector('#cont', { state: 'visible' }); await page.click('#cont'); await page.waitForFunction(() => state === 'dock');
+  page = await L.openGame(ctx); await page.waitForSelector('#cont', { state: 'visible' }); await page.evaluate(() => document.getElementById('cont').click()); await page.waitForFunction(() => state === 'dock');
   await page.evaluate(() => lift()); await L.sleep(600);
   L.check('вылет: state=play', (await page.evaluate(() => state)) === 'play');
   const q0 = (await page.evaluate(() => SV.info())).seq;
