@@ -29,6 +29,7 @@ const checks = [
  ['pirate fleet opens fire only inside 420 units', html.includes('const canFire=dist<420&&(fireAngle<.9||(dist<300&&fireAngle<1.35));')],
  ['regular pirates use 380/420-unit firing ranges', html.includes('d<(e.ty===3?420:380)')],
  ['wave attacks wait until the opening fleet is cleared', html.includes('if(!E&&!pirateFleet.some(pe=>pe.g&&pe.hp>0&&!pe.dead)){if(enc>0){spawnT-=dt;')],
+ ['additional E/E2 wave spawns also wait until the opening fleet is cleared', html.includes('if(!pirateFleet.some(pe=>pe.g&&pe.hp>0&&!pe.dead)&&E&&!E2&&!E.boss&&enc>0&&wave%5!==4){')],
 ];
 for (const [name, ok] of checks) { console.log((ok ? 'PASS ' : 'FAIL ') + name); assert.ok(ok, name); }
 console.log(checks.length + ' STARFALL radar/collision regression checks passed.');
