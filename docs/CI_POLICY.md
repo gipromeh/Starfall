@@ -39,6 +39,7 @@ Workflow: `.github/workflows/game-tests.yml`.
 
 - `passport-check / check`;
 - `game-tests / quick-checks`;
+- `game-tests / prepare-browser`;
 - `game-tests / browser-tests (ai-lab-browser)`;
 - `game-tests / browser-tests (nuclear-performance)`;
 - `game-tests / browser-tests (graphics-probe)`;
