@@ -158,7 +158,7 @@ const L = require('./lib');
   L.check('Elite OCS: поворот и ускорение задаются дискретными командами', Number.isInteger(eliteController.command.yaw) && Number.isInteger(eliteController.command.pitch) && Math.abs(eliteController.command.yaw)<=15 && Math.abs(eliteController.command.pitch)<=15 && eliteController.command.accel===2, eliteController);
   L.check('Elite OCS: положение интегрируется между AI-тактами', eliteController.moved > 0, eliteController);
   L.check('Elite fire: sign-XOR, projection gates, range and PRNG allow a valid forward shot', eliteController.fireGate, eliteController);
-  L.check('Elite AI: phase offsets stagger decision ticks between object slots', eliteController.ticksA[0] !== eliteController.ticksB[0], eliteControllerController=eliteController);
+  L.check('Elite AI: phase offsets stagger decision ticks between object slots', eliteController.ticksA[0] !== eliteController.ticksB[0], eliteController);
 
   const aiIntegration = await page.evaluate(() => {
     const e = pirateFleet[0];
