@@ -20,9 +20,9 @@ const L = require('./lib');
   page.on('domcontentloaded', () => page.logs.push('event:DOMContentLoaded'));
   page.on('dialog', d => { page.lastDialog = d.message(); (page.dialogHandler || (x => x.accept()))(d); });
   try {
-    // WebKit may keep the load event pending for blocked external font/CDN requests.
-    // Wait for response commit, then for the actual game API to become ready.
-    await page.goto(L.ORIGIN + '/', { waitUntil: 'commit', timeout: 30000 });
+    // Wait until the document has parsed and inline game scripts have executed.
+    // Blocked external fonts/CDNs do not prevent DOMContentLoaded.
+    await page.goto(L.ORIGIN + '/', { waitUntil: 'domcontentloaded', timeout: 30000 });
     await page.waitForFunction(() => typeof SV !== 'undefined' && typeof state !== 'undefined', null, { timeout: 90000 });
     await page.evaluate(() => localStorage.clear());
     await L.sleep(1500); // дать завершиться ленивой инициализации интерфейса
