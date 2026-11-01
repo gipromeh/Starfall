@@ -22,8 +22,8 @@ async function newCtx(browser, o = {}) {
     const url = route.request().url();
     if (url.startsWith(ORIGIN)) {
       const u = new URL(url);
-      if (u.pathname === '/' || u.pathname.endsWith('STARFALL_CURRENT.html')) return route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: fs.readFileSync(o.game || GAME) });
-      if (u.pathname.startsWith('/assets/')) { const f = path.join(__dirname, '..', decodeURIComponent(u.pathname)); if (f.startsWith(path.join(__dirname, '..', 'assets')) && fs.existsSync(f)) return route.fulfill({ status: 200, contentType: f.endsWith('.glb') ? 'model/gltf-binary' : 'application/octet-stream', body: fs.readFileSync(f) }); }
+      if (u.pathname === '/' || u.pathname.endsWith('STARFALL_CURRENT.html')) return route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: fs.readFileSync(o.game || GAME, 'utf8') });
+      if (u.pathname.startsWith('/assets/')) { const f = path.join(__dirname, '..', decodeURIComponent(u.pathname)); if (f.startsWith(path.join(__dirname, '..', 'assets')) && fs.existsSync(f)) return route.fulfill({ status: 200, contentType: f.endsWith('.glb') ? 'model/gltf-binary' : 'application/octet-stream', body: fs.readFileSync(f, 'utf8') }); }
       return route.fulfill({ status: 404, body: '' });
     }
     for (const [re, target] of MAP) {
