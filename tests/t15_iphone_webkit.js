@@ -16,6 +16,8 @@ const L = require('./lib');
     if (m.type() === 'error' && !/Failed to load resource|net::ERR|ERR_FAILED/.test(t)) page.errors.push('console.error: ' + t.slice(0, 300));
     else page.logs.push(m.type() + ': ' + t.slice(0, 200));
   });
+  page.on('request', r => { if (/\\.js(?:\\?|$)/.test(r.url())) page.logs.push('request: ' + r.url().slice(0, 180)); });
+  page.on('response', r => { if (/\\.js(?:\\?|$)/.test(r.url())) page.logs.push('response: ' + r.status() + ' ' + r.url().slice(0, 180)); });
   page.on('requestfailed', r => page.logs.push('requestfailed: ' + r.url() + ' ' + (r.failure()?.errorText || '')));
   page.on('domcontentloaded', () => page.logs.push('event:DOMContentLoaded'));
   page.on('dialog', d => { page.lastDialog = d.message(); (page.dialogHandler || (x => x.accept()))(d); });
