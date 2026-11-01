@@ -1,6 +1,7 @@
 ## CI — исправление синхронизации SAVE и WebKit тестов (2026-11-01)
 - SAVE regression: клик «ПРОДОЛЖИТЬ» в сценарии автосохранения больше не ожидает несуществующую навигацию; тест явно ждёт перехода в `dock`.
-- iPhone WebKit: загрузка теста синхронизирована с `DOMContentLoaded`, после которого доступны inline API игры. Устранена гонка между `commit` и исполнением скриптов.
+- iPhone WebKit: необязательный Google Fonts stylesheet заменяется пустым CSS; тест ожидает `DOMContentLoaded` перед проверкой inline API. Linux WebKit зависал до `DOMContentLoaded` при инициализации WebGL, поэтому матричный WebKit job перенесён на macOS runner.
+- SAVE regression использует прямой вызов кнопки через page evaluation и явно ждёт `state === 'dock'`, без неявного ожидания навигации Playwright.
 - Игровая логика не менялась. Результаты исправлений подтверждаются только новым CI запуском.
 
 ---
