@@ -1453,7 +1453,7 @@ function reset(){thl=.25;mnm=false;exitWorld();clr(nv);[bul,eb,mis,fx,deb,ali,tr
 function toMenu(){clr(nv);$("tsp").style.display="block";state="menu";["pause","over"].forEach(i=>$(i).classList.add("hide"));$("menu").classList.remove("hide");$("hud").style.display="none";$("hi").textContent="РЕКОРД: "+hi;[bul,eb,mis,fx,deb,ali,trs,pk].forEach(clr);if(nk)S.remove(nk.m);nk=null;if(E)S.remove(E.g);E=null;if(E2)S.remove(E2.g);E2=null;pirateFleetClear();rig.visible=true;P.set(0,0,0);rig.quaternion.identity()}
 function pause(on){if(on&&state==="play"){state="pause";firing=false;$("pause").classList.remove("hide")}else if(!on&&state==="pause"){state="play";$("pause").classList.add("hide")}}
 function dmg(n){if(state!=="play")return;n*=100/SHIPS[shp].hull;sinceHit=0;fv=1;shk=1.2;combo=0;sfx("h");const s=Math.min(shield,n);shield-=s;hull-=n-s;if(hull<=0&&!used){used=1;hull=50;shield=100;say("АВАРИЙНЫЙ РЕЗЕРВ: ВТОРОЙ ШАНС",2.5);return}if(hull<=0){hull=0;state="dying";dyT=1.8;boom(P,65,6,0x66ccff,50,1.5);sfx("e");xplode(P.clone(),vel,1.3);shatter(ship,P,vel,TCH?12:20,26);rig.visible=false;firing=false}}
-function spawnE(){const bs=wave%5===0,firstPair=!bs&&firstWaveSpawn<2,ty=bs?0:firstPair?(firstWaveSpawn++===0?0:1):wave>1&&Math.random()<.5?(Math.random()<.3?3:Math.random()<[.7,.5,.25][SYS[sy].l]?1:2):0,g=bs?mkBoss():mkPirate(ty),d=rd();if(bs)applyPirateLivery(g);d.y*=.3;g.position.copy(P).addScaledVector(new T.Vector3(0,0,-1).applyQuaternion(Q),1100).addScaledVector(d.normalize(),400);g.visible=false;S.add(g);boom(g.position,40,40,0x88ccff,50,2);ring(g.position,0x88ccff,30,2.2);const hp0=bs?Math.max(500+80*wave,SHIPS[shp].hull*2):Math.max(200,SHIPS[shp].hull*2,(70+5*(wave-1))*[1,.6,2.2,.9][ty]*DF[dif].hp*[.85,1,1.2][SYS[sy].l]);const sockets=bs?{guns:[],engines:[]}:pirateFleetResolveSockets(g,ty),hit=pirateHitBounds(g);const NE={g,hitCenter:hit.hitCenter,hitRadius:hit.hitRadius,hitFxRadius:hit.hitFxRadius,ty,boss:bs,muzzleNodes:sockets.guns,engineNodes:sockets.engines,smoke:null,fireFx:null,hits:0,warp:1.8,r0:bs?11:5.5*[1,.75,1.5,.9][ty],r:0,hp:hp0,mx:hp0,tn:(nv.length&&Math.random()<.5)?nv[Math.floor(Math.random()*nv.length)]:null,state:"APPROACH",st:0,ev:2+Math.random()*2,sd:Math.random()<.5?-1:1,dv:new T.Vector3(),vel:new T.Vector3(),fire:1.2,burstLeft:0,burstGap:0,aiClock:0,aiTicks:0};NE.vel.copy(P.clone().sub(g.position).normalize().multiplyScalar([18,10,12,16][ty]||18));NE.hd=NE.vel.clone().normalize();NE.sp2=NE.vel.length();if(E)E2=NE;else E=NE;say(bs?"ВНИМАНИЕ: БОСС":E2?"ВТОРОЙ ПИРАТ НА РАДАРЕ":"ПИРАТ НА РАДАРЕ",3)}
+function spawnE(){const bs=wave%5===0,firstPair=!bs&&firstWaveSpawn<2,ty=bs?0:firstPair?(firstWaveSpawn++===0?0:1):wave>1&&Math.random()<.5?(Math.random()<.3?3:Math.random()<[.7,.5,.25][SYS[sy].l]?1:2):0,g=bs?mkBoss():mkPirate(ty),d=rd();if(bs)applyPirateLivery(g);d.y*=.3;g.position.copy(P).addScaledVector(new T.Vector3(0,0,-1).applyQuaternion(Q),1100).addScaledVector(d.normalize(),400);g.visible=false;S.add(g);boom(g.position,40,40,0x88ccff,50,2);ring(g.position,0x88ccff,30,2.2);const hp0=bs?Math.max(500+80*wave,SHIPS[shp].hull*2):Math.max(200,SHIPS[shp].hull*2,(70+5*(wave-1))*[1,.6,2.2,.9][ty]*DF[dif].hp*[.85,1,1.2][SYS[sy].l]);const sockets=bs?{guns:[],engines:[]}:pirateFleetResolveSockets(g,ty),hit=pirateHitBounds(g);const NE={g,hitCenter:hit.hitCenter,hitRadius:hit.hitRadius,hitFxRadius:hit.hitFxRadius,ty,boss:bs,muzzleNodes:sockets.guns,engineNodes:sockets.engines,smoke:null,fireFx:null,hits:0,warp:1.8,r0:bs?11:5.5*[1,.75,1.5,.9][ty],r:0,hp:hp0,mx:hp0,tn:(nv.length&&Math.random()<.5)?nv[Math.floor(Math.random()*nv.length)]:null,state:"APPROACH",st:0,ev:2+Math.random()*2,sd:Math.random()<.5?-1:1,dv:new T.Vector3(),vel:new T.Vector3(),fire:1.2,burstLeft:0,burstGap:0,aiClock:EAI.STEP*(E2?.5:0),aiTicks:0};NE.vel.copy(P.clone().sub(g.position).normalize().multiplyScalar([18,10,12,16][ty]||18));NE.hd=NE.vel.clone().normalize();NE.sp2=NE.vel.length();if(E)E2=NE;else E=NE;say(bs?"ВНИМАНИЕ: БОСС":E2?"ВТОРОЙ ПИРАТ НА РАДАРЕ":"ПИРАТ НА РАДАРЕ",3)}
 function hitAli(a){boom(a.g.position,30,4,0x66ff99,22,.9);a.life=0;score+=50;sfx("e");say("ПИЛОТ СБИТ +50",1.5)}
 
 function ttex(){const k=document.createElement("canvas");k.width=k.height=256;const x=k.getContext("2d");x.fillStyle="#000";x.fillRect(0,0,256,256);for(let i=0;i<90;i++){x.fillStyle="rgba("+(150+Math.random()*105|0)+","+(190+Math.random()*65|0)+",255,"+(.3+Math.random()*.7)+")";x.fillRect(Math.random()*256,Math.random()*256,1+Math.random()*2,60+Math.random()*196)}const t=new T.CanvasTexture(k);t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(3,2);return t}
@@ -1640,12 +1640,12 @@ if(e.state==="APPROACH"){e.lt=(e.lt||0)+dt;if(e.boss){w=dir.clone().multiplyScal
 else if(e.state==="LOOP"){const radial=e.loopRadial||dir.clone().negate();let wp;if(e.loopPhase===0)wp=tp.clone().addScaledVector(radial,e.loopRadius).addScaledVector(UP,e.loopSign*260);else if(e.loopPhase===1)wp=tp.clone().addScaledVector(radial,-e.loopRadius).addScaledVector(UP,e.loopSign*300);else wp=tp.clone().addScaledVector(radial,e.loopRadius+100).addScaledVector(UP,-e.loopSign*120);w=wp.sub(g.position).normalize();if(aiThink&&g.position.distanceTo(wp)<95){if(e.loopPhase<2)e.loopPhase++;else{e.state="ATTACK";e.lt=0}}}
 else if(e.state==="BREAK"){if(e.ty===3){w=e.st>0?e.dv:dir.clone();e.st-=dt;if(aiThink&&((e.st<=0&&d>470)||e.st<-9)){e.state="ATTACK";e.lt=0}}else{w=dir.clone().negate().addScaledVector(side,.25*e.sd).normalize();e.st-=dt;if(aiThink&&(d>(e.ext||600)||e.st<-18)){e.state="ATTACK";e.lt=0}}}
 else{w=dir.clone();e.lat=1;e.st-=dt;if(e.st<=0)e.state="ATTACK"}
-const fl=nk&&g.position.distanceTo(nk.m.position)<240;if(fl)w=g.position.clone().sub(nk.m.position);const sp=(fl?2.2:1)*DF[dif].sp*(e.boss?.6:.78)*(27+Math.min(12,wave)*2)*[1,.75,.85,.9][e.ty]*(e.bst>0?1.5:1);e.bt=(e.bt||4+EAI.rand()*6)-dt;if(aiThink&&e.bt<=0){e.bst=e.bst>0?0:1.8+EAI.rand()*1.5;e.bt=e.bst>0?e.bst:5+EAI.rand()*7}if(e.bst>0)e.bst-=dt;if(!e.hd)e.hd=dir.clone();{const wn=w.clone().normalize(),ag=e.hd.angleTo(wn),ax=e.hd.clone().cross(wn),tr=[.8,1.1,.65,.75][e.ty]*(e.boss?.5:1)*(e.state==="BREAK"&&e.ty!==3?1.6:1)*[.8,1,1.15][dif];e.tw=ag>.02?Math.max(-.9,Math.min(.9,Math.sign(ax.y)*Math.min(1,ag)*1.6)):0;if(ag>1e-3&&ax.lengthSq()>1e-8)e.hd.applyAxisAngle(ax.normalize(),Math.min(ag,tr*dt));e.sp2=(e.sp2||0)+(sp-(e.sp2||0))*Math.min(1,1.2*dt);const desired=e.hd.clone().multiplyScalar(e.sp2);if(e.lat&&!e.boss)desired.addScaledVector(side,e.sp2*.42);const dv=desired.sub(e.vel),a=([42,64,27,34][e.ty]||40)*(e.bst>0?1.1:1),lim=a*dt;if(dv.length()>lim)dv.setLength(lim);e.vel.add(dv);g.position.addScaledVector(e.vel,dt)}
+const fl=nk&&g.position.distanceTo(nk.m.position)<240;if(fl)w=g.position.clone().sub(nk.m.position);const sp=(fl?2.2:1)*DF[dif].sp*(e.boss?.6:.78)*(27+Math.min(12,wave)*2)*[1,.75,.85,.9][e.ty]*(e.bst>0?1.5:1);e.bt=(e.bt||4+EAI.rand()*6)-dt;if(aiThink&&e.bt<=0){e.bst=e.bst>0?0:1.8+EAI.rand()*1.5;e.bt=e.bst>0?e.bst:5+EAI.rand()*7}if(e.bst>0)e.bst-=dt;if(!e.hd)e.hd=dir.clone();{const tr=[.8,1.1,.65,.75][e.ty]*(e.boss?.5:1)*(e.state==="BREAK"&&e.ty!==3?1.6:1)*[.8,1,1.15][dif],a=([42,64,27,34][e.ty]||40)*(e.bst>0?1.1:1);if(e.lat&&!e.boss)w.addScaledVector(side,.42);if(aiThink)EAI.command(e,w,d,{speed:sp,acceleration:a,turnRate:tr});EAI.integrate(e,dt,g,UP);e.sp2=e.speed;e.tw=(e.ocsYaw||0)/15}
 if(e.boss)g.rotation.y+=dt;else{g.quaternion.setFromRotationMatrix(new T.Matrix4().lookAt(g.position,g.position.clone().add(e.hd),UP));e.bk=(e.bk||0)+((e.tw||0)-(e.bk||0))*Math.min(1,2.5*dt);g.rotateZ(e.bk)}
-e.fire-=dt;const fireProjection=EAI.project(dir,e.hd);if(e.boss&&aiThink&&d<260&&e.fire<=0&&fireProjection.forward>Math.cos(.45)&&EAI.rand()<EAI.fireChance(fireProjection,d,260)){e.fire=1.7;for(let j=-2;j<=2;j++)shootLaser(eb,g.position.clone(),dir.clone().addScaledVector(side,j*.09).normalize().multiplyScalar(120),0xff3dbb,12*DF[dif].dm,4);sfx("l2")}if(!e.boss){
+e.fire-=dt;const fireProjection=EAI.project(dir,e.hd);if(e.boss&&aiThink&&d<260&&e.fire<=0&&fireProjection.forward>Math.cos(.45)&&EAI.fireGate(EAI.projectOCS(dir,e.hd),d,260,EAI.fireChance(fireProjection,d,260),score>=500)){e.fire=1.7;for(let j=-2;j<=2;j++)shootLaser(eb,g.position.clone(),dir.clone().addScaledVector(side,j*.09).normalize().multiplyScalar(120),0xff3dbb,12*DF[dif].dm,4);sfx("l2")}if(!e.boss){
 e.burstGap=Math.max(0,(e.burstGap||0)-dt);
 const fireCone=e.ty===3?.34:.25,firingLane=d<(e.ty===3?420:380)&&fireProjection.forward>0&&Math.abs(fireProjection.x)<Math.sin(fireCone)&&Math.abs(fireProjection.y)<Math.sin(fireCone)&&e.state!=="EVADE"&&e.state!=="BREAK";
-if(aiThink&&firingLane&&!e.burstLeft&&e.fire<=0&&EAI.rand()<EAI.fireChance(fireProjection,d,e.ty===3?420:380)){e.burstLeft=e.ty===2?4:3;e.burstGap=0}
+if(aiThink&&firingLane&&!e.burstLeft&&e.fire<=0&&EAI.fireGate(EAI.projectOCS(dir,e.hd),d,e.ty===3?420:380,EAI.fireChance(fireProjection,d,e.ty===3?420:380),score>=500)){e.burstLeft=e.ty===2?4:3;e.burstGap=0}
 if(firingLane&&e.burstLeft>0&&e.burstGap<=0){
 const tv=tp===P?vel:(e.tn?e.tn.v:vel),rel=tp.clone().sub(g.position),aa=tv.lengthSq()-22500,bb=2*rel.dot(tv),cc=rel.lengthSq(),disc=bb*bb-4*aa*cc;let lead=d/150;
 if(disc>=0&&Math.abs(aa)>1e-6){const sq=Math.sqrt(disc),t1=(-bb-sq)/(2*aa),t2=(-bb+sq)/(2*aa),ts=[t1,t2].filter(t=>t>0&&t<4);if(ts.length)lead=Math.min(...ts)}
@@ -1712,19 +1712,73 @@ const EAI=(function(){
   if(e.aiClock+1e-9<STEP)return false;
   e.aiClock-=STEP;e.aiTicks=(e.aiTicks||0)+1;return true;
  }
- /* OCS-like projection: target direction onto local right/up/forward axes. */
+ /* Compatibility projection used by existing HUD/tests. */
  function project(direction,forward){
   const f=forward.clone().normalize(),r=new T.Vector3().crossVectors(f,UP);
   if(r.lengthSq()<1e-8)r.set(1,0,0);else r.normalize();
   const u=new T.Vector3().crossVectors(r,f).normalize();
   return{x:direction.dot(r),y:direction.dot(u),forward:direction.dot(f)};
  }
+ /* Elite §14.7: normalized relative vector, half scale, inverted OCS dot products. */
+ function projectOCS(direction,forward,up=UP){
+  const f=forward.clone().normalize(),r=new T.Vector3().crossVectors(f,up);
+  if(r.lengthSq()<1e-8)r.set(1,0,0);else r.normalize();
+  const u=new T.Vector3().crossVectors(r,f).normalize(),d=direction.clone().normalize().multiplyScalar(.5);
+  return{h:-r.dot(d),l:-u.dot(d),d:-f.dot(d)};
+ }
+ /* Discrete steering/acceleration commands are refreshed only on the 15 Hz AI tick. */
+ function command(e,direction,distance,options={}){
+  const projection=projectOCS(direction,e.hd||new T.Vector3(0,0,-1));
+  const quantize=v=>Math.sign(v)*Math.min(15,Math.floor(Math.abs(v)*30+.5));
+  e.ocsProjection=projection;
+  e.ocsYaw=quantize(projection.h);
+  e.ocsPitch=-quantize(projection.l);
+  const rangeByte=Math.min(255,Math.floor(Math.max(0,distance)/32));
+  let accel=rangeByte>12?2:rangeByte<5?-1:1;
+  if(Math.abs(projection.h)>.28||Math.abs(projection.l)>.28)accel=Math.max(0,accel-1);
+  e.ocsAccel=accel;
+  e.ocsTargetSpeed=Math.max(0,options.speed||0);
+  e.ocsMaxAcceleration=Math.max(1,options.acceleration||40);
+  e.ocsTurnRate=Math.max(.1,options.turnRate||1);
+  return projection;
+ }
+ /* Orientation and translation are integrated every frame between AI decisions. */
+ function integrate(e,dt,object,up=UP){
+  if(!e.hd)e.hd=new T.Vector3(0,0,-1);
+  const yaw=(e.ocsYaw||0)/15*(e.ocsTurnRate||1)*dt;
+  if(yaw)e.hd.applyAxisAngle(up,yaw);
+  const right=new T.Vector3().crossVectors(e.hd,up);
+  if(right.lengthSq()>1e-8){
+   right.normalize();
+   const pitch=(e.ocsPitch||0)/15*(e.ocsTurnRate||1)*dt;
+   if(pitch)e.hd.applyAxisAngle(right,pitch);
+  }
+  e.hd.normalize();
+  const throttle=e.ocsAccel===2?1:e.ocsAccel===1?.92:e.ocsAccel===0?.78:.55;
+  const targetSpeed=(e.ocsTargetSpeed||e.speed||0)*throttle;
+  e.speed=Math.max(0,e.speed||0)+clamp(targetSpeed-(e.speed||0),-e.ocsMaxAcceleration*dt,e.ocsMaxAcceleration*dt);
+  const desired=e.hd.clone().multiplyScalar(e.speed),delta=desired.sub(e.vel);
+  const limit=e.ocsMaxAcceleration*dt;
+  if(delta.length()>limit)delta.setLength(limit);
+  e.vel.add(delta);
+  object.position.addScaledVector(e.vel,dt);
+  return e.ocsProjection;
+ }
  function fireChance(projection,distance,range){
   const alignment=clamp((projection.forward-.5)/.5,0,1);
   const proximity=clamp(1-distance/Math.max(1,range),0,1);
   return clamp(.25+.55*alignment+.2*proximity,.2,.98);
  }
- return{STEP,seed,rand,think,project,fireChance};
+ /* Elite §14.11: aggression, sign-XOR, projection bit gates, distance and PRNG threshold. */
+ function fireGate(projection,distance,range,descriptor,combatRank){
+  const rangeByte=Math.floor(Math.max(0,distance)/32);
+  const signX=projection.h<0,signD=projection.d<0;
+  if(rangeByte>=12||distance>=range||signX===signD||projection.d>=-.02)return false;
+  if(rangeByte>=4&&Math.abs(projection.h)>.18)return false;
+  const probability=clamp(descriptor,0,1)*(combatRank?1:.5);
+  return rand()<probability;
+ }
+ return{STEP,seed,rand,think,project,projectOCS,command,integrate,fireChance,fireGate};
 })();
 const pirateFleetForward=new T.Vector3(0,0,-1),pirateFleetUp=new T.Vector3(0,1,0),pirateFleetHeading=new T.Vector3();
 const pirateFleetGunNames=["GUN_0","GUN_1","GUN_2","GUN_3"],pirateFleetEngineNames=["ENG_0","ENG_1"];
@@ -1762,7 +1816,7 @@ function pirateFleetSpawn(e,delay=0){
  const g=pirateFleetTemplates[e.ty].clone(true),fw=new T.Vector3(0,0,-1).applyQuaternion(Q).normalize(),right=new T.Vector3(1,0,0).applyQuaternion(Q).normalize();
  g.position.copy(P).addScaledVector(fw,(760+e.slot*90)).addScaledVector(right,(e.slot-.5)*110).add(new T.Vector3(0,(e.slot-.5)*36,0));
  g.visible=false;S.add(g);e.g=g;const hit=pirateHitBounds(g);Object.assign(e,hit);const sockets=pirateFleetResolveSockets(g,e.ty);e.muzzleNodes=sockets.guns;e.engineNodes=sockets.engines;e.hp=e.mx=Math.max(200,SHIPS[shp].hull*2);e.r=e.ty===0?8.5:7.2;e.warp=.55+delay;e.state="APPROACH";e.stateT=0;e.side=e.slot-.5;
- e.aiClock=0;e.aiTicks=0;e.fire=.2+EAI.rand()*.22;e.burst=0;e.burstGap=0;e.trailT=.1;e.hits=0;e.vel=P.clone().sub(g.position).normalize().multiplyScalar([46,34.5,46,46][e.ty]||46);e.hd=e.vel.clone().normalize();e.speed=e.vel.length();e.runDir=null;e.dead=false;e.smoke=null;e.fireFx=null;e.flames=[];pirateFleetAttachFX(e);
+ e.aiClock=EAI.STEP*((e.slot+1)%4)/4;e.aiTicks=0;e.fire=.2+EAI.rand()*.22;e.burst=0;e.burstGap=0;e.trailT=.1;e.hits=0;e.vel=P.clone().sub(g.position).normalize().multiplyScalar([46,34.5,46,46][e.ty]||46);e.hd=e.vel.clone().normalize();e.speed=e.vel.length();e.runDir=null;e.dead=false;e.smoke=null;e.fireFx=null;e.flames=[];pirateFleetAttachFX(e);
 }
 function pirateFleetClear(){
  for(let i=eb.length-1;i>=0;i--)if(eb[i].pirateFleet){S.remove(eb[i].m);eb.splice(i,1)}
@@ -1802,13 +1856,12 @@ function pirateFleetUpdate(dt){
   else{aim=P.clone().addScaledVector(playerForward,-560).addScaledVector(side,100);if(aiThink&&(g.position.distanceTo(aim)<220||e.stateT>4)){e.state="APPROACH";e.stateT=0;e.runDir=null}}
   // уклонение от снарядов игрока
   if(aiThink)for(let b=bul.length-1;b>=0;b--){const bp=bul[b].m.position;if(bp.distanceTo(g.position)<120){aim.addScaledVector(dir.clone().cross(new T.Vector3(0,1,0)).normalize(),55);break}}
-  const desiredDir=aim.sub(g.position).normalize(),angle=e.hd.angleTo(desiredDir),axis=e.hd.clone().cross(desiredDir);
-  if(angle>1e-4&&axis.lengthSq()>1e-8)e.hd.applyAxisAngle(axis.normalize(),Math.min(angle,1.8*dt)).normalize();
-  const targetSpeed=46*[1,.75,1,1][e.ty];e.speed+=(targetSpeed-e.speed)*Math.min(1,.65*dt);
-  const desiredVel=e.hd.clone().multiplyScalar(e.speed),dv=desiredVel.sub(e.vel),maxA=60*dt;if(dv.length()>maxA)dv.setLength(maxA);
-  e.vel.add(dv);g.position.addScaledVector(e.vel,dt);
-  // Keep the nose on the actual velocity vector so the ship never appears to fly backwards.
-  pirateFleetHeading.copy(e.vel).normalize();g.quaternion.setFromUnitVectors(pirateFleetForward,pirateFleetHeading);g.rotateZ(Math.max(-.2,Math.min(.2,axis.y*-.12)));
+  const targetSpeed=46*[1,.75,1,1][e.ty];
+  if(aiThink)EAI.command(e,aim.clone().sub(g.position),dist,{speed:targetSpeed,acceleration:60,turnRate:1.8});
+  EAI.integrate(e,dt,g,pirateFleetUp);
+  // The visual nose follows the integrated OCS heading; translation remains a separate per-frame pass.
+  pirateFleetHeading.copy(e.hd).normalize();g.quaternion.setFromUnitVectors(pirateFleetForward,pirateFleetHeading);
+  g.rotateZ(Math.max(-.2,Math.min(.2,(e.ocsYaw||0)*-.008)));
   e.flames.forEach((f,i)=>{const pulse=.88+.12*Math.sin(performance.now()*.018+e.slot+i);f.scale.set(1.18,(2.8+Math.min(1,e.speed/55)*2.2)*pulse,1)});
   e.trailT-=dt;if(e.trailT<=0){e.trailT=TCH?.48:.36;g.updateMatrixWorld(true);const exhausts=e.engineNodes&&e.engineNodes.length?e.engineNodes.map(n=>n.getWorldPosition(new T.Vector3())):[g.localToWorld(new T.Vector3(0,.05,e.ty===0?4.7:5.45))];for(const exhaust of exhausts){trail(exhaust,e.hp/e.mx<.42?"rgba(255,70,25,1)":"rgba(255,145,66,.9)",e.ty===0?2.2:2);if(e.hp/e.mx<.68&&Math.random()<.7)trail(exhaust,"rgba(55,55,60,.9)",2.8)}}
   if(e.smoke)e.smoke.material.opacity=.25+.18*(.5+.5*Math.sin(performance.now()*.003+e.slot));
@@ -1816,7 +1869,7 @@ function pirateFleetUpdate(dt){
   const shotSpeed=200,leadTime=Math.min(6.2,dist/shotSpeed);
   const targetPoint=P.clone().addScaledVector(vel,leadTime),aimAt=targetPoint.clone().sub(g.position).normalize(),projection=EAI.project(aimAt,pirateFleetHeading),fireAngle=Math.acos(Math.max(-1,Math.min(1,projection.forward)));
   const canFire=dist<420&&(fireAngle<.9||(dist<300&&fireAngle<1.35));
-  e.fire-=dt;e.burstGap=Math.max(0,e.burstGap-dt);if(aiThink&&canFire&&e.fire<=0&&e.burst<=0&&EAI.rand()<EAI.fireChance(projection,dist,420))e.burst=3;
+  e.fire-=dt;e.burstGap=Math.max(0,e.burstGap-dt);const fireOCS=EAI.projectOCS(targetPoint.clone().sub(g.position),pirateFleetHeading);if(aiThink&&canFire&&e.fire<=0&&e.burst<=0&&EAI.fireGate(fireOCS,dist,420,EAI.fireChance(projection,dist,420),score>=500))e.burst=3;
   if(canFire&&e.burst>0&&e.burstGap<=0){
    const guns=e.muzzleNodes&&e.muzzleNodes.length?e.muzzleNodes:[null];
    for(const gun of guns){
