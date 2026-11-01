@@ -23,8 +23,25 @@ const ff = (page, sec) => page.evaluate(s => { const n = Math.round(s / .05); fo
 
   console.log('\n[Q9] утечки в бою: прогрев, затем 8 раундов «спавн → убийство», перемотка 40 с игрового времени');
   await page.evaluate(() => QL.setMode('low'));
-  // прогрев: все кеши (материалы лучей, текстуры взрывов, модели) создаются при первом использовании
-  for (let r = 0; r < 2; r++) { await page.evaluate(() => { if (!E) spawnE(); }); await ff(page, 4); await page.evaluate(() => { if (E) hurtEn(E, 1e6, false); }); await ff(page, 3); }
+  // Прогреваем все классы E/E2 и босса до baseline: их процедурные геометрии и FX-кэши
+  // создаются лениво. Иначе случайный порядок появления классов выглядит как утечка.
+  for (const [type, sequence] of [[0,[.9]],[1,[.1,.9,.1]],[2,[.1,.9,.99]],[3,[.1,.1]]]) {
+    await page.evaluate(({ sequence }) => {
+      wave = 2; firstWaveSpawn = 2; spawnT = 9999;
+      const original = Math.random; const values = sequence.slice();
+      Math.random = () => values.length ? values.shift() : .9;
+      try { spawnE(); } finally { Math.random = original; }
+    }, { type, sequence });
+    await ff(page, 4);
+    await page.evaluate(() => { const en = E || E2; if (en) hurtEn(en, 1e6, false); spawnT = 9999; });
+    await ff(page, 6);
+  }
+  // Отдельно прогреваем boss archetype, который появляется на каждой пятой волне.
+  await page.evaluate(() => { wave = 5; spawnT = 9999; spawnE(); });
+  await ff(page, 4);
+  await page.evaluate(() => { if (E) hurtEn(E, 1e6, false); spawnT = 9999; });
+  await ff(page, 6);
+  await page.evaluate(() => { wave = 3; firstWaveSpawn = 2; spawnT = 9999; });
   await ff(page, 40);
   const b0 = await mem(page);
   for (let r = 0; r < 8; r++) { await page.evaluate(() => { if (!E) spawnE(); }); await ff(page, 5); await page.evaluate(() => { firing = true; }); await ff(page, 2); await page.evaluate(() => { firing = false; if (E) hurtEn(E, 1e6, false); }); await ff(page, 3); }
