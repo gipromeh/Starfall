@@ -1,4 +1,16 @@
 const L = require('./lib');
+let activeStage = 'initialization';
+let stageStartedAt = Date.now();
+function stage(name) {
+  const now = Date.now();
+  console.log(`[stage] ${name} | previous: ${((now - stageStartedAt) / 1000).toFixed(1)} s`);
+  activeStage = name;
+  stageStartedAt = now;
+}
+const watchdog = setTimeout(() => {
+  console.error(`SAVE regression watchdog: 12 min exceeded; active stage: ${activeStage}; stage duration: ${((Date.now() - stageStartedAt) / 1000).toFixed(1)} s`);
+  process.exit(124);
+}, 12 * 60 * 1000);
 const best = page => page.evaluate(() => { const r = SV.load(); return r.ok ? { src: r.src, d: r.d } : null; });
 const raw = (page, k) => page.evaluate(k => localStorage.getItem(k), k);
 async function startNew(page) { await page.click('#play'); await page.waitForFunction(() => state === 'dock', null, { timeout: 30000 }); await L.sleep(300); }
@@ -147,10 +159,14 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   page = await L.openGame(ctx); await page.waitForSelector('#cont', { state: 'visible' }); await page.evaluate(() => document.getElementById('cont').click()); await page.waitForFunction(() => state === 'dock');
   await page.evaluate(() => lift()); await L.sleep(600);
   L.check('вылет: state=play', (await page.evaluate(() => state)) === 'play');
-  const hullBeforeDamage = await page.evaluate(() => SV.load().d.hull);
-  await page.evaluate(() => { hull -= 10; }); await L.sleep(2500);
-  const hullAfterDamage = await page.evaluate(() => SV.load().d.hull);
-  L.check('изменение только hull не перезаписывает сохранённое значение корпуса', hullAfterDamage === hullBeforeDamage, { hullBeforeDamage, hullAfterDamage });
+  const hullCheck = await page.evaluate(() => {
+    const before = SV.load().d.hull;
+    hull -= 10;
+    // Проверяем синхронно: таймер автосохранения не должен успеть вмешаться.
+    const immediatelyAfter = SV.load().d.hull;
+    return { before, immediatelyAfter, liveHull: hull };
+  });
+  L.check('изменение только hull не вызывает немедленную запись', hullCheck.immediatelyAfter === hullCheck.before && hullCheck.liveHull === hullCheck.before - 10, hullCheck);
   await page.evaluate(() => { cr += 123; cargo[1] += 1; }); await L.sleep(7500);
   let dsk = await best(page);
   L.check('награда/груз в полёте сохраняются автоматически (<= ~6 c)', dsk && dsk.d.cr === (await page.evaluate(() => cr)) && dsk.d.cargo[1] === (await page.evaluate(() => cargo[1])), dsk && { cr: dsk.d.cr });
@@ -165,7 +181,12 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   await page.evaluate(() => { delete document.hidden; });
 
   console.log('\n[11] Новая игра: подтверждение и резерв');
-  await page.evaluate(() => pause(true)); await page.click('#men1'); await L.sleep(300);
+  // После искусственного dying игра штатно перешла в экран поражения.
+  // Используем его собственную кнопку меню, а не перекрытую кнопку HUD.
+  await page.waitForFunction(() => state === 'over', null, { timeout: 5000 });
+  await page.click('#men2');
+  await page.waitForFunction(() => state === 'menu', null, { timeout: 5000 });
+  await L.sleep(300);
   const crKeep = (await best(page)).d.cr;
   page.dialogHandler = d => d.dismiss(); await page.click('#play'); await L.sleep(300);
   L.check('отмена подтверждения: остаёмся в меню, сохранение цело', (await page.evaluate(() => state)) === 'menu' && (await best(page)).d.cr === crKeep, page.lastDialog);
@@ -175,7 +196,7 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   const rest = await page.evaluate(() => { const ok = SV.restoreArchive(); const r = SV.load(); return { ok, cr: r.ok && r.d.cr }; });
   L.check('restoreArchive возвращает прошлый прогресс', rest.ok && rest.cr === crKeep, rest);
 
-  console.log('\\n[12] Сбой записи резервной копии не должен уничтожать сохранение');
+  stage('[12] отказ записи резервной копии');
   await page.evaluate(() => { cr = 54321; stnDraw(); });
   const restoreFailure = await page.evaluate(() => {
     const target = SV.info().slot === 'sf_sv2a' ? 'sf_sv2b' : 'sf_sv2a';
@@ -206,5 +227,7 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   await page.evaluate(() => { const original = Storage.prototype.__sfOriginalSetItem; if (original) Storage.prototype.setItem = original; delete Storage.prototype.__sfOriginalSetItem; });
   L.check('12b. ошибка резервного копирования отменяет новую игру и сохраняет прежний прогресс', failedNewGameState === 'menu' && beforeFailedNewGame && afterFailedNewGame && beforeFailedNewGame.d.cr === afterFailedNewGame.d.cr, { state: failedNewGameState, before: beforeFailedNewGame && beforeFailedNewGame.d.cr, after: afterFailedNewGame && afterFailedNewGame.d.cr });
   L.check('нет ошибок страницы за весь прогон', page.errors.length === 0, page.errors);
+  clearTimeout(watchdog);
+  stage('completed');
   process.exitCode = L.summary(); await browser.close();
 })().catch(e => { console.error('CRASH', e); process.exit(2); });
