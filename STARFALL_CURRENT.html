@@ -1859,27 +1859,26 @@ function radar(){
   if(outside&&!q.hostile)continue;
   let x=radarPosition.x*scale,y=-radarPosition.z*scale;
   if(outside){const k=R0/Math.max(1,planar);x=radarPosition.x*k;y=-radarPosition.z*k}
-  const px=c+x,py=c+y,height=radarPosition.y;
+  const px=c+x,py=c+y,height=radarPosition.y,verticalOffset=Math.abs(height)>15?Math.min(25,4+Math.abs(height)/radarRange*34):0,markerY=py+(height>0?-verticalOffset:verticalOffset);
   if(q.hostile&&q.selected){targetText=q.label;targetDistance=distance}
   if(outside){
    const a=Math.atan2(y,x);rc.save();rc.translate(c,c);rc.rotate(a);rc.beginPath();rc.moveTo(R0,0);rc.lineTo(R0-8,-5);rc.lineTo(R0-8,5);rc.closePath();rc.fillStyle=q.color;rc.fill();rc.restore();
   }else{
-   if(Math.abs(height)>15){
-    const h=Math.min(25,4+Math.abs(height)/radarRange*34),dir=height>0?-1:1,tipY=py+dir*h;
-    rc.beginPath();rc.moveTo(px,py);rc.lineTo(px,tipY);rc.strokeStyle=q.color;rc.globalAlpha=.92;rc.lineWidth=1.35;rc.stroke();rc.globalAlpha=1;
-    rc.beginPath();rc.arc(px,tipY,2.2,0,Math.PI*2);rc.strokeStyle=q.color;rc.lineWidth=1.1;rc.stroke();
-    rc.beginPath();rc.moveTo(px-3,tipY);rc.lineTo(px+3,tipY);rc.strokeStyle=q.color;rc.lineWidth=1;rc.stroke();
+   if(verticalOffset>0){
+    // Elite-style altitude stalk: base is on the scanner plane, contact symbol is at its true height.
+    rc.beginPath();rc.moveTo(px,py);rc.lineTo(px,markerY);rc.strokeStyle=q.color;rc.globalAlpha=.92;rc.lineWidth=1.35;rc.stroke();rc.globalAlpha=1;
+    rc.beginPath();rc.arc(px,py,1.8,0,Math.PI*2);rc.fillStyle=q.color;rc.fill();
    }
-   if(q.velocity){radarVelocity.copy(q.velocity).applyQuaternion(iq);const vl=Math.hypot(radarVelocity.x,radarVelocity.z);if(vl>2){rc.beginPath();rc.moveTo(px,py);rc.lineTo(px+radarVelocity.x/vl*8,py-radarVelocity.z/vl*8);rc.strokeStyle=q.color;rc.lineWidth=1.2;rc.globalAlpha=.75;rc.stroke();rc.globalAlpha=1}}
-   rc.save();rc.translate(px,py);rc.fillStyle=q.color;
+   if(q.velocity){radarVelocity.copy(q.velocity).applyQuaternion(iq);const vl=Math.hypot(radarVelocity.x,radarVelocity.z);if(vl>2){rc.beginPath();rc.moveTo(px,markerY);rc.lineTo(px+radarVelocity.x/vl*8,markerY-radarVelocity.z/vl*8);rc.strokeStyle=q.color;rc.lineWidth=1.2;rc.globalAlpha=.75;rc.stroke();rc.globalAlpha=1}}
+   rc.save();rc.translate(px,markerY);rc.fillStyle=q.color;
    if(q.kind==="enemy"||q.kind==="boss"){if(q.kind==="boss"||q.ty===1){rc.rotate(Math.PI/4);rc.fillRect(-q.radius*.72,-q.radius*.72,q.radius*1.44,q.radius*1.44)}else if(q.ty===2)rc.fillRect(-q.radius,-q.radius,q.radius*2,q.radius*2);else if(q.ty===3){rc.beginPath();rc.moveTo(0,-q.radius*1.25);rc.lineTo(q.radius,q.radius);rc.lineTo(-q.radius,q.radius);rc.closePath();rc.fill()}else{rc.beginPath();rc.arc(0,0,q.radius,0,Math.PI*2);rc.fill()}}
    else if(q.kind==="station"){rc.rotate(Math.PI/4);rc.fillRect(-q.radius,-q.radius,q.radius*2,q.radius*2)}
    else if(q.kind==="missile"){rc.beginPath();rc.moveTo(0,-q.radius);rc.lineTo(q.radius,q.radius);rc.lineTo(-q.radius,q.radius);rc.closePath();rc.fill()}
    else{rc.beginPath();rc.arc(0,0,q.radius,0,Math.PI*2);rc.fill()}
    rc.restore();
-   if(q.hostile&&(q.selected||planar<radarRange*.58)){rc.fillStyle="#f4fbff";rc.font="8px monospace";rc.textAlign="left";rc.fillText(q.label,px+5,py-4)}
+   if(q.hostile&&(q.selected||planar<radarRange*.58)){rc.fillStyle="#f4fbff";rc.font="8px monospace";rc.textAlign="left";rc.fillText(q.label,px+5,markerY-4)}
   }
-  if(q.selected&&!outside){rc.beginPath();rc.arc(px,py,q.radius+4,0,Math.PI*2);rc.strokeStyle="#fff";rc.lineWidth=1.2;rc.stroke()}
+  if(q.selected&&!outside){rc.beginPath();rc.arc(px,markerY,q.radius+4,0,Math.PI*2);rc.strokeStyle="#fff";rc.lineWidth=1.2;rc.stroke()}
  }
  rc.save();rc.translate(c,c);rc.beginPath();rc.moveTo(0,-7);rc.lineTo(5,6);rc.lineTo(0,3);rc.lineTo(-5,6);rc.closePath();rc.fillStyle="#d8fbff";rc.shadowColor="#7ceaff";rc.shadowBlur=6;rc.fill();rc.restore();
  rc.restore();
