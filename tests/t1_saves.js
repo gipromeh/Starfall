@@ -2,7 +2,7 @@ const L = require('./lib');
 const best = page => page.evaluate(() => { const r = SV.load(); return r.ok ? { src: r.src, d: r.d } : null; });
 const raw = (page, k) => page.evaluate(k => localStorage.getItem(k), k);
 async function startNew(page) { await page.click('#play'); await page.waitForFunction(() => state === 'dock', null, { timeout: 30000 }); await L.sleep(300); }
-async function reopen(ctx, old) { await old.close(); const p = await L.openGame(ctx); await p.waitForSelector('#cont', { state: 'visible', timeout: 5000 }); await p.click('#cont'); await p.waitForFunction(() => state === 'dock', null, { timeout: 30000 }); await L.sleep(300); return p; }
+async function reopen(ctx, old) { await old.close(); const p = await L.openGame(ctx); await p.waitForSelector('#cont', { state: 'visible', timeout: 5000 }); await p.evaluate(() => document.getElementById('cont').click()); await p.waitForFunction(() => state === 'dock', null, { timeout: 30000 }); await L.sleep(300); return p; }
 async function goMenu(page) { await page.evaluate(() => { if (state === 'dock') lift(); }); await L.sleep(500); await page.evaluate(() => pause(true)); await page.click('#men1'); await page.waitForFunction(() => state === 'menu'); await L.sleep(200); }
 async function clickText(page, scope, re) { return page.evaluate(([s, src]) => { const r = new RegExp(src); const b = [...document.querySelectorAll(s + ' button, ' + s + ' .chip, ' + s + ' [onclick]')].find(x => r.test(x.textContent)); if (b) { b.click(); return b.textContent; } return null; }, [scope, re.source]); }
 
