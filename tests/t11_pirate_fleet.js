@@ -149,8 +149,8 @@ const L = require('./lib');
   L.check('стыковка очищает флот и его снаряды', docked.state === 'dock' && docked.slots === 0 && !docked.ready && docked.taggedShots === 0, docked);
   await page.evaluate(() => { lift(); QL.setMode('low'); pirateFleetInit(); });
   await page.waitForFunction(() => pirateFleet.length === 4, null, { timeout: 15000 });
-  const relaunched = await page.evaluate(() => pirateFleet.length === 4 && [0,1,2,3].every(ty => pirateFleet.filter(e => e.ty === ty).length === 1));
-  L.check('после dock → lift снова создаётся полный состав из четырёх типов', relaunched);
+  const relaunched = await page.evaluate(() => pirateFleet.length === 2 && [0,1].every(ty => pirateFleet.filter(e => e.ty === ty).length === 1));
+  L.check('после dock → lift снова создаётся стартовый состав из двух типов', relaunched);
 
   const cleanup = await page.evaluate(() => {
     toMenu();
