@@ -1,3 +1,17 @@
+## CI / Quality Gate
+
+- `.github/workflows/game-tests.yml` запускает быстрые статические проверки отдельно от тяжёлых браузерных сценариев.
+- Быстрый этап: `tests/t12_ai_lab.js`, `tests/t14_radar_collision_regression.js`.
+- Браузерный этап выполняется только после успешного быстрого этапа; каждый сценарий Playwright изолирован в отдельной matrix job: AI Lab smoke, nuclear performance, graphics/resource probe, pirate fleet regression.
+- npm-кэш хранится в `~/.npm`; браузер Playwright — в `~/.cache/ms-playwright`. Chromium скачивается только при отсутствии cache hit.
+- Новые коммиты отменяют устаревшие запуски той же ветки. Для ручного повтора использовать GitHub **Re-run failed jobs**, чтобы не перезапускать успешно пройденные matrix jobs.
+- Полный набор запускается на каждом PR в `main` и push в `main`. Перед слиянием должны быть зелёными `passport-check / check`, `game-tests / quick-checks` и четыре matrix checks: `ai-lab-browser`, `nuclear-performance`, `graphics-probe`, `pirate-fleet`.
+- `ci-metrics` публикует длительность jobs/шагов и список ошибок в GitHub Job Summary, а также сохраняет `ci-metrics.json` artifact на 90 дней.
+- Для технического запрета слияния при красных проверках необходимо отдельно включить перечисленные required status checks в GitHub Ruleset / branch protection для `main`. Текущая GitHub-интеграция не предоставляет операцию изменения branch protection.
+- CI в Ubuntu/Chromium не заменяет ручной тест Safari на реальном iPhone.
+
+---
+
 ## v89 — снижение плотности пиратской атаки и дистанции огня
 - Стартовая атака ограничена двумя кораблями («Головорез» и «Шакал»); после уничтожения они не возрождаются. Затем запускаются обычные волны E/E2.
 - Волновой спавнер ждёт зачистки стартовой эскадрильи, поэтому атакующие группы не накладываются.
