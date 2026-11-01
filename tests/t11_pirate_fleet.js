@@ -76,7 +76,7 @@ const L = require('./lib');
       e.g.position.copy(P).add(new THREE.Vector3((i - .5) * 12, 0, -350));
       e.hd.copy(P.clone().sub(e.g.position).normalize());
       e.vel.copy(e.hd).multiplyScalar(46);
-      e.state = 'ATTACK_RUN'; e.stateT = 0; e.fire = 0; e.burst = 0; e.burstGap = 0;
+      e.state = 'ATTACK_RUN'; e.stateT = 0; e.fire = 0; e.burst = 0; e.burstGap = 0; e.aiClock = EAI.STEP; e.aiTicks = 0;
     });
     const before = eb.length;
     pirateFleetUpdate(.05);
@@ -119,6 +119,38 @@ const L = require('./lib');
     return { minDistance, states: Object.keys(states) };
   });
   L.check('пилот выполняет огневой пролёт через ближнюю зону и выходит из атаки', pass.minDistance < 220 && pass.states.includes('FIRING_PASS') && pass.states.includes('OVERSHOOT'), pass);
+
+  const eliteAI = await page.evaluate(() => {
+    const fwd = EAI.project(new THREE.Vector3(0,0,-1), new THREE.Vector3(0,0,-1));
+    const right = EAI.project(new THREE.Vector3(1,0,0), new THREE.Vector3(0,0,-1));
+    const up = EAI.project(new THREE.Vector3(0,1,0), new THREE.Vector3(0,0,-1));
+    EAI.seed(0x12345678); const seqA = [EAI.rand(),EAI.rand(),EAI.rand(),EAI.rand()];
+    EAI.seed(0x12345678); const seqB = [EAI.rand(),EAI.rand(),EAI.rand(),EAI.rand()];
+    const e = { aiClock: 0 }; let ticks = 0;
+    for (let i=0;i<60;i++) if (EAI.think(e,1/60)) ticks++;
+    const low = EAI.fireChance({forward:.65},300,420);
+    const high = EAI.fireChance({forward:.98},180,420);
+    return { fwd, right, up, deterministic: seqA.every((v,i)=>v===seqB[i]), ticks, low, high };
+  });
+  L.check('Elite AI: локальные проекции OCS корректны', eliteAI.fwd.forward > .999 && eliteAI.right.x > .999 && eliteAI.up.y > .999, eliteAI);
+  L.check('Elite AI: детерминированный PRNG воспроизводит поток', eliteAI.deterministic, eliteAI);
+  L.check('Elite AI: решения принимаются 15 раз/с, а не каждый кадр', eliteAI.ticks === 15, eliteAI);
+  L.check('Elite AI: шанс огня растёт при лучшем наведении и меньшей дистанции', eliteAI.high > eliteAI.low, eliteAI);
+
+  const aiIntegration = await page.evaluate(() => {
+    const e = pirateFleet[0];
+    pirateFleet.forEach((p,i) => {
+      p.warp = 0; p.g.visible = true; p.aiClock = 0; p.aiTicks = 0;
+      p.fire = 99; p.burst = 0; p.burstGap = 0; p.state = 'APPROACH'; p.stateT = 0;
+      p.g.position.copy(P).add(new THREE.Vector3((i-.5)*80,0,-780));
+      p.hd.copy(P.clone().sub(p.g.position).normalize());
+      p.vel.copy(p.hd).multiplyScalar(34.5); p.speed = p.vel.length();
+    });
+    const before = e.g.position.clone();
+    for(let i=0;i<60;i++) pirateFleetUpdate(1/60);
+    return { ticks:e.aiTicks, movement:before.distanceTo(e.g.position) };
+  });
+  L.check('Elite AI: движение интегрируется каждый кадр между решениями', aiIntegration.ticks === 15 && aiIntegration.movement > 10, aiIntegration);
 
   const damage = await page.evaluate(() => {
     const e = pirateFleet[0], type = e.ty;
