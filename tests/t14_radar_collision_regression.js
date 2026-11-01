@@ -8,6 +8,7 @@ const checks = [
  ['ballistic projectiles explicitly tagged', html.includes('arr.push({m,v,dmg,life,kind:"projectile"})')],
  ['hostile homing missiles explicitly tagged', html.includes('q.hm=1;q.kind="hostile-missile"')],
  ['radar has rotating sweep animation', html.includes('radarSweepAngle=(now*.00048)%(Math.PI*2)')],
+ ['radar uses Elite amber scanner palette', html.includes('rc.strokeStyle="#ffc078cc"')&&html.includes('#ffad63bb')],
  ['radar places altitude marker at end of stalk', html.includes('markerY=py+(height>0?-verticalOffset:verticalOffset)')],
  ['radar clips contacts to the circular scanner plane', html.includes('rc.arc(c,c,78,0,Math.PI*2);rc.clip()')],
  ['game metadata is v88', html.includes('<meta name="starfall-version" content="v88">')],
