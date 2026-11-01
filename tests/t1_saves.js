@@ -126,7 +126,7 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   L.check('9. пользователь предупреждён (toast)', await p2.evaluate(() => { const t = document.getElementById('svt'); return !!t && /недоступно/.test(t.textContent); }));
   await p2.evaluate(() => { cr = 4242; stnDraw(); }); await p2.evaluate(() => lift()); await L.sleep(500); await p2.evaluate(() => pause(true)); await p2.click('#men1'); await L.sleep(300);
   L.check('9. в рамках сессии ПРОДОЛЖИТЬ работает через память', await p2.evaluate(() => { const c = document.getElementById('cont'); return !!c && c.style.display !== 'none'; }));
-  await p2.click('#cont'); await p2.waitForFunction(() => state === 'dock');
+  await p2.click('#cont', { noWaitAfter: true }); await p2.waitForFunction(() => state === 'dock');
   L.check('9. значение восстановлено из памяти сессии', (await p2.evaluate(() => cr)) === 4242);
   await ctx2.close();
 
