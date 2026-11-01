@@ -33,7 +33,7 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   let eq = await page.evaluate(() => ({ gw: gw.slice(), owW: owW.slice(), cr }));
   if (!(eq.owW[1] === 1)) { await page.evaluate(() => { cr -= 400; owW[1] = 1; gw[0] = 1; stnDraw(); }); console.log('   (кнопка не найдена, повторил мутацию + stnDraw)'); }
   eq = await page.evaluate(() => ({ gw: gw.slice(), owW: owW.slice(), cr }));
-  await page.reload({ waitUntil: 'domcontentloaded', timeout: 30000 }); await page.waitForFunction(() => typeof SV !== 'undefined'); await page.waitForSelector('#cont', { state: 'visible' }); await page.click('#cont'); await page.waitForFunction(() => state === 'dock'); await L.sleep(300);
+  await page.reload(); await page.waitForFunction(() => typeof SV !== 'undefined'); await page.waitForSelector('#cont', { state: 'visible' }); await page.click('#cont'); await page.waitForFunction(() => state === 'dock'); await L.sleep(300);
   s = await page.evaluate(() => ({ gw: gw.slice(), owW: owW.slice(), cr }));
   L.check('2. оружие и деньги после reload', s.owW[1] === 1 && s.gw[0] === 1 && s.cr === eq.cr, { eq, s });
 
@@ -87,7 +87,7 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   console.log('\n[6] Загрузка старого сохранения (формат sf_sv до v42)');
   const legacy = { gal: [{ sec: 40, eco: 35, pir: 65, rep: 0, inf: { gld: 44, bur: 18, mec: 18, pir: 30 }, evt: null }], fr: { gld: 12, bur: 0, mec: -5, pir: 0 }, cr: 4321, cargo: [1, 2, 0], pp: [10, 20, 0], sy: 2, uh: 1.6, uf: 1, ud: 2.56, us: 1, wave: 17, ct: null, shp: 2, gw: [1, 2, 0, 0], shd: 1, mt: 1, owS: [1, 0, 1], owW: [1, 1, 1], owH: [1, 1, 0], owM: [1, 1] };
   await page.evaluate(L_ => { localStorage.clear(); localStorage.setItem('sf_sv', JSON.stringify(L_)); }, legacy);
-  await page.reload({ waitUntil: 'domcontentloaded', timeout: 30000 }); await page.waitForFunction(() => typeof SV !== 'undefined'); await page.waitForSelector('#cont', { state: 'visible' }); await page.click('#cont'); await page.waitForFunction(() => state === 'dock'); await L.sleep(300);
+  await page.reload(); await page.waitForFunction(() => typeof SV !== 'undefined'); await page.waitForSelector('#cont', { state: 'visible' }); await page.click('#cont'); await page.waitForFunction(() => state === 'dock'); await L.sleep(300);
   s = await page.evaluate(() => ({ cr, cargo: cargo.slice(), sy, shp, wave, gw: gw.slice(), owS: owS.slice(), uh, ud, fr: GAL.fr, miss, nuke, hull }));
   L.check('6. старое сохранение: кредиты, трюм, система, корабль, волна, тюнинг, фракции', s.cr === 4321 && s.cargo.join() === '1,2,0,0,0' && s.sy === 2 && s.shp === 2 && s.wave === 17 && s.uh === 1.6 && s.ud === 2.56 && s.fr.gld === 12, s);
   L.check('6. массив кораблей дорос до 5 без потери владения', s.owS.length === 5 && s.owS[0] === 1 && s.owS[2] === 1, s.owS);
@@ -96,7 +96,7 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
 
   console.log('\n[7] Повреждённые данные');
   await page.evaluate(() => { localStorage.clear(); });
-  await page.reload({ waitUntil: 'domcontentloaded', timeout: 30000 }); await page.waitForFunction(() => typeof SV !== 'undefined'); await startNew(page);
+  await page.reload(); await page.waitForFunction(() => typeof SV !== 'undefined'); await startNew(page);
   await page.evaluate(() => { cr = 7777; stnDraw(); });   // слот A или B получит v2
   const sl = await page.evaluate(() => ({ A: localStorage.getItem('sf_sv2a'), B: localStorage.getItem('sf_sv2b') }));
   await page.evaluate(() => { cr = 8888; stnDraw(); });   // второй слот
@@ -111,7 +111,7 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   r = await best(page);
   L.check('7c. подмена данных с неверной контрольной суммой отвергается', r === null, r && r.d.cr);
   await page.evaluate(() => { localStorage.setItem('sf_sv2a', 'не json'); localStorage.setItem('sf_sv2b', '[]'); localStorage.setItem('sf_sv', '{"cr":"много"}'); });
-  await page.reload({ waitUntil: 'domcontentloaded', timeout: 30000 }); await page.waitForFunction(() => typeof SV !== 'undefined');
+  await page.reload(); await page.waitForFunction(() => typeof SV !== 'undefined');
   L.check('7d. всё повреждено: игра стартует, ПРОДОЛЖИТЬ скрыта, ошибок нет', await page.evaluate(() => { const c = document.getElementById('cont'); return !c || c.style.display === 'none'; }) && page.errors.length === 0, page.errors);
   await startNew(page);
   L.check('7e. после повреждения «ИГРАТЬ» без подтверждения и новая запись создаётся', (await page.evaluate(() => SV.has())) === true);
@@ -120,7 +120,7 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   const ctx2 = await L.newCtx(browser);
   await ctx2.addInitScript(() => { const boom = () => { throw new DOMException('denied', 'SecurityError'); }; Object.defineProperty(window, 'localStorage', { get: boom, configurable: true }); });
   const p2 = await L.openGame(ctx2);
-  await p2.click('#play', { noWaitAfter: true }); await p2.waitForFunction(() => state === 'dock', null, { timeout: 30000 }); await L.sleep(500);
+  await p2.click('#play'); await p2.waitForFunction(() => state === 'dock'); await L.sleep(500);
   const inf = await p2.evaluate(() => SV.info());
   L.check('9. игра работает без localStorage, persist=false, ошибок нет', inf.persist === false && p2.errors.length === 0, { inf, errs: p2.errors });
   L.check('9. пользователь предупреждён (toast)', await p2.evaluate(() => { const t = document.getElementById('svt'); return !!t && /недоступно/.test(t.textContent); }));
