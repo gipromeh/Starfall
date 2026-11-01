@@ -137,6 +137,28 @@ const L = require('./lib');
   L.check('Elite AI: детерминированный PRNG воспроизводит поток', eliteAI.deterministic, eliteAI);
   L.check('Elite AI: решения принимаются 15 раз/с, а не каждый кадр', eliteAI.ticks === 15, eliteAI);
   L.check('Elite AI: шанс огня растёт при лучшем наведении и меньшей дистанции', eliteAI.high > eliteAI.low, eliteAI);
+  const eliteController = await page.evaluate(() => {
+    const forward = new THREE.Vector3(0,0,-1);
+    const p = EAI.projectOCS(forward, forward);
+    const e = { hd:forward.clone(), vel:forward.clone().multiplyScalar(10), speed:10 };
+    EAI.command(e, forward, 500, { speed:46, acceleration:60, turnRate:1.8 });
+    const command = { yaw:e.ocsYaw, pitch:e.ocsPitch, accel:e.ocsAccel, targetSpeed:e.ocsTargetSpeed };
+    const object = { position:new THREE.Vector3() };
+    EAI.integrate(e, 1/60, object);
+    const moved = object.position.length();
+    const originalRand = EAI.rand; let fireGate;
+    EAI.rand = () => 0;
+    try { fireGate = EAI.fireGate(p, 200, 420, 1, true); }
+    finally { EAI.rand = originalRand; }
+    const a={aiClock:0},b={aiClock:EAI.STEP/2},ticksA=[],ticksB=[];
+    for(let i=0;i<8;i++){if(EAI.think(a,1/60))ticksA.push(i);if(EAI.think(b,1/60))ticksB.push(i)}
+    return { p, command, moved, fireGate, ticksA, ticksB };
+  });
+  L.check('Elite OCS: три проекции имеют half-scale и инвертированный знак', Math.abs(eliteController.p.d + .5) < .001 && Math.abs(eliteController.p.h) < .001 && Math.abs(eliteController.p.l) < .001, eliteController);
+  L.check('Elite OCS: поворот и ускорение задаются дискретными командами', Number.isInteger(eliteController.command.yaw) && Number.isInteger(eliteController.command.pitch) && Math.abs(eliteController.command.yaw)<=15 && Math.abs(eliteController.command.pitch)<=15 && eliteController.command.accel===2, eliteController);
+  L.check('Elite OCS: положение интегрируется между AI-тактами', eliteController.moved > 0, eliteController);
+  L.check('Elite fire: sign-XOR, projection gates, range and PRNG allow a valid forward shot', eliteController.fireGate, eliteController);
+  L.check('Elite AI: phase offsets stagger decision ticks between object slots', eliteController.ticksA[0] !== eliteController.ticksB[0], eliteControllerController=eliteController);
 
   const aiIntegration = await page.evaluate(() => {
     const e = pirateFleet[0];
