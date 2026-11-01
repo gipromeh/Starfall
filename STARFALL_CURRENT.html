@@ -1778,9 +1778,11 @@ const EAI=(function(){
  /* Elite §14.11: aggression, sign-XOR, projection bit gates, distance and PRNG threshold. */
  function fireGate(projection,distance,range,descriptor,combatRank){
   const rangeByte=Math.floor(Math.max(0,distance)/32);
-  const signX=projection.h<0,signD=projection.d<0;
-  if(rangeByte>=12||distance>=range||signX===signD||projection.d>=-.02)return false;
-  if(rangeByte>=4&&Math.abs(projection.h)>.18)return false;
+  const signX=projection.h<0,signD=projection.d<0,xor=signX!==signD;
+  const centered=Math.abs(projection.h)<=.18;
+  if(rangeByte>=12||distance>=range||projection.d>=-.02)return false;
+  if(!xor&&!centered)return false;
+  if(rangeByte>=4&&!centered)return false;
   const probability=clamp(descriptor,0,1)*(combatRank?1:.5);
   return api.rand()<probability;
  }
