@@ -120,6 +120,7 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   const ctx2 = await L.newCtx(browser);
   await ctx2.addInitScript(() => { const boom = () => { throw new DOMException('denied', 'SecurityError'); }; Object.defineProperty(window, 'localStorage', { get: boom, configurable: true }); });
   const p2 = await L.openGame(ctx2);
+  // The click handler starts the game in-place; do not make Playwright wait for a navigation that is not part of this flow.
   await p2.click('#play', { noWaitAfter: true }); await p2.waitForFunction(() => state === 'dock', null, { timeout: 10000 }); await L.sleep(500);
   const inf = await p2.evaluate(() => SV.info());
   L.check('9. игра работает без localStorage, persist=false, ошибок нет', inf.persist === false && p2.errors.length === 0, { inf, errs: p2.errors });
