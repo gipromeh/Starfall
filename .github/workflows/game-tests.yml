@@ -32,17 +32,24 @@ jobs:
         run: node tests/t14_radar_collision_regression.js
 
   browser-tests:
-    name: browser-tests
+    name: browser-tests (${{ matrix.test }})
     needs: quick-checks
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        test:
+          - ai-lab-browser
+          - nuclear-performance
+          - graphics-probe
+          - pirate-fleet
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      # npm-пакеты кэшируются отдельно от браузера Playwright.
       - name: Cache npm packages
         uses: actions/cache@v4
         with:
@@ -63,43 +70,28 @@ jobs:
         if: steps.chromium-cache.outputs.cache-hit != 'true'
         run: npx playwright install chromium
 
-      # Каждый сценарий запускается независимо: сбой одного не скрывает результаты остальных.
-      - name: AI Lab browser runtime smoke test
-        id: ai-lab-browser
-        continue-on-error: true
-        run: node tests/t13_ai_lab_browser.js
-
-      - name: Nuclear impact performance test
-        id: nuclear-performance
-        continue-on-error: true
-        run: SF_NM="$PWD/node_modules" node tests/t8_nuke.js
-
-      - name: Existing graphics/resource probe
-        id: graphics-probe
-        continue-on-error: true
-        run: SF_NM="$PWD/node_modules" node tests/t6_probe.js
-
-      - name: Pirate fleet regression test
-        id: pirate-fleet
-        continue-on-error: true
-        run: SF_NM="$PWD/node_modules" node tests/t11_pirate_fleet.js
-
-      - name: Fail if any browser test failed
-        if: always()
+      - name: Run selected browser test
         env:
-          AI_LAB_BROWSER: ${{ steps.ai-lab-browser.outcome }}
-          NUCLEAR_PERFORMANCE: ${{ steps.nuclear-performance.outcome }}
-          GRAPHICS_PROBE: ${{ steps.graphics-probe.outcome }}
-          PIRATE_FLEET: ${{ steps.pirate-fleet.outcome }}
+          SF_NM: ${{ github.workspace }}/node_modules
         run: |
-          failed=0
-          for result in "$AI_LAB_BROWSER" "$NUCLEAR_PERFORMANCE" "$GRAPHICS_PROBE" "$PIRATE_FLEET"; do
-            if [ "$result" != "success" ]; then
-              echo "::error::Browser test result: $result"
-              failed=1
-            fi
-          done
-          exit "$failed"
+          case "${{ matrix.test }}" in
+            ai-lab-browser)
+              node tests/t13_ai_lab_browser.js
+              ;;
+            nuclear-performance)
+              node tests/t8_nuke.js
+              ;;
+            graphics-probe)
+              node tests/t6_probe.js
+              ;;
+            pirate-fleet)
+              node tests/t11_pirate_fleet.js
+              ;;
+            *)
+              echo "::error::Unknown test: ${{ matrix.test }}"
+              exit 2
+              ;;
+          esac
 
   ci-metrics:
     name: ci-metrics
