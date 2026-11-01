@@ -4,12 +4,12 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [main]
+    branches: [main, 'fix-*']
   workflow_dispatch:
 
 # Новые коммиты отменяют устаревшие запуски той же ветки.
 concurrency:
-  group: starfall-ci-${{ github.workflow }}-${{ github.ref }}
+  group: starfall-ci-${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 
 permissions:
