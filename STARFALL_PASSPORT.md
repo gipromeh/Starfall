@@ -1,14 +1,5 @@
 
 
-## 2026-11-01 — Замена основной сборки по запросу пользователя
-- `STARFALL_CURRENT.html` заменён загруженной сборкой `STARFALL — Void Hunter.html`; внешний HTML-export wrapper удалён, сохранён внутренний самостоятельный документ.
-- Новая базовая сборка содержит отдельную реализацию игры и не подтверждает наличие систем v90, описанных ниже в исторических записях паспорта.
-- Все прежние описания v89/v90 ниже считать историей разработки, а не гарантией присутствия функций в текущем HTML.
-- Приёмка: встроенные JavaScript-блоки прошли локальный `node --check`; CI и функциональная регрессия после замены ожидаются. SAVE-совместимость, мобильный Safari и соответствие старым игровым тестам пока НЕ подтверждены.
-- Статус: **замена внесена; приёмка не завершена**.
-
----
-
 
 ## CI / Quality Gate
 
@@ -102,10 +93,10 @@
 date: 2026-10-31
 topic: STARFALL — Void Hunter: паспорт проекта (архитектура, технологии, механика, сохранения, качество)
 tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура]
-game_version: "v91"
+game_version: "v90"
 last_update: 2026-11-01
 main_file: STARFALL_CURRENT.html
-main_file_sha256: "1624e0e2f8c70820a51b2821745cfffb53201d222fd73c50e06115846a6d38c1"
+main_file_sha256: "52bfaed45b4650626e8159fcff9b7718161276a31b823eede24ade5c0a9e59ce"
 save_format_version: 3
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"
