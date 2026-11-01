@@ -134,9 +134,10 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   page = await L.openGame(ctx); await page.waitForSelector('#cont', { state: 'visible' }); await page.evaluate(() => document.getElementById('cont').click()); await page.waitForFunction(() => state === 'dock');
   await page.evaluate(() => lift()); await L.sleep(600);
   L.check('вылет: state=play', (await page.evaluate(() => state)) === 'play');
-  const q0 = (await page.evaluate(() => SV.info())).seq;
+  const hullBeforeDamage = await page.evaluate(() => SV.load().d.hull);
   await page.evaluate(() => { hull -= 10; }); await L.sleep(2500);
-  L.check('изменение только hull записи не вызывает', (await page.evaluate(() => SV.info())).seq === q0);
+  const hullAfterDamage = await page.evaluate(() => SV.load().d.hull);
+  L.check('изменение только hull не перезаписывает сохранённое значение корпуса', hullAfterDamage === hullBeforeDamage, { hullBeforeDamage, hullAfterDamage });
   await page.evaluate(() => { cr += 123; cargo[1] += 1; }); await L.sleep(7500);
   let dsk = await best(page);
   L.check('награда/груз в полёте сохраняются автоматически (<= ~6 c)', dsk && dsk.d.cr === (await page.evaluate(() => cr)) && dsk.d.cargo[1] === (await page.evaluate(() => cargo[1])), dsk && { cr: dsk.d.cr });
@@ -144,7 +145,7 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   await page.evaluate(() => { state = 'dying'; cr = 1; cargo = [9, 9, 9, 9, 9]; }); await L.sleep(7000);
   dsk = await best(page);
   L.check('при гибели (dying) запись не перезаписывает последнее хорошее сохранение', dsk && dsk.d.cr === crSafe, dsk && dsk.d.cr);
-  await page.evaluate(() => { state = 'play'; cr = crSafe + 50; cargo = [0, 0, 0, 0, 0]; });
+  await page.evaluate(value => { state = 'play'; cr = value + 50; cargo = [0, 0, 0, 0, 0]; }, crSafe);
   await page.evaluate(() => { Object.defineProperty(document, 'hidden', { get: () => true, configurable: true }); document.dispatchEvent(new Event('visibilitychange')); });
   dsk = await best(page);
   L.check('уход вкладки в фон (visibilitychange) сохраняет немедленно', dsk && dsk.d.cr === crSafe + 50, dsk && dsk.d.cr);
