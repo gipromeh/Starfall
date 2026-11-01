@@ -26,6 +26,9 @@ async function newCtx(browser, o = {}) {
       if (u.pathname.startsWith('/assets/')) { const f = path.join(__dirname, '..', decodeURIComponent(u.pathname)); if (f.startsWith(path.join(__dirname, '..', 'assets')) && fs.existsSync(f)) return route.fulfill({ status: 200, contentType: f.endsWith('.glb') ? 'model/gltf-binary' : 'application/octet-stream', body: fs.readFileSync(f, 'utf8') }); }
       return route.fulfill({ status: 404, body: '' });
     }
+    // WebKit can leave DOMContentLoaded pending when a stylesheet is aborted by Web Inspector.
+    // Fulfil the optional Google Fonts stylesheet with empty CSS; gameplay uses local fallbacks.
+    if (/^https:\/\/fonts\\.googleapis\\.com\//.test(url)) return route.fulfill({ status: 200, contentType: 'text/css; charset=utf-8', body: '' });
     for (const [re, target] of MAP) {
       const m = url.match(re);
       if (m) { const f = typeof target === 'function' ? target(m) : target; if (fs.existsSync(f)) return route.fulfill({ status: 200, contentType: 'application/javascript', body: fs.readFileSync(f) }); }
