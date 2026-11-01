@@ -3,7 +3,7 @@ const path = require('path');
 const assert = require('assert');
 const html = fs.readFileSync(path.join(__dirname, '..', 'STARFALL_CURRENT.html'), 'utf8');
 const checks = [
- ['HTML build version matches v89', html.includes('<meta name="starfall-version" content="v89">')],
+ ['HTML build version matches v90', html.includes('<meta name="starfall-version" content="v90">')],
  ['laser projectiles explicitly tagged', html.includes('arr.push({m,v,dmg,life,kind:"laser"})')],
  ['ballistic projectiles explicitly tagged', html.includes('arr.push({m,v,dmg,life,kind:"projectile"})')],
  ['hostile homing missiles explicitly tagged', html.includes('q.hm=1;q.kind="hostile-missile"')],
@@ -11,7 +11,7 @@ const checks = [
  ['radar uses Elite amber scanner palette', html.includes('rc.strokeStyle="#ffc078cc"')&&html.includes('#ffad63bb')],
  ['radar places altitude marker at end of stalk', html.includes('markerY=py+(height>0?-verticalOffset:verticalOffset)')],
  ['radar clips contacts to the circular scanner plane', html.includes('rc.arc(c,c,78,0,Math.PI*2);rc.clip()')],
- ['game metadata is v89', html.includes('<meta name="starfall-version" content="v89">')],
+ ['game metadata is v90', html.includes('<meta name="starfall-version" content="v90">')],
  ['radar filters eb by hostile missile type', html.includes('b.kind==="hostile-missile"&&b.hm===1')],
  ['Jackal has the slowest E/E2 speed multiplier', html.includes('*[1,.75,.85,.9][e.ty]')],
  ['Jackal has the slowest E/E2 initial speed', html.includes('multiplyScalar([18,10,12,16][ty]||18)')],
