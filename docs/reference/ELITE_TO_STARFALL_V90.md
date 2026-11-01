@@ -1,3 +1,5 @@
+> **Статус на 2026-11-01:** после явной замены `STARFALL_CURRENT.html` на загруженную сборку v91 описанные ниже пункты v90 являются исторической картой прежней реализации. Их наличие в текущем игровом файле не предполагается и требует повторной реализации/проверки. См. `STARFALL_PASSPORT.md` и `docs/DECISION_LOG.md`.
+
 # Elite research → STARFALL implementation map
 
 **Source:** `docs/reference/ELITE_GAME_PASSPORT.md`, revision 0.4, ZX Spectrum 128K research passport.  
