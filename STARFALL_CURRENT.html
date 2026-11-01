@@ -1769,7 +1769,7 @@ function pirateFleetUpdate(dt){
   const dir=toPlayer.multiplyScalar(1/dist),side=playerRight.clone().multiplyScalar(e.side);e.stateT+=dt;let aim;
   if(e.state==="APPROACH"){aim=P.clone().addScaledVector(side,100).addScaledVector(pirateFleetUp,(e.slot-1.5)*36);if(dist<900){e.state="ATTACK_RUN";e.stateT=0}}
   else if(e.state==="ATTACK_RUN"){aim=P.clone().addScaledVector(vel,Math.max(.45,Math.min(2.2,dist/190))).addScaledVector(side,45);if(dist<520){e.state="FIRING_PASS";e.stateT=0;e.runDir=dir.clone()}}
-  else if(e.state==="FIRING_PASS"){e.runDir.lerp(dir,0.14);aim=P.clone().addScaledVector(e.runDir,420).addScaledVector(side,30);const passed=P.clone().sub(g.position).dot(e.runDir)<-140;if((e.stateT>.65&&passed)||e.stateT>12){e.state="OVERSHOOT";e.stateT=0}}
+  else if(e.state==="FIRING_PASS"){aim=P.clone().addScaledVector(e.runDir,-420).addScaledVector(side,30);const passed=P.clone().sub(g.position).dot(e.runDir)<-140;if((e.stateT>.65&&passed)||e.stateT>12){e.state="OVERSHOOT";e.stateT=0}}
   else if(e.state==="OVERSHOOT"){aim=P.clone().addScaledVector(e.runDir||e.hd,700).addScaledVector(side,100).addScaledVector(pirateFleetUp,(e.slot-1.5)*220+Math.sin(e.stateT*2)*400);if(g.position.distanceTo(aim)<220||e.stateT>4){e.state="REPOSITION";e.stateT=0}}
   else{aim=P.clone().addScaledVector(playerForward,-560).addScaledVector(side,100);if(g.position.distanceTo(aim)<220||e.stateT>4){e.state="APPROACH";e.stateT=0;e.runDir=null}}
   // уклонение от снарядов игрока
