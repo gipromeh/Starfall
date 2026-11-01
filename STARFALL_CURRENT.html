@@ -2376,7 +2376,7 @@ addEventListener("keyup",e=>keys[e.code]=0);
 addEventListener("mousemove",e=>{if(TCH)return;mouse.x=(e.clientX/innerWidth-.5)*2;mouse.y=(e.clientY/innerHeight-.5)*2});
 addEventListener("mousedown",e=>{if(!TCH&&e.button===0&&state==="play")firing=true;if(!TCH&&e.button===2&&state==="play")launch()});addEventListener("mouseup",()=>firing=false);
 addEventListener("blur",()=>{firing=false;pause(true)});addEventListener("contextmenu",e=>e.preventDefault());
-const go=()=>{if(SV.has()&&!confirm("Начать новую игру?\nСохранённый прогресс будет заменён (копия останется в резерве)."))return;$("tsp").style.display="none";ensureAC();SV.reset();reset();firstWavePending=true;firstWaveSpawn=0;atStn=1;dock()};
+const go=()=>{if(SV.has()&&!confirm("Начать новую игру?\nСохранённый прогресс будет заменён (копия останется в резерве)."))return;if(!SV.reset())return;$("tsp").style.display="none";ensureAC();reset();firstWavePending=true;firstWaveSpawn=0;atStn=1;dock()};
 if(window.tsParticles){try{tsParticles.load("tsp",{fullScreen:{enable:false},background:{color:"transparent"},fpsLimit:60,detectRetina:true,particles:{number:{value:140,density:{enable:true,area:900}},color:{value:["#ffffff","#9fd8ff","#ffd9a0"]},shape:{type:"circle"},opacity:{value:{min:.2,max:1},animation:{enable:true,speed:.8,sync:false}},size:{value:{min:.5,max:2.2}},move:{enable:true,speed:{min:.1,max:.6},direction:"none",outModes:"out"},links:{enable:false}},interactivity:{detectsOn:"window",events:{onHover:{enable:true,mode:"repulse"}},modes:{repulse:{distance:90,duration:.4}}}})}catch(e){}}
 $("pbtn").onclick=()=>pause(true);$("play").onclick=go;$("rst1").onclick=go;$("rst2").onclick=go;$("resume").onclick=()=>pause(false);$("men1").onclick=toMenu;$("men2").onclick=toMenu;
 
@@ -3076,11 +3076,15 @@ function apply(d){
  owS=d.owS.slice();owW=d.owW.slice();owH=d.owH.slice();owM=d.owM.slice();
  hull=d.hull;miss=d.miss;nuke=d.nuke;kills=d.kills;ct=d.ct;bty=d.bty;GAL.load(d.gal,d.fr)}
 
-function resetSave(){   /* контролируемый сброс: предыдущий прогресс остаётся в sf_sv_arc */
- const b=load();if(b.ok)put(KR,JSON.stringify({v:VER,t:Date.now(),d:b.d}));
- del(KA);del(KB);del(KL);seq=0;lastSlot="";lastJson="";lastSig="";nextAt=0}
-function restoreArchive(){const s=rd(KR);if(!s)return false;try{const o=JSON.parse(s),v=validate(o.d);if(!v.ok)return false;del(KA);del(KB);del(KL);seq=0;lastSlot="";lastJson="";
- const dj=JSON.stringify(v.d);put(KA,'{"v":'+VER+',"q":1,"t":'+Date.now()+',"c":"'+ck(dj)+'","d":'+dj+'}');sync();menuSync();return true}catch(e){return false}}
+function resetSave(){   /* контролируемый сброс: не удаляем рабочие слоты без проверенной резервной копии */
+ const b=load();if(b.ok){const archive=JSON.stringify({v:VER,t:Date.now(),d:b.d});
+  if(!put(KR,archive)||rd(KR)!==archive){err=err||"archive verify";toast("⚠ Не удалось создать резервную копию. Новая игра отменена, сохранённый прогресс не изменён.");return false}}
+ del(KA);del(KB);del(KL);seq=0;lastSlot="";lastJson="";lastSig="";nextAt=0;return true}
+function restoreArchive(){const s=rd(KR);if(!s)return false;try{const o=JSON.parse(s),v=validate(o.d);if(!v.ok)return false;
+ const dj=JSON.stringify(v.d),slot=lastSlot===KA?KB:KA,q=seq+1;
+ const rec='{"v":'+VER+',"q":'+q+',"t":'+Date.now()+',"c":"'+ck(dj)+'","d":'+dj+'}';
+ if(!put(slot,rec)||rd(slot)!==rec){err=err||"restore verify";toast("⚠ Не удалось записать восстановленное сохранение. Текущий прогресс не изменён.");return false}
+ seq=q;lastSlot=slot;lastJson=dj;lastSig=sigOf(v.d);lastW=performance.now();nextAt=0;err="";menuSync();return true}catch(e){return false}}
 
 function toast(m){let t=$("svt");if(!t){t=document.createElement("div");t.id="svt";
  t.style.cssText="position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);max-width:88vw;padding:8px 14px;border-radius:8px;background:#0a1a2cee;border:1px solid #4fd0ff88;color:#cfeaff;font:13px/1.35 'Exo 2',sans-serif;z-index:99;pointer-events:none;opacity:0;transition:opacity .25s;text-align:center";document.body.appendChild(t)}
