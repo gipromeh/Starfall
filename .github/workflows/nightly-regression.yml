@@ -40,7 +40,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: npm
+      - name: Restore npm package cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: starfall-npm-${{ runner.os }}-node${{ env.NODE_VERSION }}-pw${{ env.PLAYWRIGHT_VERSION }}-three0.128.0-tsparticles2.12.0
       - name: Restore Playwright Chromium
         uses: actions/cache@v4
         with:
