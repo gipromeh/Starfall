@@ -801,3 +801,5 @@ PV (конец скрипта): ангар-превью, обёртка hgrView;
 - The WebKit test harness fulfils the optional Google Fonts stylesheet with empty CSS (the game has local font fallbacks), then waits for `DOMContentLoaded` before checking the inline game API (`SV`, `state`). Linux WebKit did not reach `DOMContentLoaded` while initializing the game's WebGL renderer; the WebKit matrix job now runs on macOS, the closer Playwright platform for Safari-like testing.
 - These are test-harness and runner corrections, not changes to gameplay or SAVE semantics. Linux WebKit run #353 and the subsequent Linux retry are retained as failure evidence; a fresh macOS WebKit run is required.
 - WebKit coverage remains Playwright macOS WebKit emulation, not branded Safari or a physical iPhone/iOS Safari test.
+
+- Компас отображает направление в 3D-плоскости носа корабля: `dotX = local.x / |local|`, `dotY = -local.y / |local|`; глубина `local.z` определяет заполненность точки (полая — объект позади).
