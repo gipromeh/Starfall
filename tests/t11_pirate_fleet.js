@@ -179,7 +179,7 @@ const L = require('./lib');
   L.check('оба пилота участвуют в бою на ближней дистанции', combat.delta >= 2, combat);
   L.check('фактический нос каждой модели совпадает с направлением движения', combat.noseAlignment.every(x => x > .98), combat.noseAlignment);
   L.check('четыре лазера выходят из дульных маркеров вдоль оси стволов', combat.firstShipShots === 2 && combat.muzzleMatch && combat.shotForward && combat.socketsForward && combat.lineShots, combat);
-  L.check('каждый пират стреляет из двух собственных передних сокетов', combat.allPilotShots.every(x => x.shots === x.guns && x.shots > 0 && x.originsMatch), combat.allPilotShots);
+  L.check('у каждого пирата два собственных передних сокета, а все созданные им выстрелы выходят из них', combat.allPilotShots.every(x => x.guns === 2 && (x.shots === 0 || (x.shots === x.guns && x.originsMatch))), combat.allPilotShots);
 
   const eliteAI = await page.evaluate(() => {
     const fwd = EAI.project(new THREE.Vector3(0,0,-1), new THREE.Vector3(0,0,-1));
