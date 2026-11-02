@@ -67,7 +67,7 @@ Canonical record of durable gameplay, architecture, UI and workflow decisions. N
 - GitHub repository gipromeh/Starfall is the canonical project record. A decision is not safely captured until committed to the repository.
 - Every game-code change must update STARFALL_PASSPORT.md and CHANGELOG.md in the same work sequence; update research mapping documents when algorithmic claims change.
 - Record decisions with rationale, scope, constraints, acceptance criteria and status (proposed, implemented, verified, rejected); never label untested work as verified.
-- Keep main unchanged until all required CI checks for the PR are successful. Merge automatically after successful CI; no separate user approval is required.
+- Keep `main` unchanged. Do not merge a PR unless the user explicitly authorizes that specific merge, even after all required CI checks pass.
 
 
 ## 2026-11-02 — First-wave pirate detection and Elite-style radar (scope correction)
