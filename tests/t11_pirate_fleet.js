@@ -98,7 +98,7 @@ const L = require('./lib');
       for (let i=eb.length-1;i>=shotStart;i--){S.remove(eb[i].m);eb.splice(i,1)}
       if (E?.g) S.remove(E.g);
       if (E2?.g) S.remove(E2.g);
-      E=saved.E;E2=saved.E2;state=saved.state;P.copy(saved.P);vel.copy(saved.vel);Q.copy(saved.Q);av.copy(saved.av);
+      E=saved.E;E2=saved.E2;state=saved.state;P.copy(saved.P);vel.copy(saved.vel);Q.copy(saved.Q);EAI.rand=saved.rand;av.copy(saved.av);
       rig.quaternion.copy(Q);thl=saved.thl;wave=saved.wave;firstWaveSpawn=saved.firstWaveSpawn;
       enc=saved.enc;spawnT=saved.spawnT;amb=saved.amb;firing=saved.firing;
       for(const s of saved.fleet){s.p.g.position.copy(s.position);s.p.g.quaternion.copy(s.quaternion);s.p.vel.copy(s.vel);s.p.hd.copy(s.hd);Object.assign(s.p,{speed:s.speed,state:s.state,stateT:s.stateT,runDir:s.runDir,aiClock:s.aiClock,aiTicks:s.aiTicks,fire:s.fire,burst:s.burst,burstGap:s.burstGap,trailT:s.trailT,ocsYaw:s.ocsYaw,ocsPitch:s.ocsPitch,ocsAccel:s.ocsAccel,ocsTargetSpeed:s.ocsTargetSpeed});s.p.g.updateMatrixWorld(true)}
@@ -118,7 +118,7 @@ const L = require('./lib');
         runDir:e.runDir?.clone()||null,aiClock:e.aiClock,aiTicks:e.aiTicks,fire:e.fire,burst:e.burst,
         burstGap:e.burstGap,ocsYaw:e.ocsYaw,ocsPitch:e.ocsPitch,ocsAccel:e.ocsAccel,
         ocsTargetSpeed:e.ocsTargetSpeed,ocsTurnRate:e.ocsTurnRate,ocsMaxAcceleration:e.ocsMaxAcceleration},
-      trailLength:trs.length, bulletLength:eb.length
+      trailLength:trs.length, bulletLength:eb.length, rand:EAI.rand
     };
     try {
       pirateFleet.splice(0,pirateFleet.length,e);
@@ -126,8 +126,8 @@ const L = require('./lib');
       e.g.position.set(115,0,-850); e.g.visible=true; e.warp=0;
       e.hd.set(0,0,1); e.vel.set(0,0,34.5); e.speed=34.5;
       e.state='APPROACH'; e.stateT=0; e.side=.5; e.runDir=null;
-      e.aiClock=0; e.aiTicks=0; e.fire=999; e.burst=0; e.burstGap=0;
-      EAI.seed(0x51a7fa11);
+      e.aiClock=0; e.aiTicks=0; e.fire=0; e.burst=0; e.burstGap=0;
+      EAI.seed(0x51a7fa11); EAI.rand=()=>0;
       let minDistance=Infinity,minLateral=Infinity,maxLateral=0;
       const states=new Set();
       for(let i=0;i<3600;i++){
@@ -138,7 +138,7 @@ const L = require('./lib');
         maxLateral=Math.max(maxLateral,Math.abs(rel.x));
         states.add(e.state);
       }
-      return {minDistance,minLateral,maxLateral,states:[...states],finalDistance:e.g.position.distanceTo(P)};
+      return {minDistance,minLateral,maxLateral,shotsFired:eb.length-saved.bulletLength,states:[...states],finalDistance:e.g.position.distanceTo(P)};
     } finally {
       pirateFleet.splice(0,pirateFleet.length,...saved.fleet);
       state=saved.state;P.copy(saved.P);vel.copy(saved.vel);Q.copy(saved.Q);
@@ -151,6 +151,7 @@ const L = require('./lib');
     }
   });
   L.check('естественный заход Шакала включает атаку, огневой проход и выход из атаки', naturalJackalRun.states.includes('ATTACK_RUN') && naturalJackalRun.states.includes('FIRING_PASS') && naturalJackalRun.states.includes('OVERSHOOT') && naturalJackalRun.states.includes('REPOSITION'), naturalJackalRun);
+  L.check('Шакал открывает огонь в естественном боковом проходе, а не только в принудительном тесте', naturalJackalRun.shotsFired >= 2, naturalJackalRun);
   L.check('Шакал выполняет боковой огневой проход вместо лобового столкновения', naturalJackalRun.minDistance >= 80 && naturalJackalRun.minDistance <= 180 && naturalJackalRun.minLateral >= 80, naturalJackalRun);
 
   const initialSpawn = await page.evaluate(() => pirateFleet.map(e => {
