@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
 const html = fs.readFileSync(path.join(__dirname, '..', 'STARFALL_CURRENT.html'), 'utf8');
-const versionTags = html.match(/<meta\\s+name="starfall-version"\\s+content="v\\d+"\\s*\\/?>(?![\\s\\S])/g) || [];
+const versionTags = [...html.matchAll(/<meta\s+name="starfall-version"\s+content="v\d+"\s*\/?>/g)];
 const checks = [
  ['HTML build version metadata exists and is unique', versionTags.length === 1],
  ['laser projectiles explicitly tagged', html.includes('arr.push({m,v,dmg,life,kind:"laser"})')],
