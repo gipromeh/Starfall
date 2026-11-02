@@ -73,6 +73,40 @@ const L = require('./lib');
   L.check('первая волна: Ржавый Череп и Шакал видны на радаре сразу, включая фазу входа из гиперпрыжка', firstWaveRadar.count === 2 && firstWaveRadar.labels.join(',') === 'J,R' && firstWaveRadar.hostile && firstWaveRadar.visibleDuringWarp, firstWaveRadar);
   L.check('первая волна появляется в рабочем радиусе радара впереди игрока', firstWaveRadar.distances.every(d => d >= 830 && d <= 880) && firstWaveRadar.forward.every(v => v > .98), firstWaveRadar);
 
+  const firstWaveJackalCombat = await page.evaluate(() => {
+    const saved = {
+      E, E2, state, P:P.clone(), vel:vel.clone(), Q:Q.clone(), av:av.clone(),
+      thl, wave, firstWaveSpawn, enc, spawnT, amb, firing
+    };
+    const shotStart = eb.length, originalRand = EAI.rand;
+    let result;
+    try {
+      E = E2 = null; state = 'play'; wave = 1; firstWaveSpawn = 0;
+      enc = 0; spawnT = 99; vel.set(0,0,0); av.set(0,0,0); Q.identity(); thl = 0; firing = false;
+      spawnE(); spawnE();
+      const jackal = E2;
+      if (E?.g) S.remove(E.g);
+      E = jackal; E2 = null;
+      E.warp = 0; E.g.visible = true; E.g.position.copy(P).add(new THREE.Vector3(0,0,-360));
+      E.hd.set(0,0,1); E.vel.set(0,0,34.5); E.speed = E.sp2 = 34.5;
+      E.state = 'ATTACK'; E.lt = 0; E.fire = 0; E.burstLeft = 0; E.burstGap = 0;
+      E.aiClock = EAI.STEP; E.aiTicks = 0; E.tn = null;
+      EAI.rand = () => 0;
+      for (let i=0;i<240;i++) upd(1/60);
+      const shots = eb.slice(shotStart).filter(b => b.kind === 'laser');
+      result = { type:E.ty, shots:shots.length, distance:E.g.position.distanceTo(P), state:E.state, passOffset:70 };
+    } finally {
+      for (let i=eb.length-1;i>=shotStart;i--){S.remove(eb[i].m);eb.splice(i,1)}
+      if (E?.g) S.remove(E.g);
+      if (E2?.g) S.remove(E2.g);
+      E=saved.E;E2=saved.E2;state=saved.state;P.copy(saved.P);vel.copy(saved.vel);Q.copy(saved.Q);av.copy(saved.av);
+      rig.quaternion.copy(Q);thl=saved.thl;wave=saved.wave;firstWaveSpawn=saved.firstWaveSpawn;
+      enc=saved.enc;spawnT=saved.spawnT;amb=saved.amb;firing=saved.firing;EAI.rand=originalRand;
+    }
+    return result;
+  });
+  L.check('Шакал первой волны открывает огонь при штатном огневом заходе', firstWaveJackalCombat.type === 1 && firstWaveJackalCombat.shots >= 2, firstWaveJackalCombat);
+
   const initialSpawn = await page.evaluate(() => pirateFleet.map(e => {
     const forward = new THREE.Vector3(0,0,-1).applyQuaternion(Q).normalize();
     const offset = e.g.position.clone().sub(P);
