@@ -1641,7 +1641,7 @@ if(E&&E.warp<=0){
  e.ev-=dt;
  const scale=e.boss?.6:Math.max(.1,((27+Math.min(12,wave)*2)*[1,.75,.85,.9][e.ty]*DF[dif].sp*.78)/EAI.profile(e.ty).speed);
  const profile=EAI.profile(e.ty,e.boss,scale);
- const neighbors=[E,E2,...pirateFleet,...nv.filter(n=>!n.tur)].filter(x=>x&&x!==e&&x.g&&x.g.visible!==false&&x.warp<=0&&x.hp!==0);
+ const neighbors=[E,E2,...pirateFleet,...nv.filter(n=>!n.tur)].filter(x=>x&&x!==e&&x.g&&x.g.visible!==false&&(x.warp==null||x.warp<=0)&&x.hp!==0);
  const pilot=EAI.pilot(e,dt,g,tp,tv,profile,bul,neighbors,UP);
  if(e.boss){g.rotation.y+=dt}
  else{
@@ -1799,7 +1799,10 @@ const EAI=(function(){
    aim.copy(away).addScaledVector(lateral,e.aiEvadeSign*.55).normalize();
    mode="EVADE";
   }else if(distance<options.evasionDistance){
-   aim.copy(direction).negate();mode="EVADE";
+   const lateral=new T.Vector3().crossVectors(direction,UP);
+   if(lateral.lengthSq()<1e-8)lateral.set(1,0,0);else lateral.normalize();
+   if(e.aiEvadeSign===undefined)e.aiEvadeSign=rand()<.5?-1:1;
+   aim.copy(direction).negate().addScaledVector(lateral,e.aiEvadeSign*.72).normalize();mode="EVADE";
   }else{
    const alignment=(e.hd||direction).clone().normalize().dot(aim);
    if(distance<options.fireRange&&alignment>.72)mode="ATTACK";
@@ -1846,7 +1849,8 @@ const EAI=(function(){
   if(decisionTick){
    e.aiIntent=decide(e,target,targetVelocity||ZERO,options,threats,neighbors);
    e.aiMode=e.aiIntent.mode;
-   command(e,e.aiIntent.direction,e.aiIntent.distance,options);
+   const steeringOptions=e.aiIntent.mode==="EVADE"?{...options,speed:options.speed*.78}:options;
+   command(e,e.aiIntent.direction,e.aiIntent.distance,steeringOptions);
   }
   integrate(e,dt,object,up);
   e.sp2=e.speed;
