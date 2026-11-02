@@ -8,7 +8,7 @@ const checks = [
  ['ballistic projectiles explicitly tagged', html.includes('arr.push({m,v,dmg,life,kind:"projectile"})')],
  ['hostile homing missiles explicitly tagged', html.includes('q.hm=1;q.kind="hostile-missile"')],
  ['radar uses 3D elliptical projection', html.includes('function radarProjectContact(x,y,z,range,rx=74,ry=49)')],
- ['radar keeps Elite amber scanner palette', html.includes('#ffc07877')&&html.includes('#ffad63bb')],
+ ['radar keeps Elite amber scanner palette', html.includes('#ffc07877')&&html.includes('#ffad6388')],
  ['radar encodes altitude with up/down chevrons', html.includes('Up/down chevrons encode altitude')],
  ['radar clips contacts to an elliptical scanner surface', html.includes('rc.ellipse(c,c,78,53,0,0,Math.PI*2);rc.clip()')],
  ['old rotating sweep is removed', !html.includes('radarSweepAngle')],
