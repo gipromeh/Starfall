@@ -103,6 +103,7 @@ jobs:
           node tests/t11_pirate_fleet.js
           node tests/t13_ai_lab_browser.js
           node tests/t16_deep_space.js
+          node tests/t17_radar_collision_runtime.js
 
   iphone-webkit:
     name: iphone-webkit
