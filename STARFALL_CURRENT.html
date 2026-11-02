@@ -1794,7 +1794,7 @@ const EAI=(function(){
   let aim=targetPoint.sub(position).normalize(),mode="PURSUE";
   const threat=projectileThreat(e,threats,options);
   if(threat){
-   const away=position.clone().sub(threat.position).normalize();
+   const away=threat.closest.clone().negate().normalize();
    const lateral=new T.Vector3().crossVectors(away,UP);
    if(lateral.lengthSq()<1e-8)lateral.set(1,0,0);else lateral.normalize();
    if(e.aiEvadeSign===undefined)e.aiEvadeSign=rand()<.5?-1:1;
