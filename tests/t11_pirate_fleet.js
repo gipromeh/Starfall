@@ -95,7 +95,7 @@ const L = require('./lib');
         aiEvadeSign:e.aiEvadeSign,aiProfile:e.aiProfile,fire:e.fire,burst:e.burst,burstGap:e.burstGap,
         ocsYaw:e.ocsYaw,ocsPitch:e.ocsPitch,ocsAccel:e.ocsAccel,ocsTargetSpeed:e.ocsTargetSpeed,
         ocsTurnRate:e.ocsTurnRate,ocsMaxAcceleration:e.ocsMaxAcceleration,trailT:e.trailT})),
-      bullets:eb.length,trails:trs.length};
+      bullets:eb.length,trails:trs.length,randState:EAI.getSeed()};
     try {
       E=E2=null;state='play';P.set(0,0,0);vel.set(0,0,0);Q.identity();
       pirateFleet.splice(0,pirateFleet.length,...saved.fleet);
@@ -116,7 +116,7 @@ const L = require('./lib');
         shots:eb.slice(saved.bullets).filter(b=>b.pirateFleet).length,
         legacyStateFields:pirateFleet.some(e=>'state' in e||'runDir' in e||'stateT' in e)};
     } finally {
-      pirateFleet.splice(0,pirateFleet.length,...saved.fleet);state=saved.state;P.copy(saved.P);vel.copy(saved.vel);Q.copy(saved.Q);E=saved.E;E2=saved.E2;
+      pirateFleet.splice(0,pirateFleet.length,...saved.fleet);state=saved.state;P.copy(saved.P);vel.copy(saved.vel);Q.copy(saved.Q);E=saved.E;E2=saved.E2;EAI.seed(saved.randState);
       for(const x of saved.ships){const e=x.e;e.g.position.copy(x.position);e.g.quaternion.copy(x.quaternion);e.g.visible=x.visible;e.warp=x.warp;
         e.hd.copy(x.hd);e.vel.copy(x.vel);Object.assign(e,{speed:x.speed,aiClock:x.aiClock,aiTicks:x.aiTicks,aiMode:x.aiMode,aiIntent:x.aiIntent,
           aiEvadeSign:x.aiEvadeSign,aiProfile:x.aiProfile,fire:x.fire,burst:x.burst,burstGap:x.burstGap,ocsYaw:x.ocsYaw,ocsPitch:x.ocsPitch,
