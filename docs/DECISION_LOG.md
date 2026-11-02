@@ -126,3 +126,10 @@ Canonical record of durable gameplay, architecture, UI and workflow decisions. N
 - The Elite-style elliptical 3D scanner and altitude stalks remain separate from the passive HUD direction cue. Bearing/elevation/range/closure are informational only; no autopilot or combat lock is introduced.
 - The opening Jackal shares the Elite-derived OCS controller and side-pass state machine with the Golovorez. Preserve ship-specific speed/handling values, lateral firing clearance, and overshoot/reposition phases.
 - Acceptance remains the natural 60-second Jackal browser simulation: all attack phases, at least two shots, minimum separation 80–180 units and lateral clearance ≥80 units.
+
+
+## 2026-11-02 — DEC-014: обязательная полная замена пиратского AI на Elite
+- Уточнено, что прежняя стартовая механика «Шакала» не подлежит параметрической коррекции: требуется полная замена decision/maneuver алгоритма на подтверждённую Elite-логику.
+- «Шакал» и «Головорез» используют общий Elite-derived AI; различия классов выражаются данными, а не отдельными legacy FSM.
+- OCS helper внутри старого сценарного FSM не считается Elite AI. Приёмка требует естественной детерминированной симуляции с реальными траекториями, тактикой, уклонением, огнём и проверкой расхождения.
+- Закреплён Elite ZX scanner: эллипс, 3D контакты со штоками высоты, отдельный компас, автоматическая пассивная навигационная цель; без tap-to-select, автопилота и боевого lock.
