@@ -14,14 +14,18 @@ const L = require('./lib');
   const report=await page.evaluate(()=>{
    const DT=1/60,FRAMES=1200,TRIALS=12,rows=[];
    const originalShootLaser=shootLaser;
-   let playerShots=0,hostileShots=0,enemyHitEvents=0,playerHitEvents=0,playerDamageReceived=0;\n   const originalDamage=pirateFleetDamage,originalPlayerDamage=dmg,originalRandom=Math.random;\n   pirateFleetDamage=function(e,d,missile){const before=e?.hp??0;originalDamage(e,d,missile);if(e&&e.hp<before)enemyHitEvents++;};\n   dmg=function(n){playerHitEvents++;playerDamageReceived+=n*100/SHIPS[shp].hull;return originalPlayerDamage(n);};
+   let playerShots=0,hostileShots=0,enemyHitEvents=0,playerHitEvents=0,playerDamageReceived=0;
+   const originalDamage=pirateFleetDamage,originalPlayerDamage=dmg,originalRandom=Math.random;
+   pirateFleetDamage=function(e,d,missile){const before=e?.hp??0;originalDamage(e,d,missile);if(e&&e.hp<before)enemyHitEvents++;};
+   dmg=function(n){playerHitEvents++;playerDamageReceived+=n*100/SHIPS[shp].hull;return originalPlayerDamage(n);};
    shootLaser=function(arr,...args){if(arr===bul)playerShots++;else if(arr===eb)hostileShots++;return originalShootLaser(arr,...args)};
    try{
     for(let trial=0;trial<TRIALS;trial++){
      if(state!=='dock')dock();
      lift();QL.setMode('low');pirateFleetInit();
      const seed=(0x4f1bbcdc+Math.imul(trial+1,0x9e3779b1))>>>0;
-     let randomState=seed||1;Math.random=()=>{randomState^=randomState<<13;randomState^=randomState>>>17;randomState^=randomState<<5;return(randomState>>>0)/4294967296;};\n     EAI.seed(seed);
+     let randomState=seed||1;Math.random=()=>{randomState^=randomState<<13;randomState^=randomState>>>17;randomState^=randomState<<5;return(randomState>>>0)/4294967296;};
+     EAI.seed(seed);
      Q.setFromEuler(new THREE.Euler((trial%3-1)*.035,(trial%4-1.5)*.055,0));
      rig.quaternion.copy(Q);P.set(0,0,0);vel.set(0,0,0);thl=0;thr=0;
      mouse.x=0;mouse.y=0;firing=true;fireT=0;heat=0;hot=false;
@@ -40,7 +44,8 @@ const L = require('./lib');
    }finally{shootLaser=originalShootLaser;pirateFleetDamage=originalDamage;dmg=originalPlayerDamage;Math.random=originalRandom;firing=false;}
    return{schema:'starfall.production-combat-batch.v1',engine:'STARFALL_CURRENT.html v90 actual browser runtime; upd() including pirateFleetUpdate(), production projectile movement/collision and damage handlers',production_modified:false,frame_dt:DT,frames_per_trial:FRAMES,trials:TRIALS,results:rows,aggregate:{player_shots:rows.reduce((a,x)=>a+x.player_shots,0),hostile_shots:rows.reduce((a,x)=>a+x.hostile_shots,0),enemy_damage:+rows.reduce((a,x)=>a+x.enemy_damage,0).toFixed(2),enemy_hits:rows.reduce((a,x)=>a+x.enemy_hits,0),player_deaths:rows.filter(x=>x.state==='dying').length,enemy_wipes:rows.filter(x=>x.active_enemies===0).length,enemy_hit_events:rows.reduce((a,x)=>a+x.enemy_hits,0),player_hit_events:rows.reduce((a,x)=>a+x.player_hit_events,0),player_damage_received:+rows.reduce((a,x)=>a+x.player_damage_received,0).toFixed(2)}};
   });
-  if(report.results.length!==12)throw new Error('Expected 12 production trials');\n  if(report.aggregate.enemy_hits<1||report.aggregate.enemy_damage<=0)throw new Error('Production projectile collision path did not damage any pirate: '+JSON.stringify(report.aggregate));
+  if(report.results.length!==12)throw new Error('Expected 12 production trials');
+  if(report.aggregate.enemy_hits<1||report.aggregate.enemy_damage<=0)throw new Error('Production projectile collision path did not damage any pirate: '+JSON.stringify(report.aggregate));
   for(const r of report.results){for(const key of ['player_hull','player_shield','enemy_damage'])if(!Number.isFinite(r[key]))throw new Error('Non-finite combat state: '+JSON.stringify(r));if(r.player_shots<1)throw new Error('No player projectiles were produced: '+JSON.stringify(r));}
   fs.mkdirSync(path.join(__dirname,'..','artifacts'),{recursive:true});
   fs.writeFileSync(path.join(__dirname,'..','artifacts','production-combat.json'),JSON.stringify(report,null,2));
