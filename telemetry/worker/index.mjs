@@ -1,6 +1,6 @@
 const JSON_HEADERS = { "content-type": "application/json; charset=utf-8" };
-const MAX_BODY_BYTES = 56 * 1024;
-const MAX_RECORDS = 256;
+const MAX_BODY_BYTES = 272 * 1024;
+const MAX_RECORDS = 512;
 const API_VERSION = "2022-11-28";
 
 function response(body, status, origin, allowedOrigin) {
