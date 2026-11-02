@@ -11,6 +11,28 @@ research_references:
   elite_reconstruction: docs/reference/ELITE_GAME_PASSPORT.md
   elite_to_starfall_map: docs/reference/ELITE_TO_STARFALL_V90.md
   deep_space_specification: docs/DEEP_SPACE_SIMULATION_SPEC.md
+  elite_policy:
+    status: mandatory_architectural_reference
+    scope: >
+      Математическая реконструкция Elite ZX Spectrum 128K и её паспорт
+      обязательны при проектировании, анализе, изменении и балансировке
+      любых применимых систем STARFALL. Это не факультативное вдохновение.
+    required_reading:
+      - docs/reference/ELITE_GAME_PASSPORT.md — первичный исследовательский паспорт и математическая реконструкция.
+      - docs/reference/ELITE_TO_STARFALL_V90.md — карта уже перенесённых принципов, ограничений и открытых направлений.
+    mathematical_domains:
+      - система координат, локальный базис OCS и проекции на оси корабля;
+      - нормализация векторов, повороты и преобразование управляющих команд;
+      - ускорение, скорость, интегрирование положения и частоты обновления;
+      - разделение тактического decision tick и непрерывного movement/integration tick;
+      - наведение NPC, геометрия огневых условий, вероятность выстрела и воспроизводимый PRNG;
+      - геометрия ракет, прицела и попаданий — только в пределах подтверждённого паспортом материала.
+    required_design_record:
+      - указать использованные разделы и математические принципы Elite;
+      - объяснить адаптацию к координатам, единицам, quaternion/Three.js и временной модели STARFALL;
+      - явно перечислить неприменённые принципы и причины отказа;
+      - отделить подтверждённые факты дизассемблирования от гипотез и неизвестных;
+      - определить регрессионные тесты и критерии приёмки.
   enemy_ai_policy:
     status: mandatory_full_elite_replacement
     scope: [opening_pirate_wave, Jackal, Golovorez, all_pirate_ai]
@@ -25,7 +47,9 @@ research_references:
     required:
       - Read the relevant sections of docs/reference/ELITE_GAME_PASSPORT.md and the transfer map before implementation.
       - Use Elite local ship axes, normalized target vectors, OCS projections/sign conventions, discrete steering commands, decision cadence, and separate per-frame motion integration where supported by the research.
-      - Tactical behavior must emerge from Elite-derived decision rules and ship descriptors; do not hard-code a bespoke APPROACH/ATTACK_RUN/FIRING_PASS/OVERSHOOT script as a substitute for Elite AI.
+      - Tactical behavior must emerge from one shared decision pipeline (`EAI.decide`/`EAI.pilot`) and ship descriptors; do not hard-code a bespoke maneuver FSM or waypoint script as a substitute for Elite AI.
+      - The shared controller must drive both opening `pirateFleet` and ordinary E/E2 pirates (including boss movement); state labels such as PURSUE/ATTACK/EVADE/SEPARATE are derived telemetry, never transition-driven maneuver states.
+      - Profile values for speed, acceleration, turn rate, fire probability, threat horizon and separation are STARFALL balancing adaptations, not original Elite constants.
       - Preserve STARFALL rendering, collision, weapon, damage, and save interfaces; connect the Elite AI through the existing movement/weapon APIs rather than writing position, velocity, or quaternion from an unrelated controller.
       - Keep ship-class differences in explicit, documented descriptors/personality parameters only when justified by Elite source or a recorded STARFALL design decision. Never create a separate non-Elite Jackal controller.
       - Validate a natural encounter from initial spawn through multiple decision cycles, including pursuit, attack, evasive response, firing opportunities, and non-collision separation.
@@ -37,7 +61,7 @@ research_references:
     acceptance:
       - A natural deterministic simulation demonstrates the Elite decision sequence and motion, not a scripted waypoint pass.
       - Jackal and Golovorez execute the same Elite-derived decision/steering architecture; class differences are data-driven.
-      - Tests assert trajectories, local projections, decision cadence, movement integration, fire gates, evasion and collision clearance.
+      - Tests assert deterministic natural trajectories, local projections, decision cadence, per-frame movement integration, fire gates, projectile evasion and ship separation.
       - Passport and decision log identify the exact Elite sections and the STARFALL adaptation for each changed subsystem.
     mandatory_review_gate: >
       Before modifying pirate AI, explicitly compare the current implementation with this
@@ -98,7 +122,7 @@ sanity_check:
 # ПРОЦЕСС РАБОТЫ С GITHUB (единственный источник правды)
 process:
   repo: https://github.com/gipromeh/Starfall   # ветка main
-  current_version: v90
+  current_version: v91
   files:
     game: STARFALL_CURRENT.html        # единственная актуальная версия игры
     passport: STARFALL_PASSPORT.md     # архитектура, переменные, таблицы, правила правок
