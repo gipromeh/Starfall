@@ -23,7 +23,7 @@ const checks = [
  ['radar clips the grid to the elliptical scanner plane', html.includes('rc.ellipse(cx,cy,rx-5,ry-4,0,0,Math.PI*2);rc.clip()')],
  ['game metadata is v91', html.includes('<meta name="starfall-version" content="v91">')],
  ['radar filters eb by hostile missile type', html.includes('b.kind==="hostile-missile"&&b.hm===1')],
- ['Jackal has the slowest E/E2 speed multiplier', html.includes('*[1,.75,.85,.9][e.ty]')],
+ ['Jackal has the slowest E/E2 speed multiplier', html.includes('*[1,.75,.85,.9][ty]')],
  ['Jackal initial velocity is derived from the shared profile and wave scaling', html.includes('NE.aiProfile=EAI.profile(ty,bs,NE.aiSpeedScale)')&&html.includes('multiplyScalar(NE.aiProfile.speed)')],
  ['ship-class turn and acceleration differences are data-driven profile descriptors', html.includes('turnRate:1.45')&&html.includes('acceleration:52')&&html.includes('const PROFILES=')],
  ['Jackal profile has a lower cruise speed than Golovorez', html.includes('{speed:46,acceleration:60')&&html.includes('{speed:34.5,acceleration:52')],
