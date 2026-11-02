@@ -54,8 +54,10 @@ const L = require('./lib');
   L.check('стартовая атака содержит ровно Головореза и Шакала', composition.total === 2 && composition.types.every(n => n === 1), composition);
   L.check('оба корабля стартовой атаки созданы', composition.spawned === 2, composition);
   const firstWaveRadar = await page.evaluate(() => {
+    const oldWarp=pirateFleet.map(e=>e.warp);
+    pirateFleet.forEach(e=>e.warp=Math.max(.5,e.warp||0));
     const contacts = collectRadarContacts().filter(c => pirateFleet.includes(c.entity));
-    return {
+    const result = {
       count: contacts.length,
       labels: contacts.map(c => c.label).sort(),
       hostile: contacts.every(c => c.hostile),
@@ -63,6 +65,8 @@ const L = require('./lib');
       distances: contacts.map(c => c.position.distanceTo(P)),
       forward: contacts.map(c => c.position.clone().sub(P).normalize().dot(new THREE.Vector3(0,0,-1).applyQuaternion(Q).normalize()))
     };
+    pirateFleet.forEach((e,i)=>e.warp=oldWarp[i]);
+    return result;
   });
   L.check('первая эскадрилья: Головорез и Шакал отображаются на радаре во время warp-in', firstWaveRadar.count === 2 && firstWaveRadar.labels.join(',') === 'J,R' && firstWaveRadar.hostile && firstWaveRadar.visibleDuringWarp, firstWaveRadar);
   L.check('первая эскадрилья находится впереди игрока в диапазоне радара 1 км', firstWaveRadar.distances.every(d => d >= 750 && d <= 870) && firstWaveRadar.forward.every(v => v > .98), firstWaveRadar);
