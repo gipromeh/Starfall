@@ -604,7 +604,7 @@ tags: [starfall, changelog]
 
 - Removed the scripted pirate movement state machines (fixed approach/attack loops, firing passes, overshoot and reposition waypoints) from ordinary pirates and the opening squadron.
 - Added shared ATTACK/EVADE pilot intent selection based on local OCS component proximity and incoming-projectile reaction. Tactical decisions run at 15 Hz; orientation, velocity and position integrate every frame.
-- Preserved ship models, weapon sockets, projectile/collision/damage pipeline, visual effects, SAVE and boss-specific movement.
+- Preserved ship models, weapon sockets, projectile/collision/damage pipeline, visual effects and SAVE. Boss flight also uses the shared pilot with wider tuning; boss-specific attack patterns and visual presentation remain.
 - Added deterministic headless selector assertions and replaced scripted attack-pass regression checks with ATTACK/EVADE flight tests. Browser CI acceptance is pending.
 - Numeric proximity thresholds are STARFALL tuning parameters, not copied from Elite. The implementation follows reconstructed Elite 128K control structure but is not a bit-exact emulation.
 
