@@ -87,23 +87,23 @@ export default {
     const repository = env.GITHUB_REPOSITORY || "gipromeh/Starfall";
     const apiUrl = "https://api.github.com/repos/" + repository + "/contents/" + path;
     try {
-      const existing = await githubRequest(apiUrl + "?ref=main", env.GITHUB_TOKEN);
-      if (existing.ok) {
-        const file = await existing.json();
-        if (file.content && decodeBase64(file.content) === records) return response({ ok: true, duplicate: true, path }, 200, origin, allowHeader);
-        return response({ error: "chunk_conflict", path }, 409, origin, allowHeader);
-      }
-      if (existing.status !== 404) return response({ error: "github_read_failed", status: existing.status }, 502, origin, allowHeader);
       const write = await githubRequest(apiUrl, env.GITHUB_TOKEN, {
         method: "PUT",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ message: "telemetry: " + sessionId + " chunk " + chunk, content: encodeBase64(records), branch: "main" })
       });
-      if (!write.ok) {
-        const detail = await write.text();
-        return response({ error: "github_write_failed", status: write.status, detail: detail.slice(0, 500) }, 502, origin, allowHeader);
+      if (write.ok) return response({ ok: true, path }, 201, origin, allowHeader);
+      if (write.status === 409 || write.status === 422) {
+        const existing = await githubRequest(apiUrl + "?ref=main", env.GITHUB_TOKEN);
+        if (existing.ok) {
+          const file = await existing.json();
+          if (file.content && decodeBase64(file.content) === records) return response({ ok: true, duplicate: true, path }, 200, origin, allowHeader);
+          return response({ error: "chunk_conflict", path }, 409, origin, allowHeader);
+        }
+        if (existing.status !== 404) return response({ error: "github_read_failed", status: existing.status }, 502, origin, allowHeader);
       }
-      return response({ ok: true, path }, 201, origin, allowHeader);
+      const detail = await write.text();
+      return response({ error: "github_write_failed", status: write.status, detail: detail.slice(0, 500) }, 502, origin, allowHeader);
     } catch (error) {
       return response({ error: "upstream_failure", detail: String(error).slice(0, 300) }, 502, origin, allowHeader);
     }
