@@ -76,7 +76,8 @@ const L = require('./lib');
   const firstWaveJackalCombat = await page.evaluate(() => {
     const saved = {
       E, E2, state, P:P.clone(), vel:vel.clone(), Q:Q.clone(), av:av.clone(),
-      thl, wave, firstWaveSpawn, enc, spawnT, amb, firing
+      thl, wave, firstWaveSpawn, enc, spawnT, amb, firing, trailLength:trs.length,
+      fleet:pirateFleet.map(p=>({p,position:p.g.position.clone(),quaternion:p.g.quaternion.clone(),vel:p.vel.clone(),hd:p.hd.clone(),speed:p.speed,state:p.state,stateT:p.stateT,runDir:p.runDir?.clone()||null,aiClock:p.aiClock,aiTicks:p.aiTicks,fire:p.fire,burst:p.burst,burstGap:p.burstGap,trailT:p.trailT,ocsYaw:p.ocsYaw,ocsPitch:p.ocsPitch,ocsAccel:p.ocsAccel,ocsTargetSpeed:p.ocsTargetSpeed}))
     };
     const shotStart = eb.length, originalRand = EAI.rand;
     let result;
@@ -101,7 +102,10 @@ const L = require('./lib');
       if (E2?.g) S.remove(E2.g);
       E=saved.E;E2=saved.E2;state=saved.state;P.copy(saved.P);vel.copy(saved.vel);Q.copy(saved.Q);av.copy(saved.av);
       rig.quaternion.copy(Q);thl=saved.thl;wave=saved.wave;firstWaveSpawn=saved.firstWaveSpawn;
-      enc=saved.enc;spawnT=saved.spawnT;amb=saved.amb;firing=saved.firing;EAI.rand=originalRand;
+      enc=saved.enc;spawnT=saved.spawnT;amb=saved.amb;firing=saved.firing;
+      for(const s of saved.fleet){s.p.g.position.copy(s.position);s.p.g.quaternion.copy(s.quaternion);s.p.vel.copy(s.vel);s.p.hd.copy(s.hd);Object.assign(s.p,{speed:s.speed,state:s.state,stateT:s.stateT,runDir:s.runDir,aiClock:s.aiClock,aiTicks:s.aiTicks,fire:s.fire,burst:s.burst,burstGap:s.burstGap,trailT:s.trailT,ocsYaw:s.ocsYaw,ocsPitch:s.ocsPitch,ocsAccel:s.ocsAccel,ocsTargetSpeed:s.ocsTargetSpeed});s.p.g.updateMatrixWorld(true)}
+      for(let i=trs.length-1;i>=saved.trailLength;i--){S.remove(trs[i].m);trs.splice(i,1)}
+      EAI.rand=originalRand;
     }
     return result;
   });
