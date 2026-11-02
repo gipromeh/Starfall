@@ -19,10 +19,10 @@ jobs:
       - name: Deploy STARFALL telemetry Worker
         uses: cloudflare/wrangler-action@v3
         with:
-          apiToken: \${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: \${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy --config telemetry/worker/wrangler.toml
           secrets: |
             GITHUB_TOKEN
         env:
-          GITHUB_TOKEN: \${{ secrets.STARFALL_TELEMETRY_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.STARFALL_TELEMETRY_GITHUB_TOKEN }}
