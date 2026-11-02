@@ -66,3 +66,19 @@ The Elite passport distinguishes facts supported by the annotated 128K listing f
 - The controller calculates half-scale, inverted local-axis projections and derives quantized yaw/pitch/acceleration commands. NPC fire now passes orientation/range gates and a seeded PRNG threshold.
 - Regression coverage was extended in `tests/t11_pirate_fleet.js` for projection signs/scale, discrete commands, per-frame integration, fire gates and staggered ticks.
 - **Acceptance status: pending.** This is a structural adaptation, not a bit-exact Elite port. Do not claim full research fidelity or balance stability until the complete browser test matrix passes and the attack behavior is reviewed.
+
+
+## Elite ZX Spectrum 3D scanner — implementation mapping
+
+The STARFALL HUD now follows the original Elite scanner concept rather than the later Elite Dangerous rotating radar:
+
+- The scanner is a shallow ellipse. Contact X maps to horizontal position; contact Z maps to the point on the ellipse plane; contact Y determines a vertical stalk from that plane to the contact dot.
+- In STARFALL local coordinates (`local = inverse(playerQuaternion) * (contactPosition - playerPosition)`): `screenX = cx + x / range * rx`; `baseY = cy + z / range * ry`; `dotY = clamp(baseY - y / range * stalkScale)`.
+- A separate compass points to the planet and switches to the station in the near-station zone. A filled marker means ahead; a hollow marker means behind. `S` marks the station approach/safety zone.
+- STARFALL uses a fixed 1600-unit per-axis scanner range and current Three.js coordinates. This preserves the original display model but does not claim to reproduce Elite's original fixed-point byte scales.
+- Tap/click target selection and the modern target HUD remain as STARFALL-specific additions.
+
+References:
+- https://elite.bbcelite.com/deep_dives/the_3d_scanner.html
+- https://viva-games.ru/game/elite?setlang=es
+- https://www.thirdharmoniser.com/elite.html
