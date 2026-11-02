@@ -53,7 +53,7 @@
 
 ### Gate C — оружие и бой
 - Для обычных пиратов и стартовой эскадрильи проверять общий Elite-derived ATTACK/EVADE pilot: OCS-компоненты, реакцию на близость и входящий снаряд, возврат к атаке после разрыва дистанции, непрерывную инерционную интеграцию и отсутствие старых scripted-waypoint состояний.
-- Boss-specific movement учитывать как отдельный тип поведения; не смешивать его приёмку с обычными NPC.
+- Bosses also use the shared ATTACK/EVADE pilot; test their wider thresholds separately from boss-specific weapon patterns and phases.
 - Лазерные hardpoints, направление, скорость, cooldown/heat, очистка снарядов.
 - Ракеты: выбор/захват → запуск → полёт → попадание/промах → расход боезапаса.
 - Ядерное оружие: радиус поражения, эффекты и стоимость по производительности.
