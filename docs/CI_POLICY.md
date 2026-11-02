@@ -80,9 +80,10 @@ Workflow: `.github/workflows/game-tests.yml`.
 ## Автоматический релиз
 
 - Pull Request в `main` — этап согласования изменений; публикация из PR запрещена.
-- После merge в `main` workflow `.github/workflows/game-tests.yml` повторно запускает полный набор quick/browser tests.
-- Job `release` зависит от успешного завершения `quick-checks`, `prepare-browser` и всех matrix jobs `browser-tests`; при любом failure/cancel публикация не выполняется.
+- Workflow `.github/workflows/game-tests.yml` запускает полный набор quick/browser tests. В quick-checks также проверяется SHA-256 игрового файла через `tools/check_passport.py`.
+- После успешного завершения `game-tests` на `main` запускается `.github/workflows/auto-release.yml`. Workflow получает точный SHA уже проверенного коммита, а не текущую подвижную вершину ветки.
+- При failure/cancel тестового workflow публикация не запускается.
 - Версия релиза берётся из `<meta name="starfall-version" content="vN">` в `STARFALL_CURRENT.html`. Создаётся GitHub Release с тегом этой версии; к релизу прикладываются HTML игры, паспорт и CHANGELOG.
-- Повторная публикация уже существующего GitHub Release с тем же тегом пропускается.
-- Чтобы PR не мог быть слит с красными проверками, владелец репозитория должен включить в Settings → Branches → Branch protection / Rulesets для `main` обязательные checks, перечисленные выше. Это административное ограничение не может быть включено текущими доступными GitHub API-действиями.
+- Повторная публикация существующего GitHub Release с тем же тегом пропускается.
+- Чтобы PR нельзя было слить с красными проверками, владелец репозитория должен включить в Settings → Branches → Branch protection / Rulesets для `main` обязательные checks из раздела «Gate перед слиянием». Доступные GitHub API-действия не позволяют изменить этот административный параметр.
 - Автоматическая публикация подтверждает CI на GitHub Actions, но не заменяет ручной playtest на физическом iPhone и PC.
