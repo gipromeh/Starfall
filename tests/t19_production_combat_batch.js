@@ -5,12 +5,12 @@ const L = require('./lib');
 (async()=>{
  const browser=await L.launch();
  const ctx=await L.newCtx(browser,{viewport:{width:800,height:450},dpr:1});
- await ctx.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
+ await ctx.addInitScript(()=>{const raf=window.requestAnimationFrame.bind(window);window.requestAnimationFrame=cb=>cb&&cb.name==='loop'?0:raf(cb);});
  const page=await L.openGame(ctx);
  try{
   await page.click('#play');
-  await page.waitForFunction(()=>state==='dock',{timeout:60000});
-  await page.waitForFunction(()=>pirateAssetsReady===true,{timeout:60000});
+  await page.waitForFunction(()=>state==='dock',null,{timeout:60000});
+  await page.waitForFunction(()=>pirateAssetsReady===true,null,{timeout:60000});
   const report=await page.evaluate(()=>{
    const DT=1/60,FRAMES=1200,TRIALS=12,rows=[];
    const originalShootLaser=shootLaser;
