@@ -24,7 +24,7 @@ The static GitHub Pages game must not contain a GitHub token. The Cloudflare Wor
    - CLOUDFLARE_ACCOUNT_ID — Cloudflare account ID.
    - STARFALL_TELEMETRY_GITHUB_TOKEN — the fine-grained GitHub token from step 1.
 3. Merge the Worker and deployment workflow to main. The workflow deploys the Worker and transfers STARFALL_TELEMETRY_GITHUB_TOKEN into the Worker as its GITHUB_TOKEN secret. The Worker variables GITHUB_REPOSITORY and ALLOWED_ORIGINS are defined in wrangler.toml.
-4. Add a Cloudflare rate-limit rule for POST /ingest (recommended initial limit: 20 requests/minute/IP). The Worker also enforces a 56 KiB request-body limit.
+4. Add a Cloudflare rate-limit rule for POST /ingest (recommended initial limit: 20 requests/minute/IP). The Worker also enforces a 272 KiB request-body limit.
 5. Copy the deployed Worker URL from the deploy-telemetry-worker Actions run. Set it in the starfall-telemetry-endpoint meta tag in STARFALL_CURRENT.html, with the /ingest path, for example https://starfall-telemetry.<account-subdomain>.workers.dev/ingest. Commit that one-time endpoint configuration to main.
 6. Run a test flight and verify that session_start, telemetry_sample, and session_end appear under raw/.
 
