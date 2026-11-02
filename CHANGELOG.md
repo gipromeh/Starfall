@@ -576,3 +576,11 @@ tags: [starfall, changelog]
 - 32 deterministic geometry/command/integration cases, PRNG sequence, decision cadence and fire-gate cases are checked.
 - Batch simulation now depends on passing production-kernel parity.
 - No production gameplay code changed.
+
+
+## Combat AI lab — production runtime combat validation (2026-11-02)
+
+- Added 12 seeded headless Chromium combat trials running the unchanged production game update loop, pirate fleet AI, projectile movement/collision and damage handlers.
+- The batch records real runtime shots, hits, damage, survival and state transitions as a JSON artifact.
+- The production-runtime batch is now a prerequisite for the 1,200-trial exploratory simulation.
+- Production HTML remains untouched.

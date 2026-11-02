@@ -829,3 +829,12 @@ PV (конец скрипта): ангар-превью, обёртка hgrView;
 - GitHub Actions now runs this parity test before the 1,200-trial batch simulation.
 - This validates the extracted EAI math only. It does not validate the separate abstract projectile hit model or claim parity for production projectile collision, the full pirate FSM, squadron behavior, or damage lifecycle.
 - Production HTML remains unchanged.
+
+
+## Production-runtime combat batch — isolated lab (2026-11-02)
+
+- Added `tests/t19_production_combat_batch.js`: headless Chromium loads the unchanged production HTML and manually advances the actual game `upd(dt)` loop in 12 seeded combat trials.
+- The production `upd` wrapper invokes `pirateFleetUpdate`, actual enemy laser updates, player projectile movement, `pirateSegmentHit`, and the real pirate damage handlers. Player fire is generated through the production `shootLaser` function.
+- The test captures player/enemy damage, projectile counts, hit counts, AI states, survival and enemy destruction. JSON report is uploaded as a GitHub Actions artifact.
+- This is a short production-runtime validation batch, not a 1,000-trial balance study. The larger 1,200-trial Node batch remains a separate exploratory parameter model with abstract hit probability.
+- No production game code is changed. If the browser batch fails, it blocks the exploratory batch and is treated as a lab failure, not silently ignored.
