@@ -156,10 +156,10 @@
 date: 2026-10-31
 topic: STARFALL — Void Hunter: паспорт проекта (архитектура, технологии, механика, сохранения, качество)
 tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура]
-game_version: "v91"
+game_version: "v92"
 last_update: 2026-11-03
 main_file: STARFALL_CURRENT.html
-main_file_sha256: "97efed7cf48c305fdb7ba7d828afc849e886c7f59d6573e964246f79e94c5373"
+main_file_sha256: "7516e9e1e4acbfba26419bd4430505d305a4a0714f0f7532a7e374f879da6ffd"
 save_format_version: 3
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"
@@ -864,3 +864,15 @@ PV (конец скрипта): ангар-превью, обёртка hgrView;
 - Existing ship assets, weapons, projectile/collision/damage handlers, effects, SAVE and boss-specific movement are preserved.
 - Elite research basis: `docs/reference/ELITE_GAME_PASSPORT.md` §§5.2–5.4, 13.7, 14.7, 14.11–14.12. STARFALL proximity thresholds and lateral bias are explicit adaptation parameters, not recovered Elite constants. This is not a bit-exact Z80 clone.
 - Regression coverage: `tests/t11_pirate_fleet.js` and `tests/t17_combat_ai_lab.mjs`. CI acceptance pending.
+
+
+## v92 — автоматический бортовой регистратор и публичная телеметрия
+
+- В STARFALL_CURRENT.html добавлен автономный Flight Recorder, автоматически запускающий сессию при переходе в state=play и завершающий её при выходе из полёта или закрытии страницы.
+- Частота телеметрии — 5 Гц. Записываются позиция, скорость, ориентация и управляющие параметры игрока; координаты/скорости пиратов, типы, HP, AI state/intent, счётчики decision tick, OCS-команды, перезарядка и огневые очереди; выборочные позиции и скорости снарядов.
+- События включают начало/конец сессии, появление/удаление NPC, переходы состояний AI, изменение HP и завершение warp.
+- Формат — JSONL, schemaVersion=1. Сессии разбиваются на неизменяемые чанки до 48 KiB; очередь сохраняется в localStorage, повторная отправка выполняется автоматически при восстановлении сети.
+- Добавлены публичная схема telemetry/schema/v1.json, Cloudflare Worker telemetry/worker/index.mjs и тесты tests/t20_flight_recorder.mjs. Worker пишет отдельные chunk-файлы в telemetry/raw/YYYY/MM/<session-id>/ и делает повторную отправку идемпотентной.
+- GitHub credentials находятся только в Cloudflare Worker secret GITHUB_TOKEN; токен не включается в клиентский HTML. В телеметрии нет намеренно собираемых прямых персональных идентификаторов.
+- Ограничение публикации: endpoint ещё не настроен. До развёртывания Worker, установки его GITHUB_TOKEN и заполнения meta starfall-telemetry-endpoint игра сохраняет очередь локально, но удалённая запись в GitHub не начнётся. Инструкция: telemetry/README.md.
+- SAVE v3, игровая физика, AI и боевой баланс не изменялись. Проверки CI добавлены; фактический результат будет известен после запуска workflow на PR.
