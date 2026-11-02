@@ -5,6 +5,8 @@ const L = require('./lib');
   const ctx = await L.newCtx(browser, { viewport: { width: 960, height: 540 }, dpr: 1 });
   try {
     const page = await L.openGame(ctx);
+    await page.click('#play');
+    await page.waitForFunction(() => state === 'dock', null, { timeout: 60000 });
 
     const collision = await page.evaluate(() => {
       pirateFleet.length = 0;
