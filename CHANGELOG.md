@@ -607,3 +607,9 @@ tags: [starfall, changelog]
 - Preserved ship models, weapon sockets, projectile/collision/damage pipeline, visual effects, SAVE and boss-specific movement.
 - Added deterministic headless selector assertions and replaced scripted attack-pass regression checks with ATTACK/EVADE flight tests. Browser CI acceptance is pending.
 - Numeric proximity thresholds are STARFALL tuning parameters, not copied from Elite. The implementation follows reconstructed Elite 128K control structure but is not a bit-exact emulation.
+
+
+## Passport integrity update (2026-11-03)
+
+- Recomputed `main_file_sha256` for the lab branch's updated `STARFALL_CURRENT.html` and refreshed `last_update` in `STARFALL_PASSPORT.md`.
+- SHA-256: `a7220850462e2733e5b44a2028fe7c653e675259cfc18d48753766bd76869c35`.
