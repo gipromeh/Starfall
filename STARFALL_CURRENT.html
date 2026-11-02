@@ -1964,8 +1964,8 @@ function radar(){
  rc.beginPath();rc.arc(ccx,ccy,1.2,0,Math.PI*2);rc.fillStyle="#6cae79";rc.fill();
  if(compassTarget){
   radarPosition.copy(compassTarget.position).sub(P).applyQuaternion(radarInverse);
-  const horizontal=Math.hypot(radarPosition.x,radarPosition.z)||1,k=cr*.68;
-  const dx=radarPosition.x/horizontal*k,dy=radarPosition.z/horizontal*k,behind=radarPosition.z>0;
+  const directionLength=radarPosition.length()||1,k=cr*.68;
+  const dx=radarPosition.x/directionLength*k,dy=-radarPosition.y/directionLength*k,behind=radarPosition.z>0;
   rc.beginPath();rc.arc(ccx+dx,ccy+dy,3,0,Math.PI*2);
   if(behind){rc.strokeStyle="#baffc0";rc.lineWidth=1.2;rc.stroke()}else{rc.fillStyle="#baffc0";rc.fill()}
  }
