@@ -9,7 +9,7 @@ const checks = [
  ['hostile homing missiles explicitly tagged', html.includes('q.hm=1;q.kind="hostile-missile"')],
  ['radar has rotating sweep animation', html.includes('radarSweepAngle=(now*.00048)%(Math.PI*2)')],
  ['opening fleet contacts are collected during warp-in', html.includes('for(const pe of pirateFleet)if(pe.g&&pe.hp>0)')],
- ['opening fleet has velocity-oriented side attack geometry', html.includes('e.side<0?-1:1')&&html.includes('addScaledVector(side,220)')&&html.includes('addScaledVector(side,190)')],
+ ['opening fleet has velocity-oriented side attack geometry', html.includes('e.side<0?-1:1')&&html.includes('addScaledVector(side,100)')&&html.includes('addScaledVector(side,150)')],
  ['opening Jackal and Rusty Skull have radar identifiers', html.includes('pe.ty===1?"J":"R"')],
  ['hostile ship contacts use velocity-oriented triangular glyphs', html.includes('rc.rotate(heading);rc.beginPath();rc.moveTo(0,-q.radius*1.45)')],
  ['first-wave radar uses compact Rusty Skull / Jackal labels', html.includes('enemy(E,E&&E.ty===1?"J":"R");enemy(E2,E2&&E2.ty===1?"J":"R")')],
