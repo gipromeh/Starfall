@@ -157,9 +157,9 @@ date: 2026-10-31
 topic: STARFALL — Void Hunter: паспорт проекта (архитектура, технологии, механика, сохранения, качество)
 tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура]
 game_version: "v90"
-last_update: 2026-11-01
+last_update: 2026-11-03
 main_file: STARFALL_CURRENT.html
-main_file_sha256: "52bfaed45b4650626e8159fcff9b7718161276a31b823eede24ade5c0a9e59ce"
+main_file_sha256: "a2dcf52a1e9de91ea7957f62c7cbb909670059ba56801143acac83b54a943cd6"
 save_format_version: 3
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"
@@ -810,3 +810,57 @@ PV (конец скрипта): ангар-превью, обёртка hgrView;
 - The WebKit test harness fulfils the optional Google Fonts stylesheet with empty CSS (the game has local font fallbacks), then waits for `DOMContentLoaded` before checking the inline game API (`SV`, `state`). Linux WebKit did not reach `DOMContentLoaded` while initializing the game's WebGL renderer; the WebKit matrix job now runs on macOS, the closer Playwright platform for Safari-like testing.
 - These are test-harness and runner corrections, not changes to gameplay or SAVE semantics. Linux WebKit run #353 and the subsequent Linux retry are retained as failure evidence; a fresh macOS WebKit run is required.
 - WebKit coverage remains Playwright macOS WebKit emulation, not branded Safari or a physical iPhone/iOS Safari test.
+
+
+## Headless Combat AI Lab — isolated branch (2026-11-02)
+
+- Branch: `lab/elite-combat-ai`; production branch `main` and `STARFALL_CURRENT.html` are unchanged.
+- Added `tools/combat-ai-lab/elite-eai.mjs`: Node.js port of the v90 EAI tactical kernel (15 Hz decision tick, OCS projections, discrete steering commands, per-frame integration, seeded xorshift32, fire chance and fire gates).
+- Added `tools/combat-ai-lab/run.mjs`: deterministic batch runner for 1,200 seeded 1v1 trials across three pilot parameter profiles; writes machine-readable JSON reports.
+- Added `tests/t17_combat_ai_lab.mjs` for kernel invariants and `.github/workflows/combat-ai-lab.yml` for automatic push and nightly runs.
+- Model boundary: this first iteration reuses the EAI mathematical kernel, but the combat harness uses an explicitly abstract hit-probability model. It does **not** yet execute the production Three.js projectile collision pipeline, full pirate state machine, squadron coordination, or production damage lifecycle. Results are useful for repeatability and exploratory parameter comparisons, not production balance acceptance.
+- No production gameplay code or SAVE data was changed. CI acceptance is pending until the GitHub Actions run completes successfully.
+
+
+## Production EAI parity validation — isolated combat lab (2026-11-02)
+
+- Added browser parity test `tests/t18_eai_parity.js`. It loads the unchanged production `STARFALL_CURRENT.html` in headless Chromium and compares the Node.js EAI port against the actual in-game `EAI` object.
+- Coverage: 32 deterministic vector/projection/command/integration cases, 32 seeded PRNG outputs, decision cadence phases, and 16 fire-gate cases.
+- GitHub Actions now runs this parity test before the 1,200-trial batch simulation.
+- This validates the extracted EAI math only. It does not validate the separate abstract projectile hit model or claim parity for production projectile collision, the full pirate FSM, squadron behavior, or damage lifecycle.
+- Production HTML remains unchanged.
+
+
+## Production-runtime combat batch — isolated lab (2026-11-02)
+
+- Added `tests/t19_production_combat_batch.js`: headless Chromium loads the unchanged production HTML and manually advances the actual game `upd(dt)` loop in 12 seeded combat trials.
+- The production `upd` wrapper invokes `pirateFleetUpdate`, actual enemy laser updates, player projectile movement, `pirateSegmentHit`, and the real pirate damage handlers. Player fire is generated through the production `shootLaser` function.
+- The test captures player/enemy damage, projectile counts, hit counts, AI states, survival and enemy destruction. JSON report is uploaded as a GitHub Actions artifact.
+- This is a short production-runtime validation batch, not a 1,000-trial balance study. The larger 1,200-trial Node batch remains a separate exploratory parameter model with abstract hit probability.
+- No production game code is changed. If the browser batch fails, it blocks the exploratory batch and is treated as a lab failure, not silently ignored.
+
+
+## Production-runtime combat batch — first verified run (2026-11-02)
+
+- GitHub Actions run #5 completed the 12-trial, 20-second-per-trial headless Chromium batch against the unchanged production game loop.
+- Observed across the batch: 1,824 player laser projectiles, 892 hostile laser projectiles, 701.82 aggregate pirate HP damage, zero player deaths, and zero complete two-pirate squadron wipes. Some trials destroyed one member of the squadron; the other survived.
+- The report confirms that the production projectile/collision/damage path is exercised. The first report's per-enemy hit counter was not reliable after destruction because the production kill handler resets that field; the next revision wraps the real damage handler to count damage events independently.
+- The first run is a baseline, not a balance acceptance result. A 20-second stationary-player scenario does not establish general combat balance.
+
+
+## Полная верификация игровых механик — план приёмки (2026-11-02)
+
+- Добавлен `docs/FINALIZATION_TEST_PLAN.md`: аудит текущего покрытия и Gates A–F для проверки полёта, управления, оружия, боевого ИИ, мира, станций, экономики, прогрессии, SAVE, мобильности, производительности и длительной устойчивости.
+- Полный workflow `game-tests.yml` подключён к ветке `lab/elite-combat-ai`; существующая матрица quick checks и browser tests запускается на лабораторных изменениях без публикации в `main`.
+- Текущие тесты SAVE, pirate fleet, radar/collision, effects/leaks, iPhone Chromium/WebKit и Deep Space классифицированы как существующее/частичное покрытие. Сквозные проверки физики полёта и полного цикла вооружения остаются открытой работой.
+- Финализация не объявляется до прохождения Gates A–F. WebKit emulation не считается физическим тестом Safari на iPhone.
+
+
+## Elite-derived pirate flight replacement — 2026-11-03
+
+- In `lab/elite-combat-ai`, removed the old scripted pirate movement state machines from ordinary E/E2 NPCs and the opening two-ship squadron.
+- Replaced them with a shared ATTACK/EVADE intent selector operating on local OCS components. Decisions occur at 15 Hz; OCS steering, velocity and position integration continue per frame.
+- Evasion is triggered by component-wise proximity or an incoming player projectile; re-engagement occurs after separation and a minimum decision interval. The flight vector is not a waypoint or a fixed orbit.
+- Existing ship assets, weapons, projectile/collision/damage handlers, effects, SAVE and boss-specific movement are preserved.
+- Elite research basis: `docs/reference/ELITE_GAME_PASSPORT.md` §§5.2–5.4, 13.7, 14.7, 14.11–14.12. STARFALL proximity thresholds and lateral bias are explicit adaptation parameters, not recovered Elite constants. This is not a bit-exact Z80 clone.
+- Regression coverage: `tests/t11_pirate_fleet.js` and `tests/t17_combat_ai_lab.mjs`. CI acceptance pending.

@@ -1,3 +1,8 @@
+## 2026-11-03 — Elite-derived pirate flight controller CI corrections
+- Обновлён регрессионный тест стартовой эскадрильи: условие открытия огня учитывает состояние ATTACK и блокирует огонь в EVADE; дальность и угловые ограничения сохранены.
+- Синхронизирован SHA-256 `STARFALL_CURRENT.html` в паспорте после изменений контроллера.
+- Изменения теста и паспортных метаданных требуют повторного CI; прохождение браузерных и мобильных тестов пока не подтверждено.
+
 ## 2026-11-02 — обязательная математическая база Elite для проектирования STARFALL
 - Подтверждено наличие в `main` исследовательского паспорта `docs/reference/ELITE_GAME_PASSPORT.md` и карты переноса `docs/reference/ELITE_TO_STARFALL_V90.md`.
 - В `STARFALL_MASTER_INSTRUCTION.yaml` введён обязательный архитектурный статус математической реконструкции Elite: чтение релевантных разделов перед проектированием и изменением применимых механик.
@@ -559,3 +564,69 @@ tags: [starfall, changelog]
 - Добавлена фиолетовая атмосферная оболочка; вращение и положение обновляются существующим циклом орбит.
 - Существующие планеты, управление, боевой цикл и формат сохранений не менялись.
 - Визуальный запуск в браузере после публикации требуется проверить.
+
+
+## Headless Combat AI Lab (2026-11-02, isolated branch)
+
+- Added the first autonomous Node.js combat batch harness on `lab/elite-combat-ai`.
+- The harness ports the v90 Elite-derived EAI kernel and schedules 1,200 deterministic 1v1 trials across interceptor/heavy/agile parameter profiles.
+- GitHub Actions runs kernel regression tests and batch simulation on branch updates, plus a nightly run; JSON reports are uploaded as workflow artifacts.
+- The first test run exposed a signed-zero assertion issue in the test itself. The assertion is being corrected; no production code was touched.
+- The weapon hit model is currently an explicit abstraction, not production projectile collision. Do not use its win rates as a production balance verdict.
+
+
+## Combat AI lab — production kernel parity test (2026-11-02)
+
+- Added a headless Chromium parity test comparing the Node.js EAI port with the actual EAI object in unchanged production HTML.
+- 32 deterministic geometry/command/integration cases, PRNG sequence, decision cadence and fire-gate cases are checked.
+- Batch simulation now depends on passing production-kernel parity.
+- No production gameplay code changed.
+
+
+## Combat AI lab — production runtime combat validation (2026-11-02)
+
+- Added 12 seeded headless Chromium combat trials running the unchanged production game update loop, pirate fleet AI, projectile movement/collision and damage handlers.
+- The batch records real runtime shots, hits, damage, survival and state transitions as a JSON artifact.
+- The production-runtime batch is now a prerequisite for the 1,200-trial exploratory simulation.
+- Production HTML remains untouched.
+
+
+## Combat AI lab — first production runtime baseline (2026-11-02)
+
+- GitHub Actions run #5 passed 12 headless browser combat trials using the real production update and projectile collision pipeline.
+- Aggregate baseline: 1,824 player laser projectiles, 892 hostile laser projectiles, 701.82 pirate HP damage, zero player deaths, zero complete squadron wipes.
+- Corrected the lab telemetry to count damage-handler events independently of the production NPC hit counter, which is reset on destruction.
+
+
+## STARFALL full mechanics verification plan (2026-11-02, isolated branch)
+
+- Audited existing regression coverage and added `docs/FINALIZATION_TEST_PLAN.md` with acceptance Gates A–F for flight, controls, weapons, combat AI, navigation, station/economy, progression, SAVE, mobile, graphics, performance and soak testing.
+- Enabled the full `game-tests.yml` regression matrix on `lab/elite-combat-ai`; experimental changes can run the broad existing game suite without pushing to production `main`.
+- Current coverage is explicitly classified as broad/partial where applicable. The game is not declared fully verified until every gate has behavioral tests and passes CI.
+
+
+## Elite-derived pirate flight replacement (2026-11-03, isolated branch)
+
+- Removed the scripted pirate movement state machines (fixed approach/attack loops, firing passes, overshoot and reposition waypoints) from ordinary pirates and the opening squadron.
+- Added shared ATTACK/EVADE pilot intent selection based on local OCS component proximity and incoming-projectile reaction. Tactical decisions run at 15 Hz; orientation, velocity and position integrate every frame.
+- Preserved ship models, weapon sockets, projectile/collision/damage pipeline, visual effects and SAVE. Boss flight also uses the shared pilot with wider tuning; boss-specific attack patterns and visual presentation remain.
+- Added deterministic headless selector assertions and replaced scripted attack-pass regression checks with ATTACK/EVADE flight tests. Browser CI acceptance is pending.
+- Numeric proximity thresholds are STARFALL tuning parameters, not copied from Elite. The implementation follows reconstructed Elite 128K control structure but is not a bit-exact emulation.
+
+
+## Passport integrity update (2026-11-03)
+
+- Recomputed `main_file_sha256` for the lab branch's updated `STARFALL_CURRENT.html` and refreshed `last_update` in `STARFALL_PASSPORT.md`.
+- SHA-256: `a7220850462e2733e5b44a2028fe7c653e675259cfc18d48753766bd76869c35`.
+
+
+## Passport integrity refresh (2026-11-03)
+
+- Recomputed `main_file_sha256` after the final pirate flight refactor and updated `last_update`.
+- SHA-256: `32b1a6cf4b69ede4abc13fab99ac0d926cffcd25d1ccafc59a93df2c734652c5`.
+
+
+## Passport integrity refresh (2026-11-03)
+
+- Updated `main_file_sha256` after extending the shared Elite-derived pilot to boss flight; `last_update` refreshed.
+- SHA-256: `32c6d0a01e6691d046d9c7657fcb18a3b14201786b8f51757a7862008029c07c`.

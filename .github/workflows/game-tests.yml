@@ -2,9 +2,9 @@ name: game-tests
 
 on:
   pull_request:
-    branches: [main, fix-v89-pirate-combat-density]
+    branches: [main, fix-v89-pirate-combat-density, lab/elite-combat-ai]
   push:
-    branches: [main]
+    branches: [main, lab/elite-combat-ai]
   workflow_dispatch:
 
 # Новые коммиты отменяют устаревшие запуски той же ветки.
