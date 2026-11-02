@@ -54,11 +54,8 @@ const L = require('./lib');
   L.check('стартовая атака содержит ровно Головореза и Шакала', composition.total === 2 && composition.types.every(n => n === 1), composition);
   L.check('оба корабля стартовой атаки созданы', composition.spawned === 2, composition);
   const firstWaveRadar = await page.evaluate(() => {
-    const previous = { E, E2, firstWaveSpawn, wave };
-    E = E2 = null; firstWaveSpawn = 0; wave = 1;
-    spawnE(); spawnE();
-    const contacts = collectRadarContacts().filter(c => c.entity === E || c.entity === E2);
-    const result = {
+    const contacts = collectRadarContacts().filter(c => pirateFleet.includes(c.entity));
+    return {
       count: contacts.length,
       labels: contacts.map(c => c.label).sort(),
       hostile: contacts.every(c => c.hostile),
@@ -66,12 +63,9 @@ const L = require('./lib');
       distances: contacts.map(c => c.position.distanceTo(P)),
       forward: contacts.map(c => c.position.clone().sub(P).normalize().dot(new THREE.Vector3(0,0,-1).applyQuaternion(Q).normalize()))
     };
-    for (const e of [E, E2]) if (e?.g) S.remove(e.g);
-    E = previous.E; E2 = previous.E2; firstWaveSpawn = previous.firstWaveSpawn; wave = previous.wave;
-    return result;
   });
-  L.check('первая волна: Ржавый Череп и Шакал видны на радаре сразу, включая фазу входа из гиперпрыжка', firstWaveRadar.count === 2 && firstWaveRadar.labels.join(',') === 'J,R' && firstWaveRadar.hostile && firstWaveRadar.visibleDuringWarp, firstWaveRadar);
-  L.check('первая волна появляется в рабочем радиусе радара впереди игрока', firstWaveRadar.distances.every(d => d >= 830 && d <= 880) && firstWaveRadar.forward.every(v => v > .98), firstWaveRadar);
+  L.check('первая эскадрилья: Головорез и Шакал отображаются на радаре во время warp-in', firstWaveRadar.count === 2 && firstWaveRadar.labels.join(',') === 'J,R' && firstWaveRadar.hostile && firstWaveRadar.visibleDuringWarp, firstWaveRadar);
+  L.check('первая эскадрилья находится впереди игрока в диапазоне радара 1 км', firstWaveRadar.distances.every(d => d >= 750 && d <= 870) && firstWaveRadar.forward.every(v => v > .98), firstWaveRadar);
 
   const firstWaveJackalCombat = await page.evaluate(() => {
     const saved = {
@@ -110,6 +104,50 @@ const L = require('./lib');
     return result;
   });
   L.check('Шакал первой волны открывает огонь при штатном огневом заходе', firstWaveJackalCombat.type === 1 && firstWaveJackalCombat.shots >= 2, firstWaveJackalCombat);
+
+  const naturalJackalRun = await page.evaluate(() => {
+    const e = pirateFleet.find(p => p.ty === 1);
+    const saved = {
+      state, P:P.clone(), vel:vel.clone(), Q:Q.clone(), fleet:pirateFleet.slice(),
+      e:{position:e.g.position.clone(),quaternion:e.g.quaternion.clone(),visible:e.g.visible,warp:e.warp,
+        hd:e.hd.clone(),vel:e.vel.clone(),speed:e.speed,state:e.state,stateT:e.stateT,side:e.side,
+        runDir:e.runDir?.clone()||null,aiClock:e.aiClock,aiTicks:e.aiTicks,fire:e.fire,burst:e.burst,
+        burstGap:e.burstGap,ocsYaw:e.ocsYaw,ocsPitch:e.ocsPitch,ocsAccel:e.ocsAccel,
+        ocsTargetSpeed:e.ocsTargetSpeed,ocsTurnRate:e.ocsTurnRate,ocsMaxAcceleration:e.ocsMaxAcceleration},
+      trailLength:trs.length, bulletLength:eb.length
+    };
+    try {
+      pirateFleet.splice(0,pirateFleet.length,e);
+      state='play'; P.set(0,0,0); vel.set(0,0,0); Q.identity();
+      e.g.position.set(55,0,-850); e.g.visible=true; e.warp=0;
+      e.hd.set(0,0,1); e.vel.set(0,0,34.5); e.speed=34.5;
+      e.state='APPROACH'; e.stateT=0; e.side=.5; e.runDir=null;
+      e.aiClock=0; e.aiTicks=0; e.fire=999; e.burst=0; e.burstGap=0;
+      EAI.seed(0x51a7fa11);
+      let minDistance=Infinity,minLateral=Infinity,maxLateral=0;
+      const states=new Set();
+      for(let i=0;i<3600;i++){
+        pirateFleetUpdate(1/60);
+        const rel=e.g.position.clone().sub(P);
+        minDistance=Math.min(minDistance,rel.length());
+        minLateral=Math.min(minLateral,Math.abs(rel.x));
+        maxLateral=Math.max(maxLateral,Math.abs(rel.x));
+        states.add(e.state);
+      }
+      return {minDistance,minLateral,maxLateral,states:[...states],finalDistance:e.g.position.distanceTo(P)};
+    } finally {
+      pirateFleet.splice(0,pirateFleet.length,...saved.fleet);
+      state=saved.state;P.copy(saved.P);vel.copy(saved.vel);Q.copy(saved.Q);
+      const x=saved.e;e.g.position.copy(x.position);e.g.quaternion.copy(x.quaternion);e.g.visible=x.visible;e.warp=x.warp;
+      e.hd.copy(x.hd);e.vel.copy(x.vel);Object.assign(e,{speed:x.speed,state:x.state,stateT:x.stateT,side:x.side,runDir:x.runDir,
+        aiClock:x.aiClock,aiTicks:x.aiTicks,fire:x.fire,burst:x.burst,burstGap:x.burstGap,ocsYaw:x.ocsYaw,
+        ocsPitch:x.ocsPitch,ocsAccel:x.ocsAccel,ocsTargetSpeed:x.ocsTargetSpeed,ocsTurnRate:x.ocsTurnRate,ocsMaxAcceleration:x.ocsMaxAcceleration});
+      for(let i=eb.length-1;i>=saved.bulletLength;i--){S.remove(eb[i].m);eb.splice(i,1)}
+      for(let i=trs.length-1;i>=saved.trailLength;i--){S.remove(trs[i].m);trs.splice(i,1)}
+    }
+  });
+  L.check('естественный заход Шакала включает атаку, огневой проход и выход из атаки', naturalJackalRun.states.includes('ATTACK_RUN') && naturalJackalRun.states.includes('FIRING_PASS') && naturalJackalRun.states.includes('OVERSHOOT') && naturalJackalRun.states.includes('REPOSITION'), naturalJackalRun);
+  L.check('Шакал выполняет боковой огневой проход вместо лобового столкновения', naturalJackalRun.minDistance >= 120 && naturalJackalRun.minDistance <= 360 && naturalJackalRun.minLateral >= 100, naturalJackalRun);
 
   const initialSpawn = await page.evaluate(() => pirateFleet.map(e => {
     const forward = new THREE.Vector3(0,0,-1).applyQuaternion(Q).normalize();
