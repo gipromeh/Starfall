@@ -159,7 +159,7 @@ tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура
 game_version: "v92"
 last_update: 2026-11-03
 main_file: STARFALL_CURRENT.html
-main_file_sha256: "7516e9e1e4acbfba26419bd4430505d305a4a0714f0f7532a7e374f879da6ffd"
+main_file_sha256: "7a9e4030474b213f923676e89ff89d33a88cbc49e0ab8566a4605191fe4b9a61"
 save_format_version: 3
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"
@@ -869,7 +869,7 @@ PV (конец скрипта): ангар-превью, обёртка hgrView;
 ## v92 — автоматический бортовой регистратор и публичная телеметрия
 
 - В STARFALL_CURRENT.html добавлен автономный Flight Recorder, автоматически запускающий сессию при переходе в state=play и завершающий её при выходе из полёта или закрытии страницы.
-- Частота телеметрии — 5 Гц. Записываются позиция, скорость, ориентация и управляющие параметры игрока; координаты/скорости пиратов, типы, HP, AI state/intent, счётчики decision tick, OCS-команды, перезарядка и огневые очереди; выборочные позиции и скорости снарядов.
+- Частота телеметрии — 5 Гц. Записываются позиция, скорость, ориентация и управляющие параметры игрока; координаты/скорости пиратов, типы, HP, AI state/intent, счётчики decision tick, OCS-команды, перезарядка и огневые очереди; выборочные позиции и скорости снарядов; отдельные события запуска и удаления снарядов.
 - События включают начало/конец сессии, появление/удаление NPC, переходы состояний AI, изменение HP и завершение warp.
 - Формат — JSONL, schemaVersion=1. Сессии разбиваются на неизменяемые чанки до 48 KiB; очередь сохраняется в localStorage, повторная отправка выполняется автоматически при восстановлении сети.
 - Добавлены публичная схема telemetry/schema/v1.json, Cloudflare Worker telemetry/worker/index.mjs и тесты tests/t20_flight_recorder.mjs. Worker пишет отдельные chunk-файлы в telemetry/raw/YYYY/MM/<session-id>/ и делает повторную отправку идемпотентной.
