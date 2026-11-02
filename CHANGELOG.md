@@ -584,3 +584,10 @@ tags: [starfall, changelog]
 - The batch records real runtime shots, hits, damage, survival and state transitions as a JSON artifact.
 - The production-runtime batch is now a prerequisite for the 1,200-trial exploratory simulation.
 - Production HTML remains untouched.
+
+
+## Combat AI lab — first production runtime baseline (2026-11-02)
+
+- GitHub Actions run #5 passed 12 headless browser combat trials using the real production update and projectile collision pipeline.
+- Aggregate baseline: 1,824 player laser projectiles, 892 hostile laser projectiles, 701.82 pirate HP damage, zero player deaths, zero complete squadron wipes.
+- Corrected the lab telemetry to count damage-handler events independently of the production NPC hit counter, which is reset on destruction.

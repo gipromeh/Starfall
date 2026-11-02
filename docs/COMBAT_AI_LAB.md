@@ -24,3 +24,12 @@ The current runner uses the actual EAI kernel port, but its hit probability is a
 3. Replace abstract hit/damage behavior only after extracting or browser-driving the real production projectile/collision rules.
 4. Add squadron and multi-target scenarios only when the simulation includes the corresponding production state transitions.
 5. Require repeatable seeded results, finite state, bounded velocities, no NaN/Infinity, no deadlock, and explicit scenario coverage before any production recommendation.
+
+
+## First production-runtime baseline
+
+GitHub Actions run #5 executed 12 headless Chromium trials, 20 simulated seconds each, using the real production `upd(dt)` wrapper and production projectile collision/damage handlers.
+
+Observed aggregate: 1,824 player laser spawns; 892 hostile laser spawns; 701.82 total pirate HP damage; zero player deaths; zero complete squadron wipes. Some individual trials destroyed one of the two pirates. The test was a stationary-player firing baseline, not a general balance test.
+
+Telemetry correction: the production pirate kill handler resets its `hits` field, so the harness now wraps the actual damage handler to count hit events independently. It also seeds the non-EAI random stream for reproducible visual/gameplay side effects during each trial and asserts that real pirate damage occurs.

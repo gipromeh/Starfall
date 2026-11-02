@@ -838,3 +838,11 @@ PV (конец скрипта): ангар-превью, обёртка hgrView;
 - The test captures player/enemy damage, projectile counts, hit counts, AI states, survival and enemy destruction. JSON report is uploaded as a GitHub Actions artifact.
 - This is a short production-runtime validation batch, not a 1,000-trial balance study. The larger 1,200-trial Node batch remains a separate exploratory parameter model with abstract hit probability.
 - No production game code is changed. If the browser batch fails, it blocks the exploratory batch and is treated as a lab failure, not silently ignored.
+
+
+## Production-runtime combat batch — first verified run (2026-11-02)
+
+- GitHub Actions run #5 completed the 12-trial, 20-second-per-trial headless Chromium batch against the unchanged production game loop.
+- Observed across the batch: 1,824 player laser projectiles, 892 hostile laser projectiles, 701.82 aggregate pirate HP damage, zero player deaths, and zero complete two-pirate squadron wipes. Some trials destroyed one member of the squadron; the other survived.
+- The report confirms that the production projectile/collision/damage path is exercised. The first report's per-enemy hit counter was not reliable after destruction because the production kill handler resets that field; the next revision wraps the real damage handler to count damage events independently.
+- The first run is a baseline, not a balance acceptance result. A 20-second stationary-player scenario does not establish general combat balance.
