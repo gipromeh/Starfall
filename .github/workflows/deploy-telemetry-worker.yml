@@ -1,0 +1,28 @@
+name: deploy-telemetry-worker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "telemetry/worker/**"
+      - ".github/workflows/deploy-telemetry-worker.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy STARFALL telemetry Worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: \${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: \${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --config telemetry/worker/wrangler.toml
+          secrets: |
+            GITHUB_TOKEN
+        env:
+          GITHUB_TOKEN: \${{ secrets.STARFALL_TELEMETRY_GITHUB_TOKEN }}
