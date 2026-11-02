@@ -1698,6 +1698,7 @@ if(E){const p=E.g.position.clone().project(C),vis=p.z<1&&Math.abs(p.x)<1&&Math.a
 $("tinfo").textContent=shipLabel(E)+" · "+Math.round(E.g.position.distanceTo(P))+" м · "+({ATTACK:"АТАКА",PURSUE:"СБЛИЖЕНИЕ",SEPARATE:"РАЗВЕДЕНИЕ",EVADE:"МАНЁВР"}[E.aiMode]||"")+(E.boss?" · БОСС":" · HP "+Math.ceil(E.hp)+"/"+Math.ceil(E.mx))+(vis?"":"  "+(l.x>0?"→":"←")+(l.y>0?"↑":"↓"))}else{tg.style.display="none";$("ehp").style.display="none";$("thr").style.display="none";$("lead").style.display="none";$("tinfo").textContent=""}
 planetNavUpdate();
 }
+}
 // ===== НАВЕДЕНИЕ НА КОСМИЧЕСКИЕ ОБЪЕКТЫ v55 =====
 const navHud=document.createElement("div");
 navHud.style.cssText="position:absolute;z-index:9;top:82px;left:50%;transform:translateX(-50%);display:none;max-width:90vw;padding:6px 11px;background:#031522dc;border:1px solid #4fd0ff88;color:#b9efff;font:11px 'Exo 2',sans-serif;letter-spacing:.08em;pointer-events:none;white-space:nowrap;text-shadow:0 0 8px #39cfff";
