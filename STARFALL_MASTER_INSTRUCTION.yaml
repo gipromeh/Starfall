@@ -1,4 +1,4 @@
-# STARFALL "Void Hunter" — МАСТЕР-ИНСТРУКЦИЯ v2.5 (2026-11-01)
+# STARFALL "Void Hunter" — МАСТЕР-ИНСТРУКЦИЯ v2.7 (2026-11-01)
 # Единственная актуальная инструкция. Лежит в репозитории gipromeh/Starfall, ветка main.
 # Claude читает её ПЕРВОЙ в каждом чате, перед любой правкой, без напоминаний.
 # Все прежние версии инструкции (в проекте Claude, в старых чатах) — архив.
@@ -11,9 +11,44 @@ research_references:
   elite_reconstruction: docs/reference/ELITE_GAME_PASSPORT.md
   elite_to_starfall_map: docs/reference/ELITE_TO_STARFALL_V90.md
   deep_space_specification: docs/DEEP_SPACE_SIMULATION_SPEC.md
+  enemy_ai_policy:
+    status: mandatory_full_elite_replacement
+    scope: [opening_pirate_wave, Jackal, Golovorez, all_pirate_ai]
+    rule: >
+      Elite ZX Spectrum 128K is the mandatory algorithmic specification for pirate AI.
+      Do not preserve, tune, wrap, or incrementally patch the legacy STARFALL pirate
+      steering/state-machine behavior as the basis for a new or corrected Elite AI.
+      Replace the affected enemy decision and maneuver logic with the verified Elite
+      tactical/OCS model as a coherent system. "Same mechanics" means the same shared
+      Elite-derived AI architecture and equations, not copying a legacy custom behavior
+      from another STARFALL pirate class.
+    required:
+      - Read the relevant sections of docs/reference/ELITE_GAME_PASSPORT.md and the transfer map before implementation.
+      - Use Elite local ship axes, normalized target vectors, OCS projections/sign conventions, discrete steering commands, decision cadence, and separate per-frame motion integration where supported by the research.
+      - Tactical behavior must emerge from Elite-derived decision rules and ship descriptors; do not hard-code a bespoke APPROACH/ATTACK_RUN/FIRING_PASS/OVERSHOOT script as a substitute for Elite AI.
+      - Preserve STARFALL rendering, collision, weapon, damage, and save interfaces; connect the Elite AI through the existing movement/weapon APIs rather than writing position, velocity, or quaternion from an unrelated controller.
+      - Keep ship-class differences in explicit, documented descriptors/personality parameters only when justified by Elite source or a recorded STARFALL design decision. Never create a separate non-Elite Jackal controller.
+      - Validate a natural encounter from initial spawn through multiple decision cycles, including pursuit, attack, evasive response, firing opportunities, and non-collision separation.
+    forbidden:
+      - Reusing legacy Jackal steering or its bespoke state machine with only changed speeds, offsets, turn rates, or thresholds.
+      - Claiming "Elite AI" because code calls an OCS helper while a parallel custom FSM still dictates the trajectory.
+      - Treating a static source-pattern test as proof of correct flight behavior.
+      - Claiming parity with Elite without tracing each implemented decision to the research passport.
+    acceptance:
+      - A natural deterministic simulation demonstrates the Elite decision sequence and motion, not a scripted waypoint pass.
+      - Jackal and Golovorez execute the same Elite-derived decision/steering architecture; class differences are data-driven.
+      - Tests assert trajectories, local projections, decision cadence, movement integration, fire gates, evasion and collision clearance.
+      - Passport and decision log identify the exact Elite sections and the STARFALL adaptation for each changed subsystem.
+    mandatory_review_gate: >
+      Before modifying pirate AI, explicitly compare the current implementation with this
+      policy. If the current code still contains legacy class-specific steering or scripted
+      approach/pass states, treat that as unfinished replacement work, not as an approved
+      implementation to preserve.
   application_rules:
-    - Elite использовать как исследовательский источник алгоритмических принципов, не как физическую спецификацию для прямого копирования.
-    - Переносить OCS/vector steering и разделение decision/movement ticks только при совместимости с текущей архитектурой Three.js.
+    - Pirate AI is governed by enemy_ai_policy below; this rule overrides any legacy pirate maneuver descriptions elsewhere in this file.
+    - Elite ZX Spectrum 128K — обязательная алгоритмическая спецификация для всего пиратского AI; для полного правила и запрета гибридизации см. enemy_ai_policy.
+    - Elite использовать как источник проверенных алгоритмов и тактических правил; переносить их целостно, адаптируя интерфейсы и единицы STARFALL, но не подменять Elite-логику старым скриптовым FSM.
+    - OCS/vector steering, локальные проекции, decision ticks и интеграция движения должны реально определять поведение NPC, а не служить вспомогательными вызовами рядом с legacy-контроллером.
     - Не переносить внутренние единицы Elite, Z80 fixed-point коэффициенты и неподтверждённые численные пороги.
     - Deep Space Simulation — добавочный слой; сохранять существующие полёт, бой, радар и экономику.
 
@@ -640,3 +675,40 @@ acceptance_v78:
   - "Прочность пиратов не ниже удвоенной прочности корабля игрока."
   - "Форсаж в АРКАДЕ работает при нулевом топливе."
   - "Освещение и окружение не изменены."
+
+
+# v2.7 — обязательная полная замена пиратского AI на Elite
+# Этот контракт имеет приоритет над историческими описаниями манёвров ниже.
+  enemy_ai_policy:
+    status: mandatory_full_elite_replacement
+    scope: [opening_pirate_wave, Jackal, Golovorez, all_pirate_ai]
+    rule: >
+      Elite ZX Spectrum 128K is the mandatory algorithmic specification for pirate AI.
+      Do not preserve, tune, wrap, or incrementally patch the legacy STARFALL pirate
+      steering/state-machine behavior as the basis for a new or corrected Elite AI.
+      Replace the affected enemy decision and maneuver logic with the verified Elite
+      tactical/OCS model as a coherent system. "Same mechanics" means the same shared
+      Elite-derived AI architecture and equations, not copying a legacy custom behavior
+      from another STARFALL pirate class.
+    required:
+      - Read the relevant sections of docs/reference/ELITE_GAME_PASSPORT.md and the transfer map before implementation.
+      - Use Elite local ship axes, normalized target vectors, OCS projections/sign conventions, discrete steering commands, decision cadence, and separate per-frame motion integration where supported by the research.
+      - Tactical behavior must emerge from Elite-derived decision rules and ship descriptors; do not hard-code a bespoke APPROACH/ATTACK_RUN/FIRING_PASS/OVERSHOOT script as a substitute for Elite AI.
+      - Preserve STARFALL rendering, collision, weapon, damage, and save interfaces; connect the Elite AI through the existing movement/weapon APIs rather than writing position, velocity, or quaternion from an unrelated controller.
+      - Keep ship-class differences in explicit, documented descriptors/personality parameters only when justified by Elite source or a recorded STARFALL design decision. Never create a separate non-Elite Jackal controller.
+      - Validate a natural encounter from initial spawn through multiple decision cycles, including pursuit, attack, evasive response, firing opportunities, and non-collision separation.
+    forbidden:
+      - Reusing legacy Jackal steering or its bespoke state machine with only changed speeds, offsets, turn rates, or thresholds.
+      - Claiming "Elite AI" because code calls an OCS helper while a parallel custom FSM still dictates the trajectory.
+      - Treating a static source-pattern test as proof of correct flight behavior.
+      - Claiming parity with Elite without tracing each implemented decision to the research passport.
+    acceptance:
+      - A natural deterministic simulation demonstrates the Elite decision sequence and motion, not a scripted waypoint pass.
+      - Jackal and Golovorez execute the same Elite-derived decision/steering architecture; class differences are data-driven.
+      - Tests assert trajectories, local projections, decision cadence, movement integration, fire gates, evasion and collision clearance.
+      - Passport and decision log identify the exact Elite sections and the STARFALL adaptation for each changed subsystem.
+    mandatory_review_gate: >
+      Before modifying pirate AI, explicitly compare the current implementation with this
+      policy. If the current code still contains legacy class-specific steering or scripted
+      approach/pass states, treat that as unfinished replacement work, not as an approved
+      implementation to preserve.
