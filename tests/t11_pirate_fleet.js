@@ -69,7 +69,7 @@ const L = require('./lib');
     return result;
   });
   L.check('первая эскадрилья: Головорез и Шакал отображаются на радаре во время warp-in', firstWaveRadar.count === 2 && firstWaveRadar.labels.join(',') === 'J,R' && firstWaveRadar.hostile && firstWaveRadar.visibleDuringWarp, firstWaveRadar);
-  L.check('первая эскадрилья находится впереди игрока в диапазоне радара 1 км', firstWaveRadar.distances.every(d => d >= 750 && d <= 870) && firstWaveRadar.forward.every(v => v > .97), firstWaveRadar);
+  L.check('первая эскадрилья находится впереди игрока в рабочем диапазоне 3D-сканера', firstWaveRadar.distances.every(d => d >= 750 && d <= 870) && firstWaveRadar.forward.every(v => v > .97), firstWaveRadar);
 
   const firstWaveJackalCombat = await page.evaluate(() => {
     const saved = {
