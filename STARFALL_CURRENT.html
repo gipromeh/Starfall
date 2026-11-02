@@ -1,5 +1,6 @@
 <!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="claude:viewport-fit-sides" content="cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#02030a"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>STARFALL — Void Hunter</title>
 <meta name="starfall-version" content="v92">
+<meta name="starfall-telemetry-endpoint" content="">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#02030a;--fg:#cfe9ff;--ac:#3cf;--warn:#f54;color-scheme:dark}
@@ -1927,7 +1928,7 @@ upd=function(dt){_updWithPirateFleet(dt);pirateFleetUpdate(dt);resolvePirateShip
 // Event-driven tactical telemetry. No player identifiers or credentials are collected.
 (()=>{
  "use strict";
- const SCHEMA=1,STORE="sf_fr_queue_v1",ENDPOINT=window.SF_TELEMETRY_ENDPOINT||"";
+ const SCHEMA=1,STORE="sf_fr_queue_v1",ENDPOINT=window.SF_TELEMETRY_ENDPOINT||(document.querySelector('meta[name="starfall-telemetry-endpoint"]')?.content||"");
  const SAMPLE_INTERVAL=.2,FLUSH_INTERVAL=12,MAX_CHUNK_BYTES=48*1024,MAX_QUEUE_BYTES=1536*1024;
  let active=null,acc=0,lastFlush=0,flushing=false,queue=[],dropped=0;
  try{const saved=localStorage.getItem(STORE);if(saved){const parsed=JSON.parse(saved);if(Array.isArray(parsed))queue=parsed}}catch(_){}
