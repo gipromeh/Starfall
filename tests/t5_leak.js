@@ -7,6 +7,9 @@ const ff = (page, sec) => page.evaluate(s => { const n = Math.round(s / .05); fo
   const page = await L.openGame(ctx);
   await page.click('#play'); await page.waitForFunction(() => state === 'dock', null, { timeout: 60000 }); await L.sleep(500);
   await page.evaluate(() => lift()); await L.sleep(1500);
+  // Изолируем E/E2: стартовая эскадрилья v89 стреляет независимо и не должна считаться утечкой в этом тесте.
+  await page.evaluate(() => { pirateFleetClear(); pirateFleetReady = true; });
+  L.check('изолированная проверка: стартовая эскадрилья выключена', await page.evaluate(() => pirateFleetReady && pirateFleet.length === 0));
 
   console.log('\n[Q1] профили (ручной режим — адаптация выключена)');
   const res = [];

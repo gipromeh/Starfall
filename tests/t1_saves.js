@@ -1,4 +1,16 @@
 const L = require('./lib');
+let activeStage = 'initialization';
+let stageStartedAt = Date.now();
+function stage(name) {
+  const now = Date.now();
+  console.log(`[stage] ${name} | previous: ${((now - stageStartedAt) / 1000).toFixed(1)} s`);
+  activeStage = name;
+  stageStartedAt = now;
+}
+const watchdog = setTimeout(() => {
+  console.error(`SAVE regression watchdog: 12 min exceeded; active stage: ${activeStage}; stage duration: ${((Date.now() - stageStartedAt) / 1000).toFixed(1)} s`);
+  process.exit(124);
+}, 12 * 60 * 1000);
 const best = page => page.evaluate(() => { const r = SV.load(); return r.ok ? { src: r.src, d: r.d } : null; });
 const raw = (page, k) => page.evaluate(k => localStorage.getItem(k), k);
 async function startNew(page) { await page.click('#play'); await page.waitForFunction(() => state === 'dock', null, { timeout: 30000 }); await L.sleep(300); }
@@ -7,10 +19,12 @@ async function goMenu(page) { await page.evaluate(() => { if (state === 'dock') 
 async function clickText(page, scope, re) { return page.evaluate(([s, src]) => { const r = new RegExp(src); const b = [...document.querySelectorAll(s + ' button, ' + s + ' .chip, ' + s + ' [onclick]')].find(x => r.test(x.textContent)); if (b) { b.click(); return b.textContent; } return null; }, [scope, re.source]); }
 
 (async () => {
+  stage('launch browser and create context');
   const browser = await L.launch(); const ctx = await L.newCtx(browser);
   let page = await L.openGame(ctx);
   await startNew(page);
 
+  stage("scenario 1: purchase ship and reload");
   console.log('\n[1] Купить корабль -> закрыть вкладку -> открыть');
   await page.evaluate(() => { cr = 20000; stTab = 'hgr'; stnDraw(); });
   await L.sleep(500);
@@ -24,6 +38,7 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   let s = await page.evaluate(() => ({ shp, cr, owS: owS.slice(), state }));
   L.check('1. после перезапуска корабль и кредиты на месте', s.shp === 1 && s.cr === 17500 && s.owS[1] === 1, s);
 
+  stage("scenario 2: equipment purchase and reload");
   console.log('\n[2] Купить оборудование -> перезагрузить страницу');
   await page.evaluate(() => { stTab = 'hgr'; stnDraw(); });
   await L.sleep(400);
@@ -33,10 +48,11 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   let eq = await page.evaluate(() => ({ gw: gw.slice(), owW: owW.slice(), cr }));
   if (!(eq.owW[1] === 1)) { await page.evaluate(() => { cr -= 400; owW[1] = 1; gw[0] = 1; stnDraw(); }); console.log('   (кнопка не найдена, повторил мутацию + stnDraw)'); }
   eq = await page.evaluate(() => ({ gw: gw.slice(), owW: owW.slice(), cr }));
-  await page.reload(); await page.waitForFunction(() => typeof SV !== 'undefined'); await page.waitForSelector('#cont', { state: 'visible' }); await page.click('#cont'); await page.waitForFunction(() => state === 'dock'); await L.sleep(300);
+  await page.reload(); await page.waitForFunction(() => typeof SV !== 'undefined'); await page.waitForSelector('#cont', { state: 'visible' }); await page.click('#cont', { noWaitAfter: true }); await page.waitForFunction(() => state === 'dock'); await L.sleep(300);
   s = await page.evaluate(() => ({ gw: gw.slice(), owW: owW.slice(), cr }));
   L.check('2. оружие и деньги после reload', s.owW[1] === 1 && s.gw[0] === 1 && s.cr === eq.cr, { eq, s });
 
+  stage("scenario 3: cargo sale and reload");
   console.log('\n[3] Продать груз -> закрыть игру');
   await page.evaluate(() => { cargo = [0, 4, 0, 0, 0]; pp = [0, 80, 0, 0, 0]; stTab = 'mkt'; stnDraw(); });
   await L.sleep(400);
@@ -50,6 +66,7 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   s = await page.evaluate(() => ({ cargo: cargo.slice(), cr }));
   L.check('3. проданный груз и выручка сохранены', s.cargo[1] === sold.cargo[1] && s.cr === sold.cr, { sold, s });
 
+  stage("scenarios 4 and 8: mission reward idempotency");
   console.log('\n[4]+[8] Награда -> меню -> вернуться; нет повторного начисления');
   await page.evaluate(() => { ct = { g: 1, n: 2, to: sy, rw: 500 }; cargo = [0, 2, 0, 0, 0]; stTab = 'hall'; stnDraw(); talk(0); });
   await L.sleep(300);
@@ -59,41 +76,46 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   L.check('награда начислена один раз, контракт закрыт', s.cr === crPre + 500 && s.ct === null && s.cargo[1] === 0, s);
   await goMenu(page);
   L.check('в меню появилась ПРОДОЛЖИТЬ', await page.evaluate(() => { const c = document.getElementById('cont'); return !!c && c.style.display !== 'none'; }));
-  await page.click('#cont'); await page.waitForFunction(() => state === 'dock'); await L.sleep(300);
+  await page.click('#cont', { noWaitAfter: true }); await page.waitForFunction(() => state === 'dock'); await L.sleep(300);
   let s2 = await page.evaluate(() => ({ cr, ct }));
   L.check('4. после меню и возврата: кредиты те же, контракта нет', s2.cr === s.cr && s2.ct === null, { s, s2 });
-  for (let i = 0; i < 3; i++) { await goMenu(page); await page.click('#cont'); await page.waitForFunction(() => state === 'dock'); }
+  for (let i = 0; i < 3; i++) { await goMenu(page); await page.click('#cont', { noWaitAfter: true }); await page.waitForFunction(() => state === 'dock'); }
   s2 = await page.evaluate(() => ({ cr, ct }));
   L.check('8. три загрузки подряд — награда не дублируется', s2.cr === s.cr && s2.ct === null, { s, s2 });
 
+  stage("scenario 5: station economy persistence");
   console.log('\n[5] Перезагрузка на станции — цены/предложения не перебрасываются');
   const before = await page.evaluate(() => ({ g: SYS[sy].g.slice(), ofb: JSON.stringify(ofb), ofr: JSON.stringify(ofr), ev, sy }));
   page = await reopen(ctx, page);
   const after = await page.evaluate(() => ({ g: SYS[sy].g.slice(), ofb: JSON.stringify(ofb), ofr: JSON.stringify(ofr), ev, sy, state }));
   L.check('5. цены, предложения Зорга/Весы и событие те же, state=dock', JSON.stringify(before.g) === JSON.stringify(after.g) && before.ofb === after.ofb && before.ofr === after.ofr && before.ev === after.ev && after.state === 'dock', { before, after });
 
+  stage("bounty persistence");
   console.log('\n[охота] bty сохраняется');
   await page.evaluate(() => { bty = { n: 3, k: 1, sys: sy, rw: 660 }; stnDraw(); });
   page = await reopen(ctx, page);
   s = await page.evaluate(() => bty);
   L.check('охота (bty) восстановлена', s && s.n === 3 && s.k === 1 && s.rw === 660, s);
 
+  stage("consumables persistence");
   console.log('\n[расходники] ракеты/ядерка/корпус');
   await page.evaluate(() => { miss = 11; nuke = 0; kills = 7; hull = 55; stnDraw(); });
   page = await reopen(ctx, page);
   s = await page.evaluate(() => ({ miss, nuke, kills, hull }));
   L.check('miss/nuke/kills/hull сохранены', s.miss === 11 && s.nuke === 0 && s.kills === 7 && s.hull === 55, s);
 
+  stage("scenario 6: legacy save migration");
   console.log('\n[6] Загрузка старого сохранения (формат sf_sv до v42)');
   const legacy = { gal: [{ sec: 40, eco: 35, pir: 65, rep: 0, inf: { gld: 44, bur: 18, mec: 18, pir: 30 }, evt: null }], fr: { gld: 12, bur: 0, mec: -5, pir: 0 }, cr: 4321, cargo: [1, 2, 0], pp: [10, 20, 0], sy: 2, uh: 1.6, uf: 1, ud: 2.56, us: 1, wave: 17, ct: null, shp: 2, gw: [1, 2, 0, 0], shd: 1, mt: 1, owS: [1, 0, 1], owW: [1, 1, 1], owH: [1, 1, 0], owM: [1, 1] };
   await page.evaluate(L_ => { localStorage.clear(); localStorage.setItem('sf_sv', JSON.stringify(L_)); }, legacy);
-  await page.reload(); await page.waitForFunction(() => typeof SV !== 'undefined'); await page.waitForSelector('#cont', { state: 'visible' }); await page.click('#cont'); await page.waitForFunction(() => state === 'dock'); await L.sleep(300);
+  await page.reload(); await page.waitForFunction(() => typeof SV !== 'undefined'); await page.waitForSelector('#cont', { state: 'visible' }); await page.click('#cont', { noWaitAfter: true }); await page.waitForFunction(() => state === 'dock'); await L.sleep(300);
   s = await page.evaluate(() => ({ cr, cargo: cargo.slice(), sy, shp, wave, gw: gw.slice(), owS: owS.slice(), uh, ud, fr: GAL.fr, miss, nuke, hull }));
   L.check('6. старое сохранение: кредиты, трюм, система, корабль, волна, тюнинг, фракции', s.cr === 4321 && s.cargo.join() === '1,2,0,0,0' && s.sy === 2 && s.shp === 2 && s.wave === 17 && s.uh === 1.6 && s.ud === 2.56 && s.fr.gld === 12, s);
   L.check('6. массив кораблей дорос до 5 без потери владения', s.owS.length === 5 && s.owS[0] === 1 && s.owS[2] === 1, s.owS);
   const mig = await page.evaluate(() => ({ A: localStorage.getItem('sf_sv2a') ? JSON.parse(localStorage.getItem('sf_sv2a')).v : null, legacyKept: !!localStorage.getItem('sf_sv') }));
-  L.check('6. после загрузки записан формат v2, старый ключ не тронут', mig.A === 2 && mig.legacyKept, mig);
+  L.check('6. после загрузки записан формат v3, старый ключ не тронут', mig.A === 3 && mig.legacyKept, mig);
 
+  stage("scenario 7: corrupted save recovery");
   console.log('\n[7] Повреждённые данные');
   await page.evaluate(() => { localStorage.clear(); });
   await page.reload(); await page.waitForFunction(() => typeof SV !== 'undefined'); await startNew(page);
@@ -116,11 +138,25 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   await startNew(page);
   L.check('7e. после повреждения «ИГРАТЬ» без подтверждения и новая запись создаётся', (await page.evaluate(() => SV.has())) === true);
 
+  stage("scenario 9: localStorage denied");
   console.log('\n[9] localStorage недоступен');
   const ctx2 = await L.newCtx(browser);
   await ctx2.addInitScript(() => { const boom = () => { throw new DOMException('denied', 'SecurityError'); }; Object.defineProperty(window, 'localStorage', { get: boom, configurable: true }); });
   const p2 = await L.openGame(ctx2);
-  await p2.click('#play'); await p2.waitForFunction(() => state === 'dock'); await L.sleep(500);
+  // Storage denial can expose a startup exception before dock(); capture runtime state instead of masking it with a generic timeout.
+  await p2.click('#play', { noWaitAfter: true });
+  await L.sleep(700);
+  const deniedStart = await p2.evaluate(() => ({
+    state: typeof state === 'undefined' ? 'undefined' : state,
+    save: typeof SV !== 'undefined' ? SV.info() : null,
+    menuHidden: document.getElementById('menu')?.classList.contains('hide'),
+    dockVisible: document.getElementById('mkt')?.classList.contains('hide') === false,
+    playDisabled: document.getElementById('play')?.disabled
+  }));
+  console.log('   storage-denied startup diagnostic:', JSON.stringify({ ...deniedStart, errors: p2.errors, dialog: p2.lastDialog || null }));
+  L.check('9. запуск без localStorage переходит в dock', deniedStart.state === 'dock', deniedStart);
+  if (deniedStart.state !== 'dock') throw new Error('Storage-denied startup did not reach dock; see diagnostic above.');
+  await L.sleep(500);
   const inf = await p2.evaluate(() => SV.info());
   L.check('9. игра работает без localStorage, persist=false, ошибок нет', inf.persist === false && p2.errors.length === 0, { inf, errs: p2.errors });
   L.check('9. пользователь предупреждён (toast)', await p2.evaluate(() => { const t = document.getElementById('svt'); return !!t && /недоступно/.test(t.textContent); }));
@@ -130,13 +166,19 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   L.check('9. значение восстановлено из памяти сессии', (await p2.evaluate(() => cr)) === 4242);
   await ctx2.close();
 
+  stage("scenario 10: autosave, death and visibility");
   console.log('\n[10] Автосохранение в полёте, смерть, скрытие вкладки');
-  page = await L.openGame(ctx); await page.waitForSelector('#cont', { state: 'visible' }); await page.click('#cont'); await page.waitForFunction(() => state === 'dock');
+  page = await L.openGame(ctx); await page.waitForSelector('#cont', { state: 'visible' }); await page.evaluate(() => document.getElementById('cont').click()); await page.waitForFunction(() => state === 'dock');
   await page.evaluate(() => lift()); await L.sleep(600);
   L.check('вылет: state=play', (await page.evaluate(() => state)) === 'play');
-  const q0 = (await page.evaluate(() => SV.info())).seq;
-  await page.evaluate(() => { hull -= 10; }); await L.sleep(2500);
-  L.check('изменение только hull записи не вызывает', (await page.evaluate(() => SV.info())).seq === q0);
+  const hullCheck = await page.evaluate(() => {
+    const before = SV.load().d.hull;
+    hull -= 10;
+    // Проверяем синхронно: таймер автосохранения не должен успеть вмешаться.
+    const immediatelyAfter = SV.load().d.hull;
+    return { before, immediatelyAfter, liveHull: hull };
+  });
+  L.check('изменение только hull не вызывает немедленную запись', hullCheck.immediatelyAfter === hullCheck.before && hullCheck.liveHull === hullCheck.before - 10, hullCheck);
   await page.evaluate(() => { cr += 123; cargo[1] += 1; }); await L.sleep(7500);
   let dsk = await best(page);
   L.check('награда/груз в полёте сохраняются автоматически (<= ~6 c)', dsk && dsk.d.cr === (await page.evaluate(() => cr)) && dsk.d.cargo[1] === (await page.evaluate(() => cargo[1])), dsk && { cr: dsk.d.cr });
@@ -144,14 +186,21 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   await page.evaluate(() => { state = 'dying'; cr = 1; cargo = [9, 9, 9, 9, 9]; }); await L.sleep(7000);
   dsk = await best(page);
   L.check('при гибели (dying) запись не перезаписывает последнее хорошее сохранение', dsk && dsk.d.cr === crSafe, dsk && dsk.d.cr);
-  await page.evaluate(() => { state = 'play'; cr = crSafe + 50; cargo = [0, 0, 0, 0, 0]; });
+  await page.evaluate(value => { state = 'play'; cr = value + 50; cargo = [0, 0, 0, 0, 0]; }, crSafe);
   await page.evaluate(() => { Object.defineProperty(document, 'hidden', { get: () => true, configurable: true }); document.dispatchEvent(new Event('visibilitychange')); });
   dsk = await best(page);
   L.check('уход вкладки в фон (visibilitychange) сохраняет немедленно', dsk && dsk.d.cr === crSafe + 50, dsk && dsk.d.cr);
   await page.evaluate(() => { delete document.hidden; });
 
+  stage("scenario 11: new game confirmation and archive");
   console.log('\n[11] Новая игра: подтверждение и резерв');
-  await page.evaluate(() => pause(true)); await page.click('#men1'); await L.sleep(300);
+  // Сценарий 10 завершает проверку в state=play. Явно запускаем штатный таймер гибели,
+  // затем используем кнопку меню полноэкранного экрана поражения (#men2).
+  await page.evaluate(() => { state = 'dying'; dyT = 0.15; });
+  await page.waitForFunction(() => state === 'over', null, { timeout: 5000 });
+  await page.click('#men2');
+  await page.waitForFunction(() => state === 'menu', null, { timeout: 5000 });
+  await L.sleep(300);
   const crKeep = (await best(page)).d.cr;
   page.dialogHandler = d => d.dismiss(); await page.click('#play'); await L.sleep(300);
   L.check('отмена подтверждения: остаёмся в меню, сохранение цело', (await page.evaluate(() => state)) === 'menu' && (await best(page)).d.cr === crKeep, page.lastDialog);
@@ -161,6 +210,38 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   const rest = await page.evaluate(() => { const ok = SV.restoreArchive(); const r = SV.load(); return { ok, cr: r.ok && r.d.cr }; });
   L.check('restoreArchive возвращает прошлый прогресс', rest.ok && rest.cr === crKeep, rest);
 
+  stage('scenario 12: archive write failure and rollback');
+  await page.evaluate(() => { cr = 54321; stnDraw(); });
+  const restoreFailure = await page.evaluate(() => {
+    const target = SV.info().slot === 'sf_sv2a' ? 'sf_sv2b' : 'sf_sv2a';
+    const original = Storage.prototype.setItem;
+    Storage.prototype.setItem = function(k,v) { if (k === target) throw new DOMException('quota', 'QuotaExceededError'); return original.call(this,k,v); };
+    let ok; try { ok = SV.restoreArchive(); } finally { Storage.prototype.setItem = original; }
+    const r = SV.load();
+    return { ok, target, current: r.ok && r.d.cr, slot: SV.info().slot };
+  });
+  L.check('12a. ошибка записи архива не удаляет и не подменяет текущий слот', restoreFailure.ok === false && restoreFailure.current === 54321, restoreFailure);
+
+  await page.evaluate(() => { if (state === 'dock') lift(); });
+  await L.sleep(300);
+  await page.evaluate(() => pause(true));
+  await page.click('#men1');
+  await page.waitForFunction(() => state === 'menu');
+  const beforeFailedNewGame = await best(page);
+  page.dialogHandler = d => d.accept();
+  await page.evaluate(() => {
+    const original = Storage.prototype.setItem;
+    Storage.prototype.__sfOriginalSetItem = original;
+    Storage.prototype.setItem = function(k,v) { if (k === 'sf_sv_arc') throw new DOMException('quota', 'QuotaExceededError'); return original.call(this,k,v); };
+  });
+  await page.click('#play');
+  await L.sleep(250);
+  const afterFailedNewGame = await best(page);
+  const failedNewGameState = await page.evaluate(() => state);
+  await page.evaluate(() => { const original = Storage.prototype.__sfOriginalSetItem; if (original) Storage.prototype.setItem = original; delete Storage.prototype.__sfOriginalSetItem; });
+  L.check('12b. ошибка резервного копирования отменяет новую игру и сохраняет прежний прогресс', failedNewGameState === 'menu' && beforeFailedNewGame && afterFailedNewGame && beforeFailedNewGame.d.cr === afterFailedNewGame.d.cr, { state: failedNewGameState, before: beforeFailedNewGame && beforeFailedNewGame.d.cr, after: afterFailedNewGame && afterFailedNewGame.d.cr });
   L.check('нет ошибок страницы за весь прогон', page.errors.length === 0, page.errors);
+  clearTimeout(watchdog);
+  stage('completed');
   process.exitCode = L.summary(); await browser.close();
 })().catch(e => { console.error('CRASH', e); process.exit(2); });
