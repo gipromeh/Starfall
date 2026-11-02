@@ -109,3 +109,5 @@ Canonical record of durable gameplay, architecture, UI and workflow decisions. N
 - Decision: compass targets the planet by default, switches to the station inside 900 units, shows hollow when behind, and lights `S` inside 420 units. These are STARFALL adaptation thresholds, not claimed original Elite constants.
 - Source: `https://elite.bbcelite.com/deep_dives/the_3d_scanner.html` (scanner projection and stick math); ZX Spectrum manual summary `https://viva-games.ru/game/elite?setlang=es` (3D scanner, compass and hollow marker semantics); screenshot reference `https://www.thirdharmoniser.com/elite.html`.
 - Status: IMPLEMENTED; static checks pass; browser CI and visual validation pending.
+
+- Attack acceptance now includes actual firing during the natural side-pass: test seeds the fire-gate PRNG to its deterministic success path and requires at least two shots while preserving the normal OCS gates and burst mechanism.
