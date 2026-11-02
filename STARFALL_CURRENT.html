@@ -1859,7 +1859,7 @@ function pirateFleetUpdate(dt){
   if(aiThink&&dist<320&&e.state!="FIRING_PASS"&&e.state!="OVERSHOOT"){e.state="REPOSITION";e.stateT=0;e.runDir=null}
   const dir=toPlayer.multiplyScalar(1/dist),side=playerRight.clone().multiplyScalar(e.side<0?-1:1);e.stateT+=dt;let aim;
   if(e.state==="APPROACH"){aim=P.clone().addScaledVector(side,150).addScaledVector(pirateFleetUp,(e.slot-.5)*70);if(aiThink&&dist<900){e.state="ATTACK_RUN";e.stateT=0}}
-  else if(e.state==="ATTACK_RUN"){aim=P.clone().addScaledVector(vel,Math.max(.45,Math.min(2.2,dist/190))).addScaledVector(side,150);if(aiThink&&dist<520){e.state="FIRING_PASS";e.stateT=0;e.runDir=playerForward.clone().negate()}}
+  else if(e.state==="ATTACK_RUN"){aim=P.clone().addScaledVector(vel,Math.max(.45,Math.min(2.2,dist/190))).addScaledVector(side,100);if(aiThink&&dist<520){e.state="FIRING_PASS";e.stateT=0;e.runDir=playerForward.clone().negate()}}
   else if(e.state==="FIRING_PASS"){aim=P.clone().addScaledVector(e.runDir,420).addScaledVector(side,100);const passed=P.clone().sub(g.position).dot(e.runDir)<-140;if(aiThink&&((e.stateT>.65&&passed)||e.stateT>12)){e.state="OVERSHOOT";e.stateT=0}}
   else if(e.state==="OVERSHOOT"){aim=P.clone().addScaledVector(e.runDir||e.hd,700).addScaledVector(side,260).addScaledVector(pirateFleetUp,(e.slot-.5)*260+Math.sin(e.stateT*2)*300);if(aiThink&&(g.position.distanceTo(aim)<220||e.stateT>4)){e.state="REPOSITION";e.stateT=0}}
   else{aim=P.clone().addScaledVector(playerForward,-560).addScaledVector(side,220);if(aiThink&&(g.position.distanceTo(aim)<220||e.stateT>4)){e.state="APPROACH";e.stateT=0;e.runDir=null}}
