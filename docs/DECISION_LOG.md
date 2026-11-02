@@ -82,3 +82,11 @@ Canonical record of durable gameplay, architecture, UI and workflow decisions. N
 - Observation: the first-wave Jackal could perform an approach/overshoot without firing. The target pass offset (185 units) was incompatible with both the 0.25 rad firing lane and `EAI.fireGate`'s centered OCS gate at the 380-unit weapon range.
 - Decision: reduce E/E2 pass offsets to `[55,70,45,80]` by ship type. Preserve speed, turn coefficients, HP, weapon range, damage and AI decision cadence.
 - Acceptance: integration regression runs production `upd()` with a type-1 Jackal at 360 units and observes at least two actual laser projectiles. Status: implemented; awaiting CI.
+
+
+## 2026-11-02 — First-wave attack must not be a head-on collision
+- Corrected the scope: the opening interception is `pirateFleet` (Golovoroz + Jackal); regular E/E2 are later waves and must not be conflated with the opening squadron.
+- Root cause in the attack geometry: slot side values are ±0.5 and were multiplied directly into route offsets of 30–100 units, reducing the lateral displacement to roughly 15–50 units. The opening headings were initially aimed directly at the player, and the attack waypoint did not create a meaningful safe pass lane.
+- Decision: normalize the slot side to ±1 and define explicit lateral waypoints for APPROACH, ATTACK_RUN, FIRING_PASS, OVERSHOOT and REPOSITION. Keep OCS steering, firing gates, weapon sockets, speed/acceleration model and HP/damage unchanged.
+- Decision: radar contact collection includes the opening fleet during warp-in and labels it R/J. Do not change ordinary E/E2 spawn geometry as part of this fix.
+- Acceptance: a natural 60-second Jackal simulation must traverse ATTACK_RUN → FIRING_PASS → OVERSHOOT → REPOSITION, maintain at least 120 units minimum separation and at least 100 units lateral offset. Browser CI pending; values are initial engineering targets subject to observed simulation output.
