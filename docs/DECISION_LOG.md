@@ -113,3 +113,9 @@ Canonical record of durable gameplay, architecture, UI and workflow decisions. N
 - Attack acceptance now includes actual firing during the natural side-pass: test seeds the fire-gate PRNG to its deterministic success path and requires at least two shots while preserving the normal OCS gates and burst mechanism.
 
 - Compass projection refinement: map local X/Y onto the compass disc using the full 3D direction length; use local Z only to choose filled (ahead) versus hollow (behind). This preserves elevation information instead of treating the compass as a top-down X/Z plot.
+
+
+## 2026-11-02 — Memory-leak test isolation
+- The leak regression must measure retained resources after all combat entities are removed, not count a surviving second enemy slot as a leak.
+- After its eight spawn/kill rounds, the test now kills both E and E2, clears the slots, pauses gameplay in dock state and then advances 40 seconds to drain debris/aliens before comparing renderer memory.
+- This is a test isolation correction; it does not alter runtime enemy spawning or cleanup behavior.
