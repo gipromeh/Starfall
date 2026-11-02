@@ -1,8 +1,8 @@
 # Исследовательский архитектурный контракт: обязательная математика Elite
 
 **Статус:** ОБЯЗАТЕЛЬНОЕ ПРАВИЛО ПРОЕКТИРОВАНИЯ STARFALL.  
-**Основной источник:** [`docs/reference/ELITE_GAME_PASSPORT.md`](reference/ELITE_GAME_PASSPORT.md), редакция 0.4, реконструкция Elite для ZX Spectrum 128K.  
-**Карта адаптации:** [`docs/reference/ELITE_TO_STARFALL_V90.md`](reference/ELITE_TO_STARFALL_V90.md).
+**Основной источник:** [`docs/reference/ELITE_GAME_PASSPORT.md`](docs/reference/ELITE_GAME_PASSPORT.md), редакция 0.4, реконструкция Elite для ZX Spectrum 128K.  
+**Карта адаптации:** [`docs/reference/ELITE_TO_STARFALL_V90.md`](docs/reference/ELITE_TO_STARFALL_V90.md).
 
 Паспорт Elite — не просто источник идей и не факультативная справка. Его математическая реконструкция является обязательной исходной моделью при проектировании, анализе, изменении и балансировке соответствующих систем STARFALL. До разработки механики необходимо прочитать релевантные разделы паспорта Elite и карту уже выполненного переноса.
 
