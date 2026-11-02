@@ -17,7 +17,7 @@
 ## Existing STARFALL systems retained
 
 - Three-dimensional flight and quaternion orientation.
-- Existing ship classes, acceleration limits, HP, shields, weapons, projectile collision and damage.
+- Existing ship classes, acceleration limits, HP, shields, weapons, projectile collision and damage. Bosses use the same flight controller with separate tuning and boss-specific attack patterns.
 - Trading, equipment purchases, station interactions and SAVE 2.0.
 - The previous scripted APPROACH/ATTACK/LOOP/BREAK and ATTACK_RUN/FIRING_PASS/OVERSHOOT waypoint state machines have been removed from ordinary pirates and the opening fleet. Both now use one OCS pilot controller with component-wise proximity reaction, ATTACK/EVADE intent selection, deterministic lateral bias, incoming-projectile reaction, 15 Hz tactical decisions and per-frame inertial integration.
 - Mobile quality profiles, WebGL lifecycle handling and touch controls.
@@ -68,7 +68,7 @@ The Elite passport distinguishes facts supported by the annotated 128K listing f
 - Replaced the hand-authored pirate waypoint/state machines for ordinary E/E2 ships and the opening pirate squadron with one shared pilot intent selector.
 - The old `APPROACH/ATTACK/LOOP/BREAK` and `APPROACH/ATTACK_RUN/FIRING_PASS/OVERSHOOT/REPOSITION` movement scripts are removed from these NPC paths.
 - The pilot selects `ATTACK` or `EVADE` on the 15 Hz decision tick using local-axis component proximity and incoming-projectile checks. It chooses a target-directed or evasive vector; OCS steering and velocity/position integration continue every simulation frame.
-- Existing ship models, sockets, weapons, projectile collision, damage, effects, SAVE and boss-specific movement are retained.
+- Existing ship models, sockets, weapons, projectile collision, damage, effects and SAVE are retained. Boss-specific firing patterns and visual presentation remain, while boss flight also uses the shared OCS pilot with wider STARFALL proximity/re-engagement thresholds.
 - This is a structural adaptation of the verified Elite 128K decision/OCS/integration principles, not a bit-exact Z80 AI clone. The Elite passport does not establish STARFALL's numeric proximity thresholds, so these remain explicit STARFALL tuning values.
 - Regression tests now assert ATTACK/EVADE transitions, continuous heading changes, deterministic pilot intent and removal of legacy scripted states. Full browser CI acceptance is pending.
 
