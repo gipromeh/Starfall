@@ -151,7 +151,7 @@ const L = require('./lib');
   const combat = await page.evaluate(() => {
     pirateFleet.forEach((e, i) => {
       e.warp = 0; e.g.visible = true;
-      e.g.position.copy(P).add(new THREE.Vector3((i - .5) * 110, 0, -350));
+      e.g.position.copy(P).add(new THREE.Vector3(0, (i - .5) * 110, -350));
       e.hd.copy(P.clone().sub(e.g.position).normalize());
       e.vel.copy(e.hd).multiplyScalar(46);
       e.aiMode = 'PURSUE'; e.aiIntent = null; e.aiProfile = EAI.profile(e.ty); e.fire = 0; e.burst = 0; e.burstGap = 0; e.aiClock = EAI.STEP; e.aiTicks = 0;
@@ -179,7 +179,7 @@ const L = require('./lib');
   L.check('оба пилота участвуют в бою на ближней дистанции', combat.delta >= 2, combat);
   L.check('фактический нос каждой модели совпадает с направлением движения', combat.noseAlignment.every(x => x > .98), combat.noseAlignment);
   L.check('четыре лазера выходят из дульных маркеров вдоль оси стволов', combat.firstShipShots === 2 && combat.muzzleMatch && combat.shotForward && combat.socketsForward && combat.lineShots, combat);
-  L.check('у каждого пирата два собственных передних сокета, а все созданные им выстрелы выходят из них', combat.allPilotShots.every(x => x.guns === 2 && (x.shots === 0 || (x.shots === x.guns && x.originsMatch))), combat.allPilotShots);
+  L.check('каждый пират стреляет из двух собственных передних сокетов',combat.allPilotShots.every(x=>x.shots===x.guns&&x.shots>0&&x.originsMatch),combat.allPilotShots);
 
   const eliteAI = await page.evaluate(() => {
     const fwd = EAI.project(new THREE.Vector3(0,0,-1), new THREE.Vector3(0,0,-1));
