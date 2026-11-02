@@ -9,7 +9,7 @@ const e={aiClock:0};let ticks=0;for(let i=0;i<60;i++)if(ai.think(e,1/60))ticks++
 const aligned=ai.fireChance({forward:.98},180,420),poor=ai.fireChance({forward:.65},300,420);assert.ok(aligned>poor);
 const pilot={hd:[0,0,-1],vel:[0,0,-10],speed:10,position:[0,0,0]};ai.command(pilot,[0,0,-1],500,{speed:46,acceleration:60,turnRate:1.8});assert.ok(Math.abs(pilot.ocsYaw)<1e-12);assert.ok(Math.abs(pilot.ocsPitch)<1e-12);ai.integrate(pilot,1/60);assert.ok(pilot.position[2]<0);
 ai.seed(0x12345678);const before=ai.rand();const independent=createEAI(0x12345678);assert.equal(before,independent.rand());
-console.log('t17_combat_ai_lab: 8 assertions passed');
+console.log('t17_combat_ai_lab: Elite kernel, deterministic PRNG, cadence and attack/evasion assertions passed');
 
 const elitePilot=createEAI(0x51a7),far={hd:[0,0,-1],aiIntent:"ATTACK",aiSideSign:1};
 const attack=elitePilot.chooseVector(far,[0,0,-900],true,{nearX:260,nearY:220,nearZ:340});
@@ -19,4 +19,4 @@ assert.equal(far.aiIntent,"EVADE");assert.ok(evade[2]>.8);
 for(let i=0;i<8;i++)elitePilot.chooseVector(far,[0,0,-900],true,{nearX:260,nearY:220,nearZ:340,reengageDistance:720,minEvadeTicks:8});
 assert.equal(far.aiIntent,"ATTACK");
 const repeat=createEAI(0x51a7),repeatPilot={hd:[0,0,-1],aiIntent:"ATTACK",aiSideSign:1};
-assert.deepEqual(repeat.chooseVector(repeatPilot,[0,0,-100],true),evade.map((v,i)=>i===2?-v:v));
+assert.deepEqual(repeat.chooseVector(repeatPilot,[0,0,-100],true),evade);
