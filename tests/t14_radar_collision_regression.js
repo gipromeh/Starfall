@@ -26,7 +26,7 @@ const checks = [
  ['pirate fleet has only two initial attackers', html.includes('[0,1].forEach((ty,i)=>{const e={slot:i,ty,g:null,hp:0,mx:0,respawn:Infinity,dead:false,flames:[]};pirateFleet.push(e);pirateFleetSpawn(e,i*.18)});')],
  ['pirate fleet spawns ahead of the player', html.includes('addScaledVector(fw,(760+e.slot*90))')],
  ['pirate fleet does not respawn after destruction', html.includes('e.respawn=Infinity;e.hits=0;')],
- ['pirate fleet opens fire only inside 420 units', html.includes('const canFire=dist<420&&(fireAngle<.9||(dist<300&&fireAngle<1.35));')],
+ ['pirate fleet opens fire only inside 420 units', html.includes('const canFire=e.state==="ATTACK"&&dist<420&&(fireAngle<.9||(dist<300&&fireAngle<1.35));')],
  ['regular pirates use 380/420-unit firing ranges', html.includes('d<(e.ty===3?420:380)')],
  ['wave attacks wait until the opening fleet is cleared', html.includes('if(!E&&!pirateFleet.some(pe=>pe.g&&pe.hp>0&&!pe.dead)){if(enc>0){spawnT-=dt;')],
  ['additional E/E2 wave spawns also wait until the opening fleet is cleared', html.includes('if(!pirateFleet.some(pe=>pe.g&&pe.hp>0&&!pe.dead)&&E&&!E2&&!E.boss&&enc>0&&wave%5!==4){')],
