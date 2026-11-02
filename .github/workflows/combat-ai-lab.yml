@@ -1,0 +1,47 @@
+name: combat-ai-lab
+on:
+  push:
+    branches: [lab/elite-combat-ai]
+    paths:
+      - 'tools/combat-ai-lab/**'
+      - 'tests/t17_combat_ai_lab.mjs'
+      - '.github/workflows/combat-ai-lab.yml'
+  pull_request:
+    branches: [lab/elite-combat-ai]
+  workflow_dispatch:
+  schedule:
+    - cron: '23 2 * * *'
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: starfall-combat-ai-lab-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  kernel-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node tests/t17_combat_ai_lab.mjs
+  batch-simulation:
+    needs: kernel-regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run 1,200 deterministic combat trials
+        run: node tools/combat-ai-lab/run.mjs
+      - name: Upload simulation reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: starfall-combat-ai-lab-${{ github.run_number }}
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 30
