@@ -19,7 +19,7 @@
 - Three-dimensional flight and quaternion orientation.
 - Existing ship classes, acceleration limits, HP, shields, weapons, projectile collision and damage.
 - Trading, equipment purchases, station interactions and SAVE 2.0.
-- v89 opening pirate formation, firing ranges and attack-pass corrections; both ordinary E/E2 pirates and the opening fleet now share the OCS steering/integration controller.
+- The previous scripted APPROACH/ATTACK/LOOP/BREAK and ATTACK_RUN/FIRING_PASS/OVERSHOOT waypoint state machines have been removed from ordinary pirates and the opening fleet. Both now use one OCS pilot controller with component-wise proximity reaction, ATTACK/EVADE intent selection, deterministic lateral bias, incoming-projectile reaction, 15 Hz tactical decisions and per-frame inertial integration.
 - Mobile quality profiles, WebGL lifecycle handling and touch controls.
 
 ## Deliberately not copied literally
@@ -48,6 +48,10 @@ STARFALL uses Three.js world units and its existing simulation scale. The v90 AI
 ## Acceptance tests for the v90 AI layer
 
 - One tactical decision tick per four 60 Hz frames (15 Hz).
+- Ordinary pirates and opening squadron use only ATTACK/EVADE intent; no scripted attack-run waypoints or timed loops.
+- Component-wise proximity reaction switches to evasion; after separation and a minimum evasion interval the pilot can re-engage.
+- Incoming player projectiles can trigger evasion at the next tactical tick.
+- Heading changes remain rate-limited and translation remains inertial between decisions.
 - NPC position and velocity continue integrating between decision ticks.
 - Local right/up/forward projections are orthogonal for the canonical forward basis.
 - Equal PRNG seeds produce equal decision sequences.
@@ -58,6 +62,15 @@ STARFALL uses Three.js world units and its existing simulation scale. The v90 AI
 
 The Elite passport distinguishes facts supported by the annotated 128K listing from hypotheses and unknowns. STARFALL must preserve that distinction. In particular, physical conversions to m/s, exact player missile-lock geometry and exact player laser behavior must not be represented as recovered facts unless separately verified.
 
+
+## 2026-11-03 — Shared Elite-derived pilot behavior
+
+- Replaced the hand-authored pirate waypoint/state machines for ordinary E/E2 ships and the opening pirate squadron with one shared pilot intent selector.
+- The old `APPROACH/ATTACK/LOOP/BREAK` and `APPROACH/ATTACK_RUN/FIRING_PASS/OVERSHOOT/REPOSITION` movement scripts are removed from these NPC paths.
+- The pilot selects `ATTACK` or `EVADE` on the 15 Hz decision tick using local-axis component proximity and incoming-projectile checks. It chooses a target-directed or evasive vector; OCS steering and velocity/position integration continue every simulation frame.
+- Existing ship models, sockets, weapons, projectile collision, damage, effects, SAVE and boss-specific movement are retained.
+- This is a structural adaptation of the verified Elite 128K decision/OCS/integration principles, not a bit-exact Z80 AI clone. The Elite passport does not establish STARFALL's numeric proximity thresholds, so these remain explicit STARFALL tuning values.
+- Regression tests now assert ATTACK/EVADE transitions, continuous heading changes, deterministic pilot intent and removal of legacy scripted states. Full browser CI acceptance is pending.
 
 ## 2026-11-01 — Shared OCS controller work in progress
 
