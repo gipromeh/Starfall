@@ -70,12 +70,11 @@ Canonical record of durable gameplay, architecture, UI and workflow decisions. N
 - Keep main unchanged until all required CI checks for the PR are successful. Merge automatically after successful CI; no separate user approval is required.
 
 
-## 2026-11-02 — First-wave pirate detection and Elite-style radar
-- Problem observed in first wave: the Jackal approached without a visible radar contact; first-wave E/E2 spawn distance was outside the default 1 km scanner range and the radar suppressed contacts while `warp > 0`.
-- Decision: spawn the named first pair at 850 units ahead with a small symmetric lateral offset; show hostile radar contacts from entity creation, including warp-in.
-- Decision: use compact R/J labels and velocity-oriented triangular ship contacts while preserving the existing Elite Dangerous scanner contract: heading-relative circular plane, rotating sweep, altitude stalks, amber palette, 500 m / 1 km / 2 km ranges, and hostile edge indicators.
-- Scope: first-pair spawn, radar contact collection and glyphs, plus correction of E/E2 attack-pass lateral offsets. The old Jackal offset (185) exceeded the 0.25 rad firing cone and failed the OCS centered gate; the new offsets `[55,70,45,80]` allow a firing lane without changing speed or weapon balance.
-- Acceptance: browser test confirms both first-wave contacts are hostile and present during warp-in, labels are R/J, and both spawn within 830–880 units ahead of the player. CI and visual playtest pending.
+## 2026-11-02 — First-wave pirate detection and Elite-style radar (scope correction)
+- The opening intercept is `pirateFleet` (Golovoroz + Jackal); regular E/E2 appear after the opening squadron is cleared. The earlier note that the opening pair was E/E2 and needed a spawn at 850 was incorrect and is superseded.
+- Decision: preserve the fleet's 760/850 longitudinal spawn positions, widen its lateral formation to ±115, and display R/J hostile contacts from entity creation through warp-in.
+- Preserve the Elite Dangerous scanner contract: heading-relative circular plane, rotating sweep, altitude stalks, amber palette, 500 m / 1 km / 2 km ranges, velocity vectors and hostile edge indicators.
+- Actual opening attack geometry and its OCS fire-gate constraint are specified in the later 2026-11-02 anti-collision maneuver entry.
 
 
 ## 2026-11-02 — Jackal first-wave firing geometry
