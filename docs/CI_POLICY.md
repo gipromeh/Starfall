@@ -76,3 +76,13 @@ Workflow: `.github/workflows/game-tests.yml`.
 ## Deep Space v90
 
 `tests/t16_deep_space.js` проверяет каталоги сигналов/NPC, детерминированную генерацию, отсутствие начального спавна в переднем конусе, фазирование AI, маршруты, два исхода цепочек, SAVE v3 и UI сканера. WebKit job использует диагностический bridge; это не физический iPhone test.
+
+## Автоматический релиз
+
+- Pull Request в `main` — этап согласования изменений; публикация из PR запрещена.
+- После merge в `main` workflow `.github/workflows/game-tests.yml` повторно запускает полный набор quick/browser tests.
+- Job `release` зависит от успешного завершения `quick-checks`, `prepare-browser` и всех matrix jobs `browser-tests`; при любом failure/cancel публикация не выполняется.
+- Версия релиза берётся из `<meta name="starfall-version" content="vN">` в `STARFALL_CURRENT.html`. Создаётся GitHub Release с тегом этой версии; к релизу прикладываются HTML игры, паспорт и CHANGELOG.
+- Повторная публикация уже существующего GitHub Release с тем же тегом пропускается.
+- Чтобы PR не мог быть слит с красными проверками, владелец репозитория должен включить в Settings → Branches → Branch protection / Rulesets для `main` обязательные checks, перечисленные выше. Это административное ограничение не может быть включено текущими доступными GitHub API-действиями.
+- Автоматическая публикация подтверждает CI на GitHub Actions, но не заменяет ручной playtest на физическом iPhone и PC.
