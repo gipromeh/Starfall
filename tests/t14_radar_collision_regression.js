@@ -14,7 +14,7 @@ const checks = [
  ['opening Jackal and Rusty Skull have radar identifiers', html.includes('pe.ty===1?"J":"R"')],
  ['scanner contacts use Elite-style dots and vertical altitude stalks', html.includes('baseY=cy+(z/RADAR_RANGE)*ry')&&html.includes('baseY-(y/RADAR_RANGE)*RADAR_STALK')&&html.includes('rc.fillRect(Math.round(px)-1.5,Math.round(dotY)-1.5,3,3)')],
  ['radar uses Elite phosphor scanner palette', html.includes('#baffc0')&&html.includes('#020904')],
- ['Elite compass uses a hollow marker for a target behind and lights station safety S', html.includes('behind=radarPosition.z>0')&&html.includes('if(behind){rc.strokeStyle="#baffc0"')&&html.includes('if(stationDistance<420)')],
+ ['Elite compass uses a hollow marker for a target behind and lights station safety S', html.includes('behind=radarPosition.z>0')&&html.includes('directionLength=radarPosition.length()')&&html.includes('dy=-radarPosition.y/directionLength*k')&&html.includes('if(behind){rc.strokeStyle="#baffc0"')&&html.includes('if(stationDistance<420)')],
  ['radar places contact dot by altitude above/below scanner plane', html.includes('const dotY=Math.max(6,Math.min(RADAR_H-6,baseY-(y/RADAR_RANGE)*RADAR_STALK))')],
  ['radar clips the grid to the elliptical scanner plane', html.includes('rc.ellipse(cx,cy,rx-5,ry-4,0,0,Math.PI*2);rc.clip()')],
  ['game metadata is v90', html.includes('<meta name="starfall-version" content="v90">')],
