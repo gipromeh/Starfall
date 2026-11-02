@@ -820,3 +820,12 @@ PV (конец скрипта): ангар-превью, обёртка hgrView;
 - Added `tests/t17_combat_ai_lab.mjs` for kernel invariants and `.github/workflows/combat-ai-lab.yml` for automatic push and nightly runs.
 - Model boundary: this first iteration reuses the EAI mathematical kernel, but the combat harness uses an explicitly abstract hit-probability model. It does **not** yet execute the production Three.js projectile collision pipeline, full pirate state machine, squadron coordination, or production damage lifecycle. Results are useful for repeatability and exploratory parameter comparisons, not production balance acceptance.
 - No production gameplay code or SAVE data was changed. CI acceptance is pending until the GitHub Actions run completes successfully.
+
+
+## Production EAI parity validation — isolated combat lab (2026-11-02)
+
+- Added browser parity test `tests/t18_eai_parity.js`. It loads the unchanged production `STARFALL_CURRENT.html` in headless Chromium and compares the Node.js EAI port against the actual in-game `EAI` object.
+- Coverage: 32 deterministic vector/projection/command/integration cases, 32 seeded PRNG outputs, decision cadence phases, and 16 fire-gate cases.
+- GitHub Actions now runs this parity test before the 1,200-trial batch simulation.
+- This validates the extracted EAI math only. It does not validate the separate abstract projectile hit model or claim parity for production projectile collision, the full pirate FSM, squadron behavior, or damage lifecycle.
+- Production HTML remains unchanged.

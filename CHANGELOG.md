@@ -568,3 +568,11 @@ tags: [starfall, changelog]
 - GitHub Actions runs kernel regression tests and batch simulation on branch updates, plus a nightly run; JSON reports are uploaded as workflow artifacts.
 - The first test run exposed a signed-zero assertion issue in the test itself. The assertion is being corrected; no production code was touched.
 - The weapon hit model is currently an explicit abstraction, not production projectile collision. Do not use its win rates as a production balance verdict.
+
+
+## Combat AI lab — production kernel parity test (2026-11-02)
+
+- Added a headless Chromium parity test comparing the Node.js EAI port with the actual EAI object in unchanged production HTML.
+- 32 deterministic geometry/command/integration cases, PRNG sequence, decision cadence and fire-gate cases are checked.
+- Batch simulation now depends on passing production-kernel parity.
+- No production gameplay code changed.
