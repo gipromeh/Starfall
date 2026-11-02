@@ -1,0 +1,64 @@
+name: nightly-regression
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: starfall-nightly-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: 22
+  PLAYWRIGHT_VERSION: 1.56.1
+
+jobs:
+  source-contracts:
+    name: source-contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Check AI architecture and radar/collision source contracts
+        run: |
+          node tests/t12_ai_lab.js
+          node tests/t14_radar_collision_regression.js
+
+  extended-browser:
+    name: extended-browser
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Restore npm package cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: starfall-npm-${{ runner.os }}-node${{ env.NODE_VERSION }}-pw${{ env.PLAYWRIGHT_VERSION }}-three0.128.0-tsparticles2.12.0
+      - name: Restore Playwright Chromium
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: starfall-playwright-${{ runner.os }}-${{ env.PLAYWRIGHT_VERSION }}-chromium-v1
+      - name: Install pinned test dependencies
+        run: npm install --no-save --no-package-lock playwright@${{ env.PLAYWRIGHT_VERSION }} three@0.128.0 tsparticles@2.12.0
+      - name: Install Chromium
+        run: npx playwright install chromium
+      - name: Run extended performance and mobile probes
+        env:
+          SF_NM: ${{ github.workspace }}/node_modules
+        run: |
+          set -euo pipefail
+          node tests/t6_probe.js
+          node tests/t7_iphone.js
+          node tests/t8_nuke.js

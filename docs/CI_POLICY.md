@@ -1,78 +1,91 @@
 # STARFALL CI policy
 
-## Цель
+## Принципы
 
-CI — автоматический контроль качества перед попаданием изменений в `main`. Полный набор проверок должен выполняться на каждом Pull Request в `main` и на каждом push в `main`.
+CI должен быстро обнаруживать ошибки, способные сломать игру, не блокируя каждый Pull Request длительными диагностическими экспериментами.
 
-## Конвейер
+- **PR gate** — только проверки критичных пользовательских сценариев и поддерживаемых платформ.
+- **Nightly regression** — стресс-тесты, вспомогательные мобильные пробы и статические source-contract проверки.
+- **Manual device QA** — физические iPhone и PC; браузерная эмуляция не подменяет реальные устройства.
+
+## Обязательный PR pipeline
 
 Workflow: `.github/workflows/game-tests.yml`.
 
-1. **quick-checks** — быстрые проверки без запуска браузера:
-   - `node --check` для каждого встроенного JavaScript-блока `STARFALL_CURRENT.html` (извлечение HTMLParser, проверка синтаксиса Node.js);
-   - `tests/t12_ai_lab.js` — архитектурные регрессии AI Lab;
-   - `tests/t14_radar_collision_regression.js` — статические проверки радара, столкновений и боевой механики.
-2. **prepare-browser** — один раз устанавливает тестовые зависимости и прогревает общий npm/Chromium/WebKit cache.
-3. **browser-tests** — запускаются только после успешных `quick-checks` и `prepare-browser`; каждый сценарий выполняется в отдельной matrix job:
-   - `tests/t13_ai_lab_browser.js` — браузерный smoke test;
-   - `tests/t8_nuke.js` — производительность ядерного удара;
-   - `tests/t6_probe.js` — графические ресурсы и очистка объектов;
-   - `tests/t11_pirate_fleet.js` — регрессии пиратской эскадрильи, Elite-inspired AI tick (15 Гц), локальных проекций, PRNG и покадрового движения;
-   - `tests/t1_saves.js` — SAVE v3: покупки, reload, два слота, повреждение данных, миграция, резерв, localStorage недоступен;
-   - `tests/t5_leak.js` — регрессия утечек в бою и проверка профилей качества;
-   - `tests/t7_iphone.js` — мобильный профиль и геометрия сенсорных кнопок в Chromium;
-   - `tests/t15_iphone_webkit.js` — Playwright WebKit на macOS с iPhone UA/viewport/touch: WebGL, мобильные кнопки, pointer input и resize. Это WebKit emulation, не реальный iOS Safari.
-4. **passport-check** — отдельный workflow проверяет SHA паспорта и совместное обновление игры, паспорта и CHANGELOG.
+### 1. quick-checks
 
-## Кэширование
+- Извлечение встроенных JavaScript-блоков из `STARFALL_CURRENT.html` и проверка синтаксиса через `node --check`.
+- Проверка синтаксиса всех файлов `tests/*.js`.
+- Без запуска браузеров и установки Playwright.
 
-- npm cache: `~/.npm`, ключ привязан к ОС, Node.js и закреплённым версиям зависимостей.
-- Playwright browser cache: `~/.cache/ms-playwright`, ключ привязан к ОС и версии Playwright. Linux jobs используют общий Linux cache; `iphone-webkit` работает на macOS и устанавливает WebKit в свой macOS cache при cache miss. Linux system libraries WebKit устанавливаются только в Linux jobs.
-- Chromium и WebKit скачиваются только при cache miss. На cache hit повторная загрузка браузеров пропускается; Linux WebKit runtime dependencies устанавливаются только для Linux jobs. macOS runner использует системные библиотеки macOS.
-- Зависимости тестов закреплены точными версиями в workflow. Не обновлять их автоматически без отдельной проверки.
+### 2. browser-core (Ubuntu / Chromium)
 
-## Повторные запуски
+Зависимости и Chromium устанавливаются один раз на job. В одном окружении последовательно выполняются:
 
-- Новые коммиты отменяют устаревшие запуски той же ветки через workflow concurrency.
-- Browser tests изолированы по отдельным matrix jobs. Для исправления одного упавшего сценария использовать **Re-run failed jobs**, а не **Re-run all jobs**: успешно прошедшие matrix jobs не запускаются повторно.
-- Новый commit запускает полный набор заново: тесты должны подтверждать именно актуальный SHA, а не предыдущую ревизию.
-- Не отключать и не ослаблять упавший тест только ради зелёного статуса. Сначала установить причину и исправить дефект либо обоснованно актуализировать спецификацию и тест.
+| Тест | Что защищает |
+|---|---|
+| `t1_saves.js` | SAVE v3: запись, reload, миграция, резервные копии, повреждённые данные и недоступный localStorage |
+| `t5_leak.js` | Утечки геометрий, текстур, объектов и массивов эффектов; профили качества |
+| `t11_pirate_fleet.js` | Пиратский AI, ATTACK/EVADE, стрельба, урон, очистка и повторный вылет |
+| `t13_ai_lab_browser.js` | Реальное выполнение AI Lab в Chromium: движение, оружие и рендеринг |
+| `t16_deep_space.js` | Генерация секторов, NPC, цепочки сигналов, AI scheduler, сохранение и UI сканера |\n| `t17_radar_collision_runtime.js` | Реальное поведение радара, фильтрация вражеских ракет, разделение пересекающихся кораблей и нейтрального трафика |
 
-## Gate перед слиянием в main
+### 3. iphone-webkit (macOS / Playwright WebKit)
 
-Для каждого PR в `main` должны завершиться успешно:
+- Проверка инициализации WebGL.
+- Touch-профиль и DPR.
+- Мобильные кнопки и минимальная зона нажатия 44×44 CSS px.
+- Pointer input, прицеливание и resize/orientation.
+- Отсутствие JavaScript runtime errors.
 
-- `passport-check / check`;
-- `game-tests / quick-checks`;
-- `game-tests / prepare-browser`;
-- `game-tests / browser-tests (ai-lab-browser)`;
-- `game-tests / browser-tests (nuclear-performance)`;
-- `game-tests / browser-tests (graphics-probe)`;
-- `game-tests / browser-tests (pirate-fleet)`;
-- `game-tests / browser-tests (saves-regression)`;
-- `game-tests / browser-tests (performance-leak)`;
-- `game-tests / browser-tests (iphone-chromium)`;
-- `game-tests / browser-tests (iphone-webkit)`.
+Это WebKit с iPhone UA/viewport/touch-эмуляцией, а не реальный iOS Safari.
 
-`ci-metrics` — диагностическая job; она не заменяет тесты и не должна быть обязательным gate.
+## Nightly regression
 
-**Важно:** запуск полного набора на PR настроен в workflow. Запрет ручного слияния при красных проверках дополнительно обеспечивается GitHub Ruleset / branch protection для `main`. В настройках репозитория необходимо включить Require status checks to pass before merging и добавить перечисленные выше checks. Текущая GitHub-интеграция позволяет обновлять файлы и запускать workflow, но не предоставляет API-действия для изменения branch protection; поэтому этот административный переключатель нужно включить в GitHub Settings вручную.
+Workflow: `.github/workflows/nightly-regression.yml`.
 
-## Статистика
+Запуск ежедневно в 03:17 UTC и вручную через `workflow_dispatch`.
 
-После каждого запуска `ci-metrics` публикует:
+| Тест | Назначение |
+|---|---|
+| `t12_ai_lab.js` | Статические архитектурные контракты AI Lab |
+| `t14_radar_collision_regression.js` | Статические source-contract проверки радара, типов снарядов и столкновений |
+| `t6_probe.js` | Расширенная проверка графических ресурсов и очистки |
+| `t7_iphone.js` | Дополнительная мобильная проба в Chromium; не является проверкой Safari |
+| `t8_nuke.js` | Измерение CPU/frame-time при ядерном ударе и каскадном уничтожении |
 
-- сводку времени по job и каждому шагу в GitHub Actions Job Summary;
-- статус job и список упавших шагов;
-- машинно-читаемый `ci-metrics.json` как artifact с хранением 90 дней.
+Статические проверки намеренно не являются merge gate: они проверяют детали реализации и могут требовать обновления при рефакторинге. Радар и столкновения дополнительно защищены runtime-сценарием `t17_radar_collision_runtime.js`.
 
-Сравнивать длительности следует по одинаковым типам runner и с учётом cache hit/miss. Время job — это runner time; суммарное время jobs может превышать календарную длительность workflow из-за параллельного выполнения.
+## Зависимости и кэш
+
+- Node.js: 22.
+- Playwright: 1.56.1.
+- Three.js: 0.128.0.
+- tsParticles: 2.12.0.
+- npm cache и браузерные бинарники кэшируются отдельно для ОС и версии Playwright.
+- Репозиторий не использует package manifest для тестового окружения; версии зависимостей закреплены непосредственно в workflow.
+
+Каждый Chromium/WebKit job устанавливает зависимости один раз. Отдельный prepare job удалён: он не передавал `node_modules` следующим jobs и повторял установку без реальной пользы.
+
+## Повторные запуски и диагностика
+
+- Новые коммиты отменяют устаревшие запуски той же ветки.
+- При падении job сначала анализируется конкретный failed step и его лог.
+- Повторять следует только failed jobs, если код не менялся.
+- Новый commit запускает проверки заново на новом SHA.
+- Нельзя отключать упавший тест только ради зелёного статуса; сначала устанавливается причина.
+
+## Release gate
+
+Релизный workflow публикует артефакты только после успешного `game-tests` на `main`. Отдельный `passport-check` проверяет целостность паспорта. Требуемые checks должны быть включены в branch protection/ruleset для `main`.
 
 ## Ручные проверки
 
-Зелёный CI подтверждает автоматические сценарии на Ubuntu/Chromium и macOS/Playwright WebKit. macOS WebKit ближе к Safari, чем Linux WebKit, но не является брендированным Safari и не воспроизводит iOS GPU-драйвер, энергосбережение, системные ограничения памяти и поведение вкладки при блокировке экрана. Он не заменяет проверку реального iPhone, GPU/FPS, нагрева, длительной сессии и сохранения после выгрузки приложения.
+Перед значимым релизом остаются обязательными ручные проверки на физическом iPhone и PC:
 
+- реальный Safari/iOS, touch, ориентация и поведение при сворачивании;
+- FPS, нагрев, расход памяти и длительная игровая сессия;
+- GPU/драйверы и производительность на целевых desktop-конфигурациях;
+- сохранение после выгрузки и повторного запуска приложения.
 
-## Deep Space v90
-
-`tests/t16_deep_space.js` проверяет каталоги сигналов/NPC, детерминированную генерацию, отсутствие начального спавна в переднем конусе, фазирование AI, маршруты, два исхода цепочек, SAVE v3 и UI сканера. WebKit job использует диагностический bridge; это не физический iPhone test.
+Зелёный CI подтверждает только автоматизированные сценарии и не является доказательством прохождения этих ручных проверок.

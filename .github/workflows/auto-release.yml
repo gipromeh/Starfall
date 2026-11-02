@@ -1,0 +1,54 @@
+name: auto-release
+
+on:
+  workflow_run:
+    workflows: ["game-tests"]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: publish-release
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout the exact tested main commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Read game version
+        id: version
+        shell: bash
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import re
+          from pathlib import Path
+
+          html = Path("STARFALL_CURRENT.html").read_text(encoding="utf-8")
+          match = re.search(r'<meta[ ]+name="starfall-version"[ ]+content="(v[0-9]+)"', html)
+          if not match:
+              raise SystemExit("Missing or invalid starfall-version metadata")
+          print("version=" + match.group(1))
+          PY
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          if gh release view "$VERSION" >/dev/null 2>&1; then
+            echo "Release $VERSION already exists; skipping duplicate publication."
+            exit 0
+          fi
+
+          gh release create "$VERSION" \
+            STARFALL_CURRENT.html \
+            STARFALL_PASSPORT.md \
+            CHANGELOG.md \
+            --title "STARFALL $VERSION" \
+            --generate-notes
