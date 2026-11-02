@@ -82,3 +82,5 @@ References:
 - https://elite.bbcelite.com/deep_dives/the_3d_scanner.html
 - https://viva-games.ru/game/elite?setlang=es
 - https://www.thirdharmoniser.com/elite.html
+
+- Compass mapping: normalize the full local direction; project X and Y onto the compass disc; encode front/behind using the sign of local Z (filled ahead, hollow behind).
