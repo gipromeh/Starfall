@@ -1959,9 +1959,9 @@ function radar(){
     rc.beginPath();rc.moveTo(px,py);rc.lineTo(px,markerY);rc.strokeStyle=q.color;rc.globalAlpha=.92;rc.lineWidth=1.35;rc.stroke();rc.globalAlpha=1;
     rc.beginPath();rc.arc(px,py,1.8,0,Math.PI*2);rc.fillStyle=q.color;rc.fill();
    }
-   if(q.velocity){radarVelocity.copy(q.velocity).applyQuaternion(iq);const vl=Math.hypot(radarVelocity.x,radarVelocity.z);if(vl>2){rc.beginPath();rc.moveTo(px,markerY);rc.lineTo(px+radarVelocity.x/vl*8,markerY-radarVelocity.z/vl*8);rc.strokeStyle=q.color;rc.lineWidth=1.2;rc.globalAlpha=.75;rc.stroke();rc.globalAlpha=1}}
+   let heading=0;if(q.velocity){radarVelocity.copy(q.velocity).applyQuaternion(iq);const vl=Math.hypot(radarVelocity.x,radarVelocity.z);if(vl>2){heading=Math.atan2(radarVelocity.x,-radarVelocity.z);rc.beginPath();rc.moveTo(px,markerY);rc.lineTo(px+radarVelocity.x/vl*8,markerY-radarVelocity.z/vl*8);rc.strokeStyle=q.color;rc.lineWidth=1.2;rc.globalAlpha=.75;rc.stroke();rc.globalAlpha=1}}
    rc.save();rc.translate(px,markerY);rc.fillStyle=q.color;
-   if(q.kind==="enemy"||q.kind==="boss"){if(q.kind==="boss"||q.ty===1){rc.rotate(Math.PI/4);rc.fillRect(-q.radius*.72,-q.radius*.72,q.radius*1.44,q.radius*1.44)}else if(q.ty===2)rc.fillRect(-q.radius,-q.radius,q.radius*2,q.radius*2);else if(q.ty===3){rc.beginPath();rc.moveTo(0,-q.radius*1.25);rc.lineTo(q.radius,q.radius);rc.lineTo(-q.radius,q.radius);rc.closePath();rc.fill()}else{rc.beginPath();rc.arc(0,0,q.radius,0,Math.PI*2);rc.fill()}}
+   if(q.kind==="enemy"||q.kind==="boss"){rc.rotate(heading);rc.beginPath();rc.moveTo(0,-q.radius*1.45);rc.lineTo(q.radius*.95,q.radius);rc.lineTo(0,q.radius*.48);rc.lineTo(-q.radius*.95,q.radius);rc.closePath();rc.fill();if(q.kind==="boss"){rc.strokeStyle="#fff";rc.lineWidth=1;rc.stroke()}}
    else if(q.kind==="station"){rc.rotate(Math.PI/4);rc.fillRect(-q.radius,-q.radius,q.radius*2,q.radius*2)}
    else if(q.kind==="missile"){rc.beginPath();rc.moveTo(0,-q.radius);rc.lineTo(q.radius,q.radius);rc.lineTo(-q.radius,q.radius);rc.closePath();rc.fill()}
    else{rc.beginPath();rc.arc(0,0,q.radius,0,Math.PI*2);rc.fill()}
