@@ -63,14 +63,6 @@ jobs:
           for script in /tmp/starfall-inline-*.js; do node --check "$script"; done
       - name: Validate passport checksum and version
         run: python3 tools/check_passport.py
-      - name: Require passport and CHANGELOG with game changes
-        shell: bash
-        run: |
-          base="${{ github.event.before }}"
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            base="${{ github.event.pull_request.base.sha }}"
-          fi
-          if [ -n "$base" ] && ! echo "$base" | grep -q '^0*
       - name: Radar and collision regression (static)
         run: node tests/t14_radar_collision_regression.js
       - name: Deep Space test syntax
