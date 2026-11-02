@@ -12,7 +12,7 @@ function response(body, status, origin, allowedOrigin) {
     headers.set("access-control-allow-headers", "Content-Type");
     headers.set("access-control-max-age", "86400");
   }
-  return new Response(JSON.stringify(body), { status, headers });
+  return new Response(status === 204 ? null : JSON.stringify(body), { status, headers });
 }
 function encodeBase64(value) {
   const bytes = new TextEncoder().encode(value);
