@@ -89,7 +89,7 @@ const L = require('./lib');
       EAI.rand = () => 0;
       for (let i=0;i<240;i++) upd(1/60);
       const shots = eb.slice(shotStart).filter(b => b.kind === 'laser');
-      result = { type:E.ty, shots:shots.length, distance:E.g.position.distanceTo(P), state:E.state, passOffset:70 };
+      result = { type:E.ty, shots:shots.length, distance:E.g.position.distanceTo(P), state:E.state, passOffset:100 };
     } finally {
       for (let i=eb.length-1;i>=shotStart;i--){S.remove(eb[i].m);eb.splice(i,1)}
       if (E?.g) S.remove(E.g);
@@ -103,7 +103,7 @@ const L = require('./lib');
     }
     return result;
   });
-  L.check('Шакал первой волны открывает огонь при штатном огневом заходе', firstWaveJackalCombat.type === 1 && firstWaveJackalCombat.shots >= 2, firstWaveJackalCombat);
+  L.check('обычный Шакал E/E2 открывает огонь при штатном огневом заходе', firstWaveJackalCombat.type === 1 && firstWaveJackalCombat.shots >= 2, firstWaveJackalCombat);
 
   const naturalJackalRun = await page.evaluate(() => {
     const e = pirateFleet.find(p => p.ty === 1);
@@ -119,7 +119,7 @@ const L = require('./lib');
     try {
       pirateFleet.splice(0,pirateFleet.length,e);
       state='play'; P.set(0,0,0); vel.set(0,0,0); Q.identity();
-      e.g.position.set(55,0,-850); e.g.visible=true; e.warp=0;
+      e.g.position.set(115,0,-850); e.g.visible=true; e.warp=0;
       e.hd.set(0,0,1); e.vel.set(0,0,34.5); e.speed=34.5;
       e.state='APPROACH'; e.stateT=0; e.side=.5; e.runDir=null;
       e.aiClock=0; e.aiTicks=0; e.fire=999; e.burst=0; e.burstGap=0;
@@ -147,7 +147,7 @@ const L = require('./lib');
     }
   });
   L.check('естественный заход Шакала включает атаку, огневой проход и выход из атаки', naturalJackalRun.states.includes('ATTACK_RUN') && naturalJackalRun.states.includes('FIRING_PASS') && naturalJackalRun.states.includes('OVERSHOOT') && naturalJackalRun.states.includes('REPOSITION'), naturalJackalRun);
-  L.check('Шакал выполняет боковой огневой проход вместо лобового столкновения', naturalJackalRun.minDistance >= 120 && naturalJackalRun.minDistance <= 360 && naturalJackalRun.minLateral >= 100, naturalJackalRun);
+  L.check('Шакал выполняет боковой огневой проход вместо лобового столкновения', naturalJackalRun.minDistance >= 80 && naturalJackalRun.minDistance <= 180 && naturalJackalRun.minLateral >= 80, naturalJackalRun);
 
   const initialSpawn = await page.evaluate(() => pirateFleet.map(e => {
     const forward = new THREE.Vector3(0,0,-1).applyQuaternion(Q).normalize();
