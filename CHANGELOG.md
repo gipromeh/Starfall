@@ -559,3 +559,12 @@ tags: [starfall, changelog]
 - Добавлена фиолетовая атмосферная оболочка; вращение и положение обновляются существующим циклом орбит.
 - Существующие планеты, управление, боевой цикл и формат сохранений не менялись.
 - Визуальный запуск в браузере после публикации требуется проверить.
+
+
+## Headless Combat AI Lab (2026-11-02, isolated branch)
+
+- Added the first autonomous Node.js combat batch harness on `lab/elite-combat-ai`.
+- The harness ports the v90 Elite-derived EAI kernel and schedules 1,200 deterministic 1v1 trials across interceptor/heavy/agile parameter profiles.
+- GitHub Actions runs kernel regression tests and batch simulation on branch updates, plus a nightly run; JSON reports are uploaded as workflow artifacts.
+- The first test run exposed a signed-zero assertion issue in the test itself. The assertion is being corrected; no production code was touched.
+- The weapon hit model is currently an explicit abstraction, not production projectile collision. Do not use its win rates as a production balance verdict.

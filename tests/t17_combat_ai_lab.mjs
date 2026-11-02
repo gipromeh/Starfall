@@ -7,6 +7,6 @@ const o=ai.projectOCS(forward,forward);assert.ok(Math.abs(o.d+.5)<1e-9&&Math.abs
 ai.seed(0x12345678);const a=Array.from({length:8},()=>ai.rand());ai.seed(0x12345678);const b=Array.from({length:8},()=>ai.rand());assert.deepEqual(a,b);
 const e={aiClock:0};let ticks=0;for(let i=0;i<60;i++)if(ai.think(e,1/60))ticks++;assert.equal(ticks,15);
 const aligned=ai.fireChance({forward:.98},180,420),poor=ai.fireChance({forward:.65},300,420);assert.ok(aligned>poor);
-const pilot={hd:[0,0,-1],vel:[0,0,-10],speed:10,position:[0,0,0]};ai.command(pilot,[0,0,-1],500,{speed:46,acceleration:60,turnRate:1.8});assert.equal(pilot.ocsYaw,0);assert.equal(pilot.ocsPitch,0);ai.integrate(pilot,1/60);assert.ok(pilot.position[2]<0);
-const before=ai.rand();const independent=createEAI(0x12345678);assert.equal(before,independent.rand());
+const pilot={hd:[0,0,-1],vel:[0,0,-10],speed:10,position:[0,0,0]};ai.command(pilot,[0,0,-1],500,{speed:46,acceleration:60,turnRate:1.8});assert.ok(Math.abs(pilot.ocsYaw)<1e-12);assert.ok(Math.abs(pilot.ocsPitch)<1e-12);ai.integrate(pilot,1/60);assert.ok(pilot.position[2]<0);
+ai.seed(0x12345678);const before=ai.rand();const independent=createEAI(0x12345678);assert.equal(before,independent.rand());
 console.log('t17_combat_ai_lab: 8 assertions passed');

@@ -810,3 +810,13 @@ PV (конец скрипта): ангар-превью, обёртка hgrView;
 - The WebKit test harness fulfils the optional Google Fonts stylesheet with empty CSS (the game has local font fallbacks), then waits for `DOMContentLoaded` before checking the inline game API (`SV`, `state`). Linux WebKit did not reach `DOMContentLoaded` while initializing the game's WebGL renderer; the WebKit matrix job now runs on macOS, the closer Playwright platform for Safari-like testing.
 - These are test-harness and runner corrections, not changes to gameplay or SAVE semantics. Linux WebKit run #353 and the subsequent Linux retry are retained as failure evidence; a fresh macOS WebKit run is required.
 - WebKit coverage remains Playwright macOS WebKit emulation, not branded Safari or a physical iPhone/iOS Safari test.
+
+
+## Headless Combat AI Lab — isolated branch (2026-11-02)
+
+- Branch: `lab/elite-combat-ai`; production branch `main` and `STARFALL_CURRENT.html` are unchanged.
+- Added `tools/combat-ai-lab/elite-eai.mjs`: Node.js port of the v90 EAI tactical kernel (15 Hz decision tick, OCS projections, discrete steering commands, per-frame integration, seeded xorshift32, fire chance and fire gates).
+- Added `tools/combat-ai-lab/run.mjs`: deterministic batch runner for 1,200 seeded 1v1 trials across three pilot parameter profiles; writes machine-readable JSON reports.
+- Added `tests/t17_combat_ai_lab.mjs` for kernel invariants and `.github/workflows/combat-ai-lab.yml` for automatic push and nightly runs.
+- Model boundary: this first iteration reuses the EAI mathematical kernel, but the combat harness uses an explicitly abstract hit-probability model. It does **not** yet execute the production Three.js projectile collision pipeline, full pirate state machine, squadron coordination, or production damage lifecycle. Results are useful for repeatability and exploratory parameter comparisons, not production balance acceptance.
+- No production gameplay code or SAVE data was changed. CI acceptance is pending until the GitHub Actions run completes successfully.
