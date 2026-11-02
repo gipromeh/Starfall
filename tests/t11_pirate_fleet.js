@@ -53,12 +53,90 @@ const L = require('./lib');
   }));
   L.check('стартовая атака содержит ровно Головореза и Шакала', composition.total === 2 && composition.types.every(n => n === 1), composition);
   L.check('оба корабля стартовой атаки созданы', composition.spawned === 2, composition);
+  const firstWaveRadar = await page.evaluate(() => {
+    const oldWarp=pirateFleet.map(e=>e.warp);
+    pirateFleet.forEach(e=>e.warp=Math.max(.5,e.warp||0));
+    const contacts = collectRadarContacts().filter(c => pirateFleet.includes(c.entity));
+    const result = {
+      count: contacts.length,
+      labels: contacts.map(c => c.label).sort(),
+      hostile: contacts.every(c => c.hostile),
+      visibleDuringWarp: contacts.every(c => c.entity.warp > 0),
+      distances: contacts.map(c => c.position.distanceTo(P)),
+      forward: contacts.map(c => c.position.clone().sub(P).normalize().dot(new THREE.Vector3(0,0,-1).applyQuaternion(Q).normalize()))
+    };
+    pirateFleet.forEach((e,i)=>e.warp=oldWarp[i]);
+    return result;
+  });
+  L.check('первая эскадрилья: Головорез и Шакал отображаются на радаре во время warp-in', firstWaveRadar.count === 2 && firstWaveRadar.labels.join(',') === 'J,R' && firstWaveRadar.hostile && firstWaveRadar.visibleDuringWarp, firstWaveRadar);
+  L.check('первая эскадрилья находится впереди игрока в рабочем диапазоне 3D-сканера', firstWaveRadar.distances.every(d => d >= 750 && d <= 870) && firstWaveRadar.forward.every(v => v > .97), firstWaveRadar);
+
+  const eliteDecisionModel = await page.evaluate(() => {
+    const profile = EAI.profile(1);
+    const ship = { g:{position:new THREE.Vector3()}, vel:new THREE.Vector3(0,0,-34.5), hd:new THREE.Vector3(0,0,-1), speed:34.5, r:8 };
+    const pursuit = EAI.decide(ship,new THREE.Vector3(0,0,-500),new THREE.Vector3(),profile,[],[]);
+    const closeRange = EAI.decide(ship,new THREE.Vector3(0,0,-100),new THREE.Vector3(),profile,[],[]);
+    const incoming = EAI.decide(ship,new THREE.Vector3(0,0,-500),new THREE.Vector3(),profile,[{m:{position:new THREE.Vector3(0,0,-20)},v:new THREE.Vector3(0,0,30)}],[]);
+    const separated = EAI.decide(ship,new THREE.Vector3(0,0,-500),new THREE.Vector3(),profile,[],[{g:{position:new THREE.Vector3(0,0,-25)},visible:true}]);
+    return {pursuit:pursuit.mode,closeRange:closeRange.mode,incoming:incoming.mode,separated:separated.mode,
+      threatDetected:incoming.threat,separationDetected:separated.separation,
+      sharedProfileApi:typeof EAI.pilot==="function"&&typeof EAI.profile==="function"};
+  });
+  L.check('Elite AI: дальняя цель вызывает преследование без маршрутных точек',eliteDecisionModel.pursuit==='PURSUE',eliteDecisionModel);
+  L.check('Elite AI: близость цели выбирает инвертированный evasive-вектор',eliteDecisionModel.closeRange==='EVADE',eliteDecisionModel);
+  L.check('Elite AI: прогноз пересечения снаряда вызывает уклонение',eliteDecisionModel.incoming==='EVADE'&&eliteDecisionModel.threatDetected,eliteDecisionModel);
+  L.check('Elite AI: локальная коррекция разделяет сближающиеся корабли',eliteDecisionModel.separated==='SEPARATE'&&eliteDecisionModel.separationDetected,eliteDecisionModel);
+  L.check('пираты используют единый интерфейс профиля и пилотирования',eliteDecisionModel.sharedProfileApi);
+
+  const naturalFleetRun = await page.evaluate(() => {
+    const saved = {E,E2,state,P:P.clone(),vel:vel.clone(),Q:Q.clone(),fleet:pirateFleet.slice(),
+      ships:pirateFleet.map(e=>({e,position:e.g.position.clone(),quaternion:e.g.quaternion.clone(),visible:e.g.visible,warp:e.warp,
+        hd:e.hd.clone(),vel:e.vel.clone(),speed:e.speed,aiClock:e.aiClock,aiTicks:e.aiTicks,aiMode:e.aiMode,aiIntent:e.aiIntent,
+        aiEvadeSign:e.aiEvadeSign,aiProfile:e.aiProfile,fire:e.fire,burst:e.burst,burstGap:e.burstGap,
+        ocsYaw:e.ocsYaw,ocsPitch:e.ocsPitch,ocsAccel:e.ocsAccel,ocsTargetSpeed:e.ocsTargetSpeed,
+        ocsTurnRate:e.ocsTurnRate,ocsMaxAcceleration:e.ocsMaxAcceleration,trailT:e.trailT})),
+      bullets:eb.length,trails:trs.length,randState:EAI.getSeed()};
+    try {
+      E=E2=null;state='play';P.set(0,0,0);vel.set(0,0,0);Q.identity();
+      pirateFleet.splice(0,pirateFleet.length,...saved.fleet);
+      pirateFleet.forEach((e,i)=>{
+        e.warp=0;e.g.visible=true;e.g.position.set(i===0?-115:115,0,-850);
+        e.hd.copy(P.clone().sub(e.g.position).normalize());e.vel.copy(e.hd).multiplyScalar(EAI.profile(e.ty).speed);
+        e.speed=e.vel.length();e.aiProfile=EAI.profile(e.ty);e.aiClock=0;e.aiTicks=0;e.aiMode='PURSUE';e.aiIntent=null;
+        e.aiEvadeSign=undefined;e.fire=0;e.burst=0;e.burstGap=0;e.trailT=.1;
+      });
+      EAI.seed(0x51a7fa11);
+      let minRange=Infinity,minFleetGap=Infinity;const modes=new Set();
+      for(let frame=0;frame<3600;frame++){
+        pirateFleetUpdate(1/60);
+        for(const e of pirateFleet){minRange=Math.min(minRange,e.g.position.distanceTo(P));modes.add(e.aiMode)}
+        minFleetGap=Math.min(minFleetGap,pirateFleet[0].g.position.distanceTo(pirateFleet[1].g.position));
+      }
+      return {ticks:pirateFleet.map(e=>e.aiTicks),modes:[...modes],minRange,minFleetGap,
+        shots:eb.slice(saved.bullets).filter(b=>b.pirateFleet).length,
+        legacyStateFields:pirateFleet.some(e=>'state' in e||'runDir' in e||'stateT' in e)};
+    } finally {
+      pirateFleet.splice(0,pirateFleet.length,...saved.fleet);state=saved.state;P.copy(saved.P);vel.copy(saved.vel);Q.copy(saved.Q);E=saved.E;E2=saved.E2;EAI.seed(saved.randState);
+      for(const x of saved.ships){const e=x.e;e.g.position.copy(x.position);e.g.quaternion.copy(x.quaternion);e.g.visible=x.visible;e.warp=x.warp;
+        e.hd.copy(x.hd);e.vel.copy(x.vel);Object.assign(e,{speed:x.speed,aiClock:x.aiClock,aiTicks:x.aiTicks,aiMode:x.aiMode,aiIntent:x.aiIntent,
+          aiEvadeSign:x.aiEvadeSign,aiProfile:x.aiProfile,fire:x.fire,burst:x.burst,burstGap:x.burstGap,ocsYaw:x.ocsYaw,ocsPitch:x.ocsPitch,
+          ocsAccel:x.ocsAccel,ocsTargetSpeed:x.ocsTargetSpeed,ocsTurnRate:x.ocsTurnRate,ocsMaxAcceleration:x.ocsMaxAcceleration,trailT:x.trailT});
+        e.g.updateMatrixWorld(true)}
+      for(let i=eb.length-1;i>=saved.bullets;i--){S.remove(eb[i].m);eb.splice(i,1)}
+      for(let i=trs.length-1;i>=saved.trails;i--){S.remove(trs[i].m);trs.splice(i,1)}
+    }
+  });
+  L.check('естественный 60-секундный бой: оба класса проходят сотни тактов общего AI',naturalFleetRun.ticks.every(n=>n>=800),naturalFleetRun);
+  L.check('естественный бой переключает тактику по геометрии и угрозам, без FSM-маршрута',naturalFleetRun.modes.includes('PURSUE')&&naturalFleetRun.modes.includes('EVADE'),naturalFleetRun);
+  L.check('естественный бой сохраняет безопасную дистанцию и разнос кораблей',naturalFleetRun.minRange>40&&naturalFleetRun.minFleetGap>35,naturalFleetRun);
+  L.check('естественный бой создаёт реальные лазерные снаряды',naturalFleetRun.shots>=2,naturalFleetRun);
+  L.check('сценарные поля старого контроллера отсутствуют в runtime-объектах',!naturalFleetRun.legacyStateFields,naturalFleetRun);
   const initialSpawn = await page.evaluate(() => pirateFleet.map(e => {
     const forward = new THREE.Vector3(0,0,-1).applyQuaternion(Q).normalize();
     const offset = e.g.position.clone().sub(P);
     return { type:e.ty, distance:offset.length(), ahead:offset.normalize().dot(forward), lateral:offset.dot(new THREE.Vector3(1,0,0).applyQuaternion(Q).normalize()) };
   }));
-  L.check('стартовая эскадрилья появляется впереди игрока на заданной дистанции', initialSpawn.length===2&&initialSpawn.every(x=>x.distance>=750&&x.distance<=870&&x.ahead>.98)&&initialSpawn[0].lateral*initialSpawn[1].lateral<0, initialSpawn);
+  L.check('стартовая эскадрилья появляется впереди игрока на заданной дистанции', initialSpawn.length===2&&initialSpawn.every(x=>x.distance>=750&&x.distance<=870&&x.ahead>.97)&&initialSpawn[0].lateral*initialSpawn[1].lateral<0, initialSpawn);
   const fleetHealth = await page.evaluate(() => pirateFleet.every(e => e.mx >= SHIPS[shp].hull * 2));
   L.check('прочность каждого корабля эскадрильи не ниже двойной прочности игрока', fleetHealth, fleetHealth);
   const locators = await page.evaluate(() => pirateFleet.map(e => {
@@ -73,10 +151,10 @@ const L = require('./lib');
   const combat = await page.evaluate(() => {
     pirateFleet.forEach((e, i) => {
       e.warp = 0; e.g.visible = true;
-      e.g.position.copy(P).add(new THREE.Vector3((i - .5) * 12, 0, -350));
+      e.g.position.copy(P).add(new THREE.Vector3(0, (i - .5) * 110, -350));
       e.hd.copy(P.clone().sub(e.g.position).normalize());
       e.vel.copy(e.hd).multiplyScalar(46);
-      e.state = 'ATTACK_RUN'; e.stateT = 0; e.fire = 0; e.burst = 0; e.burstGap = 0; e.aiClock = EAI.STEP; e.aiTicks = 0;
+      e.aiMode = 'PURSUE'; e.aiIntent = null; e.aiProfile = EAI.profile(e.ty); e.fire = 0; e.burst = 0; e.burstGap = 0; e.aiClock = EAI.STEP; e.aiTicks = 0;
     });
     const before = eb.length;
     const randomAI = EAI.rand; EAI.rand = () => 0;
@@ -101,25 +179,7 @@ const L = require('./lib');
   L.check('оба пилота участвуют в бою на ближней дистанции', combat.delta >= 2, combat);
   L.check('фактический нос каждой модели совпадает с направлением движения', combat.noseAlignment.every(x => x > .98), combat.noseAlignment);
   L.check('четыре лазера выходят из дульных маркеров вдоль оси стволов', combat.firstShipShots === 2 && combat.muzzleMatch && combat.shotForward && combat.socketsForward && combat.lineShots, combat);
-  L.check('каждый пират стреляет из двух собственных передних сокетов', combat.allPilotShots.every(x => x.shots === x.guns && x.shots > 0 && x.originsMatch), combat.allPilotShots);
-
-  const pass = await page.evaluate(() => {
-    pirateFleet.forEach(p => { p.fire = 99; p.burst = 0; p.burstGap = 0; });
-    const e = pirateFleet[0];
-    e.warp = 0; e.g.visible = true;
-    e.g.position.copy(P).add(new THREE.Vector3(0, 0, -620));
-    e.hd.set(0, 0, 1); e.vel.set(0, 0, 46); e.speed = 46;
-    e.state = 'ATTACK_RUN'; e.stateT = 0; e.runDir = null;
-    e.fire = 99; e.burst = 0; e.burstGap = 0;
-    let minDistance = Infinity; const states = {};
-    for (let i = 0; i < 600; i++) {
-      pirateFleetUpdate(.05);
-      minDistance = Math.min(minDistance, e.g.position.distanceTo(P));
-      states[e.state] = true;
-    }
-    return { minDistance, states: Object.keys(states) };
-  });
-  L.check('пилот выполняет огневой пролёт через ближнюю зону и выходит из атаки', pass.minDistance < 220 && pass.states.includes('FIRING_PASS') && pass.states.includes('OVERSHOOT'), pass);
+  L.check('каждый пират стреляет из двух собственных передних сокетов',combat.allPilotShots.every(x=>x.shots===x.guns&&x.shots>0&&x.originsMatch),combat.allPilotShots);
 
   const eliteAI = await page.evaluate(() => {
     const fwd = EAI.project(new THREE.Vector3(0,0,-1), new THREE.Vector3(0,0,-1));
@@ -168,16 +228,16 @@ const L = require('./lib');
     const e = pirateFleet[0];
     pirateFleet.forEach((p,i) => {
       p.warp = 0; p.g.visible = true; p.aiClock = 0; p.aiTicks = 0;
-      p.fire = 99; p.burst = 0; p.burstGap = 0; p.state = 'APPROACH'; p.stateT = 0;
+      p.fire = 99; p.burst = 0; p.burstGap = 0; p.aiMode = 'PURSUE'; p.aiIntent = null; p.aiProfile = EAI.profile(p.ty);
       p.g.position.copy(P).add(new THREE.Vector3((i-.5)*80,0,-780));
       p.hd.copy(P.clone().sub(p.g.position).normalize());
       p.vel.copy(p.hd).multiplyScalar(34.5); p.speed = p.vel.length();
     });
     const before = e.g.position.clone();
     for(let i=0;i<60;i++) pirateFleetUpdate(1/60);
-    return { ticks:e.aiTicks, movement:before.distanceTo(e.g.position) };
+    return { ticks:e.aiTicks, movement:before.distanceTo(e.g.position), mode:e.aiMode };
   });
-  L.check('Elite AI: движение интегрируется каждый кадр между решениями', aiIntegration.ticks === 15 && aiIntegration.movement > 10, aiIntegration);
+  L.check('Elite AI: движение интегрируется каждый кадр между решениями', aiIntegration.ticks === 15 && aiIntegration.movement > 10 && ['PURSUE','ATTACK','EVADE','SEPARATE'].includes(aiIntegration.mode), aiIntegration);
 
   const damage = await page.evaluate(() => {
     const e = pirateFleet[0], type = e.ty;

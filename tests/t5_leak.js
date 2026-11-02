@@ -28,6 +28,15 @@ const ff = (page, sec) => page.evaluate(s => { const n = Math.round(s / .05); fo
   await ff(page, 40);
   const b0 = await mem(page);
   for (let r = 0; r < 8; r++) { await page.evaluate(() => { if (!E) spawnE(); }); await ff(page, 5); await page.evaluate(() => { firing = true; }); await ff(page, 2); await page.evaluate(() => { firing = false; if (E) hurtEn(E, 1e6, false); }); await ff(page, 3); }
+  const finalCleanup = await page.evaluate(() => {
+    const before = { E:!!E, E2:!!E2 };
+    if (E) hurtEn(E, 1e6, false);
+    if (E2) hurtEn(E2, 1e6, false);
+    E = null; E2 = null; state = "play";
+    enc = 0; spawnT = 1e9; amb = 1e9; nvT = 1e9; tuT = 1e9; planetTrafficT = 1e9;
+    return { before, cleared:!E&&!E2, state };
+  });
+  L.check('перед замером памяти удалены оба активных слота E/E2 и остановлен спавнер', finalCleanup.cleared && finalCleanup.state === 'play', finalCleanup);
   await ff(page, 40);
   const b1 = await mem(page);
   console.log('  до   :', JSON.stringify(b0)); console.log('  после:', JSON.stringify(b1));

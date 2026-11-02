@@ -67,4 +67,72 @@ Canonical record of durable gameplay, architecture, UI and workflow decisions. N
 - GitHub repository gipromeh/Starfall is the canonical project record. A decision is not safely captured until committed to the repository.
 - Every game-code change must update STARFALL_PASSPORT.md and CHANGELOG.md in the same work sequence; update research mapping documents when algorithmic claims change.
 - Record decisions with rationale, scope, constraints, acceptance criteria and status (proposed, implemented, verified, rejected); never label untested work as verified.
-- Keep main unchanged and do not merge a PR unless the user explicitly authorizes it.
+- Keep `main` unchanged. Do not merge a PR unless the user explicitly authorizes that specific merge, even after all required CI checks pass.
+
+
+## 2026-11-02 — First-wave pirate detection and Elite-style radar (scope correction)
+- The opening intercept is `pirateFleet` (Golovoroz + Jackal); regular E/E2 appear after the opening squadron is cleared. The earlier note that the opening pair was E/E2 and needed a spawn at 850 was incorrect and is superseded.
+- Decision: preserve the fleet's 760/850 longitudinal spawn positions, widen its lateral formation to ±115, and display R/J hostile contacts from entity creation through warp-in.
+- Preserve the Elite Dangerous scanner contract: heading-relative circular plane, rotating sweep, altitude stalks, amber palette, 500 m / 1 km / 2 km ranges, velocity vectors and hostile edge indicators.
+- Actual opening attack geometry and its OCS fire-gate constraint are specified in the later 2026-11-02 anti-collision maneuver entry.
+
+
+## 2026-11-02 — Jackal first-wave firing geometry
+- Observation: the first-wave Jackal could perform an approach/overshoot without firing. The target pass offset (185 units) was incompatible with both the 0.25 rad firing lane and `EAI.fireGate`'s centered OCS gate at the 380-unit weapon range.
+- Decision: reduce E/E2 pass offsets to `[55,70,45,80]` by ship type. Preserve speed, turn coefficients, HP, weapon range, damage and AI decision cadence.
+- Acceptance: integration regression runs production `upd()` with a type-1 Jackal at 360 units and observes at least two actual laser projectiles. Status: implemented; awaiting CI.
+
+
+## 2026-11-02 — First-wave attack must not be a head-on collision
+- Corrected the scope: the opening interception is `pirateFleet` (Golovoroz + Jackal); regular E/E2 are later waves and must not be conflated with the opening squadron.
+- Root cause in the attack geometry: slot side values are ±0.5 and were multiplied directly into route offsets of 30–100 units, reducing the lateral displacement to roughly 15–50 units. The opening headings were initially aimed directly at the player, and the attack waypoint did not create a meaningful safe pass lane.
+- Decision: normalize the slot side to ±1 and define explicit lateral waypoints for APPROACH, ATTACK_RUN, FIRING_PASS, OVERSHOOT and REPOSITION. Keep OCS steering, firing gates, weapon sockets, speed/acceleration model and HP/damage unchanged.
+- Decision: radar contact collection includes the opening fleet during warp-in and labels it R/J. Do not change ordinary E/E2 spawn geometry as part of this fix.
+- Acceptance: a natural 60-second Jackal simulation must traverse ATTACK_RUN → FIRING_PASS → OVERSHOOT → REPOSITION, maintain 80–180 units minimum separation and at least 80 units lateral offset. Browser CI pending; values are initial engineering targets subject to observed simulation output.
+
+- Fire-gate constraint: the firing-pass lateral offset is 100 units, not 220. This keeps the pirate inside the existing centered OCS projection gate while still producing a non-collision side pass; overshoot/reposition then open the separation.
+
+
+## 2026-11-02 — Radar must support target acquisition and interception
+- Decision: radar is an active tactical instrument, not a passive contact display. The player can select a hostile contact directly on the scanner by touch/click.
+- Selection is persistent while the entity exists; when it is destroyed or removed, acquire the nearest remaining hostile contact.
+- Show range, signed azimuth/bearing (left/right), signed elevation (above/below), and relative closing speed. These are computed from the target's world position/velocity transformed into player-local coordinates.
+- Mirror the selected target on the main HUD: place a cue on its screen projection when visible; otherwise clamp a directional arrow to the screen edge.
+- Do not add automatic steering. The player retains manual control and uses the bearing/elevation readout to establish an intercept course. Keep H distance-follow behavior separate.
+- Acceptance: browser regression checks scanner selection, target persistence/fallback, bearing/elevation/closure readouts, and HUD cue; mobile and desktop usability still require manual playtest.
+
+
+## 2026-11-02 — Restore the original Elite ZX Spectrum scanner model
+- Reference distinction: the target is the ZX Spectrum 48K/128K Elite scanner, not Elite Dangerous' rotating circular radar. The ZX Spectrum HUD uses a shallow elliptical 3D scanner with ship contacts represented by a notch/dot and a vertical stalk showing relative altitude; the separate compass indicates planet/station direction and uses a hollow marker for a target behind the ship.
+- Decision: replace the circular sweep radar with an ellipse. In player-local coordinates `(x,y,z)`, project `x` horizontally, `z` onto the ellipse plane, and `y` into the stalk height. Clip contact coordinates to a fixed STARFALL range of 1600 units per local axis.
+- Decision: remove rotating sweep, circular range rings, out-of-range arrows and velocity vectors. Keep STARFALL's tap-to-select hostile contact, target HUD and screen cue as additive gameplay affordances.
+- Decision: compass targets the planet by default, switches to the station inside 900 units, shows hollow when behind, and lights `S` inside 420 units. These are STARFALL adaptation thresholds, not claimed original Elite constants.
+- Source: `https://elite.bbcelite.com/deep_dives/the_3d_scanner.html` (scanner projection and stick math); ZX Spectrum manual summary `https://viva-games.ru/game/elite?setlang=es` (3D scanner, compass and hollow marker semantics); screenshot reference `https://www.thirdharmoniser.com/elite.html`.
+- Status: IMPLEMENTED; static checks pass; browser CI and visual validation pending.
+
+- Attack acceptance now includes actual firing during the natural side-pass: test seeds the fire-gate PRNG to its deterministic success path and requires at least two shots while preserving the normal OCS gates and burst mechanism.
+
+- Compass projection refinement: map local X/Y onto the compass disc using the full 3D direction length; use local Z only to choose filled (ahead) versus hollow (behind). This preserves elevation information instead of treating the compass as a top-down X/Z plot.
+
+
+## 2026-11-02 — Memory-leak test isolation
+- The leak regression must measure retained resources after all combat entities are removed, not count a surviving second enemy slot as a leak.
+- After its eight spawn/kill rounds, the test now kills both E and E2, clears the slots, freezes enemy/traffic spawn timers while keeping the update loop in play state, then advances 40 seconds to drain debris/aliens before comparing renderer memory.
+- This is a test isolation correction; it does not alter runtime enemy spawning or cleanup behavior.
+
+
+## 2026-11-02 — Passive Elite radar guidance (v91)
+- Сканер не принимает touch/click выбор цели. `collectRadarContacts()` выбирает ближайший активный вражеский контакт и удерживает его до потери валидности; затем выбирает ближайший оставшийся.
+- Эллиптический 3D-сканер и altitude stalks отделены от пассивного HUD cue. Bearing/elevation/range/closing speed информируют пилота; автопилота и боевого lock нет.
+- Старый scripted side-pass FSM, ранее использовавшийся стартовым «Шакалом», признан несоответствующим DEC-014 и удалён в реализации v91. Записи о фазах waypoint-маршрута ниже по истории — только исторический контекст.
+
+## 2026-11-02 — DEC-014: обязательная полная замена пиратского AI на Elite
+- Уточнено, что прежняя стартовая механика «Шакала» не подлежит параметрической коррекции: требуется полная замена decision/maneuver алгоритма на подтверждённую Elite-логику.
+- «Шакал» и «Головорез» используют общий Elite-derived AI; различия классов выражаются данными, а не отдельными legacy FSM.
+- OCS helper внутри старого сценарного FSM не считается Elite AI. Приёмка требует естественной детерминированной симуляции с реальными траекториями, тактикой, уклонением, огнём и проверкой расхождения.
+- Закреплён Elite ZX scanner: эллипс, 3D контакты со штоками высоты, отдельный компас, автоматическая пассивная навигационная цель; без tap-to-select, автопилота и боевого lock.
+- Реализация v91 использует общий `EAI.pilot()` для `pirateFleet`, E/E2 и движения босса; прежние APPROACH/ATTACK_RUN/FIRING_PASS/OVERSHOOT/REPOSITION/LOOP/BREAK удалены из runtime.
+- Исследовательские соответствия: Elite passport §§5.2–5.4 (decision cadence и модель поведения), 13.7/14.7 (наведение и OCS), 14.11 (огневые gates), 14.13 (реестр контрактов).
+- Адаптация: 15 Hz decision tick, per-frame integration, локальные OCS-проекции, velocity lead, боковая составляющая при ближнем уклонении, прогноз угрозы снаряда, разделение соседних кораблей и data-driven профили.
+- STARFALL-specific profile thresholds, probability curve, projectile prediction/separation и квантизация `EAI.command()` не являются оригинальными константами Elite; точная Z80/$F9FA эмуляция не заявляется.
+- Поведенческая приёмка проверяется 60-секундной детерминированной симуляцией двух классов: pursuit, attack, evasion, firing, безопасное расстояние и отсутствие legacy state fields. Итоговый статус — после полного CI.
