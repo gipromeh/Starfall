@@ -854,3 +854,13 @@ PV (конец скрипта): ангар-превью, обёртка hgrView;
 - Полный workflow `game-tests.yml` подключён к ветке `lab/elite-combat-ai`; существующая матрица quick checks и browser tests запускается на лабораторных изменениях без публикации в `main`.
 - Текущие тесты SAVE, pirate fleet, radar/collision, effects/leaks, iPhone Chromium/WebKit и Deep Space классифицированы как существующее/частичное покрытие. Сквозные проверки физики полёта и полного цикла вооружения остаются открытой работой.
 - Финализация не объявляется до прохождения Gates A–F. WebKit emulation не считается физическим тестом Safari на iPhone.
+
+
+## Elite-derived pirate flight replacement — 2026-11-03
+
+- In `lab/elite-combat-ai`, removed the old scripted pirate movement state machines from ordinary E/E2 NPCs and the opening two-ship squadron.
+- Replaced them with a shared ATTACK/EVADE intent selector operating on local OCS components. Decisions occur at 15 Hz; OCS steering, velocity and position integration continue per frame.
+- Evasion is triggered by component-wise proximity or an incoming player projectile; re-engagement occurs after separation and a minimum decision interval. The flight vector is not a waypoint or a fixed orbit.
+- Existing ship assets, weapons, projectile/collision/damage handlers, effects, SAVE and boss-specific movement are preserved.
+- Elite research basis: `docs/reference/ELITE_GAME_PASSPORT.md` §§5.2–5.4, 13.7, 14.7, 14.11–14.12. STARFALL proximity thresholds and lateral bias are explicit adaptation parameters, not recovered Elite constants. This is not a bit-exact Z80 clone.
+- Regression coverage: `tests/t11_pirate_fleet.js` and `tests/t17_combat_ai_lab.mjs`. CI acceptance pending.
