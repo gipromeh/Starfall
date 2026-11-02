@@ -1734,6 +1734,7 @@ const EAI=(function(){
   return{...p,speed:p.speed*Math.max(.1,scale||1)};
  }
  function seed(v){rng=(v>>>0)||0x6d2b79f5}
+ function getSeed(){return rng>>>0}
  function rand(){rng^=rng<<13;rng^=rng>>>17;rng^=rng<<5;return(rng>>>0)/4294967296}
  function think(e,dt){
   e.aiClock=(e.aiClock||0)+Math.max(0,Math.min(.1,dt));
@@ -1872,7 +1873,7 @@ const EAI=(function(){
   const chance=clamp(probability,0,1)*(combatRank?1:.5);
   return api.rand()<chance;
  }
- api={STEP,PROFILES,profile,seed,rand,think,project,projectOCS,command,decide,integrate,pilot,fireChance,fireGate};
+ api={STEP,PROFILES,profile,seed,getSeed,rand,think,project,projectOCS,command,decide,integrate,pilot,fireChance,fireGate};
  return api;
 })();
 const pirateFleetForward=new T.Vector3(0,0,-1),pirateFleetUp=new T.Vector3(0,1,0),pirateFleetHeading=new T.Vector3();
