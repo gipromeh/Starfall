@@ -598,3 +598,12 @@ tags: [starfall, changelog]
 - Audited existing regression coverage and added `docs/FINALIZATION_TEST_PLAN.md` with acceptance Gates A–F for flight, controls, weapons, combat AI, navigation, station/economy, progression, SAVE, mobile, graphics, performance and soak testing.
 - Enabled the full `game-tests.yml` regression matrix on `lab/elite-combat-ai`; experimental changes can run the broad existing game suite without pushing to production `main`.
 - Current coverage is explicitly classified as broad/partial where applicable. The game is not declared fully verified until every gate has behavioral tests and passes CI.
+
+
+## Elite-derived pirate flight replacement (2026-11-03, isolated branch)
+
+- Removed the scripted pirate movement state machines (fixed approach/attack loops, firing passes, overshoot and reposition waypoints) from ordinary pirates and the opening squadron.
+- Added shared ATTACK/EVADE pilot intent selection based on local OCS component proximity and incoming-projectile reaction. Tactical decisions run at 15 Hz; orientation, velocity and position integrate every frame.
+- Preserved ship models, weapon sockets, projectile/collision/damage pipeline, visual effects, SAVE and boss-specific movement.
+- Added deterministic headless selector assertions and replaced scripted attack-pass regression checks with ATTACK/EVADE flight tests. Browser CI acceptance is pending.
+- Numeric proximity thresholds are STARFALL tuning parameters, not copied from Elite. The implementation follows reconstructed Elite 128K control structure but is not a bit-exact emulation.
