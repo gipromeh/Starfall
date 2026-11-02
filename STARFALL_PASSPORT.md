@@ -803,3 +803,12 @@ PV (конец скрипта): ангар-превью, обёртка hgrView;
 - WebKit coverage remains Playwright macOS WebKit emulation, not branded Safari or a physical iPhone/iOS Safari test.
 
 - Компас отображает направление в 3D-плоскости носа корабля: `dotX = local.x / |local|`, `dotY = -local.y / |local|`; глубина `local.z` определяет заполненность точки (полая — объект позади).
+
+
+## Radar target navigation and Elite scanner — v91
+
+- The radar is a passive Elite-style 3D scanner: an elliptical plane, contact dots and vertical altitude stalks. A separate compass indicates the selected navigation body and whether it is behind the ship.
+- Hostile target acquisition is automatic: select the nearest active hostile by world-space distance, retain it while valid, and reacquire the nearest remaining hostile when it is removed or destroyed.
+- The scanner is not a touch target selector. No tap/click target lock is available. The HUD cue and bearing/elevation/range/closing-speed readout provide passive interception guidance; flight remains under player control.
+- The opening Jackal and Golovorez use the same Elite-derived OCS steering and integration controller. Their ship-specific speed profiles remain distinct; the attack cycle uses a lateral firing pass and overshoot/reposition instead of a head-on collision course.
+- Regression coverage: natural 60-second Jackal simulation, required combat phases, lateral clearance, firing, automatic nearest-hostile acquisition, and absence of scanner click handlers.
