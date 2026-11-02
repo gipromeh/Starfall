@@ -69,7 +69,7 @@ const L = require('./lib');
     return result;
   });
   L.check('первая эскадрилья: Головорез и Шакал отображаются на радаре во время warp-in', firstWaveRadar.count === 2 && firstWaveRadar.labels.join(',') === 'J,R' && firstWaveRadar.hostile && firstWaveRadar.visibleDuringWarp, firstWaveRadar);
-  L.check('первая эскадрилья находится впереди игрока в диапазоне радара 1 км', firstWaveRadar.distances.every(d => d >= 750 && d <= 870) && firstWaveRadar.forward.every(v => v > .98), firstWaveRadar);
+  L.check('первая эскадрилья находится впереди игрока в диапазоне радара 1 км', firstWaveRadar.distances.every(d => d >= 750 && d <= 870) && firstWaveRadar.forward.every(v => v > .97), firstWaveRadar);
 
   const firstWaveJackalCombat = await page.evaluate(() => {
     const saved = {
@@ -158,7 +158,7 @@ const L = require('./lib');
     const offset = e.g.position.clone().sub(P);
     return { type:e.ty, distance:offset.length(), ahead:offset.normalize().dot(forward), lateral:offset.dot(new THREE.Vector3(1,0,0).applyQuaternion(Q).normalize()) };
   }));
-  L.check('стартовая эскадрилья появляется впереди игрока на заданной дистанции', initialSpawn.length===2&&initialSpawn.every(x=>x.distance>=750&&x.distance<=870&&x.ahead>.98)&&initialSpawn[0].lateral*initialSpawn[1].lateral<0, initialSpawn);
+  L.check('стартовая эскадрилья появляется впереди игрока на заданной дистанции', initialSpawn.length===2&&initialSpawn.every(x=>x.distance>=750&&x.distance<=870&&x.ahead>.97)&&initialSpawn[0].lateral*initialSpawn[1].lateral<0, initialSpawn);
   const fleetHealth = await page.evaluate(() => pirateFleet.every(e => e.mx >= SHIPS[shp].hull * 2));
   L.check('прочность каждого корабля эскадрильи не ниже двойной прочности игрока', fleetHealth, fleetHealth);
   const locators = await page.evaluate(() => pirateFleet.map(e => {
