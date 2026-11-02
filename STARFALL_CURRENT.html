@@ -1671,6 +1671,7 @@ if(E&&E.warp<=0){
  if(e.boss&&e.hp<=0)e.aiMode="DESTROYED";
  if(_p){const t_=E;E=E2;E2=t_}
 }
+}
 if(state==="play"||state==="dying"){
 if(nk){nk.t+=dt;const d=nk.m.position.distanceTo(P);if(nk.target==="station"&&stn&&stn.visible){const aim=stn.position.clone().sub(nk.m.position).normalize();nk.v.lerp(aim.multiplyScalar(85).addScaledVector(vel,.2),Math.min(1,1.8*dt));nk.m.lookAt(nk.m.position.clone().add(nk.v))}nk.m.position.addScaledVector(nk.v,dt);nk.tt=(nk.tt||0)-dt;if(nk.tt<=0){nk.tt=.03;trail(nk.m.position)}const hitStation=nk.target==="station"&&stn&&stn.visible&&nk.m.position.distanceTo(stn.position)<34;if(hitStation||(nk.target==="station"?nk.t>22:(d>=170||nk.t>5)&&d>=150))det()}
 for(let i=bul.length-1;i>=0;i--){const b=bul[i],pv=b.m.position.clone();b.m.position.addScaledVector(b.v,dt);b.life-=dt;laserPulse(b,dt);let h=false;for(const en of [E,E2])if(!h&&en&&pirateSegmentHit(pv,b.m.position,en)){h=true;boom(b.m.position,8,3,0x88ffee,25,.3);hmv=1;hurtEn(en,b.dmg,false)}for(const pe of pirateFleet)if(!h&&pe.g&&pe.hp>0&&pirateSegmentHit(pv,b.m.position,pe)){h=true;boom(b.m.position,8,3,0x88ffee,25,.3);hmv=1;pirateFleetDamage(pe,b.dmg,false)}for(const a of ali)if(!h&&a.life>0&&seg(pv,b.m.position,a.g.position,2.4)){h=true;hitAli(a)}for(const q of eb)if(!h&&q.hm&&q.life>0&&seg(pv,b.m.position,q.m.position,3)){h=true;q.life=0;boom(q.m.position,18,4,0xff66ff,25,.5);say("РАКЕТА ПЕРЕХВАЧЕНА",1)}
