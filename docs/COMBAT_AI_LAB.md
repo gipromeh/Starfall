@@ -8,6 +8,12 @@ An isolated, unattended GitHub Actions experiment for repeatable combat-AI evalu
 
 Research basis: `docs/reference/ELITE_GAME_PASSPORT.md` §§5, 13–14 and `docs/reference/ELITE_TO_STARFALL_V90.md`. The port retains STARFALL units and adaptation boundaries; it does not claim bit-exact Elite emulation.
 
+## Current production pilot model
+
+The production browser game uses the shared OCS pilot selector for ordinary pirates and the opening squadron. The tactical intent is refreshed at 15 Hz; OCS heading, velocity and position are integrated every frame. ATTACK follows the relative target vector with a small deterministic lateral bias; EVADE selects the opposite vector with lateral/vertical bias. These are STARFALL adaptations of Elite's reconstructed vector-selection and flight-control structure. Numeric thresholds are STARFALL tuning values, not recovered Elite constants. Boss-specific movement is intentionally retained.
+
+The headless Node runner mirrors the selector for deterministic unit tests. Production behavior remains the acceptance reference and must pass the browser regression suite.
+
 ## Current batch model
 - 1,200 seeded 1v1 trials per run.
 - Matchups: interceptor/interceptor, interceptor/heavy, heavy/agile, agile/interceptor, heavy/heavy.
@@ -20,10 +26,11 @@ The current runner uses the actual EAI kernel port, but its hit probability is a
 
 ## Acceptance path
 1. Keep production `main` untouched.
-2. Verify kernel parity against browser-side EAI regression probes.
-3. Replace abstract hit/damage behavior only after extracting or browser-driving the real production projectile/collision rules.
-4. Add squadron and multi-target scenarios only when the simulation includes the corresponding production state transitions.
-5. Require repeatable seeded results, finite state, bounded velocities, no NaN/Infinity, no deadlock, and explicit scenario coverage before any production recommendation.
+2. Verify kernel parity against browser-side EAI regression probes and the ATTACK/EVADE selector.
+3. Verify production pirate flight in Chromium: both ordinary NPC and opening squadron, close-range evasion, re-engagement, incoming-projectile response, smooth heading and no legacy waypoint states.
+4. Replace abstract hit/damage behavior only after extracting or browser-driving the real production projectile/collision rules.
+5. Add squadron and multi-target scenarios only when the simulation includes the corresponding production state transitions.
+6. Require repeatable seeded results, finite state, bounded velocities, no NaN/Infinity, no deadlock, and explicit scenario coverage before any production recommendation.
 
 
 ## First production-runtime baseline
