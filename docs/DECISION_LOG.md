@@ -91,3 +91,12 @@ Canonical record of durable gameplay, architecture, UI and workflow decisions. N
 - Acceptance: a natural 60-second Jackal simulation must traverse ATTACK_RUN → FIRING_PASS → OVERSHOOT → REPOSITION, maintain 80–180 units minimum separation and at least 80 units lateral offset. Browser CI pending; values are initial engineering targets subject to observed simulation output.
 
 - Fire-gate constraint: the firing-pass lateral offset is 100 units, not 220. This keeps the pirate inside the existing centered OCS projection gate while still producing a non-collision side pass; overshoot/reposition then open the separation.
+
+
+## 2026-11-02 — Radar must support target acquisition and interception
+- Decision: radar is an active tactical instrument, not a passive contact display. The player can select a hostile contact directly on the scanner by touch/click.
+- Selection is persistent while the entity exists; when it is destroyed or removed, acquire the nearest remaining hostile contact.
+- Show range, signed azimuth/bearing (left/right), signed elevation (above/below), and relative closing speed. These are computed from the target's world position/velocity transformed into player-local coordinates.
+- Mirror the selected target on the main HUD: place a cue on its screen projection when visible; otherwise clamp a directional arrow to the screen edge.
+- Do not add automatic steering. The player retains manual control and uses the bearing/elevation readout to establish an intercept course. Keep H distance-follow behavior separate.
+- Acceptance: browser regression checks scanner selection, target persistence/fallback, bearing/elevation/closure readouts, and HUD cue; mobile and desktop usability still require manual playtest.
