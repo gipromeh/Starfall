@@ -282,7 +282,7 @@ jobs:
           import re
           from pathlib import Path
           html = Path("STARFALL_CURRENT.html").read_text(encoding="utf-8")
-          match = re.search(r'<meta\s+name=["\\']starfall-version["\\']\s+content=["\\'](v[0-9]+)["\\']', html)
+          match = re.search(r'<meta\\s+name="starfall-version"\\s+content="(v[0-9]+)"', html)
           if not match:
               raise SystemExit("Missing or invalid starfall-version metadata")
           print(match.group(1))
