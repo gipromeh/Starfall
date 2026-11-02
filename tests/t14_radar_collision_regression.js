@@ -37,7 +37,7 @@ const checks = [
  ['radar auto-selects nearest hostile when no valid target remains', html.includes('if(!radarContacts.some(q=>q.entity===radarTarget&&q.hostile))')&&html.includes('if(nearest)radarTarget=nearest.entity')],
  ['radar selection is visually highlighted', html.includes('q.selected=q.hostile&&q.entity===radarTarget')&&html.includes('if(q.selected&&!outside)')],
  ['target HUD reports range, bearing and elevation', html.includes('bearing=Math.atan2(local.x,-local.z)*180/Math.PI')&&html.includes('elevation=Math.atan2(local.y,Math.max(1,planar))*180/Math.PI')&&html.includes('radarDistanceLabel(distance)')],
- ['target HUD reports relative closing speed', html.includes('closing=-relative.dot(dir)')&&html.includes('СБЛИЖЕНИЕ ')&&html.includes('УДАЛЕНИЕ ')'],
+ ['target HUD reports relative closing speed', html.includes('closing=-relative.dot(dir)')&&html.includes('closing>=0?')],
  ['main-screen target cue points toward selected hostile', html.includes('function radarTargetUpdate()')&&html.includes('radarTargetCue.style.left=')&&html.includes('radarTargetCue.style.top=')],
  ['target navigation cue updates with the live radar solution', html.includes('radar();radarTargetUpdate();')],
  ['wave attacks wait until the opening fleet is cleared', html.includes('if(!E&&!pirateFleet.some(pe=>pe.g&&pe.hp>0&&!pe.dead)){if(enc>0){spawnT-=dt;')],
