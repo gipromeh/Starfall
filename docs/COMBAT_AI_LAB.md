@@ -10,7 +10,7 @@ Research basis: `docs/reference/ELITE_GAME_PASSPORT.md` §§5, 13–14 and `docs
 
 ## Current production pilot model
 
-The production browser game uses the shared OCS pilot selector for ordinary pirates and the opening squadron. The tactical intent is refreshed at 15 Hz; OCS heading, velocity and position are integrated every frame. ATTACK follows the relative target vector with a small deterministic lateral bias; EVADE selects the opposite vector with lateral/vertical bias. These are STARFALL adaptations of Elite's reconstructed vector-selection and flight-control structure. Numeric thresholds are STARFALL tuning values, not recovered Elite constants. Boss-specific movement is intentionally retained.
+The production browser game uses the shared OCS pilot selector for ordinary pirates and the opening squadron. The tactical intent is refreshed at 15 Hz; OCS heading, velocity and position are integrated every frame. ATTACK follows the relative target vector with a small deterministic lateral bias; EVADE selects the opposite vector with lateral/vertical bias. These are STARFALL adaptations of Elite's reconstructed vector-selection and flight-control structure. Numeric thresholds are STARFALL tuning values, not recovered Elite constants. Bosses use the same pilot controller with wider thresholds and separate boss-specific firing patterns/visual presentation.
 
 The headless Node runner mirrors the selector for deterministic unit tests. Production behavior remains the acceptance reference and must pass the browser regression suite.
 
