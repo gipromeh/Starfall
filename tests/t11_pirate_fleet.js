@@ -53,6 +53,26 @@ const L = require('./lib');
   }));
   L.check('стартовая атака содержит ровно Головореза и Шакала', composition.total === 2 && composition.types.every(n => n === 1), composition);
   L.check('оба корабля стартовой атаки созданы', composition.spawned === 2, composition);
+  const firstWaveRadar = await page.evaluate(() => {
+    const previous = { E, E2, firstWaveSpawn, wave };
+    E = E2 = null; firstWaveSpawn = 0; wave = 1;
+    spawnE(); spawnE();
+    const contacts = collectRadarContacts().filter(c => c.entity === E || c.entity === E2);
+    const result = {
+      count: contacts.length,
+      labels: contacts.map(c => c.label).sort(),
+      hostile: contacts.every(c => c.hostile),
+      visibleDuringWarp: contacts.every(c => c.entity.warp > 0),
+      distances: contacts.map(c => c.position.distanceTo(P)),
+      forward: contacts.map(c => c.position.clone().sub(P).normalize().dot(new THREE.Vector3(0,0,-1).applyQuaternion(Q).normalize()))
+    };
+    for (const e of [E, E2]) if (e?.g) S.remove(e.g);
+    E = previous.E; E2 = previous.E2; firstWaveSpawn = previous.firstWaveSpawn; wave = previous.wave;
+    return result;
+  });
+  L.check('первая волна: Ржавый Череп и Шакал видны на радаре сразу, включая фазу входа из гиперпрыжка', firstWaveRadar.count === 2 && firstWaveRadar.labels.join(',') === 'J,R' && firstWaveRadar.hostile && firstWaveRadar.visibleDuringWarp, firstWaveRadar);
+  L.check('первая волна появляется в рабочем радиусе радара впереди игрока', firstWaveRadar.distances.every(d => d >= 830 && d <= 880) && firstWaveRadar.forward.every(v => v > .98), firstWaveRadar);
+
   const initialSpawn = await page.evaluate(() => pirateFleet.map(e => {
     const forward = new THREE.Vector3(0,0,-1).applyQuaternion(Q).normalize();
     const offset = e.g.position.clone().sub(P);
