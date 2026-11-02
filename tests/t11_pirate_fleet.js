@@ -103,23 +103,24 @@ const L = require('./lib');
   L.check('четыре лазера выходят из дульных маркеров вдоль оси стволов', combat.firstShipShots === 2 && combat.muzzleMatch && combat.shotForward && combat.socketsForward && combat.lineShots, combat);
   L.check('каждый пират стреляет из двух собственных передних сокетов', combat.allPilotShots.every(x => x.shots === x.guns && x.shots > 0 && x.originsMatch), combat.allPilotShots);
 
-  const pass = await page.evaluate(() => {
-    pirateFleet.forEach(p => { p.fire = 99; p.burst = 0; p.burstGap = 0; });
-    const e = pirateFleet[0];
-    e.warp = 0; e.g.visible = true;
-    e.g.position.copy(P).add(new THREE.Vector3(0, 0, -620));
-    e.hd.set(0, 0, 1); e.vel.set(0, 0, 46); e.speed = 46;
-    e.state = 'ATTACK_RUN'; e.stateT = 0; e.runDir = null;
-    e.fire = 99; e.burst = 0; e.burstGap = 0;
-    let minDistance = Infinity; const states = {};
-    for (let i = 0; i < 600; i++) {
-      pirateFleetUpdate(.05);
-      minDistance = Math.min(minDistance, e.g.position.distanceTo(P));
-      states[e.state] = true;
+  const eliteFlight = await page.evaluate(() => {
+    const e=pirateFleet[0];
+    pirateFleet.forEach((p,i)=>{
+      p.warp=0;p.g.visible=true;p.aiClock=0;p.aiTicks=0;p.aiIntent="ATTACK";p.aiSideSign=i%2?1:-1;
+      p.g.position.copy(P).add(new THREE.Vector3((i-.5)*10,0,-620));
+      p.hd.set(0,0,1);p.vel.set(0,0,46);p.speed=46;p.state="ATTACK";p.fire=99;p.burst=0;p.burstGap=0;
+    });
+    let minDistance=Infinity,maxDistance=0;const states=new Set();let previousHeading=pirateFleet[0].hd.clone(),maxHeadingStep=0;
+    for(let i=0;i<1800;i++){
+      pirateFleetUpdate(1/60);
+      const p=pirateFleet[0],d=p.g.position.distanceTo(P);minDistance=Math.min(minDistance,d);maxDistance=Math.max(maxDistance,d);states.add(p.state);
+      const angle=previousHeading.angleTo(p.hd);maxHeadingStep=Math.max(maxHeadingStep,angle);previousHeading.copy(p.hd);
     }
-    return { minDistance, states: Object.keys(states) };
+    return{minDistance,maxDistance,states:[...states],maxHeadingStep,ticks:pirateFleet[0].aiTicks,legacy:pirateFleet.some(p=>["ATTACK_RUN","FIRING_PASS","OVERSHOOT","REPOSITION","LOOP","BREAK"].includes(p.state))};
   });
-  L.check('пилот выполняет огневой пролёт через ближнюю зону и выходит из атаки', pass.minDistance < 220 && pass.states.includes('FIRING_PASS') && pass.states.includes('OVERSHOOT'), pass);
+  L.check('Elite flight: tactical behavior uses only ATTACK/EVADE intents, without scripted waypoints',eliteFlight.states.every(s=>s==="ATTACK"||s==="EVADE")&&!eliteFlight.legacy,eliteFlight);
+  L.check('Elite flight: close-range reaction switches to evasion and later re-engages',eliteFlight.states.includes("EVADE")&&eliteFlight.states.includes("ATTACK"),eliteFlight);
+  L.check('Elite flight: OCS heading changes continuously, not by snapping to target',eliteFlight.maxHeadingStep<.12&&eliteFlight.ticks>=400,eliteFlight);
 
   const eliteAI = await page.evaluate(() => {
     const fwd = EAI.project(new THREE.Vector3(0,0,-1), new THREE.Vector3(0,0,-1));
