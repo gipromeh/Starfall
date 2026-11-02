@@ -846,3 +846,11 @@ PV (конец скрипта): ангар-превью, обёртка hgrView;
 - Observed across the batch: 1,824 player laser projectiles, 892 hostile laser projectiles, 701.82 aggregate pirate HP damage, zero player deaths, and zero complete two-pirate squadron wipes. Some trials destroyed one member of the squadron; the other survived.
 - The report confirms that the production projectile/collision/damage path is exercised. The first report's per-enemy hit counter was not reliable after destruction because the production kill handler resets that field; the next revision wraps the real damage handler to count damage events independently.
 - The first run is a baseline, not a balance acceptance result. A 20-second stationary-player scenario does not establish general combat balance.
+
+
+## Полная верификация игровых механик — план приёмки (2026-11-02)
+
+- Добавлен `docs/FINALIZATION_TEST_PLAN.md`: аудит текущего покрытия и Gates A–F для проверки полёта, управления, оружия, боевого ИИ, мира, станций, экономики, прогрессии, SAVE, мобильности, производительности и длительной устойчивости.
+- Полный workflow `game-tests.yml` подключён к ветке `lab/elite-combat-ai`; существующая матрица quick checks и browser tests запускается на лабораторных изменениях без публикации в `main`.
+- Текущие тесты SAVE, pirate fleet, radar/collision, effects/leaks, iPhone Chromium/WebKit и Deep Space классифицированы как существующее/частичное покрытие. Сквозные проверки физики полёта и полного цикла вооружения остаются открытой работой.
+- Финализация не объявляется до прохождения Gates A–F. WebKit emulation не считается физическим тестом Safari на iPhone.
