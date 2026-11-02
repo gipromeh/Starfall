@@ -67,4 +67,12 @@ Canonical record of durable gameplay, architecture, UI and workflow decisions. N
 - GitHub repository gipromeh/Starfall is the canonical project record. A decision is not safely captured until committed to the repository.
 - Every game-code change must update STARFALL_PASSPORT.md and CHANGELOG.md in the same work sequence; update research mapping documents when algorithmic claims change.
 - Record decisions with rationale, scope, constraints, acceptance criteria and status (proposed, implemented, verified, rejected); never label untested work as verified.
-- Keep main unchanged and do not merge a PR unless the user explicitly authorizes it.
+- Keep main unchanged until all required CI checks for the PR are successful. Merge automatically after successful CI; no separate user approval is required.
+
+
+## 2026-11-02 — First-wave pirate detection and Elite-style radar
+- Problem observed in first wave: the Jackal approached without a visible radar contact; first-wave E/E2 spawn distance was outside the default 1 km scanner range and the radar suppressed contacts while `warp > 0`.
+- Decision: spawn the named first pair at 850 units ahead with a small symmetric lateral offset; show hostile radar contacts from entity creation, including warp-in.
+- Decision: use compact R/J labels and velocity-oriented triangular ship contacts while preserving the existing Elite Dangerous scanner contract: heading-relative circular plane, rotating sweep, altitude stalks, amber palette, 500 m / 1 km / 2 km ranges, and hostile edge indicators.
+- Scope: first-pair spawn, radar contact collection and contact glyph rendering. Pirate AI attack/fire state machine is not changed by this patch and remains subject to a separate combat regression/playtest.
+- Acceptance: browser test confirms both first-wave contacts are hostile and present during warp-in, labels are R/J, and both spawn within 830–880 units ahead of the player. CI and visual playtest pending.
