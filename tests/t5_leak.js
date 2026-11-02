@@ -32,11 +32,11 @@ const ff = (page, sec) => page.evaluate(s => { const n = Math.round(s / .05); fo
     const before = { E:!!E, E2:!!E2 };
     if (E) hurtEn(E, 1e6, false);
     if (E2) hurtEn(E2, 1e6, false);
-    E = null; E2 = null; state = "dock";
-    enc = 0; spawnT = 1e9; amb = 1e9;
+    E = null; E2 = null; state = "play";
+    enc = 0; spawnT = 1e9; amb = 1e9; nvT = 1e9; tuT = 1e9; planetTrafficT = 1e9;
     return { before, cleared:!E&&!E2, state };
   });
-  L.check('перед замером памяти удалены оба активных слота E/E2 и остановлен спавнер', finalCleanup.cleared && finalCleanup.state === 'dock', finalCleanup);
+  L.check('перед замером памяти удалены оба активных слота E/E2 и остановлен спавнер', finalCleanup.cleared && finalCleanup.state === 'play', finalCleanup);
   await ff(page, 40);
   const b1 = await mem(page);
   console.log('  до   :', JSON.stringify(b0)); console.log('  после:', JSON.stringify(b1));
