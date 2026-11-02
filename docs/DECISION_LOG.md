@@ -111,3 +111,5 @@ Canonical record of durable gameplay, architecture, UI and workflow decisions. N
 - Status: IMPLEMENTED; static checks pass; browser CI and visual validation pending.
 
 - Attack acceptance now includes actual firing during the natural side-pass: test seeds the fire-gate PRNG to its deterministic success path and requires at least two shots while preserving the normal OCS gates and burst mechanism.
+
+- Compass projection refinement: map local X/Y onto the compass disc using the full 3D direction length; use local Z only to choose filled (ahead) versus hollow (behind). This preserves elevation information instead of treating the compass as a top-down X/Z plot.
