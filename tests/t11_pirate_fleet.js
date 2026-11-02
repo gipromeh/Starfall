@@ -76,7 +76,7 @@ const L = require('./lib');
       e.g.position.copy(P).add(new THREE.Vector3((i - .5) * 12, 0, -350));
       e.hd.copy(P.clone().sub(e.g.position).normalize());
       e.vel.copy(e.hd).multiplyScalar(46);
-      e.state = 'ATTACK_RUN'; e.stateT = 0; e.fire = 0; e.burst = 0; e.burstGap = 0; e.aiClock = EAI.STEP; e.aiTicks = 0;
+      e.state = 'ATTACK'; e.aiIntent='ATTACK'; e.stateT = 0; e.fire = 0; e.burst = 0; e.burstGap = 0; e.aiClock = EAI.STEP; e.aiTicks = 0;
     });
     const before = eb.length;
     const randomAI = EAI.rand; EAI.rand = () => 0;
