@@ -117,5 +117,5 @@ Canonical record of durable gameplay, architecture, UI and workflow decisions. N
 
 ## 2026-11-02 — Memory-leak test isolation
 - The leak regression must measure retained resources after all combat entities are removed, not count a surviving second enemy slot as a leak.
-- After its eight spawn/kill rounds, the test now kills both E and E2, clears the slots, pauses gameplay in dock state and then advances 40 seconds to drain debris/aliens before comparing renderer memory.
+- After its eight spawn/kill rounds, the test now kills both E and E2, clears the slots, freezes enemy/traffic spawn timers while keeping the update loop in play state, then advances 40 seconds to drain debris/aliens before comparing renderer memory.
 - This is a test isolation correction; it does not alter runtime enemy spawning or cleanup behavior.
