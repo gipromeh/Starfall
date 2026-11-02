@@ -3,7 +3,7 @@ const path = require('path');
 const assert = require('assert');
 const html = fs.readFileSync(path.join(__dirname, '..', 'STARFALL_CURRENT.html'), 'utf8');
 const checks = [
- ['HTML build version matches v90', html.includes('<meta name="starfall-version" content="v90">')],
+ ['HTML build version matches v90', html.includes('<meta name="starfall-version" content="v91">')],
  ['laser projectiles explicitly tagged', html.includes('arr.push({m,v,dmg,life,kind:"laser"})')],
  ['ballistic projectiles explicitly tagged', html.includes('arr.push({m,v,dmg,life,kind:"projectile"})')],
  ['hostile homing missiles explicitly tagged', html.includes('q.hm=1;q.kind="hostile-missile"')],
@@ -34,7 +34,7 @@ const checks = [
  ['pirate fleet does not respawn after destruction', html.includes('e.respawn=Infinity;e.hits=0;')],
  ['pirate fleet opens fire only inside 420 units', html.includes('const canFire=dist<420&&(fireAngle<.9||(dist<300&&fireAngle<1.35));')],
  ['regular pirates use 380/420-unit firing ranges', html.includes('d<(e.ty===3?420:380)')],
- ['radar target selection is driven by tap/click on scanner contacts', html.includes('radarCanvas.addEventListener("click"')&&html.includes('radarTarget=best.entity')&&html.includes('RADAR_CX+(x/RADAR_RANGE)*RADAR_RX')],
+ ['radar target acquisition is automatic and passive; scanner has no tap/click target lock', html.includes('if(!radarContacts.some(q=>q.entity===radarTarget&&q.hostile))')&&html.includes('if(nearest)radarTarget=nearest.entity')&&!html.includes('radarCanvas.addEventListener("click"')],
  ['radar auto-selects nearest hostile when no valid target remains', html.includes('if(!radarContacts.some(q=>q.entity===radarTarget&&q.hostile))')&&html.includes('if(nearest)radarTarget=nearest.entity')],
  ['radar selection is visually highlighted', html.includes('q.selected=q.hostile&&q.entity===radarTarget')&&html.includes('if(q.selected){rc.strokeStyle="#ffffff"')],
  ['target HUD reports range, bearing and elevation', html.includes('bearing=Math.atan2(local.x,-local.z)*180/Math.PI')&&html.includes('elevation=Math.atan2(local.y,Math.max(1,planar))*180/Math.PI')&&html.includes('radarDistanceLabel(distance)')],
