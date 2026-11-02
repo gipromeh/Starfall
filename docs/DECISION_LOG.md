@@ -119,3 +119,10 @@ Canonical record of durable gameplay, architecture, UI and workflow decisions. N
 - The leak regression must measure retained resources after all combat entities are removed, not count a surviving second enemy slot as a leak.
 - After its eight spawn/kill rounds, the test now kills both E and E2, clears the slots, freezes enemy/traffic spawn timers while keeping the update loop in play state, then advances 40 seconds to drain debris/aliens before comparing renderer memory.
 - This is a test isolation correction; it does not alter runtime enemy spawning or cleanup behavior.
+
+
+## 2026-11-02 — Passive Elite radar guidance and Jackal side-pass (v91)
+- The scanner no longer accepts touch/click target selection. `collectRadarContacts()` automatically acquires the nearest active hostile and retains it until invalid; on removal it reacquires the nearest remaining hostile.
+- The Elite-style elliptical 3D scanner and altitude stalks remain separate from the passive HUD direction cue. Bearing/elevation/range/closure are informational only; no autopilot or combat lock is introduced.
+- The opening Jackal shares the Elite-derived OCS controller and side-pass state machine with the Golovorez. Preserve ship-specific speed/handling values, lateral firing clearance, and overshoot/reposition phases.
+- Acceptance remains the natural 60-second Jackal browser simulation: all attack phases, at least two shots, minimum separation 80–180 units and lateral clearance ≥80 units.
