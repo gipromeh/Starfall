@@ -591,3 +591,10 @@ tags: [starfall, changelog]
 - GitHub Actions run #5 passed 12 headless browser combat trials using the real production update and projectile collision pipeline.
 - Aggregate baseline: 1,824 player laser projectiles, 892 hostile laser projectiles, 701.82 pirate HP damage, zero player deaths, zero complete squadron wipes.
 - Corrected the lab telemetry to count damage-handler events independently of the production NPC hit counter, which is reset on destruction.
+
+
+## STARFALL full mechanics verification plan (2026-11-02, isolated branch)
+
+- Audited existing regression coverage and added `docs/FINALIZATION_TEST_PLAN.md` with acceptance Gates A–F for flight, controls, weapons, combat AI, navigation, station/economy, progression, SAVE, mobile, graphics, performance and soak testing.
+- Enabled the full `game-tests.yml` regression matrix on `lab/elite-combat-ai`; experimental changes can run the broad existing game suite without pushing to production `main`.
+- Current coverage is explicitly classified as broad/partial where applicable. The game is not declared fully verified until every gate has behavioral tests and passes CI.
