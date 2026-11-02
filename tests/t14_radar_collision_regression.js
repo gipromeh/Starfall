@@ -3,7 +3,7 @@ const path = require('path');
 const assert = require('assert');
 const html = fs.readFileSync(path.join(__dirname, '..', 'STARFALL_CURRENT.html'), 'utf8');
 const checks = [
- ['HTML build version matches v90', html.includes('<meta name="starfall-version" content="v91">')],
+ ['HTML build version matches v91', html.includes('<meta name="starfall-version" content="v91">')],
  ['laser projectiles explicitly tagged', html.includes('arr.push({m,v,dmg,life,kind:"laser"})')],
  ['ballistic projectiles explicitly tagged', html.includes('arr.push({m,v,dmg,life,kind:"projectile"})')],
  ['hostile homing missiles explicitly tagged', html.includes('q.hm=1;q.kind="hostile-missile"')],
@@ -17,7 +17,7 @@ const checks = [
  ['Elite compass uses a hollow marker for a target behind and lights station safety S', html.includes('behind=radarPosition.z>0')&&html.includes('directionLength=radarPosition.length()')&&html.includes('dy=-radarPosition.y/directionLength*k')&&html.includes('if(behind){rc.strokeStyle="#baffc0"')&&html.includes('if(stationDistance<420)')],
  ['radar places contact dot by altitude above/below scanner plane', html.includes('const dotY=Math.max(6,Math.min(RADAR_H-6,baseY-(y/RADAR_RANGE)*RADAR_STALK))')],
  ['radar clips the grid to the elliptical scanner plane', html.includes('rc.ellipse(cx,cy,rx-5,ry-4,0,0,Math.PI*2);rc.clip()')],
- ['game metadata is v90', html.includes('<meta name="starfall-version" content="v90">')],
+ ['game metadata is v91', html.includes('<meta name="starfall-version" content="v91">')],
  ['radar filters eb by hostile missile type', html.includes('b.kind==="hostile-missile"&&b.hm===1')],
  ['Jackal has the slowest E/E2 speed multiplier', html.includes('*[1,.75,.85,.9][e.ty]')],
  ['Jackal has the slowest E/E2 initial speed', html.includes('multiplyScalar([18,10,12,16][ty]||18)')],
