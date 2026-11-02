@@ -74,5 +74,11 @@ Canonical record of durable gameplay, architecture, UI and workflow decisions. N
 - Problem observed in first wave: the Jackal approached without a visible radar contact; first-wave E/E2 spawn distance was outside the default 1 km scanner range and the radar suppressed contacts while `warp > 0`.
 - Decision: spawn the named first pair at 850 units ahead with a small symmetric lateral offset; show hostile radar contacts from entity creation, including warp-in.
 - Decision: use compact R/J labels and velocity-oriented triangular ship contacts while preserving the existing Elite Dangerous scanner contract: heading-relative circular plane, rotating sweep, altitude stalks, amber palette, 500 m / 1 km / 2 km ranges, and hostile edge indicators.
-- Scope: first-pair spawn, radar contact collection and contact glyph rendering. Pirate AI attack/fire state machine is not changed by this patch and remains subject to a separate combat regression/playtest.
+- Scope: first-pair spawn, radar contact collection and glyphs, plus correction of E/E2 attack-pass lateral offsets. The old Jackal offset (185) exceeded the 0.25 rad firing cone and failed the OCS centered gate; the new offsets `[55,70,45,80]` allow a firing lane without changing speed or weapon balance.
 - Acceptance: browser test confirms both first-wave contacts are hostile and present during warp-in, labels are R/J, and both spawn within 830–880 units ahead of the player. CI and visual playtest pending.
+
+
+## 2026-11-02 — Jackal first-wave firing geometry
+- Observation: the first-wave Jackal could perform an approach/overshoot without firing. The target pass offset (185 units) was incompatible with both the 0.25 rad firing lane and `EAI.fireGate`'s centered OCS gate at the 380-unit weapon range.
+- Decision: reduce E/E2 pass offsets to `[55,70,45,80]` by ship type. Preserve speed, turn coefficients, HP, weapon range, damage and AI decision cadence.
+- Acceptance: integration regression runs production `upd()` with a type-1 Jackal at 360 units and observes at least two actual laser projectiles. Status: implemented; awaiting CI.
