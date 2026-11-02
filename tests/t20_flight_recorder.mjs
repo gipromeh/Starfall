@@ -28,6 +28,7 @@ assert.equal(invalid.status, 400);
 let stored = null;
 globalThis.fetch = async (_url, init = {}) => {
   if (init.method === "PUT") {
+    if (stored) return new Response(JSON.stringify({ message: "File already exists" }), { status: 422 });
     stored = JSON.parse(init.body);
     return new Response(JSON.stringify({ content: { path: "telemetry/raw/test.jsonl" } }), { status: 201 });
   }
