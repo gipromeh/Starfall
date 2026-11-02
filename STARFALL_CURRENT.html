@@ -1929,7 +1929,7 @@ upd=function(dt){_updWithPirateFleet(dt);pirateFleetUpdate(dt);resolvePirateShip
 (()=>{
  "use strict";
  const SCHEMA=1,STORE="sf_fr_queue_v1",ENDPOINT=window.SF_TELEMETRY_ENDPOINT||(document.querySelector('meta[name="starfall-telemetry-endpoint"]')?.content||"");
- const SAMPLE_INTERVAL=.2,FLUSH_INTERVAL=12,MAX_CHUNK_BYTES=48*1024,MAX_QUEUE_BYTES=1536*1024;
+ const SAMPLE_INTERVAL=.2,FLUSH_INTERVAL=30,MAX_CHUNK_BYTES=256*1024,MAX_QUEUE_BYTES=1536*1024;
  let active=null,acc=0,lastFlush=0,flushing=false,queue=[],dropped=0;
  try{const saved=localStorage.getItem(STORE);if(saved){const parsed=JSON.parse(saved);if(Array.isArray(parsed))queue=parsed}}catch(_){}
  const ids=new WeakMap(),projectileIds=new WeakMap();let nextEntity=1,nextProjectile=1;
@@ -1940,7 +1940,7 @@ upd=function(dt){_updWithPirateFleet(dt);pirateFleetUpdate(dt);resolvePirateShip
   if(!active)return;
   const row={schemaVersion:SCHEMA,sessionId:active.id,t:Math.round(active.elapsed*1000)/1000,wallTime:iso(),type,...data};
   active.records.push(JSON.stringify(row));
-  if(active.records.length>=64||active.records.join("\n").length>=MAX_CHUNK_BYTES)sealChunk();
+  if(active.records.length>=512||active.records.join("\n").length>=MAX_CHUNK_BYTES)sealChunk();
  };
  const persist=()=>{
   try{
@@ -1979,17 +1979,17 @@ upd=function(dt){_updWithPirateFleet(dt);pirateFleetUpdate(dt);resolvePirateShip
   return out;
  };
  const projectileId=b=>{if(!projectileIds.has(b))projectileIds.set(b,"PRJ-"+String(nextProjectile++).padStart(7,"0"));return projectileIds.get(b)};
- const projectileRows=(arr,owner,seen,limit=80)=>{
-  if(!Array.isArray(arr))return [];
-  const out=[];
-  for(let i=Math.max(0,arr.length-limit);i<arr.length;i++){
+ const projectileRows=(arr,owner,seen)=>{
+  if(!Array.isArray(arr))return 0;
+  let count=0;
+  for(let i=0;i<arr.length;i++){
    const b=arr[i],m=b&&(b.m||b.mesh);if(!m||!m.position)continue;
-   const id=projectileId(b),kind=b.kind||b.type||(b.hm?"hostile-missile":"laser"),position=vec(m.position),velocity=vec(b.v);
+   const id=projectileId(b),kind=b.kind||b.type||(b.hm?"hostile-missile":"laser"),position=vec(m.position),velocity=vec(b.v),life=Number.isFinite(b.life)?+b.life.toFixed(2):null;
    seen.add(id);
-   if(!active.projectiles.has(id)){active.projectiles.set(id,true);emit("projectile_launch",{projectileId:id,owner,kind,position,velocity})}
-   out.push({id,owner,kind,position,velocity,life:Number.isFinite(b.life)?+b.life.toFixed(2):null});
+   if(!active.projectiles.has(id))emit("projectile_launch",{projectileId:id,owner,kind,position,velocity,life});
+   active.projectiles.set(id,{owner,kind,position,velocity,life});count++;
   }
-  return out;
+  return count;
  };
  const start=()=>{
   const date=iso(),stamp=date.replace(/[-:]/g,"").replace(/\.\d{3}Z$/,"Z");
@@ -2021,9 +2021,9 @@ upd=function(dt){_updWithPirateFleet(dt);pirateFleetUpdate(dt);resolvePirateShip
   const present=new Set(enemies.map(e=>e.id));
   for(const [id,previous] of active.seen)if(!present.has(id)){emit("npc_removed",{npcId:id,lastState:previous.state,lastHp:previous.hp,reason:previous.hp===0?"destroyed":"removed"});active.seen.delete(id)}
   const seenProjectiles=new Set();
-  const projectiles=[...projectileRows(bul,"player",seenProjectiles),...projectileRows(eb,"hostile",seenProjectiles),...projectileRows(mis,"player_missile",seenProjectiles)];
-  for(const [id] of active.projectiles)if(!seenProjectiles.has(id)){emit("projectile_removed",{projectileId:id,reason:"left_active_projectile_array"});active.projectiles.delete(id)}
-  emit("telemetry_sample",{player,enemies,projectiles,combat:{playerProjectiles:Array.isArray(bul)?bul.length:0,hostileProjectiles:Array.isArray(eb)?eb.length:0,missiles:Array.isArray(mis)?mis.length:0,playerTarget:E?enemyType(E):null}});
+  const projectileCounts={player:projectileRows(bul,"player",seenProjectiles),hostile:projectileRows(eb,"hostile",seenProjectiles),missiles:projectileRows(mis,"player_missile",seenProjectiles)};
+  for(const [id,last] of active.projectiles)if(!seenProjectiles.has(id)){emit("projectile_removed",{projectileId:id,...last,reason:"left_active_projectile_array"});active.projectiles.delete(id)}
+  emit("telemetry_sample",{player,enemies,combat:{projectiles:projectileCounts,playerTarget:E?enemyType(E):null}});
  };
  const frame=(dt,now)=>{
   if(state==="play"){
