@@ -1932,7 +1932,7 @@ upd=function(dt){_updWithPirateFleet(dt);pirateFleetUpdate(dt);resolvePirateShip
  const SAMPLE_INTERVAL=.2,FLUSH_INTERVAL=12,MAX_CHUNK_BYTES=48*1024,MAX_QUEUE_BYTES=1536*1024;
  let active=null,acc=0,lastFlush=0,flushing=false,queue=[],dropped=0;
  try{const saved=localStorage.getItem(STORE);if(saved){const parsed=JSON.parse(saved);if(Array.isArray(parsed))queue=parsed}}catch(_){}
- const ids=new WeakMap();let nextEntity=1;
+ const ids=new WeakMap(),projectileIds=new WeakMap();let nextEntity=1,nextProjectile=1;
  const iso=()=>new Date().toISOString();
  const vec=v=>v&&Number.isFinite(v.x)&&Number.isFinite(v.y)&&Number.isFinite(v.z)?{x:+v.x.toFixed(3),y:+v.y.toFixed(3),z:+v.z.toFixed(3)}:null;
  const quat=q=>q?{x:+q.x.toFixed(5),y:+q.y.toFixed(5),z:+q.z.toFixed(5),w:+q.w.toFixed(5)}:null;
@@ -1978,19 +1978,22 @@ upd=function(dt){_updWithPirateFleet(dt);pirateFleetUpdate(dt);resolvePirateShip
   if(Array.isArray(pirateFleet))for(const e of pirateFleet)if(e)out.push({e,slot:"F"+(e.slot??0)});
   return out;
  };
- const projectileRows=(arr,owner,limit=80)=>{
+ const projectileId=b=>{if(!projectileIds.has(b))projectileIds.set(b,"PRJ-"+String(nextProjectile++).padStart(7,"0"));return projectileIds.get(b)};
+ const projectileRows=(arr,owner,seen,limit=80)=>{
   if(!Array.isArray(arr))return [];
   const out=[];
   for(let i=Math.max(0,arr.length-limit);i<arr.length;i++){
-   const b=arr[i],m=b&&(b.m||b.mesh);
-   if(!m||!m.position)continue;
-   out.push({owner,kind:b.kind||b.type||(b.hm?"hostile-missile":"laser"),position:vec(m.position),velocity:vec(b.v),life:Number.isFinite(b.life)?+b.life.toFixed(2):null});
+   const b=arr[i],m=b&&(b.m||b.mesh);if(!m||!m.position)continue;
+   const id=projectileId(b),kind=b.kind||b.type||(b.hm?"hostile-missile":"laser"),position=vec(m.position),velocity=vec(b.v);
+   seen.add(id);
+   if(!active.projectiles.has(id)){active.projectiles.set(id,true);emit("projectile_launch",{projectileId:id,owner,kind,position,velocity})}
+   out.push({id,owner,kind,position,velocity,life:Number.isFinite(b.life)?+b.life.toFixed(2):null});
   }
   return out;
  };
  const start=()=>{
   const date=iso(),stamp=date.replace(/[-:]/g,"").replace(/\.\d{3}Z$/,"Z");
-  active={id:"sf-"+date.slice(0,10)+"-"+(crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2,14)),startedAt:date,elapsed:0,chunkIndex:1,records:[],seen:new Map()};
+  active={id:"sf-"+date.slice(0,10)+"-"+(crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2,14)),startedAt:date,elapsed:0,chunkIndex:1,records:[],seen:new Map(),projectiles:new Map()};
   nextEntity=1;emit("session_start",{gameVersion:"v92",schemaVersion:SCHEMA,platform:matchMedia("(pointer:coarse)").matches?"touch":"desktop",system:typeof sy==="number"?sy:null,ship:typeof shp==="number"?shp:null,difficulty:typeof dif==="number"?dif:null,stamp});
  };
  const finish=reason=>{
@@ -2004,7 +2007,7 @@ upd=function(dt){_updWithPirateFleet(dt);pirateFleetUpdate(dt);resolvePirateShip
   const enemies=[];
   for(const {e,slot} of enemyRows()){
    const id=idFor(e),g=e.g,pos=g&&g.position,velocity=e.vel||e.v;
-   const row={id,slot,class:enemyType(e),type:Number.isFinite(e.ty)?e.ty:null,boss:!!e.boss,position:vec(pos),velocity:vec(velocity),heading:vec(e.hd),distance:pos?+pos.distanceTo(P).toFixed(2):null,relativePosition:pos?vec(pos.clone().sub(P)):null,state:e.state||null,intent:e.aiIntent||null,hp:Number.isFinite(e.hp)?+e.hp.toFixed(2):null,maxHp:Number.isFinite(e.mx)?e.mx:null,warp:Number.isFinite(e.warp)?+e.warp.toFixed(2):null,ai:{ticks:e.aiTicks??null,clock:Number.isFinite(e.aiClock)?+e.aiClock.toFixed(3):null,yaw:e.ocsYaw??null,pitch:e.ocsPitch??null,accel:e.ocsAccel??null,targetSpeed:e.ocsTargetSpeed??null,burst:e.burst??e.burstLeft??0,fireCooldown:Number.isFinite(e.fire)?+e.fire.toFixed(2):null}};
+   const row={id,slot,class:enemyType(e),type:Number.isFinite(e.ty)?e.ty:null,boss:!!e.boss,position:vec(pos),velocity:vec(velocity),heading:vec(e.hd),distance:pos?+pos.distanceTo(P).toFixed(2):null,relativePosition:pos?vec(pos.clone().sub(P)):null,relativeVelocity:velocity?vec(velocity.clone().sub(vel)):null,state:e.state||null,intent:e.aiIntent||null,hp:Number.isFinite(e.hp)?+e.hp.toFixed(2):null,maxHp:Number.isFinite(e.mx)?e.mx:null,warp:Number.isFinite(e.warp)?+e.warp.toFixed(2):null,ai:{ticks:e.aiTicks??null,clock:Number.isFinite(e.aiClock)?+e.aiClock.toFixed(3):null,yaw:e.ocsYaw??null,pitch:e.ocsPitch??null,accel:e.ocsAccel??null,targetSpeed:e.ocsTargetSpeed??null,burst:e.burst??e.burstLeft??0,fireCooldown:Number.isFinite(e.fire)?+e.fire.toFixed(2):null}};
    enemies.push(row);
    const previous=active.seen.get(id);
    if(!previous)emit("npc_spawn",{npc:row});
@@ -2017,7 +2020,9 @@ upd=function(dt){_updWithPirateFleet(dt);pirateFleetUpdate(dt);resolvePirateShip
   }
   const present=new Set(enemies.map(e=>e.id));
   for(const [id,previous] of active.seen)if(!present.has(id)){emit("npc_removed",{npcId:id,lastState:previous.state,lastHp:previous.hp,reason:previous.hp===0?"destroyed":"removed"});active.seen.delete(id)}
-  const projectiles=[...projectileRows(bul,"player"),...projectileRows(eb,"hostile"),...projectileRows(mis,"player_missile")];
+  const seenProjectiles=new Set();
+  const projectiles=[...projectileRows(bul,"player",seenProjectiles),...projectileRows(eb,"hostile",seenProjectiles),...projectileRows(mis,"player_missile",seenProjectiles)];
+  for(const [id] of active.projectiles)if(!seenProjectiles.has(id)){emit("projectile_removed",{projectileId:id,reason:"left_active_projectile_array"});active.projectiles.delete(id)}
   emit("telemetry_sample",{player,enemies,projectiles,combat:{playerProjectiles:Array.isArray(bul)?bul.length:0,hostileProjectiles:Array.isArray(eb)?eb.length:0,missiles:Array.isArray(mis)?mis.length:0,playerTarget:E?enemyType(E):null}});
  };
  const frame=(dt,now)=>{
