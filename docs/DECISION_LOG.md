@@ -121,15 +121,18 @@ Canonical record of durable gameplay, architecture, UI and workflow decisions. N
 - This is a test isolation correction; it does not alter runtime enemy spawning or cleanup behavior.
 
 
-## 2026-11-02 — Passive Elite radar guidance and Jackal side-pass (v91)
-- The scanner no longer accepts touch/click target selection. `collectRadarContacts()` automatically acquires the nearest active hostile and retains it until invalid; on removal it reacquires the nearest remaining hostile.
-- The Elite-style elliptical 3D scanner and altitude stalks remain separate from the passive HUD direction cue. Bearing/elevation/range/closure are informational only; no autopilot or combat lock is introduced.
-- The opening Jackal shares the Elite-derived OCS controller and side-pass state machine with the Golovorez. Preserve ship-specific speed/handling values, lateral firing clearance, and overshoot/reposition phases.
-- Acceptance remains the natural 60-second Jackal browser simulation: all attack phases, at least two shots, minimum separation 80–180 units and lateral clearance ≥80 units.
-
+## 2026-11-02 — Passive Elite radar guidance (v91)
+- Сканер не принимает touch/click выбор цели. `collectRadarContacts()` выбирает ближайший активный вражеский контакт и удерживает его до потери валидности; затем выбирает ближайший оставшийся.
+- Эллиптический 3D-сканер и altitude stalks отделены от пассивного HUD cue. Bearing/elevation/range/closing speed информируют пилота; автопилота и боевого lock нет.
+- Старый scripted side-pass FSM, ранее использовавшийся стартовым «Шакалом», признан несоответствующим DEC-014 и удалён в реализации v91. Записи о фазах waypoint-маршрута ниже по истории — только исторический контекст.
 
 ## 2026-11-02 — DEC-014: обязательная полная замена пиратского AI на Elite
 - Уточнено, что прежняя стартовая механика «Шакала» не подлежит параметрической коррекции: требуется полная замена decision/maneuver алгоритма на подтверждённую Elite-логику.
 - «Шакал» и «Головорез» используют общий Elite-derived AI; различия классов выражаются данными, а не отдельными legacy FSM.
 - OCS helper внутри старого сценарного FSM не считается Elite AI. Приёмка требует естественной детерминированной симуляции с реальными траекториями, тактикой, уклонением, огнём и проверкой расхождения.
 - Закреплён Elite ZX scanner: эллипс, 3D контакты со штоками высоты, отдельный компас, автоматическая пассивная навигационная цель; без tap-to-select, автопилота и боевого lock.
+- Реализация v91 использует общий `EAI.pilot()` для `pirateFleet`, E/E2 и движения босса; прежние APPROACH/ATTACK_RUN/FIRING_PASS/OVERSHOOT/REPOSITION/LOOP/BREAK удалены из runtime.
+- Исследовательские соответствия: Elite passport §§5.2–5.4 (decision cadence и модель поведения), 13.7/14.7 (наведение и OCS), 14.11 (огневые gates), 14.13 (реестр контрактов).
+- Адаптация: 15 Hz decision tick, per-frame integration, локальные OCS-проекции, velocity lead, боковая составляющая при ближнем уклонении, прогноз угрозы снаряда, разделение соседних кораблей и data-driven профили.
+- STARFALL-specific profile thresholds, probability curve, projectile prediction/separation и квантизация `EAI.command()` не являются оригинальными константами Elite; точная Z80/$F9FA эмуляция не заявляется.
+- Поведенческая приёмка проверяется 60-секундной детерминированной симуляцией двух классов: pursuit, attack, evasion, firing, безопасное расстояние и отсутствие legacy state fields. Итоговый статус — после полного CI.
