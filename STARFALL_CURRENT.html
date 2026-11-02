@@ -8,7 +8,7 @@
 body{font-family:"Exo 2","Segoe UI",Roboto,sans-serif;letter-spacing:.04em}
 body::before{content:"";position:fixed;inset:0;background:repeating-linear-gradient(transparent 0 2px,#4fd0ff09 2px 3px);pointer-events:none;z-index:40}
 h1,h2{font-family:"Russo One","Exo 2",sans-serif;text-shadow:0 0 18px #4fd0ff}
-.ov{backdrop-filter:blur(2px);touch-action:pan-y}#radar{top:auto;left:auto;width:min(170px,30vh);height:min(170px,30vh)}@media (max-height:540px){.ov{justify-content:flex-start!important;overflow-y:auto;gap:6px!important;padding-top:10px}h1{font-size:34px!important}}
+.ov{backdrop-filter:blur(2px);touch-action:pan-y}#radar{top:auto;left:auto;width:min(260px,64vw);height:88px}@media (max-height:540px){.ov{justify-content:flex-start!important;overflow-y:auto;gap:6px!important;padding-top:10px}h1{font-size:34px!important}}
 button{font-family:inherit;font-weight:700;text-transform:uppercase;background:linear-gradient(#0b2a4acc,#06182ccc);border:1px solid #4fd0ff99;clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);box-shadow:inset 0 0 12px #4fd0ff44;text-shadow:0 0 6px #4fd0ff}
 button:hover,button.on{background:#4fd0ffdd;color:#001824;text-shadow:none}
 .t{color:#c8ecff;text-shadow:0 0 8px #4fd0ff;font-weight:600}
@@ -16,8 +16,8 @@ button:hover,button.on{background:#4fd0ffdd;color:#001824;text-shadow:none}
 #hud::before{content:"";position:absolute;left:8px;top:8px;width:270px;height:152px;border-left:2px solid #4fd0ff99;background:linear-gradient(90deg,#06223a99,transparent);clip-path:polygon(0 0,100% 0,100% 62%,88% 100%,0 100%)}
 #hull::after,#shield::after,#heat::after,#fuel::after{position:absolute;left:228px;top:-2px;font-size:10px;color:#9fdcff;letter-spacing:.1em}
 #hull::after{content:"КОРПУС";color:#ffb0a0}#shield::after{content:"ЩИТ"}#heat::after{content:"НАГРЕВ";color:#ffd080}#fuel::after{content:"ТОПЛИВО";color:#b8ffa0}
-#radar{border:2px solid #ffad63bb!important;box-shadow:0 0 18px #ff9b4a77,inset 0 0 22px #ff9b4a44;background:radial-gradient(#3b1d08a0,#080502a0)!important}
-#radar-controls button{background:#1c1009ee;border:1px solid #ffad6388;color:#ffe2c4;box-shadow:0 0 6px #ff9b4a33;font-family:inherit;font-weight:700}#radar-controls button.on{background:#ffb66ddd;color:#241004;box-shadow:0 0 10px #ff9b4a99}
+#radar{border:1px solid #a8ffb477!important;border-radius:2px!important;box-shadow:0 0 10px #5aff8244,inset 0 0 12px #5aff821c;background:#020904ee!important}
+
 #cross{border:0;box-shadow:none}
 #tgt,#lead{display:none!important}
 #cross.on{opacity:1!important}#cross.on::before,#cross.on::after{background:#ff2a2a;box-shadow:0 0 8px #f22}
@@ -140,7 +140,7 @@ small{opacity:.75;max-width:600px;line-height:1.6}
 <div id="hud"><span class="hud-version" data-version-label></span><div class="bar" id="hull"><i></i></div><div class="bar" id="shield"><i></i></div>
 <div class="t" id="miss" style="left:20px;top:62px"></div><div class="t" id="sc" style="right:20px;top:20px;text-align:right"></div>
 <div class="t" id="msg"></div><button id="fbtn" style="position:absolute;left:50%;transform:translateX(-50%);bottom:64px;pointer-events:auto;padding:6px 14px;font-size:12px;background:#04182cdd;color:#bfeaff;border:2px solid #4fd0ffcc;border-radius:16px;box-shadow:0 0 10px #4fd0ff88;cursor:pointer;z-index:5">СОПРОВОЖДЕНИЕ [H]</button><div id="cross"></div><div id="stick"></div><div id="tgt"></div>
-<div class="t" id="tinfo" style="left:0;right:0;bottom:28px;text-align:center"></div><div class="bar" id="heat" style="top:84px"><i style="background:#fa0;width:0"></i></div><div class="t" id="aux" style="left:20px;top:104px"></div><div class="bar" id="fuel" style="top:128px"><i style="background:#8f4;width:100%"></i></div><div class="bar" id="ehp" style="left:50%;margin-left:-110px;top:20px;display:none"><i style="background:#f44;width:0"></i></div><button id="pbtn" style="position:absolute;right:20px;top:60px;pointer-events:auto;min-width:0;padding:4px 12px;font-size:14px">II</button><div id="thr" style="position:absolute;display:none;color:#f54;font-size:28px">➤</div><div id="lead" style="position:absolute;display:none;width:14px;height:14px;margin:-7px;border:2px solid #8f8;border-radius:50%"></div><div id="hm" style="position:absolute;left:50%;top:50%;margin:-16px;width:32px;height:32px;opacity:0;color:#fff;font-size:30px;text-align:center;line-height:32px">✕</div><div class="t" id="cmb" style="left:0;right:0;top:30%;text-align:center;font-size:20px;color:#fd4"></div><canvas id="radar" width="170" height="170" style="position:absolute;right:20px;bottom:20px;border-radius:50%;background:#02122099;border:1px solid #3cf"></canvas><div id="radar-controls" aria-label="Масштаб радара" style="position:absolute;right:20px;bottom:194px;display:flex;gap:3px;z-index:12;pointer-events:auto"><button type="button" data-radar-range="500" aria-label="Радар 500 метров" style="font-size:10px;line-height:1;padding:4px 5px;min-width:32px;letter-spacing:0;clip-path:none">0.5</button><button type="button" data-radar-range="1000" aria-label="Радар 1 километр" style="font-size:10px;line-height:1;padding:4px 5px;min-width:32px;letter-spacing:0;clip-path:none">1.0</button><button type="button" data-radar-range="2000" aria-label="Радар 2 километра" style="font-size:10px;line-height:1;padding:4px 5px;min-width:32px;letter-spacing:0;clip-path:none">2.0</button></div><div id="flash"></div><div class="t" id="scn" style="left:0;right:0;top:57%;text-align:center;font-size:13px;color:#ffd36a;display:none"></div><div class="t" id="spd" style="left:0;right:0;bottom:56px;text-align:center;font-size:12px;line-height:1.5"></div></div>
+<div class="t" id="tinfo" style="left:0;right:0;bottom:28px;text-align:center"></div><div class="bar" id="heat" style="top:84px"><i style="background:#fa0;width:0"></i></div><div class="t" id="aux" style="left:20px;top:104px"></div><div class="bar" id="fuel" style="top:128px"><i style="background:#8f4;width:100%"></i></div><div class="bar" id="ehp" style="left:50%;margin-left:-110px;top:20px;display:none"><i style="background:#f44;width:0"></i></div><button id="pbtn" style="position:absolute;right:20px;top:60px;pointer-events:auto;min-width:0;padding:4px 12px;font-size:14px">II</button><div id="thr" style="position:absolute;display:none;color:#f54;font-size:28px">➤</div><div id="lead" style="position:absolute;display:none;width:14px;height:14px;margin:-7px;border:2px solid #8f8;border-radius:50%"></div><div id="hm" style="position:absolute;left:50%;top:50%;margin:-16px;width:32px;height:32px;opacity:0;color:#fff;font-size:30px;text-align:center;line-height:32px">✕</div><div class="t" id="cmb" style="left:0;right:0;top:30%;text-align:center;font-size:20px;color:#fd4"></div><canvas id="radar" width="260" height="88" aria-label="3D сканер контактов" style="position:absolute;right:20px;bottom:20px;width:min(260px,64vw);height:88px;border-radius:2px;background:#020904ee;border:1px solid #a8ffb477"></canvas><div id="flash"></div><div class="t" id="scn" style="left:0;right:0;top:57%;text-align:center;font-size:13px;color:#ffd36a;display:none"></div><div class="t" id="spd" style="left:0;right:0;bottom:56px;text-align:center;font-size:12px;line-height:1.5"></div></div>
 <div id="tsp" style="position:fixed;inset:0;pointer-events:none"></div>
 <div class="ov" id="menu"><div class="mn-hero"><h1>STARFALL</h1><div class="mn-sub">VOID HUNTER</div><div class="mn-version" data-version-label></div></div>
 <div class="mn-main" id="mnmain"><button id="play">ИГРАТЬ</button><div class="mn-hint">нажмите ENTER или коснитесь кнопки</div></div>
@@ -1910,74 +1910,70 @@ upd=function(dt){_updWithPirateFleet(dt);pirateFleetUpdate(dt);resolvePirateShip
 // ===== END STARFALL v77 PIRATE FLEET =====
 
 
-const rc=$("radar").getContext("2d");let radarRange=1000,radarSweepAngle=0;
-let radarTarget=null;const radarRangeButtons=Array.from(document.querySelectorAll("#radar-controls [data-radar-range]")),radarContacts=[],radarPosition=new T.Vector3(),radarVelocity=new T.Vector3();
+const rc=$("radar").getContext("2d");
+const RADAR_W=260,RADAR_H=88,RADAR_CX=106,RADAR_CY=45,RADAR_RX=91,RADAR_RY=28,RADAR_STALK=30,RADAR_RANGE=1600;
+const radarRange=RADAR_RANGE;let radarTarget=null;
+const radarContacts=[],radarPosition=new T.Vector3(),radarInverse=new T.Quaternion();
 function collectRadarContacts(){
  let n=0;const put=(position,kind,color,radius,label,entity,velocity,ty,hostile,selected)=>{if(!position)return;const c=radarContacts[n]||(radarContacts[n]={});Object.assign(c,{position,kind,color,radius,label,entity,velocity,ty,hostile:!!hostile,selected:!!selected||entity===radarTarget});n++};
- const enemy=(e,label)=>{if(e&&e.g&&e.hp>0)put(e.g.position,e.boss?"boss":"enemy",e.boss?"#f34cff":["#ff6578","#ffb84d","#ff8154","#d68aff"][e.ty]||"#ff6578",e.boss?5.5:3.4,label,e,e.vel,e.ty,true,e===radarTarget)};
+ const enemy=(e,label)=>{if(e&&e.g&&e.hp>0)put(e.g.position,e.boss?"boss":"enemy","#ff6262",2.4,label,e,e.vel,e.ty,true,e===radarTarget)};
  enemy(E,E&&E.ty===1?"J":"R");enemy(E2,E2&&E2.ty===1?"J":"R");
- for(const pe of pirateFleet)if(pe.g&&pe.hp>0)put(pe.g.position,"enemy",["#ff6578","#ffb84d","#ff8154","#d68aff"][pe.ty]||"#ff6578",3.2,pe.ty===1?"J":"R",pe,pe.vel,pe.ty,true,false);
- if(plt&&plt.visible)put(plt.position,"planet","#8bdcff",5,"P",plt,null,-1,false,false);
- worldPlanets.forEach(wp=>put(wp.mesh.position,wp.kind==="moon"?"moon":"planet",wp.kind==="moon"?"#d6dce6":"#568da8",wp.kind==="moon"?2.5:3.4,wp.kind==="moon"?"M":"P",wp,null,-1,false,false));
- if(stn&&stn.visible)put(stn.position,"station","#ffcf62",4.5,"S",stn,null,-1,false,false);
- nv.forEach((v,i)=>{if(v.g)put(v.g.position,v.tur?"turret":"neutral",v.tur?"#ffe81a":"#cbd5df",v.tur?3.6:2.8,"N"+(i+1),v,v.v,-1,false,false)});
- eb.forEach(b=>{if(b.kind==="hostile-missile"&&b.hm===1&&b.m&&b.life>0)put(b.m.position,"missile","#fff04a",2.3,"!",b,b.v,-1,true,false)});
- mis.forEach(b=>{if(b.m)put(b.m.position,"missile","#fff04a",2.3,"",b,b.v,-1,false,false)});
- ali.forEach((a,i)=>{if(a.g&&a.life>0)put(a.g.position,"ally","#55ee99",2.8,"A"+(i+1),a,a.v,-1,false,false)});
- if(window.SF_DS)window.SF_DS.radar(put);radarContacts.length=n;if(!radarContacts.some(q=>q.entity===radarTarget&&q.hostile)){radarTarget=null;let nearest=null,nearestD=Infinity;for(const q of radarContacts)if(q.hostile){const d=q.position.distanceToSquared(P);if(d<nearestD){nearestD=d;nearest=q}}if(nearest)radarTarget=nearest.entity}for(const q of radarContacts)q.selected=q.hostile&&q.entity===radarTarget;return radarContacts;
+ for(const pe of pirateFleet)if(pe.g&&pe.hp>0)put(pe.g.position,"enemy","#ff6262",2.4,pe.ty===1?"J":"R",pe,pe.vel,pe.ty,true,false);
+ nv.forEach((v,i)=>{if(v.g)put(v.g.position,v.tur?"turret":"neutral",v.tur?"#ffe36b":"#e8f2e9",2.1,"N"+(i+1),v,v.v,-1,false,false)});
+ eb.forEach(b=>{if(b.kind==="hostile-missile"&&b.hm===1&&b.m&&b.life>0)put(b.m.position,"missile","#ffe36b",2.1,"!",b,b.v,-1,true,false)});
+ mis.forEach(b=>{if(b.m)put(b.m.position,"missile","#a8ffb4",2.1,"",b,b.v,-1,false,false)});
+ ali.forEach((a,i)=>{if(a.g&&a.life>0)put(a.g.position,"ally","#8bff9a",2.1,"A"+(i+1),a,a.v,-1,false,false)});
+ if(stn&&stn.visible)put(stn.position,"station","#f3e88c",2.5,"S",stn,null,-1,false,false);
+ if(window.SF_DS)window.SF_DS.radar(put);
+ radarContacts.length=n;
+ if(!radarContacts.some(q=>q.entity===radarTarget&&q.hostile)){radarTarget=null;let nearest=null,nearestD=Infinity;for(const q of radarContacts)if(q.hostile){const d=q.position.distanceToSquared(P);if(d<nearestD){nearestD=d;nearest=q}}if(nearest)radarTarget=nearest.entity}
+ for(const q of radarContacts)q.selected=q.hostile&&q.entity===radarTarget;
+ return radarContacts;
 }
 function radarDistanceLabel(d){return d>=1000?(d/1000).toFixed(1)+"км":Math.round(d)+"м"}
 function radar(){
- const c=85,R0=72,scale=R0/radarRange,iq=Q.clone().invert(),contacts=collectRadarContacts(),now=performance.now();
- radarSweepAngle=(now*.00048)%(Math.PI*2);
- rc.clearRect(0,0,170,170);rc.save();
- rc.beginPath();rc.arc(c,c,82,0,Math.PI*2);rc.fillStyle="#0c0805f2";rc.fill();rc.strokeStyle="#ffad6388";rc.lineWidth=1.4;rc.stroke();
- rc.save();rc.beginPath();rc.arc(c,c,78,0,Math.PI*2);rc.clip();
- const bg=rc.createRadialGradient(c,c,4,c,c,78);bg.addColorStop(0,"#39200aaa");bg.addColorStop(1,"#0f0903dd");rc.fillStyle=bg;rc.fillRect(7,7,156,156);
- for(let i=1;i<=3;i++){const rr=R0*i/3;rc.beginPath();rc.arc(c,c,rr,0,Math.PI*2);rc.strokeStyle=i===3?"#ffc07866":"#e4a65b38";rc.lineWidth=i===3?1.1:.8;rc.stroke();if(i<3){rc.fillStyle="#a9eaff88";rc.font="7px monospace";rc.textAlign="left";rc.fillText(radarDistanceLabel(radarRange*i/3),c+rr+2,c-2)}}
- rc.beginPath();rc.moveTo(c,14);rc.lineTo(c,156);rc.moveTo(14,c);rc.lineTo(156,c);rc.strokeStyle="#ffc07844";rc.lineWidth=.7;rc.stroke();
- rc.fillStyle="#ffd4a3";rc.font="bold 8px monospace";rc.textAlign="center";rc.fillText("F",c,20);rc.fillText("A",c,153);rc.fillText("L",18,c+3);rc.fillText("R",152,c+3);
- const sweep=radarSweepAngle;rc.save();rc.translate(c,c);rc.rotate(sweep);
- const wedge=rc.createRadialGradient(0,0,3,0,0,R0);wedge.addColorStop(0,"#ffb35c00");wedge.addColorStop(.75,"#ffb35c18");wedge.addColorStop(1,"#36f5c000");
- rc.beginPath();rc.moveTo(0,0);rc.arc(0,0,R0,-.42,.025);rc.closePath();rc.fillStyle=wedge;rc.fill();
- rc.beginPath();rc.moveTo(0,0);rc.lineTo(R0,0);rc.strokeStyle="#ffc078cc";rc.lineWidth=1.2;rc.shadowColor="#ff9d3d";rc.shadowBlur=7;rc.stroke();rc.restore();
- let hostileCount=0,targetText="",targetDistance=0;
- for(const q of contacts){
-  if(q.hostile)hostileCount++;
-  radarPosition.copy(q.position).sub(P).applyQuaternion(iq);
-  const planar=Math.hypot(radarPosition.x,radarPosition.z),distance=radarPosition.length(),outside=planar>radarRange;
-  if(outside&&!q.hostile)continue;
-  let x=radarPosition.x*scale,y=-radarPosition.z*scale;
-  if(outside){const k=R0/Math.max(1,planar);x=radarPosition.x*k;y=-radarPosition.z*k}
-  const px=c+x,py=c+y,height=radarPosition.y,verticalOffset=Math.abs(height)>15?Math.min(25,4+Math.abs(height)/radarRange*34):0,markerY=py+(height>0?-verticalOffset:verticalOffset);
-  if(q.hostile&&q.selected){targetText=q.label;targetDistance=distance}
-  if(outside){
-   const a=Math.atan2(y,x);rc.save();rc.translate(c,c);rc.rotate(a);rc.beginPath();rc.moveTo(R0,0);rc.lineTo(R0-8,-5);rc.lineTo(R0-8,5);rc.closePath();rc.fillStyle=q.color;rc.fill();rc.restore();
-  }else{
-   if(verticalOffset>0){
-    // Elite-style altitude stalk: base is on the scanner plane, contact symbol is at its true height.
-    rc.beginPath();rc.moveTo(px,py);rc.lineTo(px,markerY);rc.strokeStyle=q.color;rc.globalAlpha=.92;rc.lineWidth=1.35;rc.stroke();rc.globalAlpha=1;
-    rc.beginPath();rc.arc(px,py,1.8,0,Math.PI*2);rc.fillStyle=q.color;rc.fill();
-   }
-   let heading=0;if(q.velocity){radarVelocity.copy(q.velocity).applyQuaternion(iq);const vl=Math.hypot(radarVelocity.x,radarVelocity.z);if(vl>2){heading=Math.atan2(radarVelocity.x,-radarVelocity.z);rc.beginPath();rc.moveTo(px,markerY);rc.lineTo(px+radarVelocity.x/vl*8,markerY-radarVelocity.z/vl*8);rc.strokeStyle=q.color;rc.lineWidth=1.2;rc.globalAlpha=.75;rc.stroke();rc.globalAlpha=1}}
-   rc.save();rc.translate(px,markerY);rc.fillStyle=q.color;
-   if(q.kind==="enemy"||q.kind==="boss"){rc.rotate(heading);rc.beginPath();rc.moveTo(0,-q.radius*1.45);rc.lineTo(q.radius*.95,q.radius);rc.lineTo(0,q.radius*.48);rc.lineTo(-q.radius*.95,q.radius);rc.closePath();rc.fill();if(q.kind==="boss"){rc.strokeStyle="#fff";rc.lineWidth=1;rc.stroke()}}
-   else if(q.kind==="station"){rc.rotate(Math.PI/4);rc.fillRect(-q.radius,-q.radius,q.radius*2,q.radius*2)}
-   else if(q.kind==="missile"){rc.beginPath();rc.moveTo(0,-q.radius);rc.lineTo(q.radius,q.radius);rc.lineTo(-q.radius,q.radius);rc.closePath();rc.fill()}
-   else{rc.beginPath();rc.arc(0,0,q.radius,0,Math.PI*2);rc.fill()}
-   rc.restore();
-   if(q.hostile&&(q.selected||planar<radarRange*.9)){rc.fillStyle="#f4fbff";rc.font="8px monospace";rc.textAlign="left";rc.fillText(q.label,px+5,markerY-4)}
-  }
-  if(q.selected&&!outside){rc.beginPath();rc.arc(px,markerY,q.radius+4,0,Math.PI*2);rc.strokeStyle="#fff";rc.lineWidth=1.2;rc.stroke()}
- }
- rc.save();rc.translate(c,c);rc.beginPath();rc.moveTo(0,-7);rc.lineTo(5,6);rc.lineTo(0,3);rc.lineTo(-5,6);rc.closePath();rc.fillStyle="#fff0d5";rc.shadowColor="#ffbb66";rc.shadowBlur=6;rc.fill();rc.restore();
+ radarInverse.copy(Q).invert();const contacts=collectRadarContacts();
+ const cx=RADAR_CX,cy=RADAR_CY,rx=RADAR_RX,ry=RADAR_RY;
+ rc.clearRect(0,0,RADAR_W,RADAR_H);rc.save();
+ rc.fillStyle="#020904";rc.fillRect(0,0,RADAR_W,RADAR_H);
+ // Original Elite 3D scanner: an ellipse, a contact notch and a vertical altitude stalk.
+ rc.strokeStyle="#baffc0";rc.lineWidth=1.1;rc.beginPath();rc.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);rc.stroke();
+ rc.save();rc.beginPath();rc.ellipse(cx,cy,rx-5,ry-4,0,0,Math.PI*2);rc.clip();
+ rc.strokeStyle="#6cae79";rc.lineWidth=.65;rc.setLineDash([1,3]);
+ rc.beginPath();rc.ellipse(cx,cy,rx*.68,ry*.62,0,0,Math.PI*2);rc.stroke();
+ rc.beginPath();rc.moveTo(cx-rx+2,cy);rc.lineTo(cx+rx-2,cy);rc.moveTo(cx,cy-ry+1);rc.lineTo(cx,cy+ry-1);rc.stroke();
+ rc.setLineDash([]);
+ rc.beginPath();rc.moveTo(cx,cy-ry+2);rc.lineTo(cx-rx*.53,cy+ry*.68);rc.moveTo(cx,cy-ry+2);rc.lineTo(cx+rx*.53,cy+ry*.68);rc.stroke();
  rc.restore();
- rc.fillStyle="#ffd8ad";rc.font="8px monospace";rc.textAlign="center";rc.fillText(targetText?"ЦЕЛЬ "+targetText+" · "+Math.round(targetDistance)+"м":"КОНТАКТЫ · ВРАГИ "+hostileCount,c,168);rc.restore();
+ for(const q of contacts){
+  radarPosition.copy(q.position).sub(P).applyQuaternion(radarInverse);
+  const x=radarPosition.x,y=radarPosition.y,z=radarPosition.z;
+  if(Math.abs(x)>RADAR_RANGE||Math.abs(y)>RADAR_RANGE||Math.abs(z)>RADAR_RANGE)continue;
+  const px=cx+(x/RADAR_RANGE)*rx,baseY=cy+(z/RADAR_RANGE)*ry;
+  const dotY=Math.max(6,Math.min(RADAR_H-6,baseY-(y/RADAR_RANGE)*RADAR_STALK));
+  rc.strokeStyle=q.color;rc.globalAlpha=.88;rc.lineWidth=1;
+  if(Math.abs(dotY-baseY)>1.2){rc.beginPath();rc.moveTo(px,baseY);rc.lineTo(px,dotY);rc.stroke()}
+  rc.globalAlpha=1;rc.fillStyle=q.color;rc.fillRect(Math.round(px)-1.5,Math.round(dotY)-1.5,3,3);
+  if(q.selected){rc.strokeStyle="#ffffff";rc.lineWidth=.8;rc.strokeRect(px-3.2,dotY-3.2,6.4,6.4)}
+ }
+ // Elite compass: planet by default, station when close; hollow marker means target is behind.
+ const stationDistance=stn&&stn.visible?P.distanceTo(stn.position):Infinity;
+ const compassTarget=stationDistance<900?stn:(plt&&plt.visible?plt:(stn&&stn.visible?stn:null));
+ const ccx=232,ccy=24,cr=16;
+ rc.strokeStyle="#baffc0";rc.lineWidth=1;rc.beginPath();rc.arc(ccx,ccy,cr,0,Math.PI*2);rc.stroke();
+ rc.beginPath();rc.arc(ccx,ccy,1.2,0,Math.PI*2);rc.fillStyle="#6cae79";rc.fill();
+ if(compassTarget){
+  radarPosition.copy(compassTarget.position).sub(P).applyQuaternion(radarInverse);
+  const horizontal=Math.hypot(radarPosition.x,radarPosition.z)||1,k=cr*.68;
+  const dx=radarPosition.x/horizontal*k,dy=radarPosition.z/horizontal*k,behind=radarPosition.z>0;
+  rc.beginPath();rc.arc(ccx+dx,ccy+dy,3,0,Math.PI*2);
+  if(behind){rc.strokeStyle="#baffc0";rc.lineWidth=1.2;rc.stroke()}else{rc.fillStyle="#baffc0";rc.fill()}
+ }
+ if(stationDistance<420){rc.fillStyle="#baffc0";rc.font="bold 13px monospace";rc.textAlign="center";rc.fillText("S",ccx,78)}
+ rc.restore();
 }
-function setRadarRange(value){radarRange=Math.max(500,Math.min(2000,Number(value)||1000));radarRangeButtons.forEach(b=>b.classList.toggle("on",Number(b.dataset.radarRange)===radarRange));radar()}
-radarRangeButtons.forEach(b=>b.addEventListener("click",e=>{e.stopPropagation();setRadarRange(b.dataset.radarRange)}));radarRangeButtons.forEach(b=>b.classList.toggle("on",Number(b.dataset.radarRange)===radarRange));
 const radarCanvas=document.getElementById("radar");radarCanvas.style.pointerEvents="auto";radarCanvas.style.touchAction="manipulation";radarCanvas.style.cursor="crosshair";
-radarCanvas.addEventListener("click",event=>{const rect=radarCanvas.getBoundingClientRect(),mx=(event.clientX-rect.left)*170/rect.width,my=(event.clientY-rect.top)*170/rect.height,cx=85,cy=85,scale=72/radarRange,iq=Q.clone().invert();let best=null,bestD=18*18;for(const q of collectRadarContacts()){if(!q.hostile)continue;radarPosition.copy(q.position).sub(P).applyQuaternion(iq);const planar=Math.hypot(radarPosition.x,radarPosition.z);let x=radarPosition.x*scale,y=-radarPosition.z*scale;if(planar>radarRange){const k=72/Math.max(1,planar);x*=k;y*=k}const off=Math.abs(radarPosition.y)>15?Math.min(25,4+Math.abs(radarPosition.y)/radarRange*34):0,px=cx+x,py=cy+y+(radarPosition.y>0?-off:off),d=(px-mx)*(px-mx)+(py-my)*(py-my);if(d<bestD){bestD=d;best=q}}if(best){radarTarget=best.entity;radar();}});
+radarCanvas.addEventListener("click",event=>{const rect=radarCanvas.getBoundingClientRect(),mx=(event.clientX-rect.left)*RADAR_W/rect.width,my=(event.clientY-rect.top)*RADAR_H/rect.height;radarInverse.copy(Q).invert();let best=null,bestD=10*10;for(const q of collectRadarContacts()){if(!q.hostile)continue;radarPosition.copy(q.position).sub(P).applyQuaternion(radarInverse);const x=radarPosition.x,y=radarPosition.y,z=radarPosition.z;if(Math.abs(x)>RADAR_RANGE||Math.abs(y)>RADAR_RANGE||Math.abs(z)>RADAR_RANGE)continue;const px=RADAR_CX+(x/RADAR_RANGE)*RADAR_RX,baseY=RADAR_CY+(z/RADAR_RANGE)*RADAR_RY,py=Math.max(6,Math.min(RADAR_H-6,baseY-(y/RADAR_RANGE)*RADAR_STALK)),d=(px-mx)*(px-mx)+(py-my)*(py-my);if(d<bestD){bestD=d;best=q}}if(best){radarTarget=best.entity;radar();}});
 const radarTargetHud=document.createElement("div"),radarTargetCue=document.createElement("div");radarTargetHud.style.cssText="position:absolute;z-index:8;top:65px;left:50%;transform:translateX(-50%);max-width:70vw;padding:5px 10px;background:#07131ddd;border:1px solid #ffad6388;color:#ffe0b8;font:700 11px monospace;letter-spacing:.04em;text-align:center;pointer-events:none;white-space:nowrap;text-shadow:0 0 7px #ff9b4a";radarTargetCue.style.cssText="position:absolute;z-index:7;display:none;left:50%;top:50%;width:30px;height:30px;margin:-15px;border:2px solid #ffb35c;border-radius:50%;color:#fff0d5;font:20px monospace;line-height:26px;text-align:center;text-shadow:0 0 8px #ff9b4a;box-shadow:0 0 10px #ff9b4a88;pointer-events:none";radarTargetCue.textContent="⌖";$("hud").append(radarTargetHud,radarTargetCue);
 function radarTargetUpdate(){if(state!=="play"||!radarTarget){radarTargetHud.style.display="none";radarTargetCue.style.display="none";return}const q=radarContacts.find(x=>x.entity===radarTarget&&x.hostile);if(!q){radarTargetHud.style.display="none";radarTargetCue.style.display="none";return}const delta=q.position.clone().sub(P),distance=delta.length(),local=delta.clone().applyQuaternion(Q.clone().invert()),planar=Math.hypot(local.x,local.z),bearing=Math.atan2(local.x,-local.z)*180/Math.PI,elevation=Math.atan2(local.y,Math.max(1,planar))*180/Math.PI,dir=delta.clone().normalize(),relative=(q.velocity||new T.Vector3()).clone().sub(vel),closing=-relative.dot(dir),side=bearing>2?"ПРАВО":bearing< -2?"ЛЕВО":"ПО КУРСУ",vertical=elevation>2?"ВЫШЕ":elevation< -2?"НИЖЕ":"ПО ВЫСОТЕ";const name=q.label==="J"?"ШАКАЛ":q.label==="R"?"ГОЛОВОРЕЗ":q.label;radarTargetHud.style.display="block";radarTargetHud.textContent=name+" · "+radarDistanceLabel(distance)+" · "+side+" "+Math.round(Math.abs(bearing))+"° · "+vertical+" "+Math.round(Math.abs(elevation))+"° · "+(closing>=0?"СБЛИЖЕНИЕ ":"УДАЛЕНИЕ ")+Math.round(Math.abs(closing))+" м/с";const p=q.position.clone().project(C),visible=p.z<1&&Math.abs(p.x)<.94&&Math.abs(p.y)<.9;let x=p.x,y=p.y;if(p.z>1){x=-x;y=-y}const m=Math.max(Math.abs(x)/.88,Math.abs(y)/.82,1);if(!visible){x/=m;y/=m;radarTargetCue.textContent="▲";radarTargetCue.style.transform="rotate("+Math.atan2(x,-y)+"rad)"}else{radarTargetCue.textContent="⌖";radarTargetCue.style.transform="none"}radarTargetCue.style.left=(50+x*46)+"%";radarTargetCue.style.top=(50-y*44)+"%";radarTargetCue.style.display="block";}
 let last=performance.now();
@@ -1985,7 +1981,7 @@ function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/
 if(state==="menu"){const t=now/4000;C.position.set(Math.sin(t)*13,3,Math.cos(t)*13);C.lookAt(0,0,0);sky.position.copy(P)}else if(state==="dock"){C.position.set(8,6,10);C.lookAt(-120,-250,-420);sky.position.copy(P)}else if(state==="jump")jmp(dt);else if(state==="play"||state==="dying")upd(dt);else if(hg)hg.gain.value=0;if(tr<1)trRender(dt);else if(!cafeLive)CP.render()}
 const TCH=matchMedia("(pointer:coarse)").matches||(("ontouchstart" in window)&&!matchMedia("(any-pointer:fine)").matches);
 {const mb=document.createElement("small");mb.textContent="Режим управления (определён автоматически): "+(TCH?"сенсорный (телефон)":"клавиатура и мышь");$("menu").appendChild(mb)}
-if(TCH){document.querySelector(".mn-hint").textContent="коснитесь кнопки, чтобы начать";R.setPixelRatio(1);rs();$("radar").style.width=$("radar").style.height="120px";document.querySelectorAll("#menu small")[1].textContent="Держи телефон горизонтально. Прицел — проведи пальцем по экрану (чем дальше от точки касания, тем быстрее поворот). Слева — ползунок ГАЗ (скорость корабля). Справа: огонь, ракета, ЛАЗЕР (переключает боевой/горный: в горном «огонь» сканирует и добывает), форсаж; в меню ≡ — ядерка, разворот, тормоз, прыжок.";
+if(TCH){document.querySelector(".mn-hint").textContent="коснитесь кнопки, чтобы начать";R.setPixelRatio(1);rs();$("radar").style.width="min(260px,70vw)";$("radar").style.height="88px";document.querySelectorAll("#menu small")[1].textContent="Держи телефон горизонтально. Прицел — проведи пальцем по экрану (чем дальше от точки касания, тем быстрее поворот). Слева — ползунок ГАЗ (скорость корабля). Справа: огонь, ракета, ЛАЗЕР (переключает боевой/горный: в горном «огонь» сканирует и добывает), форсаж; в меню ≡ — ядерка, разворот, тормоз, прыжок.";
 const mk=(txt,st,dn,up)=>{const b=document.createElement("button");b.textContent=txt;b.style.cssText="position:absolute;pointer-events:auto;min-width:0;border-radius:50%;opacity:.9;touch-action:none;font-size:12px;padding:0;clip-path:none;border:2px solid #4fd0ffcc;box-shadow:0 0 14px #4fd0ff88,inset 0 0 14px #4fd0ff55;background:radial-gradient(#0a3a63dd,#04182cdd);"+st;b.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();dn()});if(up)["pointerup","pointercancel","pointerleave"].forEach(n=>b.addEventListener(n,e=>{e.preventDefault();up()}));$("hud").appendChild(b)};
 $("radar").style.right="auto";$("radar").style.left="16px";
 const hd=c=>[()=>keys[c]=1,()=>keys[c]=0],bo2=n=>"bottom:calc(env(safe-area-inset-bottom,0px) + "+n+"px);font-size:11px;";
