@@ -33,6 +33,13 @@ const checks = [
  ['pirate fleet does not respawn after destruction', html.includes('e.respawn=Infinity;e.hits=0;')],
  ['pirate fleet opens fire only inside 420 units', html.includes('const canFire=dist<420&&(fireAngle<.9||(dist<300&&fireAngle<1.35));')],
  ['regular pirates use 380/420-unit firing ranges', html.includes('d<(e.ty===3?420:380)')],
+ ['radar target selection is driven by tap/click on scanner contacts', html.includes('radarCanvas.addEventListener("click"')&&html.includes('radarTarget=best.entity')],
+ ['radar auto-selects nearest hostile when no valid target remains', html.includes('if(!radarContacts.some(q=>q.entity===radarTarget&&q.hostile))')&&html.includes('if(nearest)radarTarget=nearest.entity')],
+ ['radar selection is visually highlighted', html.includes('q.selected=q.hostile&&q.entity===radarTarget')&&html.includes('if(q.selected&&!outside)')],
+ ['target HUD reports range, bearing and elevation', html.includes('bearing=Math.atan2(local.x,-local.z)*180/Math.PI')&&html.includes('elevation=Math.atan2(local.y,Math.max(1,planar))*180/Math.PI')&&html.includes('radarDistanceLabel(distance)')],
+ ['target HUD reports relative closing speed', html.includes('closing=-relative.dot(dir)')&&html.includes('СБЛИЖЕНИЕ ')&&html.includes('УДАЛЕНИЕ ')'],
+ ['main-screen target cue points toward selected hostile', html.includes('function radarTargetUpdate()')&&html.includes('radarTargetCue.style.left=')&&html.includes('radarTargetCue.style.top=')],
+ ['target navigation cue updates with the live radar solution', html.includes('radar();radarTargetUpdate();')],
  ['wave attacks wait until the opening fleet is cleared', html.includes('if(!E&&!pirateFleet.some(pe=>pe.g&&pe.hp>0&&!pe.dead)){if(enc>0){spawnT-=dt;')],
  ['additional E/E2 wave spawns also wait until the opening fleet is cleared', html.includes('if(!pirateFleet.some(pe=>pe.g&&pe.hp>0&&!pe.dead)&&E&&!E2&&!E.boss&&enc>0&&wave%5!==4){')],
 ];
