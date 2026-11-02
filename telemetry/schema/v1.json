@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/gipromeh/Starfall/blob/main/telemetry/schema/v1.json",
+  "title": "STARFALL Flight Telemetry v1",
+  "description": "Append-only JSONL records produced automatically by STARFALL v92 and later.",
+  "type": "object",
+  "required": ["schemaVersion", "sessionId", "t", "wallTime", "type"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "sessionId": { "type": "string", "pattern": "^sf-[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9-]{8,50}$" },
+    "t": { "type": "number", "minimum": 0, "description": "Simulation seconds since the flight session began." },
+    "wallTime": { "type": "string", "format": "date-time" },
+    "type": {
+      "type": "string",
+      "enum": ["session_start", "session_end", "npc_spawn", "ai_state_transition", "npc_health_change", "npc_warp_complete", "npc_removed", "telemetry_sample"]
+    }
+  },
+  "additionalProperties": true
+}
