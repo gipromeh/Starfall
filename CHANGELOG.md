@@ -613,3 +613,9 @@ tags: [starfall, changelog]
 
 - Recomputed `main_file_sha256` for the lab branch's updated `STARFALL_CURRENT.html` and refreshed `last_update` in `STARFALL_PASSPORT.md`.
 - SHA-256: `a7220850462e2733e5b44a2028fe7c653e675259cfc18d48753766bd76869c35`.
+
+
+## Passport integrity refresh (2026-11-03)
+
+- Recomputed `main_file_sha256` after the final pirate flight refactor and updated `last_update`.
+- SHA-256: `32b1a6cf4b69ede4abc13fab99ac0d926cffcd25d1ccafc59a93df2c734652c5`.
