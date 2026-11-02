@@ -24,7 +24,7 @@ const checks = [
  ['game metadata is v91', html.includes('<meta name="starfall-version" content="v91">')],
  ['radar filters eb by hostile missile type', html.includes('b.kind==="hostile-missile"&&b.hm===1')],
  ['Jackal has the slowest E/E2 speed multiplier', html.includes('*[1,.75,.85,.9][e.ty]')],
- ['Jackal initial velocity is derived from the shared profile and wave scaling', html.includes('EAI.profile(ty).speed*NE.aiSpeedScale')],
+ ['Jackal initial velocity is derived from the shared profile and wave scaling', html.includes('NE.aiProfile=EAI.profile(ty,bs,NE.aiSpeedScale)')&&html.includes('multiplyScalar(NE.aiProfile.speed)')],
  ['ship-class turn and acceleration differences are data-driven profile descriptors', html.includes('turnRate:1.45')&&html.includes('acceleration:52')&&html.includes('const PROFILES=')],
  ['Jackal profile has a lower cruise speed than Golovorez', html.includes('{speed:46,acceleration:60')&&html.includes('{speed:34.5,acceleration:52')],
  ['fleet and regular pirates use the same profile-driven movement controller', html.includes('EAI.pilot(e,dt,g,P,vel,profile,bul,neighbors,pirateFleetUp)')&&html.includes('EAI.pilot(e,dt,g,tp,tv,profile,bul,neighbors,UP)')],
