@@ -10,7 +10,7 @@ Each flight has one unique session ID. Each chunk is immutable, UTF-8 JSONL, and
 
 ## Collection
 
-STARFALL v92 automatically records at 5 Hz while the game is in flight. It captures player motion/orientation and controls, pirate NPC transforms and velocities, AI state/intent/decision variables, health changes, warp lifecycle, and projectile samples. Sessions end automatically when flight ends or the page is closed.
+STARFALL v92 automatically records at 5 Hz while the game is in flight. It captures player motion/orientation and controls, pirate NPC transforms and velocities, AI state/intent/decision variables, health changes, warp lifecycle, and event-based projectile launch/removal records with initial/last position and velocity. Sessions end automatically when flight ends or the page is closed.
 
 The browser buffers chunks locally and retries when connectivity returns. No account ID, player name, IP address, GitHub credential, or other direct personal identifier is intentionally written into records.
 
