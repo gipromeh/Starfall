@@ -100,3 +100,12 @@ Canonical record of durable gameplay, architecture, UI and workflow decisions. N
 - Mirror the selected target on the main HUD: place a cue on its screen projection when visible; otherwise clamp a directional arrow to the screen edge.
 - Do not add automatic steering. The player retains manual control and uses the bearing/elevation readout to establish an intercept course. Keep H distance-follow behavior separate.
 - Acceptance: browser regression checks scanner selection, target persistence/fallback, bearing/elevation/closure readouts, and HUD cue; mobile and desktop usability still require manual playtest.
+
+
+## 2026-11-02 — Restore the original Elite ZX Spectrum scanner model
+- Reference distinction: the target is the ZX Spectrum 48K/128K Elite scanner, not Elite Dangerous' rotating circular radar. The ZX Spectrum HUD uses a shallow elliptical 3D scanner with ship contacts represented by a notch/dot and a vertical stalk showing relative altitude; the separate compass indicates planet/station direction and uses a hollow marker for a target behind the ship.
+- Decision: replace the circular sweep radar with an ellipse. In player-local coordinates `(x,y,z)`, project `x` horizontally, `z` onto the ellipse plane, and `y` into the stalk height. Clip contact coordinates to a fixed STARFALL range of 1600 units per local axis.
+- Decision: remove rotating sweep, circular range rings, out-of-range arrows and velocity vectors. Keep STARFALL's tap-to-select hostile contact, target HUD and screen cue as additive gameplay affordances.
+- Decision: compass targets the planet by default, switches to the station inside 900 units, shows hollow when behind, and lights `S` inside 420 units. These are STARFALL adaptation thresholds, not claimed original Elite constants.
+- Source: `https://elite.bbcelite.com/deep_dives/the_3d_scanner.html` (scanner projection and stick math); ZX Spectrum manual summary `https://viva-games.ru/game/elite?setlang=es` (3D scanner, compass and hollow marker semantics); screenshot reference `https://www.thirdharmoniser.com/elite.html`.
+- Status: IMPLEMENTED; static checks pass; browser CI and visual validation pending.
