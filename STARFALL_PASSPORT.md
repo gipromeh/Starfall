@@ -822,14 +822,30 @@ PV (конец скрипта): ангар-превью, обёртка hgrView;
 - Компас отображает направление в 3D-плоскости носа корабля: `dotX = local.x / |local|`, `dotY = -local.y / |local|`; глубина `local.z` определяет заполненность точки (полая — объект позади).
 
 
-## Radar target navigation and Elite scanner — v91
+## v91 — единый Elite-derived AI и пассивный 3D-сканер
 
-- The radar is a passive Elite-style 3D scanner: an elliptical plane, contact dots and vertical altitude stalks. A separate compass indicates the selected navigation body and whether it is behind the ship.
-- Hostile target acquisition is automatic: select the nearest active hostile by world-space distance, retain it while valid, and reacquire the nearest remaining hostile when it is removed or destroyed.
-- The scanner is not a touch target selector. No tap/click target lock is available. The HUD cue and bearing/elevation/range/closing-speed readout provide passive interception guidance; flight remains under player control.
-- The opening Jackal and Golovorez use the same Elite-derived OCS steering and integration controller. Their ship-specific speed profiles remain distinct; the attack cycle uses a lateral firing pass and overshoot/reposition instead of a head-on collision course.
-- Regression coverage: natural 60-second Jackal simulation, required combat phases, lateral clearance, firing, automatic nearest-hostile acquisition, and absence of scanner click handlers.
+### Общий контроллер пиратов
+- Исследовательская основа: `docs/reference/ELITE_GAME_PASSPORT.md` §§5.2–5.4, 13.7, 14.7, 14.11, 14.13.
+- `EAI` единообразно управляет стартовым `pirateFleet`, обычными E/E2 и перемещением босса. Единая цепочка: `EAI.profile()` → `EAI.decide()` → `EAI.command()` → `EAI.integrate()`, объединённая в `EAI.pilot()`.
+- Тактические решения выполняются с частотой 15 Гц; ориентация, скорость и координаты интегрируются каждый кадр. Это сохраняет разделение decision tick и movement tick, описанное в Elite.
+- Сценарные состояния `APPROACH / ATTACK_RUN / FIRING_PASS / OVERSHOOT / REPOSITION / LOOP / BREAK` удалены из runtime AI. `PURSUE / ATTACK / EVADE / SEPARATE` — диагностические режимы, не FSM и не последовательность waypoint.
+- Решение строится на относительном векторе цели и velocity lead. В ближней зоне применяется инвертированный вектор с боковой составляющей; прогнозируемое пересечение траектории снаряда вызывает уклонение; сближение с другими кораблями корректируется вектором разделения.
+- «Шакал» и «Головорез» используют один `EAI.pilot()`. Скорость, ускорение, поворот, дальность и вероятность огня задаются общими data-driven профилями. Численные значения профилей — калибровка STARFALL, не константы Elite.
+- Огонь использует OCS-проекции, sign-XOR, проекционные/дистанционные gates и seeded xorshift32 PRNG. Вероятность и пороги адаптированы к STARFALL.
+- Ограничения переноса: `EAI.command()` использует STARFALL-квантизацию проекций и игровые диапазоны, а не точную байтовую реализацию `$F9FA`; Z80 fixed-point, оригинальные единицы, структуры объектов и общий PRNG Elite не копируются. Побитовая или полная поведенческая идентичность Elite не заявляется.
+- Сохранены Three.js, игровые единицы, оружие, снаряды, урон, HP, столкновения, эффекты, управление игрока и SAVE v3.
 
+### Elite ZX 3D scanner
+- Радар — пассивный эллиптический 3D-сканер: горизонтальная проекция контакта задаётся эллипсом, высота — вертикальным штоком; отдельный компас показывает направление навигационного тела.
+- Ближайший активный вражеский контакт выбирается автоматически и удерживается, пока валиден. После его уничтожения/удаления выбирается ближайший оставшийся.
+- Ручной tap/click выбор отсутствует. HUD показывает направление, bearing/elevation, дальность и скорость сближения; автопилота и боевого lock нет.
+
+### Проверки
+- `tests/t11_pirate_fleet.js`: детерминированная 60-секундная симуляция от спавна, тактические режимы, OCS, decision cadence, реальные выстрелы, уклонение и безопасное разделение.
+- `tests/t14_radar_collision_regression.js`: статические инварианты удаления старых FSM-состояний, общего контроллера, профилей и радара. Статические проверки не заменяют browser simulation.
+- CI нового HEAD ожидается. Реальный физический iPhone/Safari playtest не заявляется.
+
+---
 
 ## Обязательный контракт проектирования пиратского AI — DEC-014
 
