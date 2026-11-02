@@ -12,7 +12,7 @@
     "wallTime": { "type": "string", "format": "date-time" },
     "type": {
       "type": "string",
-      "enum": ["session_start", "session_end", "npc_spawn", "ai_state_transition", "npc_health_change", "npc_warp_complete", "npc_removed", "telemetry_sample"]
+      "enum": ["session_start", "session_end", "npc_spawn", "ai_state_transition", "npc_health_change", "npc_warp_complete", "npc_removed", "projectile_launch", "projectile_removed", "telemetry_sample"]
     }
   },
   "additionalProperties": true
