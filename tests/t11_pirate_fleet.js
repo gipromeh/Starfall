@@ -76,7 +76,7 @@ const L = require('./lib');
       e.g.position.copy(P).add(new THREE.Vector3((i - .5) * 12, 0, -350));
       e.hd.copy(P.clone().sub(e.g.position).normalize());
       e.vel.copy(e.hd).multiplyScalar(46);
-      e.state = 'ATTACK'; e.aiIntent='ATTACK'; e.stateT = 0; e.fire = 0; e.burst = 0; e.burstGap = 0; e.aiClock = EAI.STEP; e.aiTicks = 0;
+      e.state = 'ATTACK_RUN'; e.aiStateTime = 0; e.aiIntent='ATTACK'; e.stateT = 0; e.fire = 0; e.burst = 0; e.burstGap = 0; e.aiClock = EAI.STEP; e.aiTicks = 0;
     });
     const before = eb.length;
     const randomAI = EAI.rand; EAI.rand = () => 0;
@@ -108,7 +108,7 @@ const L = require('./lib');
     pirateFleet.forEach((p,i)=>{
       p.warp=0;p.g.visible=true;p.aiClock=0;p.aiTicks=0;p.aiIntent="ATTACK";p.aiSideSign=i%2?1:-1;
       p.g.position.copy(P).add(new THREE.Vector3((i-.5)*10,0,-620));
-      p.hd.set(0,0,1);p.vel.set(0,0,46);p.speed=46;p.state="ATTACK";p.fire=99;p.burst=0;p.burstGap=0;
+      p.hd.set(0,0,1);p.vel.set(0,0,46);p.speed=46;p.state="INTERCEPT";p.aiStateTime=0;p.fire=99;p.burst=0;p.burstGap=0;
     });
     let minDistance=Infinity,maxDistance=0;const states=new Set();let previousHeading=pirateFleet[0].hd.clone(),maxHeadingStep=0;
     for(let i=0;i<1800;i++){
@@ -116,10 +116,10 @@ const L = require('./lib');
       const p=pirateFleet[0],d=p.g.position.distanceTo(P);minDistance=Math.min(minDistance,d);maxDistance=Math.max(maxDistance,d);states.add(p.state);
       const angle=previousHeading.angleTo(p.hd);maxHeadingStep=Math.max(maxHeadingStep,angle);previousHeading.copy(p.hd);
     }
-    return{minDistance,maxDistance,states:[...states],maxHeadingStep,ticks:pirateFleet[0].aiTicks,legacy:pirateFleet.some(p=>["ATTACK_RUN","FIRING_PASS","OVERSHOOT","REPOSITION","LOOP","BREAK"].includes(p.state))};
+    return{minDistance,maxDistance,states:[...states],maxHeadingStep,ticks:pirateFleet[0].aiTicks,legacy:pirateFleet.some(p=>["OVERSHOOT","LOOP"].includes(p.state))};
   });
-  L.check('Elite flight: tactical behavior uses only ATTACK/EVADE intents, without scripted waypoints',eliteFlight.states.every(s=>s==="ATTACK"||s==="EVADE")&&!eliteFlight.legacy,eliteFlight);
-  L.check('Elite flight: close-range reaction switches to evasion and later re-engages',eliteFlight.states.includes("EVADE")&&eliteFlight.states.includes("ATTACK"),eliteFlight);
+  L.check('Tactical flight: completed approach, attack, firing-pass, break and reposition states',["APPROACH","ATTACK_RUN","FIRING_PASS","BREAK","REPOSITION"].every(s=>eliteFlight.states.includes(s))&&!eliteFlight.legacy,eliteFlight);
+  L.check('Tactical flight: repeated attack cycles return to approach instead of tailing indefinitely',eliteFlight.states.includes("APPROACH")&&eliteFlight.states.includes("REPOSITION"),eliteFlight);
   L.check('Elite flight: OCS heading changes continuously, not by snapping to target',eliteFlight.maxHeadingStep<.12&&eliteFlight.ticks>=400,eliteFlight);
 
   const eliteAI = await page.evaluate(() => {
@@ -164,6 +164,23 @@ const L = require('./lib');
   L.check('Elite fire: sign-XOR, projection gates, range and PRNG allow a valid forward shot', eliteController.fireGate, eliteController);
   L.check('Elite fire: range and XOR gates reject invalid shots', !eliteController.outOfRangeGate && !eliteController.xorRejected, eliteController);
   L.check('Elite AI: phase offsets stagger decision ticks between object slots', eliteController.ticksA[0] !== eliteController.ticksB[0], eliteController);
+
+  const tacticalPlanner = await page.evaluate(() => {
+    const target=new THREE.Vector3(),targetVelocity=new THREE.Vector3(),targetForward=new THREE.Vector3(0,0,-1);
+    const e={ty:0,g:{position:new THREE.Vector3(0,0,-1000)},hd:new THREE.Vector3(0,0,1),vel:new THREE.Vector3(0,0,40),speed:40,state:"INTERCEPT",aiSideSign:1};
+    const run=(incoming=false)=>EAI.planCombat(e,target,targetVelocity,targetForward,EAI.STEP,true,incoming,{position:e.g.position,up:new THREE.Vector3(0,1,0)});
+    const plans=[],states=[];let p=run();plans.push(p);states.push(p.state);
+    e.g.position.z=-700;p=run();plans.push(p);states.push(p.state);
+    e.g.position.z=-500;p=run();plans.push(p);states.push(p.state);
+    e.g.position.z=-450;p=run();plans.push(p);states.push(p.state);
+    p=run(true);plans.push(p);states.push(p.state);
+    e.aiStateTime=1;p=run(false);plans.push(p);states.push(p.state);
+    const side=e.aiSideSign;e.aiStateTime=2;p=run(false);plans.push(p);states.push(p.state);
+    return{states,sideBefore:side,sideAfter:e.aiSideSign,directionsFinite:plans.every(q=>[q.direction.x,q.direction.y,q.direction.z,q.distance,q.interceptTime].every(Number.isFinite)&&Math.abs(q.direction.length()-1)<.001)};
+  });
+  L.check('Combat director: predicts target intercept and follows the full phase cycle including threat evasion',
+    tacticalPlanner.states.join(",")==="INTERCEPT,APPROACH,ATTACK_RUN,FIRING_PASS,EVADE,REPOSITION,APPROACH"&&
+    tacticalPlanner.sideBefore===1&&tacticalPlanner.sideAfter===-1&&tacticalPlanner.directionsFinite,tacticalPlanner);
 
   const aiIntegration = await page.evaluate(() => {
     const e = pirateFleet[0];
@@ -240,7 +257,7 @@ const L = require('./lib');
       }
       const before = eb.length, oldRand = EAI.rand;
       EAI.rand = () => 0;
-      try { upd(.05); } finally { EAI.rand = oldRand; }
+      try { for(let i=0;i<10;i++)upd(1/60); } finally { EAI.rand = oldRand; }
       return { type: jackal.ty, targetNeutral, targetPlayer: jackal.tn === null,
         state: jackal.state, shots: eb.length - before, burstLeft: jackal.burstLeft };
     } finally {
@@ -252,7 +269,7 @@ const L = require('./lib');
   L.check('Шакал не отвлекается на нейтральный транспорт и выбирает игрока целью',
     jackalAggro.type === 1 && !jackalAggro.targetNeutral && jackalAggro.targetPlayer, jackalAggro);
   L.check('Шакал открывает огонь по игроку при устойчивом наведении на 300 м',
-    jackalAggro.state === 'ATTACK' && jackalAggro.shots >= 2 && jackalAggro.burstLeft < 3, jackalAggro);
+    jackalAggro.state === 'FIRING_PASS' && jackalAggro.shots >= 2 && jackalAggro.burstLeft < 3, jackalAggro);
 
   const cleanup = await page.evaluate(() => {
     toMenu();
