@@ -21,8 +21,16 @@
 <div class="help">Проведи пальцем — вращение камеры<br>Сведи / разведи два пальца — масштаб</div>
 <footer class="bottom"><button class="btn" id="start">НАЧАТЬ ВОЛНУ ▶</button><div class="group"><button class="btn secondary" id="pause">Ⅱ</button><button class="btn secondary" data-speed="1">1×</button><button class="btn secondary" data-speed="2">2×</button><button class="btn secondary" data-speed="3">3×</button></div></footer>
 <div class="toast" id="toast"></div><div class="modal hidden" id="result"><h1 id="resultTitle">ПОБЕДА!</h1><p id="resultText"></p><button class="btn" onclick="location.reload()">ИГРАТЬ СНОВА</button></div>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+  }
+}
+</script>
 <script type="module">
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
+import * as THREE from 'three';
 import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/GLTFLoader.js';
 import { clone as cloneSkinned } from 'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/utils/SkeletonUtils.js';
 const $=s=>document.querySelector(s), scene=new THREE.Scene();scene.background=new THREE.Color(0x91a79a);scene.fog=new THREE.Fog(0x91a79a,35,75);
