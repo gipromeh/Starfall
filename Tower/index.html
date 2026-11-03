@@ -74,7 +74,7 @@ function goblin(kind='goblin'){
     model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
     const mixer=new THREE.AnimationMixer(model);wrapper.userData.mixer=mixer;goblinMixers.push(mixer);
     for(const clip of entry.gltf.animations){const action=mixer.clipAction(clip);wrapper.userData.actions[clip.name.toLowerCase()]=action}
-    const clips=Object.keys(wrapper.userData.actions),runName=clips.find(n=>/run|walk|move|jog/i.test(n)),idleName=clips.find(n=>/idle/i.test(n)),locomotion=runName?wrapper.userData.actions[runName]:(idleName?wrapper.userData.actions[idleName]:entry.gltf.animations[0]&&mixer.clipAction(entry.gltf.animations[0]));if(locomotion){locomotion.reset().setEffectiveTimeScale(1.15).play();wrapper.userData.locomotion=locomotion}
+    const clips=Object.keys(wrapper.userData.actions),runName=clips.find(n=>/run|walk|move|jog/i.test(n)),fallbackMove=clips.find(n=>!/idle|death|attack|hit/i.test(n)),clipName=runName||fallbackMove||clips[0],locomotion=clipName?wrapper.userData.actions[clipName]:null;if(locomotion){locomotion.reset().setEffectiveTimeScale(1.15).play();wrapper.userData.locomotion=locomotion}
     wrapper.userData.modelLoaded=true;
   });
   return wrapper;
