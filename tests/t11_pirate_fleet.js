@@ -220,7 +220,9 @@ const L = require('./lib');
 
   const jackalAggro = await page.evaluate(() => {
     const old = { E, E2, firstWaveSpawn, random: Math.random, neutrals: nv.slice() };
-    const neutral = { g: { position: P.clone().add(new THREE.Vector3(0,0,-120)), visible: true }, v: new THREE.Vector3(), hp: 100, cr: 12 };
+    const neutralGroup = new THREE.Group();
+    neutralGroup.position.copy(P).add(new THREE.Vector3(0,0,-120));
+    const neutral = { g: neutralGroup, v: new THREE.Vector3(), hp: 100, cr: 12 };
     try {
       nv.length = 0; nv.push(neutral); E = null; E2 = null; firstWaveSpawn = 0;
       Math.random = () => .1;
