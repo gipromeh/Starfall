@@ -1,0 +1,71 @@
+name: combat-ai-v92-validation
+on:
+  push:
+    branches: [lab/v92-combat-validation]
+    paths:
+      - 'tests/t20_v92_production_combat.js'
+      - 'tests/t18_eai_parity.js'
+      - 'tests/t17_combat_ai_lab.mjs'
+      - 'tools/combat-ai-lab/**'
+      - '.github/workflows/combat-ai-v92.yml'
+  pull_request:
+    branches: [lab/v92-combat-validation]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: starfall-v92-combat-validation-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  kernel-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node tests/t17_combat_ai_lab.mjs
+  production-kernel-parity:
+    needs: kernel-regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser test dependencies
+        run: npm install --no-save --no-package-lock playwright@1.56.1 three@0.128.0 tsparticles@2.12.0
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Compare EAI kernel with v92 production runtime
+        env:
+          SF_NM: ${{ github.workspace }}/node_modules
+        run: node tests/t18_eai_parity.js
+  v92-production-combat:
+    needs: production-kernel-parity
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser test dependencies
+        run: npm install --no-save --no-package-lock playwright@1.56.1 three@0.128.0 tsparticles@2.12.0
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run 12 seeded 60-second production combat trials
+        env:
+          SF_NM: ${{ github.workspace }}/node_modules
+        run: node tests/t20_v92_production_combat.js
+      - name: Upload v92 production combat report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: starfall-v92-production-combat-${{ github.run_number }}
+          path: artifacts/v92-production-combat.json
+          if-no-files-found: warn
+          retention-days: 30
