@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "id": "civilian_caravan_001",
+  "name": "Civilian Research Caravan",
+  "status": "asset_staged_not_runtime_integrated",
+  "units": [
+    {
+      "id": "lead_argo",
+      "role": "lead_transport",
+      "model": "assets/ships/civilian/argo/model.glb",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "scale": 1
+    },
+    {
+      "id": "cargo_payload",
+      "role": "cargo_module",
+      "model": "assets/ships/civilian/shuttle_payload/model.glb",
+      "position": [
+        0,
+        0,
+        34
+      ],
+      "scale": 1
+    },
+    {
+      "id": "near_escort",
+      "role": "survey_escort",
+      "model": "assets/ships/civilian/near_shoemaker/model.glb",
+      "position": [
+        -24,
+        4,
+        22
+      ],
+      "scale": 0.7
+    },
+    {
+      "id": "tess_escort",
+      "role": "sensor_escort",
+      "model": "assets/ships/civilian/tess_satellite/model.glb",
+      "position": [
+        24,
+        -4,
+        22
+      ],
+      "scale": 0.7
+    },
+    {
+      "id": "lander",
+      "role": "utility_lander",
+      "model": "assets/ships/civilian/apollo_lunar_module/model.glb",
+      "position": [
+        0,
+        -7,
+        18
+      ],
+      "scale": 0.55
+    }
+  ]
+}
