@@ -168,7 +168,7 @@ tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура
 game_version: "v92"
 last_update: 2026-11-03
 main_file: STARFALL_CURRENT.html
-main_file_sha256: "b0c0f4e6d34fafaf96bd53467e9238c703d4d80592e1f39d8a93bef268a940a2"
+main_file_sha256: "e7c07137250af43fd631763da029ebba382091aceb61ec31353914f5466b891e"
 save_format_version: 3
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"
@@ -873,3 +873,11 @@ PV (конец скрипта): ангар-превью, обёртка hgrView;
 - Existing ship assets, weapons, projectile/collision/damage handlers, effects, SAVE and boss-specific movement are preserved.
 - Elite research basis: `docs/reference/ELITE_GAME_PASSPORT.md` §§5.2–5.4, 13.7, 14.7, 14.11–14.12. STARFALL proximity thresholds and lateral bias are explicit adaptation parameters, not recovered Elite constants. This is not a bit-exact Z80 clone.
 - Regression coverage: `tests/t11_pirate_fleet.js` and `tests/t17_combat_ai_lab.mjs`. CI acceptance pending.
+
+
+## v92 — Flight Recorder и телеметрия
+- Во время игрового состояния `play` регистратор автоматически собирает снимки с частотой 5 Гц: позицию, скорость и ориентацию игрока; параметры управления; позиции, скорости, классы, HP и AI-поля пиратских кораблей.
+- Событийно фиксируются появление и удаление NPC, переходы AI state/intent, изменение здоровья, завершение warp, запуск и удаление снарядов.
+- Формат хранения — JSONL schema v1; чанки ограничены по размеру, локальная очередь имеет верхний предел и повторяет отправку после восстановления соединения.
+- Cloudflare Worker принимает чанки и записывает их в `telemetry/raw/YYYY/MM/`. GitHub token хранится только в Worker secret. До настройки Worker и endpoint удалённая публикация не активна.
+- Радар v92 — эллиптический 3D-сканер из main; Flight Recorder интегрирован поверх него без замены радарной реализации.
