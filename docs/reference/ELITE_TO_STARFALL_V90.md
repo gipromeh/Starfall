@@ -79,3 +79,12 @@ The Elite passport distinguishes facts supported by the annotated 128K listing f
 - The controller calculates half-scale, inverted local-axis projections and derives quantized yaw/pitch/acceleration commands. NPC fire now passes orientation/range gates and a seeded PRNG threshold.
 - Regression coverage was extended in `tests/t11_pirate_fleet.js` for projection signs/scale, discrete commands, per-frame integration, fire gates and staggered ticks.
 - **Acceptance status: pending.** This is a structural adaptation, not a bit-exact Elite port. Do not claim full research fidelity or balance stability until the complete browser test matrix passes and the attack behavior is reviewed.
+
+
+## 2026-11-03 — Classic Elite elliptical scanner (v92)
+
+- Replaced the circular Elite Dangerous-style radar with a fixed elliptical 3D scanner inspired by the original ZX Spectrum Elite presentation.
+- `radarProjectContact(x, y, z, range)` maps all three player-local axes into the elliptical display: X → horizontal position, Z → fore/aft depth contribution, Y → altitude contribution. Range rejection uses the full 3D distance, not only the horizontal plane.
+- Altitude is encoded by upward/downward contact chevrons; the previous vertical stalk and rotating sweep beam are removed. Elliptical depth rings, a subdued rear half, and a brighter near half provide the dish-like visual structure.
+- Existing contact sources, hostile classification, target highlight, velocity vectors, off-range hostile indicators and 500/1000/2000 range controls are retained. No flight, combat, collision, economy or SAVE logic is changed.
+- This is a STARFALL visual adaptation, not a claim of bit-exact ZX Spectrum rendering or a recovered Z80 scanner routine. The Elite passport currently documents game/platform context but does not provide a verified scanner projection formula; the projection coefficients are explicit STARFALL presentation parameters.
