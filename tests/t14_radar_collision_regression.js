@@ -3,7 +3,7 @@ const path = require('path');
 const assert = require('assert');
 const html = fs.readFileSync(path.join(__dirname, '..', 'STARFALL_CURRENT.html'), 'utf8');
 const checks = [
- ['HTML build version is v92.1', html.includes('<meta name="starfall-version" content="v92.1">')],
+ ['HTML build version is v93.0', html.includes('<meta name="starfall-version" content="v93.0">')],
  ['laser projectiles explicitly tagged', html.includes('arr.push({m,v,dmg,life,kind:"laser"})')],
  ['ballistic projectiles explicitly tagged', html.includes('arr.push({m,v,dmg,life,kind:"projectile"})')],
  ['hostile homing missiles explicitly tagged', html.includes('q.hm=1;q.kind="hostile-missile"')],
@@ -27,7 +27,10 @@ const checks = [
  ['pirate fleet has only two initial attackers', html.includes('[0,1].forEach((ty,i)=>{const e={slot:i,ty,g:null,hp:0,mx:0,respawn:Infinity,dead:false,flames:[]};pirateFleet.push(e);pirateFleetSpawn(e,i*.18)});')],
  ['pirate fleet spawns ahead of the player', html.includes('addScaledVector(fw,(760+e.slot*90))')],
  ['pirate fleet does not respawn after destruction', html.includes('e.respawn=Infinity;e.hits=0;')],
- ['pirate fleet opens fire only inside 420 units', html.includes('const canFire=e.state==="ATTACK"&&dist<420&&(fireAngle<.9||(dist<300&&fireAngle<1.35));')],
+ ['pirate fleet fires only in its tactical firing pass', html.includes('const canFire=e.state==="FIRING_PASS"&&dist<420&&(fireAngle<.9||(dist<300&&fireAngle<1.35));')],
+ ['shared combat director includes intercept and reposition phases', html.includes('function planCombat(')&&html.includes('"INTERCEPT","APPROACH","ATTACK_RUN","FIRING_PASS","BREAK","EVADE","REPOSITION"')],
+ ['ordinary pirates and fleet share combat director', html.includes('EAI.planCombat(e,tp,tv,tf')&&html.includes('EAI.planCombat(e,P,vel')],
+ ['combat director preserves 15 Hz decisions', html.includes('EAI.planCombat(e,tp,tv,tf,EAI.STEP,true')&&html.includes('EAI.planCombat(e,P,vel,new T.Vector3(0,0,-1).applyQuaternion(Q),EAI.STEP,true')],
  ['regular pirates use 380/420-unit firing ranges', html.includes('d<(e.ty===3?420:380)')],
  ['wave attacks wait until the opening fleet is cleared', html.includes('if(!E&&!pirateFleet.some(pe=>pe.g&&pe.hp>0&&!pe.dead)){if(enc>0){spawnT-=dt;')],
  ['additional E/E2 wave spawns also wait until the opening fleet is cleared', html.includes('if(!pirateFleet.some(pe=>pe.g&&pe.hp>0&&!pe.dead)&&E&&!E2&&!E.boss&&enc>0&&wave%5!==4){')],
