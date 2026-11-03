@@ -88,3 +88,12 @@ The Elite passport distinguishes facts supported by the annotated 128K listing f
 - Altitude is encoded by upward/downward contact chevrons; the previous vertical stalk and rotating sweep beam are removed. Elliptical depth rings, a subdued rear half, and a brighter near half provide the dish-like visual structure.
 - Existing contact sources, hostile classification, target highlight, velocity vectors, off-range hostile indicators and 500/1000/2000 range controls are retained. No flight, combat, collision, economy or SAVE logic is changed.
 - This is a STARFALL visual adaptation, not a claim of bit-exact ZX Spectrum rendering or a recovered Z80 scanner routine. The Elite passport currently documents game/platform context but does not provide a verified scanner projection formula; the projection coefficients are explicit STARFALL presentation parameters.
+
+## v93 — tactical pirate combat cycle
+
+- A STARFALL tactical director is layered over the existing shared EAI OCS controller for both ordinary E/E2 enemies and the opening pirate fleet.
+- The phases are INTERCEPT, APPROACH, ATTACK_RUN, FIRING_PASS, BREAK/EVADE and REPOSITION. Re-entry flips the persistent lateral side so repeated passes do not reuse one exact approach line.
+- Intercept time is solved from relative position, target velocity and the NPC's current speed, then bounded to six seconds. This is a STARFALL navigation adaptation; its coefficients and thresholds are game-design values, not recovered Elite constants.
+- Tactical decisions remain at 15 Hz. OCS heading changes, acceleration limits, velocity correction and position integration remain in the existing per-frame loop.
+- Existing fire-gate math, projectile properties, weapon cadence, damage, player flight, NPC collision resolution, boss behavior and SAVE v3 are retained. The tactical phase gates when existing pirate weapons may fire.
+- Browser acceptance checks verify the phase cycle, incoming-fire response, shared controller use, per-frame movement and existing projectile/collision contracts. Long-form balance and recorded desktop playtest remain required before acceptance.
