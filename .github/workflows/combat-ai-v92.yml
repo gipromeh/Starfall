@@ -1,7 +1,7 @@
 name: combat-ai-v92-validation
 on:
   push:
-    branches: [lab/v92-combat-validation]
+    branches: [lab/v92-combat-validation-r2]
     paths:
       - 'tests/t20_v92_production_combat.js'
       - 'tests/t18_eai_parity.js'
