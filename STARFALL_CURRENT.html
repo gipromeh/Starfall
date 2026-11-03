@@ -1792,12 +1792,19 @@ const EAI=(function(){
   const lx=relative.dot(right),ly=relative.dot(localUp),lz=relative.dot(hd);
   const near=Math.abs(lx)<(options.nearX||260)&&Math.abs(ly)<(options.nearY||220)&&Math.abs(lz)<(options.nearZ||340);
   if(aiThink){
-   if(options.incoming||near){
-    if(e.aiIntent!=="EVADE"){e.aiEvadeSide=rand()<.5?-1:1;e.aiEvadeTicks=0;}
-    e.aiIntent="EVADE";
-   }else if(e.aiIntent==="EVADE"){
+   if((e.aiEvadeCooldown||0)>0)e.aiEvadeCooldown--;
+   if(e.aiIntent==="EVADE"){
     e.aiEvadeTicks=(e.aiEvadeTicks||0)+1;
-    if(e.aiEvadeTicks>=(options.minEvadeTicks||8)&&relative.length()>(options.reengageDistance||720))e.aiIntent="ATTACK";
+    const minTicks=options.minEvadeTicks||8,maxTicks=options.maxEvadeTicks||24;
+    const reengaged=relative.length()>(options.reengageDistance||720);
+    if(e.aiEvadeTicks>=minTicks&&(reengaged||e.aiEvadeTicks>=maxTicks)){
+     e.aiIntent="ATTACK";
+     e.aiEvadeCooldown=options.evadeCooldownTicks||18;
+    }
+   }else if((options.incoming||near)&&!(e.aiEvadeCooldown>0)){
+    e.aiEvadeSide=rand()<.5?-1:1;
+    e.aiEvadeTicks=0;
+    e.aiIntent="EVADE";
    }else e.aiIntent="ATTACK";
   }
   if(!e.aiIntent)e.aiIntent="ATTACK";
@@ -1878,7 +1885,7 @@ function pirateFleetUpdate(dt){
   const g=e.g,toPlayer=P.clone().sub(g.position),dist=toPlayer.length(),aiThink=EAI.think(e,dt);if(dist<1)continue;
   let incoming=false;
   if(aiThink)for(let bi=bul.length-1;bi>=0;bi--){const b=bul[bi],delta=g.position.clone().sub(b.m.position);if(delta.length()<135&&b.v.dot(delta)>0){incoming=true;break}}
-  const aim=EAI.chooseVector(e,toPlayer,aiThink,{up:pirateFleetUp,nearX:190,nearY:150,nearZ:200,reengageDistance:720,minEvadeTicks:8,incoming});
+  const aim=EAI.chooseVector(e,toPlayer,aiThink,{up:pirateFleetUp,nearX:190,nearY:150,nearZ:200,reengageDistance:720,minEvadeTicks:8,maxEvadeTicks:18,evadeCooldownTicks:36,incoming});
   e.state=e.aiIntent;
   const targetSpeed=46*[1,.75,1,1][e.ty];
   if(aiThink)EAI.command(e,aim,dist,{speed:targetSpeed,acceleration:60,turnRate:1.8});
