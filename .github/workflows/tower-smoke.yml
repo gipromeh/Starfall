@@ -1,0 +1,26 @@
+name: Tower browser smoke test
+on:
+  push:
+    branches: [main]
+    paths: ["Tower/**", "tests/tower-smoke.cjs", ".github/workflows/tower-smoke.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: tower-smoke-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  published-tower:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Test published Tower game
+        run: node tests/tower-smoke.cjs
