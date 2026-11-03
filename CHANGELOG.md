@@ -1,3 +1,9 @@
+## 2026-11-03 — v93.0: tactical pirate combat cycle
+- Added a shared stateful combat director for ordinary E/E2 pirates and the opening pirate fleet: bounded intercept, class-offset approach, attack run, firing pass, break/evasion, reposition, and re-engagement.
+- Preserved 15 Hz decision cadence, per-frame OCS movement integration, player physics, projectile data, damage rules, collision resolution, bosses, and SAVE v3.
+- Added browser coverage for phase progression, threat response, and shared-controller contracts. Release acceptance remains pending the repository CI matrix and a recorded playtest.
+- Acceptance targets: idle follow time <5%; ≥90% of attack runs exit into break/reposition; ≥70% of reachable passes hold a valid firing window for ≥0.3 s; re-engage within 2 s.
+
 ## 2026-11-03 — v92.1: исправление атаки Шакала
 - Синхронизирован отображаемый номер релиза: HTML, паспорт и мастер-инструкция фиксируют v92.1.
 - Перехватчик «Шакал» больше не отвлекается на нейтральный транспорт и выбирает игрока основной целью.
