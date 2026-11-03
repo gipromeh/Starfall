@@ -41,6 +41,17 @@ jobs:
       - name: Build Starfall site
         run: npm run build
 
+      - name: Download CC0 rigged enemy models
+        working-directory: .
+        run: |
+          mkdir -p Tower/assets/minions
+          base="https://gobkit.com/freebies/minion"
+          for model in minion-a01 minion-a02 minion-b01 minion-b02 minion-c01 minion-c02 minion-d01 minion-d02; do
+            curl --fail --location --retry 3 --retry-delay 2 "$base/$model.glb" -o "Tower/assets/minions/$model.glb"
+            test "$(head -c 4 "Tower/assets/minions/$model.glb")" = glTF
+          done
+          printf '%s\\n' 'Gobkit Minion Pack — CC0 1.0 Universal' 'Source: https://gobkit.com/freebies' 'Rigged GLB models; commercial use, modification and redistribution permitted.' > Tower/assets/minions/LICENSE.txt
+
       - name: Add standalone Tower app without touching Starfall sources
         working-directory: .
         run: |
