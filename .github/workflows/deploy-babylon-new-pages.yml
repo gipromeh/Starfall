@@ -56,10 +56,20 @@ jobs:
             curl --fail --location --retry 3 --retry-delay 2 "https://gobkit.com/freebies/environment/$model.glb" -o "Tower/assets/nature/$model.glb"
             test "$(head -c 4 "Tower/assets/nature/$model.glb")" = glTF
           done
-          curl --fail --location --retry 3 --retry-delay 2 "https://gobkit.com/freebies/dino/Pterodactylus.glb" -o Tower/assets/creatures/Pterodactylus.glb
-          curl --fail --location --retry 3 --retry-delay 2 "https://gobkit.com/freebies/animal012/PalominoHorse.glb" -o Tower/assets/creatures/PalominoHorse.glb
-          curl --fail --location --retry 3 --retry-delay 2 "https://gobkit.com/freebies/animal005/Bull.glb" -o Tower/assets/creatures/Bull.glb
-          curl --fail --location --retry 3 --retry-delay 2 "https://gobkit.com/freebies/human013/KnightCaptain.glb" -o Tower/assets/raiders/KnightCaptain.glb
+          fetch_asset() {
+            local destination="$1"; shift
+            local url
+            for url in "$@"; do
+              echo "Downloading $url"
+              if curl --fail --location --retry 2 --retry-delay 1 "$url" -o "$destination" && test "$(head -c 4 "$destination")" = glTF; then return 0; fi
+            done
+            echo "No valid GLB source found for $destination" >&2
+            return 1
+          }
+          fetch_asset Tower/assets/creatures/Pterodactylus.glb "https://gobkit.com/freebies/dino/Pterodactylus.glb"
+          fetch_asset Tower/assets/creatures/PalominoHorse.glb "https://gobkit.com/freebies/animal012/PalominoHorse.glb"
+          fetch_asset Tower/assets/creatures/Bull.glb "https://gobkit.com/freebies/animal005/Bull.glb" "https://gobkit.com/freebies/animal005/HighlandCow.glb" "https://gobkit.com/freebies/animal005/HolsteinCow.glb"
+          fetch_asset Tower/assets/raiders/KnightCaptain.glb "https://gobkit.com/freebies/human013/KnightCaptain.glb" "https://gobkit.com/freebies/human013/PalaceHalberdier.glb"
           for file in Tower/assets/nature/*.glb Tower/assets/creatures/*.glb Tower/assets/raiders/*.glb; do test "$(head -c 4 "$file")" = glTF; done
           printf '%s\\n' 'Gobkit free assets — CC0 1.0 Universal' 'Source: https://gobkit.com/api/free' 'Trees, pterodactyl, bull, palomino horse and knight rider.' > Tower/assets/ASSET-LICENSES.txt
 
