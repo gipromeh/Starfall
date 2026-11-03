@@ -4,6 +4,7 @@ on:
     branches: [lab/v92-combat-validation-r2]
     paths:
       - 'tests/t20_v92_production_combat.js'
+      - 'tests/t21_v92_maneuver_combat.js'
       - 'tests/t18_eai_parity.js'
       - 'tests/t17_combat_ai_lab.mjs'
       - 'STARFALL_CURRENT.html'
@@ -70,5 +71,31 @@ jobs:
         with:
           name: starfall-v92-production-combat-${{ github.run_number }}
           path: artifacts/v92-production-combat.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  v92-maneuver-combat:
+    needs: v92-production-combat
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser test dependencies
+        run: npm install --no-save --no-package-lock playwright@1.56.1 three@0.128.0 tsparticles@2.12.0
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run 12 seeded active-maneuver production combat trials
+        env:
+          SF_NM: ${{ github.workspace }}/node_modules
+        run: node tests/t21_v92_maneuver_combat.js
+      - name: Upload maneuver combat report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: starfall-v92-maneuver-combat-${{ github.run_number }}
+          path: artifacts/v92-maneuver-combat.json
           if-no-files-found: warn
           retention-days: 30
