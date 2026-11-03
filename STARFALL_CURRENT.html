@@ -1,5 +1,6 @@
 <!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="claude:viewport-fit-sides" content="cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#02030a"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>STARFALL — Void Hunter</title>
 <meta name="starfall-version" content="v92">
+<meta name="starfall-telemetry-endpoint" content="">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#02030a;--fg:#cfe9ff;--ac:#3cf;--warn:#f54;color-scheme:dark}
@@ -1924,6 +1925,123 @@ upd=function(dt){_updWithPirateFleet(dt);pirateFleetUpdate(dt);resolvePirateShip
 // ===== END STARFALL v77 PIRATE FLEET =====
 
 
+// ===== STARFALL v92 FLIGHT RECORDER =====
+// Event-driven tactical telemetry. No player identifiers or credentials are collected.
+(()=>{
+ "use strict";
+ const SCHEMA=1,STORE="sf_fr_queue_v1",ENDPOINT=window.SF_TELEMETRY_ENDPOINT||(document.querySelector('meta[name="starfall-telemetry-endpoint"]')?.content||"");
+ const SAMPLE_INTERVAL=.2,FLUSH_INTERVAL=30,MAX_CHUNK_BYTES=256*1024,MAX_QUEUE_BYTES=1536*1024;
+ let active=null,acc=0,lastFlush=0,flushing=false,queue=[],dropped=0;
+ try{const saved=localStorage.getItem(STORE);if(saved){const parsed=JSON.parse(saved);if(Array.isArray(parsed))queue=parsed}}catch(_){}
+ const ids=new WeakMap(),projectileIds=new WeakMap();let nextEntity=1,nextProjectile=1;
+ const iso=()=>new Date().toISOString();
+ const vec=v=>v&&Number.isFinite(v.x)&&Number.isFinite(v.y)&&Number.isFinite(v.z)?{x:+v.x.toFixed(3),y:+v.y.toFixed(3),z:+v.z.toFixed(3)}:null;
+ const quat=q=>q?{x:+q.x.toFixed(5),y:+q.y.toFixed(5),z:+q.z.toFixed(5),w:+q.w.toFixed(5)}:null;
+ const emit=(type,data={})=>{
+  if(!active)return;
+  const row={schemaVersion:SCHEMA,sessionId:active.id,t:Math.round(active.elapsed*1000)/1000,wallTime:iso(),type,...data};
+  active.records.push(JSON.stringify(row));
+  if(active.records.length>=512||active.records.join("\n").length>=MAX_CHUNK_BYTES)sealChunk();
+ };
+ const persist=()=>{
+  try{
+   let raw=JSON.stringify(queue);
+   while(raw.length>MAX_QUEUE_BYTES&&queue.length){queue.shift();dropped++;raw=JSON.stringify(queue)}
+   localStorage.setItem(STORE,raw);
+  }catch(_){dropped++}
+ };
+ const sealChunk=()=>{
+  if(!active||!active.records.length)return;
+  const records=active.records.join("\n")+"\n";
+  const bytes=new TextEncoder().encode(records).length;
+  if(bytes>MAX_CHUNK_BYTES){const lines=active.records.slice();active.records=[];for(const line of lines){active.records.push(line);if(new TextEncoder().encode(active.records.join("\n")+"\n").length>MAX_CHUNK_BYTES){const last=active.records.pop();const part=active.records.join("\n")+"\n";queue.push({sessionId:active.id,startedAt:active.startedAt,chunkIndex:active.chunkIndex++,records:part});active.records=[last]}}}
+  else{queue.push({sessionId:active.id,startedAt:active.startedAt,chunkIndex:active.chunkIndex++,records});active.records=[]}
+  persist();flush();
+ };
+ const flush=async(keepalive=false)=>{
+  if(flushing||!ENDPOINT||!queue.length)return;
+  flushing=true;
+  try{
+   while(queue.length){
+    const item=queue[0];
+    const response=await fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(item),mode:"cors",keepalive});
+    if(!response.ok)break;
+    queue.shift();persist();
+   }
+  }catch(_){/* Offline: preserve the queue for the next attempt. */}
+  finally{flushing=false}
+ };
+ const idFor=e=>{if(!e||typeof e!=="object")return null;if(!ids.has(e))ids.set(e,"NPC-"+String(nextEntity++).padStart(5,"0"));return ids.get(e)};
+ const enemyType=e=>e.boss?"PIRATE_FLAGSHIP":(["CUTTHROAT","JACKAL","MARAUDER","HARPY"][e.ty]||"UNKNOWN");
+ const enemyRows=()=>{
+  const out=[];
+  for(const [slot,e] of [["E",E],["E2",E2]])if(e)out.push({e,slot});
+  if(Array.isArray(pirateFleet))for(const e of pirateFleet)if(e)out.push({e,slot:"F"+(e.slot??0)});
+  return out;
+ };
+ const projectileId=b=>{if(!projectileIds.has(b))projectileIds.set(b,"PRJ-"+String(nextProjectile++).padStart(7,"0"));return projectileIds.get(b)};
+ const projectileRows=(arr,owner,seen)=>{
+  if(!Array.isArray(arr))return 0;
+  let count=0;
+  for(let i=0;i<arr.length;i++){
+   const b=arr[i],m=b&&(b.m||b.mesh);if(!m||!m.position)continue;
+   const id=projectileId(b),kind=b.kind||b.type||(b.hm?"hostile-missile":"laser"),position=vec(m.position),velocity=vec(b.v),life=Number.isFinite(b.life)?+b.life.toFixed(2):null;
+   seen.add(id);
+   if(!active.projectiles.has(id))emit("projectile_launch",{projectileId:id,owner,kind,position,velocity,life});
+   active.projectiles.set(id,{owner,kind,position,velocity,life});count++;
+  }
+  return count;
+ };
+ const start=()=>{
+  const date=iso(),stamp=date.replace(/[-:]/g,"").replace(/\.\d{3}Z$/,"Z");
+  active={id:"sf-"+date.slice(0,10)+"-"+(crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2,14)),startedAt:date,elapsed:0,chunkIndex:1,records:[],seen:new Map(),projectiles:new Map()};
+  nextEntity=1;emit("session_start",{gameVersion:"v92",schemaVersion:SCHEMA,platform:matchMedia("(pointer:coarse)").matches?"touch":"desktop",system:typeof sy==="number"?sy:null,ship:typeof shp==="number"?shp:null,difficulty:typeof dif==="number"?dif:null,stamp});
+ };
+ const finish=reason=>{
+  if(!active)return;
+  emit("session_end",{reason,duration:Math.round(active.elapsed*1000)/1000,droppedLocalRecords:dropped});
+  sealChunk();active=null;acc=0;flush(true);
+ };
+ const sample=dt=>{
+  active.elapsed+=dt;
+  const player={position:vec(P),velocity:vec(vel),orientation:quat(Q),speed:+vel.length().toFixed(2),throttle:typeof thl==="number"?+thl.toFixed(3):null,boost:typeof thr==="number"?+thr.toFixed(3):null,firing:!!firing,heat:typeof heat==="number"?+heat.toFixed(2):null,hull:typeof hull==="number"?+hull.toFixed(2):null,shield:typeof shield==="number"?+shield.toFixed(2):null,ship:typeof shp==="number"?shp:null,system:typeof sy==="number"?sy:null,wave:typeof wave==="number"?wave:null,score:typeof score==="number"?score:null};
+  const enemies=[];
+  for(const {e,slot} of enemyRows()){
+   const id=idFor(e),g=e.g,pos=g&&g.position,velocity=e.vel||e.v;
+   const row={id,slot,class:enemyType(e),type:Number.isFinite(e.ty)?e.ty:null,boss:!!e.boss,position:vec(pos),velocity:vec(velocity),heading:vec(e.hd),distance:pos?+pos.distanceTo(P).toFixed(2):null,relativePosition:pos?vec(pos.clone().sub(P)):null,relativeVelocity:velocity?vec(velocity.clone().sub(vel)):null,state:e.state||null,intent:e.aiIntent||null,hp:Number.isFinite(e.hp)?+e.hp.toFixed(2):null,maxHp:Number.isFinite(e.mx)?e.mx:null,warp:Number.isFinite(e.warp)?+e.warp.toFixed(2):null,ai:{ticks:e.aiTicks??null,clock:Number.isFinite(e.aiClock)?+e.aiClock.toFixed(3):null,yaw:e.ocsYaw??null,pitch:e.ocsPitch??null,accel:e.ocsAccel??null,targetSpeed:e.ocsTargetSpeed??null,burst:e.burst??e.burstLeft??0,fireCooldown:Number.isFinite(e.fire)?+e.fire.toFixed(2):null}};
+   enemies.push(row);
+   const previous=active.seen.get(id);
+   if(!previous)emit("npc_spawn",{npc:row});
+   else{
+    if(previous.state!==row.state||previous.intent!==row.intent)emit("ai_state_transition",{npcId:id,from:{state:previous.state,intent:previous.intent},to:{state:row.state,intent:row.intent}});
+    if(previous.hp!==row.hp)emit("npc_health_change",{npcId:id,from:previous.hp,to:row.hp});
+    if(previous.warp>0&&row.warp===0)emit("npc_warp_complete",{npcId:id,position:row.position});
+   }
+   active.seen.set(id,{state:row.state,intent:row.intent,hp:row.hp,warp:row.warp});
+  }
+  const present=new Set(enemies.map(e=>e.id));
+  for(const [id,previous] of active.seen)if(!present.has(id)){emit("npc_removed",{npcId:id,lastState:previous.state,lastHp:previous.hp,reason:previous.hp===0?"destroyed":"removed"});active.seen.delete(id)}
+  const seenProjectiles=new Set();
+  const projectileCounts={player:projectileRows(bul,"player",seenProjectiles),hostile:projectileRows(eb,"hostile",seenProjectiles),missiles:projectileRows(mis,"player_missile",seenProjectiles)};
+  for(const [id,last] of active.projectiles)if(!seenProjectiles.has(id)){emit("projectile_removed",{projectileId:id,...last,reason:"left_active_projectile_array"});active.projectiles.delete(id)}
+  emit("telemetry_sample",{player,enemies,combat:{projectiles:projectileCounts,playerTarget:E?enemyType(E):null}});
+ };
+ const frame=(dt,now)=>{
+  if(state==="play"){
+   if(!active)start();
+   if(!active)return;
+   acc+=Math.min(.1,Math.max(0,dt||0));
+   while(acc>=SAMPLE_INTERVAL){sample(SAMPLE_INTERVAL);acc-=SAMPLE_INTERVAL}
+   if(now-lastFlush>FLUSH_INTERVAL*1000){lastFlush=now;sealChunk();flush()}
+  }else if(active)finish("state:"+state);
+ };
+ window.addEventListener("pagehide",()=>{if(active)finish("pagehide");flush(true)});
+ window.addEventListener("online",()=>flush());
+ setInterval(()=>{if(active)sealChunk();flush()},FLUSH_INTERVAL*1000);
+ window.SF_FLIGHT_RECORDER={frame,flush,status:()=>({active:!!active,queuedChunks:queue.length,endpointConfigured:!!ENDPOINT,dropped})};
+})();
+// ===== END STARFALL v92 FLIGHT RECORDER =====
+
 const rc=$("radar").getContext("2d");
 let radarRange=1000;
 const radarRangeButtons=Array.from(document.querySelectorAll("#radar-controls [data-radar-range]"));
@@ -2013,7 +2131,7 @@ radarRangeButtons.forEach(b=>b.addEventListener("click",e=>{e.stopPropagation();
 
 let last=performance.now();
 function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/1e3);last=now;planetOrbits.forEach(o=>{o.phase+=dt*o.speed;o.mesh.position.set(SYSTEM_CENTER.x+Math.cos(o.phase)*o.radius,SYSTEM_CENTER.y+o.y+Math.sin(o.phase*.7)*o.tilt,SYSTEM_CENTER.z+Math.sin(o.phase)*o.radius)});moonOrbitUpdate(dt);naturalSatellites.forEach(o=>{o.a+=dt*o.speed;o.mesh.position.set(o.parent.mesh.position.x+Math.cos(o.a)*o.orbit,o.parent.mesh.position.y+Math.sin(o.a*.7+o.phase)*o.orbit*.055,o.parent.mesh.position.z+Math.sin(o.a)*o.orbit);o.mesh.rotation.y+=dt*.025});worldPlanets.forEach(w=>{if(w.kind==="planet")w.mesh.rotation.y+=dt*(w.mesh.userData.worldPlanet===0?.012:.022+w.mesh.userData.worldPlanet*.003);const sd=SYSTEM_CENTER.clone().sub(w.mesh.position).normalize();w.mesh.children.forEach(ch=>{if(ch.material&&ch.material.uniforms&&ch.material.uniforms.s)ch.material.uniforms.s.value.copy(sd)})});if(plt&&plt.visible){const pd=SYSTEM_CENTER.clone().sub(plt.position).normalize();plt.children.forEach(ch=>{if(ch.material&&ch.material.uniforms&&ch.material.uniforms.s)ch.material.uniforms.s.value.copy(pd)})}planetClouds.forEach(c=>{c.mesh.rotation.y+=dt*c.speed});for(const sys of saturnRingSystems){sys.ringOrbit.rotation.z+=dt*.045;for(let i=0;i<sys.orbitData.length;i++){const a=sys.orbitData[i];a.a+=a.speed*dt;const wob=Math.sin(a.a*2.7+i)*a.tilt;sys.dummy.position.set(Math.cos(a.a)*a.rad,Math.sin(a.a)*a.rad,a.zoff+wob);sys.dummy.rotation.set(a.a*.7+i,a.a*1.1,a.a*.45);sys.dummy.scale.setScalar(a.scale);sys.dummy.updateMatrix();sys.asteroids.setMatrixAt(i,sys.dummy.matrix)}sys.asteroids.instanceMatrix.needsUpdate=true}
-if(state==="menu"){const t=now/4000;C.position.set(Math.sin(t)*13,3,Math.cos(t)*13);C.lookAt(0,0,0);sky.position.copy(P)}else if(state==="dock"){C.position.set(8,6,10);C.lookAt(-120,-250,-420);sky.position.copy(P)}else if(state==="jump")jmp(dt);else if(state==="play"||state==="dying")upd(dt);else if(hg)hg.gain.value=0;if(tr<1)trRender(dt);else if(!cafeLive)CP.render()}
+if(state==="menu"){const t=now/4000;C.position.set(Math.sin(t)*13,3,Math.cos(t)*13);C.lookAt(0,0,0);sky.position.copy(P)}else if(state==="dock"){C.position.set(8,6,10);C.lookAt(-120,-250,-420);sky.position.copy(P)}else if(state==="jump")jmp(dt);else if(state==="play"||state==="dying")upd(dt);else if(hg)hg.gain.value=0;if(window.SF_FLIGHT_RECORDER)window.SF_FLIGHT_RECORDER.frame(dt,now);if(tr<1)trRender(dt);else if(!cafeLive)CP.render()}
 const TCH=matchMedia("(pointer:coarse)").matches||(("ontouchstart" in window)&&!matchMedia("(any-pointer:fine)").matches);
 {const mb=document.createElement("small");mb.textContent="Режим управления (определён автоматически): "+(TCH?"сенсорный (телефон)":"клавиатура и мышь");$("menu").appendChild(mb)}
 if(TCH){document.querySelector(".mn-hint").textContent="коснитесь кнопки, чтобы начать";R.setPixelRatio(1);rs();$("radar").style.width=$("radar").style.height="120px";document.querySelectorAll("#menu small")[1].textContent="Держи телефон горизонтально. Прицел — проведи пальцем по экрану (чем дальше от точки касания, тем быстрее поворот). Слева — ползунок ГАЗ (скорость корабля). Справа: огонь, ракета, ЛАЗЕР (переключает боевой/горный: в горном «огонь» сканирует и добывает), форсаж; в меню ≡ — ядерка, разворот, тормоз, прыжок.";

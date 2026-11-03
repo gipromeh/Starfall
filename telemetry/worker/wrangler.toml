@@ -1,0 +1,7 @@
+name = "starfall-telemetry"
+main = "index.mjs"
+compatibility_date = "2026-11-03"
+
+[vars]
+GITHUB_REPOSITORY = "gipromeh/Starfall"
+ALLOWED_ORIGINS = "https://gipromeh.github.io"

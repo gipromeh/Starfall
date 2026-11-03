@@ -67,6 +67,8 @@ jobs:
         run: node tests/t14_radar_collision_regression.js
       - name: Deep Space test syntax
         run: node --check tests/t16_deep_space.js
+      - name: Flight recorder Worker regression
+        run: node tests/t20_flight_recorder.mjs
 
   prepare-browser:
     name: prepare-browser
