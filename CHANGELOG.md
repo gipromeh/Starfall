@@ -1,3 +1,10 @@
+## 2026-11-03 — v92 combat AI: bounded evasive maneuver and re-engagement
+- Fixed the close-range pirate AI lock: EVADE now has a bounded duration and a cooldown before another evasive response, allowing ATTACK to resume even while the player remains inside the proximity envelope.
+- Kept the 15 Hz decision cadence and per-frame flight integration; synchronized the production EAI kernel and the standalone deterministic kernel.
+- Added regression coverage for close-range re-engagement and cooldown, and strengthened the production combat batch to assert hostile fire and re-engagement across seeded trials.
+- The production combat report is written before acceptance assertions so failed runs retain diagnostic JSON.
+- Recomputed the game SHA-256 in this passport after the production runtime change.
+
 ## 2026-11-03 — v92.1: исправление атаки Шакала
 - Синхронизирован отображаемый номер релиза: HTML, паспорт и мастер-инструкция фиксируют v92.1.
 - Перехватчик «Шакал» больше не отвлекается на нейтральный транспорт и выбирает игрока основной целью.
