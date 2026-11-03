@@ -1851,7 +1851,7 @@ const EAI=(function(){
   e.aiIntent=(e.state==="EVADE"||e.state==="BREAK")?"EVADE":"ATTACK";
   return{direction,distance:waypointDistance,state:e.state,intent:e.aiIntent,interceptTime:t,fireRange:profile.fire,projection:currentProjection};
  }
- api={STEP,seed,rand,think,project,projectOCS,command,integrate,fireChance,fireGate,chooseVector,planCombat,interceptTime};
+ api={STEP,seed,rand,think,project,projectOCS,command,integrate,fireChance,fireGate,planCombat,interceptTime};
  return api;
 })();
 const pirateFleetForward=new T.Vector3(0,0,-1),pirateFleetUp=new T.Vector3(0,1,0),pirateFleetHeading=new T.Vector3();
