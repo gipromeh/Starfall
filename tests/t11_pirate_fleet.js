@@ -227,6 +227,7 @@ const L = require('./lib');
       spawnE(); spawnE();
       const jackal = E2;
       const targetNeutral = jackal.tn === neutral;
+      nv.length = 0; // Keep the synthetic neutral out of collision/update systems; this test targets spawn selection only.
       const forward = new THREE.Vector3(0,0,-1).applyQuaternion(Q).normalize();
       for (const e of [E, E2]) {
         e.warp = 0; e.g.visible = true;
