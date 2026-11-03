@@ -1,10 +1,11 @@
-name: Deploy STARFALL Babylon New to GitHub Pages
+name: Deploy STARFALL site and Tower sub-app
 
 on:
   push:
     branches: [main]
     paths:
       - "Babylon New/**"
+      - "Tower/**"
       - ".github/workflows/deploy-babylon-new-pages.yml"
   workflow_dispatch:
 
@@ -37,8 +38,14 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
-      - name: Build site
+      - name: Build Starfall site
         run: npm run build
+
+      - name: Add standalone Tower app without touching Starfall sources
+        working-directory: .
+        run: |
+          mkdir -p "Babylon New/dist/Tower"
+          cp -R Tower/. "Babylon New/dist/Tower/"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
