@@ -7,6 +7,8 @@ on:
       - 'tests/t18_eai_parity.js'
       - 'tests/t17_combat_ai_lab.mjs'
       - 'STARFALL_CURRENT.html'
+      - 'STARFALL_PASSPORT.md'
+      - 'CHANGELOG.md'
       - 'tools/combat-ai-lab/**'
       - '.github/workflows/combat-ai-v92.yml'
   pull_request:
