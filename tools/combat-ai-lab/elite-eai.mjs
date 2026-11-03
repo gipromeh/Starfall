@@ -26,9 +26,20 @@ export function createEAI(seed=0x6d2b79f5){
   const localUp=norm(cross(right,hd)),lx=dot(relative,right),ly=dot(relative,localUp),lz=dot(relative,hd);
   const near=Math.abs(lx)<(options.nearX||260)&&Math.abs(ly)<(options.nearY||220)&&Math.abs(lz)<(options.nearZ||340);
   if(aiThink){
-   if(options.incoming||near){if(e.aiIntent!=="EVADE"){e.aiEvadeSide=api.rand()<.5?-1:1;e.aiEvadeTicks=0;}e.aiIntent="EVADE";}
-   else if(e.aiIntent==="EVADE"){e.aiEvadeTicks=(e.aiEvadeTicks||0)+1;if(e.aiEvadeTicks>=(options.minEvadeTicks||8)&&Math.hypot(...relative)>(options.reengageDistance||720))e.aiIntent="ATTACK";}
-   else e.aiIntent="ATTACK";
+   if((e.aiEvadeCooldown||0)>0)e.aiEvadeCooldown--;
+   if(e.aiIntent==="EVADE"){
+    e.aiEvadeTicks=(e.aiEvadeTicks||0)+1;
+    const minTicks=options.minEvadeTicks||8,maxTicks=options.maxEvadeTicks||24;
+    const reengaged=Math.hypot(...relative)>(options.reengageDistance||720);
+    if(e.aiEvadeTicks>=minTicks&&(reengaged||e.aiEvadeTicks>=maxTicks)){
+     e.aiIntent="ATTACK";
+     e.aiEvadeCooldown=options.evadeCooldownTicks||18;
+    }
+   }else if((options.incoming||near)&&!(e.aiEvadeCooldown>0)){
+    e.aiEvadeSide=api.rand()<.5?-1:1;
+    e.aiEvadeTicks=0;
+    e.aiIntent="EVADE";
+   }else e.aiIntent="ATTACK";
   }
   if(!e.aiIntent)e.aiIntent="ATTACK";
   const side=e.aiEvadeSide||e.aiSideSign||1;
