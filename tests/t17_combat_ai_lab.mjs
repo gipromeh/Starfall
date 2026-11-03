@@ -13,7 +13,15 @@ console.log('t17_combat_ai_lab: Elite kernel, deterministic PRNG, cadence and at
 
 const elitePilot=createEAI(0x51a7),far={hd:[0,0,-1],aiIntent:"ATTACK",aiSideSign:1};
 const attack=elitePilot.chooseVector(far,[0,0,-900],true,{nearX:260,nearY:220,nearZ:340});
-assert.equal(far.aiIntent,"ATTACK");assert.ok(attack[2]<-.99);
+assert.equal(far.aiIntent,"ATTACK");
+const closeAI=createEAI(0x51a8),closePilot={hd:[0,0,-1],aiIntent:"ATTACK",aiSideSign:1};
+const closeOpts={incoming:true,minEvadeTicks:4,maxEvadeTicks:8,evadeCooldownTicks:12};
+closeAI.chooseVector(closePilot,[0,0,-100],true,closeOpts);
+assert.equal(closePilot.aiIntent,"EVADE");
+for(let i=0;i<8;i++)closeAI.chooseVector(closePilot,[0,0,-100],true,closeOpts);
+assert.equal(closePilot.aiIntent,"ATTACK","close-range evade must time out and re-engage");
+for(let i=0;i<10;i++)closeAI.chooseVector(closePilot,[0,0,-100],true,closeOpts);
+assert.equal(closePilot.aiIntent,"ATTACK","evade cooldown must preserve an attack window");assert.ok(attack[2]<-.99);
 const evade=elitePilot.chooseVector(far,[0,0,-100],true,{nearX:260,nearY:220,nearZ:340});
 assert.equal(far.aiIntent,"EVADE");assert.ok(evade[2]>.8);
 for(let i=0;i<8;i++)elitePilot.chooseVector(far,[0,0,-900],true,{nearX:260,nearY:220,nearZ:340,reengageDistance:720,minEvadeTicks:8});
