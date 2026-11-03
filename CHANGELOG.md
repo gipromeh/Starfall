@@ -659,3 +659,11 @@ tags: [starfall, changelog]
 
 - Updated `main_file_sha256` after extending the shared Elite-derived pilot to boss flight; `last_update` refreshed.
 - SHA-256: `32c6d0a01e6691d046d9c7657fcb18a3b14201786b8f51757a7862008029c07c`.
+
+
+## Active-maneuver production combat validation (2026-11-04, isolated lab branch)
+
+- Added a deterministic 12-trial Chromium scenario with continuous player fire and alternating lateral/vertical thrust plus heading variation.
+- Captures survival time, hull/shield, hostile fire, damage, re-engagement, player path length and speed from the production update/collision pipeline.
+- This is a measurement harness; balance acceptance thresholds will be set from observed results rather than assumed in advance.
+- No production gameplay code changed.
