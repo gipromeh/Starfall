@@ -652,3 +652,12 @@ tags: [starfall, changelog]
 
 - Updated `main_file_sha256` after extending the shared Elite-derived pilot to boss flight; `last_update` refreshed.
 - SHA-256: `32c6d0a01e6691d046d9c7657fcb18a3b14201786b8f51757a7862008029c07c`.
+
+
+## Free space GLB collection (2026-11-04, isolated asset branch)
+
+- Imported 17 NASA 3D Resources GLB files: 14 civilian spacecraft/landers/probes/cargo components, 2 orbital stations and 1 asteroid.
+- Added source inventory and usage notes in `assets/SPACE_ASSET_CREDITS.md`.
+- Added a five-unit civilian research caravan formation descriptor.
+- Existing planet model preserved; no new planet or galaxy mesh imported in this batch. Galaxy backgrounds should use skybox/equirectangular textures or shader-based rendering.
+- Assets are staged only; no gameplay/runtime integration or mobile performance validation has been performed.
