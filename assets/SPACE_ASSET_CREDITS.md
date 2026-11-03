@@ -30,3 +30,12 @@
 - 1999 RQ36 — модель астероида.
 - Новые модели пока не подключены к runtime. Перед использованием проверить ориентацию, масштаб, материалы, число треугольников и стоимость на мобильном GPU.
 - Отдельная модель галактики в этой подборке отсутствует. Для галактических фонов использовать equirectangular texture, skybox или shader; не выдавать геометрию туманности за модель галактики.
+| ships/civilian/earth_observing_1/model.glb | Earth Observing-1 (EO-1) | 3D Models/Earth Observing-1 (EO-1)/Earth Observing-1 (EO-1).glb |
+| ships/civilian/geostationary_satellite/model.glb | Geostationary Operational Environmental Satellites | 3D Models/Geostationary Operational Environmental Satellites/Geostationary Operational Environmental Satellites.glb |
+| ships/civilian/mars_global_surveyor/model.glb | Mars Global Surveyor (MOI) | 3D Models/Mars Global Surveyor/Mars Global Surveyor (MOI).glb |
+| ships/civilian/mars_rover_opportunity/model.glb | Mars Exploration Rover Opportunity | 3D Models/Mars Exploration Rover - Opportunity (MER-B)/Mars Exploration Rover - Opportunity (MER-B).glb |
+| ships/civilian/cassini_huygens/model.glb | Cassini-Huygens (B) | 3D Models/Cassini-Huygens (B)/Cassini-Huygens (B).glb |
+| ships/civilian/explorer_jupiter_c/model.glb | Explorer Jupiter-C Rocket | 3D Models/Explorer Jupiter-C Rocket/Explorer Jupiter-C Rocket.glb |
+| ships/civilian/space_shuttle_b/model.glb | Space Shuttle (B) | 3D Models/Space Shuttle (B)/Space Shuttle (B).glb |
+| ships/civilian/space_shuttle_c/model.glb | Space Shuttle (C) | 3D Models/Space Shuttle (C)/Space Shuttle (C).glb |
+| ships/civilian/cluster_probe/model.glb | Cluster | 3D Models/Cluster/Cluster.glb |
