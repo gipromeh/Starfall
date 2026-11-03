@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "STARFALL_PIRATE_AI_v1.2.1.html"
+      - "experiments/pirate-ai/STARFALL_PIRATE_AI_v1.2.1.html"
       - ".github/workflows/deploy-pirate-ai-pages.yml"
   workflow_dispatch:
 
@@ -33,7 +33,7 @@ jobs:
       - name: Prepare static site
         run: |
           mkdir -p _site
-          cp STARFALL_PIRATE_AI_v1.2.1.html _site/index.html
+          cp experiments/pirate-ai/STARFALL_PIRATE_AI_v1.2.1.html _site/index.html
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
