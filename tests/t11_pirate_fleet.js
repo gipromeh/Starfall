@@ -218,6 +218,42 @@ const L = require('./lib');
   const relaunched = await page.evaluate(() => pirateFleet.length === 2 && [0,1].every(ty => pirateFleet.filter(e => e.ty === ty).length === 1));
   L.check('после dock → lift снова создаётся стартовый состав из двух типов', relaunched);
 
+  const jackalAggro = await page.evaluate(() => {
+    const old = { E, E2, firstWaveSpawn, random: Math.random, neutrals: nv.slice() };
+    const neutralGroup = new THREE.Group();
+    neutralGroup.position.copy(P).add(new THREE.Vector3(0,0,-120));
+    const neutral = { g: neutralGroup, v: new THREE.Vector3(), hp: 100, cr: 12 };
+    try {
+      nv.length = 0; nv.push(neutral); E = null; E2 = null; firstWaveSpawn = 0;
+      Math.random = () => .1;
+      spawnE(); spawnE();
+      const jackal = E2;
+      const targetNeutral = jackal.tn === neutral;
+      nv.length = 0; // Keep the synthetic neutral out of collision/update systems; this test targets spawn selection only.
+      const forward = new THREE.Vector3(0,0,-1).applyQuaternion(Q).normalize();
+      for (const e of [E, E2]) {
+        e.warp = 0; e.g.visible = true;
+        e.g.position.copy(P).addScaledVector(forward, 300);
+        e.hd.copy(forward).negate(); e.vel.copy(e.hd).multiplyScalar(24);
+        e.aiIntent = "ATTACK"; e.aiClock = EAI.STEP; e.aiTicks = 0;
+        e.fire = 0; e.burstLeft = 0; e.burstGap = 0;
+      }
+      const before = eb.length, oldRand = EAI.rand;
+      EAI.rand = () => 0;
+      try { upd(.05); } finally { EAI.rand = oldRand; }
+      return { type: jackal.ty, targetNeutral, targetPlayer: jackal.tn === null,
+        state: jackal.state, shots: eb.length - before, burstLeft: jackal.burstLeft };
+    } finally {
+      for (const e of [E, E2]) if (e && e.g) S.remove(e.g);
+      E = old.E; E2 = old.E2; firstWaveSpawn = old.firstWaveSpawn;
+      Math.random = old.random; nv.length = 0; nv.push(...old.neutrals);
+    }
+  });
+  L.check('Шакал не отвлекается на нейтральный транспорт и выбирает игрока целью',
+    jackalAggro.type === 1 && !jackalAggro.targetNeutral && jackalAggro.targetPlayer, jackalAggro);
+  L.check('Шакал открывает огонь по игроку при устойчивом наведении на 300 м',
+    jackalAggro.state === 'ATTACK' && jackalAggro.shots >= 2 && jackalAggro.burstLeft < 3, jackalAggro);
+
   const cleanup = await page.evaluate(() => {
     toMenu();
     return { slots: pirateFleet.length, ready: pirateFleetReady };
