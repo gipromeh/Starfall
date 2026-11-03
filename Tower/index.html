@@ -24,7 +24,7 @@
 <script>
 (function(){
  const box=document.getElementById('boot-error'),msg=document.getElementById('boot-error-text');
- function show(reason){msg.textContent=String(reason&&reason.message||reason||'Неизвестная ошибка').slice(0,260);box.style.display='block';}
+ function show(reason){const detail=reason&&reason.stack?reason.stack:reason&&reason.message||reason||'Неизвестная ошибка';msg.textContent=String(detail).slice(0,900);box.style.display='block';}
  window.addEventListener('error',e=>{if(e.message||e.error)show(e.error||e.message);},true);
  window.addEventListener('unhandledrejection',e=>show(e.reason));
  window.addEventListener('webglcontextlost',()=>show('WebGL-контекст потерян. Закройте другие тяжёлые вкладки и перезагрузите игру.'),true);
@@ -147,7 +147,7 @@ function pickTower(t){chosen=t;ui()}
 document.querySelectorAll('.tower').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tower').forEach(x=>x.classList.remove('active'));b.classList.add('active');selected=b.dataset.kind;pickTower(null);say('Выбрана башня: '+b.innerText.split(' ')[1])});
 $('#upgrade').onclick=()=>{if(!chosen)return;let cost=65*chosen.userData.level;if(gold<cost)return say('Недостаточно золота');gold-=cost;chosen.userData.level++;chosen.userData.damage*=1.5;chosen.userData.range+=.6;chosen.scale.multiplyScalar(1.08);ui()};
 $('#sell').onclick=()=>{if(!chosen)return;gold+=Math.round(chosen.userData.cost*.6);let pad=chosen.userData.pad;pad.userData.occupied=false;scene.remove(chosen);towers=towers.filter(t=>t!==chosen);pickTower(null)};
-function spawnEnemy(){const impactRings=[];
+const impactRings=[];
 function impactEffect(position,color){
   emitParticles(position,color,20,3.2);
   const ring=new THREE.Mesh(new THREE.TorusGeometry(.42,.055,6,24),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.85,blending:THREE.AdditiveBlending,depthWrite:false}));
@@ -156,7 +156,7 @@ function impactEffect(position,color){
 function updateImpactRings(dt){
   for(let i=impactRings.length-1;i>=0;i--){const e=impactRings[i];e.life-=dt;const k=1-e.life/e.max;e.mesh.scale.setScalar(1+k*3.4);e.mesh.material.opacity=Math.max(0,e.life/e.max)*.85;if(e.life<=0){scene.remove(e.mesh);e.mesh.geometry.dispose();e.mesh.material.dispose();impactRings.splice(i,1);}}
 }
-let kind=wave>=8&&Math.random()<.25?'boss':wave>=4&&Math.random()<.28?'orc':wave>=3&&Math.random()<.3?'fly':Math.random()<.35?'runner':'goblin',mesh=goblin(kind);scene.add(mesh);let hp=(kind==='boss'?300:kind==='orc'?130:kind==='runner'?38:kind==='fly'?55:65)*(1+wave*.16);enemies.push({mesh,t:0,hp,max:hp,speed:(kind==='runner'?.095:kind==='boss'?.035:.055)*(1+wave*.025),kind})}
+function spawnEnemy(){let kind=wave>=8&&Math.random()<.25?'boss':wave>=4&&Math.random()<.28?'orc':wave>=3&&Math.random()<.3?'fly':Math.random()<.35?'runner':'goblin',mesh=goblin(kind);scene.add(mesh);let hp=(kind==='boss'?300:kind==='orc'?130:kind==='runner'?38:kind==='fly'?55:65)*(1+wave*.16);enemies.push({mesh,t:0,hp,max:hp,speed:(kind==='runner'?.095:kind==='boss'?.035:.055)*(1+wave*.025),kind})}
 function build(p){let cost=selected==='archer'?70:selected==='mage'?110:140;if(gold<cost)return say('Недостаточно золота');gold-=cost;let t=towerModel(selected);t.position.set(p.userData.x,0,p.userData.z);t.userData.pad=p;p.userData.occupied=true;p.userData.tower=t;scene.add(t);towers.push(t);pickTower(t);ui()}
 function begin(){if(running||wave>=12||lives<=0)return;wave++;if(wave>1){let bonus=70+wave*22;gold+=bonus;say('Волна '+wave+' · награда +'+bonus+' ◈')}else say('Волна '+wave+' начинается!');running=true;left=8+wave*2;spawn=0;ui()}
 $('#start').onclick=begin;$('#pause').onclick=()=>{paused=!paused;$('#pause').textContent=paused?'▶':'Ⅱ'};document.querySelectorAll('[data-speed]').forEach(b=>b.onclick=()=>{speed=+b.dataset.speed;document.querySelectorAll('[data-speed]').forEach(x=>x.style.borderColor=x===b?'#d5ad65':'#ffffff25')});
