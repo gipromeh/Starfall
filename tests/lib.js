@@ -44,7 +44,7 @@ async function openGame(ctx, o = {}) {
   page.on('console', m => { const t = m.text(); if (m.type() === 'error' && !/Failed to load resource|net::ERR|ERR_FAILED/.test(t)) page.errors.push('console.error: ' + t.slice(0, 300)); else page.logs.push(m.type() + ': ' + t.slice(0, 200)); });
   page.on('dialog', d => { page.lastDialog = d.message(); (page.dialogHandler || (x => x.accept()))(d); });
   await page.goto(ORIGIN + '/', { waitUntil: 'domcontentloaded', timeout: 120000 });
-  await page.waitForFunction(() => { try { return typeof SV !== 'undefined' && typeof state !== 'undefined'; } catch (e) { return false; } }, null, { timeout: 120000 });
+  try { await page.waitForFunction(() => { try { return typeof SV !== 'undefined' && typeof state !== 'undefined'; } catch (e) { return false; } }, null, { timeout: 120000 }); } catch (e) { console.error('GAME_STARTUP_DIAGNOSTICS ' + JSON.stringify({ errors: page.errors, logs: page.logs.slice(-20), title: await page.title(), url: page.url() })); throw e; }
   return page;
 }
 const sleep = ms => new Promise(r => setTimeout(r, ms));
