@@ -1,4 +1,4 @@
-# STARFALL "Void Hunter" — МАСТЕР-ИНСТРУКЦИЯ v2.6 (2026-11-02)
+# STARFALL "Void Hunter" — МАСТЕР-ИНСТРУКЦИЯ v2.7 (2026-11-03)
 # Единственная актуальная инструкция. Лежит в репозитории gipromeh/Starfall, ветка main.
 # Claude читает её ПЕРВОЙ в каждом чате, перед любой правкой, без напоминаний.
 # Все прежние версии инструкции (в проекте Claude, в старых чатах) — архив.
@@ -88,7 +88,7 @@ sanity_check:
 # ПРОЦЕСС РАБОТЫ С GITHUB (единственный источник правды)
 process:
   repo: https://github.com/gipromeh/Starfall   # ветка main
-  current_version: v92.1
+  current_version: v93.0
   files:
     game: STARFALL_CURRENT.html        # единственная актуальная версия игры
     passport: STARFALL_PASSPORT.md     # архитектура, переменные, таблицы, правила правок
@@ -193,9 +193,17 @@ flight:
 # ─────────────────────────────────────────────
 combat:
   enemy_ai:
-    states: [APPROACH, ATTACK, EVADE]
-    speed: заметно медленнее игрока (реализм Elite), агрессия растёт с уровнем
-    behavior: перед атакой облёт с дугой, при попадании уклонение, не «магнитятся» к игроку
+    states: [INTERCEPT, APPROACH, ATTACK_RUN, FIRING_PASS, BREAK, EVADE, REPOSITION]
+    decision_rate: 15 Гц; OCS steering, acceleration limits, velocity and position integrate every frame
+    behavior: >
+      Predict a bounded intercept point; approach through class and group offsets;
+      commit to an attack run; fire only with the existing valid firing solution;
+      break away on overshoot, close danger or incoming fire; reposition and re-enter
+      from the opposite side. Boss-specific patterns remain separate.
+    invariants:
+      - preserve player flight physics, projectile types/speeds/damage and weapon cadence
+      - preserve NPC collision resolution, HP/damage rules, SAVE v3 and all existing saves
+      - tactical state is transient and is not added to serialized save data
   one_enemy_rule: враг по одному, следующий через 4 с после уничтожения (для обычных вылетов)
   weapons:
     lasers:
@@ -686,3 +694,33 @@ acceptance_v78:
   - "Прочность пиратов не ниже удвоенной прочности корабля игрока."
   - "Форсаж в АРКАДЕ работает при нулевом топливе."
   - "Освещение и окружение не изменены."
+
+# v93 — TACTICAL PIRATE COMBAT
+pirate_combat_v93:
+  shared_controller:
+    ordinary_enemies: [E, E2]
+    opening_fleet: pirateFleet
+    low_level: "Reuse EAI OCS projections, quantized steering, acceleration limits, and per-frame integration."
+    decision_cadence: "15 Hz; phase timers advance by one tactical step."
+  phases: [INTERCEPT, APPROACH, ATTACK_RUN, FIRING_PASS, BREAK, EVADE, REPOSITION]
+  tactics:
+    intercept: "Solve relative motion with a bounded lead time; approach on class and group offsets."
+    attack: "Use a discrete attack run and fire pass; leave by a close-range or time limit."
+    evade: "Threat response moves away with lateral/vertical displacement; return through REPOSITION."
+    group: "Give E/E2 opposite lateral signs; flip the sign after each completed pass."
+    classes: "Different approach, firing, exit, and reposition distances; do not alter hull, weapon damage, or player flight."
+  preserve:
+    - player physics and controls
+    - projectile speed, type, damage, firing cadence and weapon effects
+    - current NPC collision solver as final overlap safety
+    - SAVE v3, old saves, bosses, wave logic, hull, shields, economy, input and HUD
+  acceptance_metrics:
+    - "Idle follow time below 5% in a 120-second combat sample."
+    - "At least 90% of attack runs transition to break/reposition."
+    - "At least 70% of reachable passes hold a valid firing window for 0.3 seconds."
+    - "Re-engagement begins within 2 seconds when the target remains available."
+    - "Incoming-fire response begins by the next 15 Hz tactical tick."
+  tests:
+    - "Extend tests/t11_pirate_fleet.js with phase-cycle and threat-response scenarios."
+    - "Extend tests/t14_radar_collision_regression.js with shared-controller and weapon/collision invariants."
+    - "Run passport-check, game-tests, Chromium and WebKit matrix before release."
