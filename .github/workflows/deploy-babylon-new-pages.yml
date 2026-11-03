@@ -51,6 +51,17 @@ jobs:
             test "$(head -c 4 "Tower/assets/orcs/$model.glb")" = glTF
           done
           printf '%s\\n' 'Gobkit Orc Legion Pack — CC0 1.0 Universal' 'Source: https://gobkit.com/freebies' 'Rigged GLB models with Idle, Walk, Run, Attack, Hit and Death clips.' > Tower/assets/orcs/LICENSE.txt
+          mkdir -p Tower/assets/nature Tower/assets/creatures Tower/assets/raiders
+          for model in TreeHigh001 TreeHigh002 TreeHigh003 TreeLow001 TreeLow002 TreeLow003 TreeLow004 TreeMed001 TreeMed002 TreeMed003; do
+            curl --fail --location --retry 3 --retry-delay 2 "https://gobkit.com/freebies/environment/$model.glb" -o "Tower/assets/nature/$model.glb"
+            test "$(head -c 4 "Tower/assets/nature/$model.glb")" = glTF
+          done
+          curl --fail --location --retry 3 --retry-delay 2 "https://gobkit.com/freebies/dino/Pterodactylus.glb" -o Tower/assets/creatures/Pterodactylus.glb
+          curl --fail --location --retry 3 --retry-delay 2 "https://gobkit.com/freebies/animal012/PalominoHorse.glb" -o Tower/assets/creatures/PalominoHorse.glb
+          curl --fail --location --retry 3 --retry-delay 2 "https://gobkit.com/freebies/animal005/Bull.glb" -o Tower/assets/creatures/Bull.glb
+          curl --fail --location --retry 3 --retry-delay 2 "https://gobkit.com/freebies/human013/KnightCaptain.glb" -o Tower/assets/raiders/KnightCaptain.glb
+          for file in Tower/assets/nature/*.glb Tower/assets/creatures/*.glb Tower/assets/raiders/*.glb; do test "$(head -c 4 "$file")" = glTF; done
+          printf '%s\\n' 'Gobkit free assets — CC0 1.0 Universal' 'Source: https://gobkit.com/api/free' 'Trees, pterodactyl, bull, palomino horse and knight rider.' > Tower/assets/ASSET-LICENSES.txt
 
       - name: Add standalone Tower app without touching Starfall sources
         working-directory: .
