@@ -28,7 +28,8 @@
 - Apollo Lunar Module — посадочный модуль, не истребитель.
 - ISS и Base Station — орбитальные станции.
 - 1999 RQ36 — модель астероида.
-- Новые модели пока не подключены к runtime. Перед использованием проверить ориентацию, масштаб, материалы, число треугольников и стоимость на мобильном GPU.
+- `ships/civilian/space_shuttle_b/model.glb` подключён к runtime как вариант гражданского трафика (freighter variant 0). GLB содержит 2 476 треугольников, 1 материал и не содержит текстур; модель нормализуется при загрузке, процедурный транспорт остаётся fallback.
+- Остальные новые модели пока не подключены к runtime. Перед использованием проверить ориентацию, масштаб, материалы, число треугольников и стоимость на мобильном GPU.
 - Отдельная модель галактики в этой подборке отсутствует. Для галактических фонов использовать equirectangular texture, skybox или shader; не выдавать геометрию туманности за модель галактики.
 | ships/civilian/earth_observing_1/model.glb | Earth Observing-1 (EO-1) | 3D Models/Earth Observing-1 (EO-1)/Earth Observing-1 (EO-1).glb |
 | ships/civilian/geostationary_satellite/model.glb | Geostationary Operational Environmental Satellites | 3D Models/Geostationary Operational Environmental Satellites/Geostationary Operational Environmental Satellites.glb |
