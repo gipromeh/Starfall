@@ -3007,8 +3007,11 @@ function fitPirateAsset(src,targetSize=10,yaw=Math.PI){
  const maxDim=Math.max(size.x,size.y,size.z,1e-4);root.scale.setScalar(targetSize/maxDim);
  root.updateMatrixWorld(true);return root;
 }
+let pirateExtraAssetsDone=0;
+function pirateExtraAssetDone(){if(++pirateExtraAssetsDone>=GLB_EXTRA_PIR.length){pirateAssetsReady=true;console.info("STARFALL: all pirate asset slots ready")}}
 function loadExtraPirateAssets(){
- if(!T.GLTFLoader||location.protocol==="file:")return;
+ if(!T.GLTFLoader||location.protocol==="file:"){pirateAssetsReady=true;return}
+ if(!GLB_EXTRA_PIR.length){pirateAssetsReady=true;return}
  const loader=new T.GLTFLoader();
  GLB_EXTRA_PIR.forEach(d=>loader.load(d.url,gl=>{
   try{
@@ -3016,10 +3019,11 @@ function loadExtraPirateAssets(){
    applyPirateLivery(g);g.traverse(o=>{if(o.isMesh&&o.geometry){o.geometry.userData.keep=1;o.castShadow=false;o.receiveShadow=false}});
    g.userData={sc:1};MC["p"+d.ty]=g;
    console.info("STARFALL: pirate GLB ready",d.ty,d.url);
-  }catch(e){console.warn("GLB extra pirate processing failed:",d.url,e)}
- },undefined,e=>console.warn("GLB extra pirate unavailable; procedural fallback active:",d.url,e)));
+  }catch(e){console.warn("GLB extra pirate processing failed; procedural fallback active:",d.url,e)}
+  finally{pirateExtraAssetDone()}
+ },undefined,e=>{console.warn("GLB extra pirate unavailable; procedural fallback active:",d.url,e);pirateExtraAssetDone()}));
 }
-function pirateAssetDone(){if(++pirateAssetsDone>=GLB_PIR.length){pirateAssetsReady=true;loadExtraPirateAssets()}}
+function pirateAssetDone(){if(++pirateAssetsDone>=GLB_PIR.length)loadExtraPirateAssets()}
 if(T.GLTFLoader&&location.protocol!=="file:"){
  const GL_=new T.GLTFLoader();
  GLB_PIR.forEach(d=>GL_.load(d.url,gl=>{
