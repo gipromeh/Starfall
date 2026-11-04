@@ -157,6 +157,12 @@ function focusExternalObject(object,radius,label){
  distance=Math.max(24,Math.min(1200,radius*7));cameraUpdate();
  status.textContent='ОБЗОР ОБЪЕКТА · '+label+' · масштаб '+Math.round(distance)+' усл. ед.';
 }
+function externalScreen(object){
+ if(!externalRoot||!object)return null;
+ externalRoot.updateMatrixWorld(true);camera.updateMatrixWorld(true);
+ const p=object.getWorldPosition(new T.Vector3()).project(camera),rect=R.domElement.getBoundingClientRect();
+ return{x:rect.left+(p.x+1)*rect.width/2,y:rect.top+(1-p.y)*rect.height/2,visible:p.z>=-1&&p.z<=1&&Math.abs(p.x)<=1&&Math.abs(p.y)<=1};
+}
 function pickExternal(clientX,clientY){
  if(!externalRoot)return false;const rect=R.domElement.getBoundingClientRect();if(!rect.width||!rect.height)return false;
  externalPointer.set((clientX-rect.left)/rect.width*2-1,-((clientY-rect.top)/rect.height*2-1));
@@ -238,7 +244,7 @@ resetBtn.addEventListener('click',()=>{yaw=.18;pitch=.12;distance=3300;target.se
 addEventListener('keydown',e=>{const target=e.target;if(target&&(target.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)))return;if(e.code==='KeyN'&&!e.repeat&&(opened||state==='menu'||state==='play'||state==='jumpmenu')){e.preventDefault();opened?close():open();}if(e.code==='Escape'&&opened){e.preventDefault();close();}});
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();});
 function render(dt){if(!opened)return;if(externalRoot)window.SF_EXTERNAL_SYSTEMS.update(externalRoot,Math.min(.05,Math.max(0,dt||0)));R.render(scene,camera);}
-window.SF_GALAXY_MAP={open,close,render,get stats(){return{catalog:records.length,visible:filtered.length,selected:selected?.record?.name||null,external:externalRoot?{name:externalRecord?.name,planets:externalRoot.userData.externalSystem.data.planets.length,star:externalRoot.userData.externalSystem.data.star.class}:null};}};
+window.SF_GALAXY_MAP={open,close,render,get stats(){return{catalog:records.length,visible:filtered.length,selected:selected?.record?.name||null,external:externalRoot?{name:externalRecord?.name,planets:externalRoot.userData.externalSystem.data.planets.length,star:externalRoot.userData.externalSystem.data.star.class,starScreen:externalScreen(externalRoot.userData.externalSystem.data.star.mesh)}:null};}};
 try{const oldLift=lift;lift=function(){oldLift();hudBtn.style.display='block';};const oldArrive=arrive;arrive=function(){oldArrive();hudBtn.style.display='block';};}catch(e){console.warn('[STARFALL Galaxy Map] HUD hook',e);}
 if(typeof state!=='undefined'&&state==='play')hudBtn.style.display='block';
 })();
