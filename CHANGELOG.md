@@ -4,6 +4,7 @@
 - Corrected flight HUD instructions: S/Space brakes, arrow keys control pitch, and the on-screen boost control is labelled separately.
 - Marked shared laser-beam and cached pirate-model geometries as retained resources. Pirate clones no longer dispose geometry owned by the shared model cache; the leak test warms all five model caches before taking its baseline and fails on detached, unowned geometry.
 - Extended Galaxy Map browser regression coverage to exercise the touch-pointer boost path and verify acceleration.
+- Added disposal of unique freighter geometry/material resources on destruction, route completion, out-of-range removal, dock-loss cleanup, and world reset. Tourist ships retain their shared cached templates.
 - No game-version bump: this is a maintenance correction to the v95 flight feature. Passport SHA-256 is synchronized with the updated `starfall.html`.
 
 ## STARFALL v95 — внешний свободный полёт (2026-11-04)
