@@ -46,7 +46,7 @@ const statusPanel=node('section',{class:'panel'},side);node('h3',{text:'КАТА
 const status=node('div',{class:'status',text:'Ожидание каталога Spansh…'},statusPanel);
 node('div',{class:'hint',text:'Мышь / палец — вращение · колесо / pinch — масштаб\nКлик по звезде — сведения · поиск — переход · +/− масштаб'},root);
 const bottom=node('div',{class:'bottom'},root);
-const allBtn=node('button',{text:'ВСЕ СИСТЕМЫ'},bottom),inhBtn=node('button',{text:'ОБЖИТЫЕ'},bottom),zoomInBtn=node('button',{text:'+'},bottom),zoomOutBtn=node('button',{text:'−'},bottom),resetBtn=node('button',{text:'СБРОС ВИДА'},bottom),closeBtn=node('button',{class:'close',text:'В ИГРУ'},bottom);
+const allBtn=node('button',{text:'ВСЕ СИСТЕМЫ'},bottom),inhBtn=node('button',{text:'ОБЖИТЫЕ · НЕТ ДАННЫХ'},bottom),zoomInBtn=node('button',{text:'+'},bottom),zoomOutBtn=node('button',{text:'−'},bottom),resetBtn=node('button',{text:'СБРОС ВИДА'},bottom),closeBtn=node('button',{class:'close',text:'В ИГРУ'},bottom);
 const menuBtn=node('button',{id:'sf-galaxy-menu',text:'КАРТА ГАЛАКТИКИ · NAV'});
 $('mnmain')?.appendChild(menuBtn);
 const hudBtn=node('button',{id:'sf-galaxy-hud',text:'КАРТА [N]'},$('hud'));
@@ -75,7 +75,7 @@ const lg=new T.BufferGeometry();lg.setAttribute('position',new T.Float32BufferAt
 const localPoints=new T.Points(lg,new T.PointsMaterial({size:9,sizeAttenuation:false,vertexColors:true}));localGroup.add(localPoints);
 const ring=new T.Mesh(new T.TorusGeometry(13,.8,6,48),new T.MeshBasicMaterial({color:0x7ceaff,transparent:true,opacity:.95}));ring.visible=false;scene.add(ring);
 const routeMat=new T.LineBasicMaterial({color:0xffc46b,transparent:true,opacity:.9});
-let routeLine=null,records=[],filtered=[],selected=null,routeStart=null,routeEnd=null,points=null;
+let routeLine=null,records=[],filtered=[],selected=null,routeStart=null,routeEnd=null,points=null;let populationAvailable=false;
 let previousState='menu',previousHud='',opened=false,yaw=.18,pitch=.12,distance=3300,drag=null;
 const posOf=r=>new T.Vector3(r.x*.035,r.y*.035,r.z*.035);
 function disposePoints(){if(points){galaxy.remove(points);points.geometry.dispose();points.material.dispose();points=null;}}
@@ -84,23 +84,46 @@ function buildPoints(list){
  list.forEach((r,i)=>{p[i*3]=r.x*.035;p[i*3+1]=r.y*.035;p[i*3+2]=r.z*.035;const pop=+r.p||0,col=new T.Color(pop>1e8?0xffc56f:pop>0?0x68d9e9:0x8a9eb8);c[i*3]=col.r;c[i*3+1]=col.g;c[i*3+2]=col.b;});
  const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(p,3));g.setAttribute('color',new T.BufferAttribute(c,3));
  points=new T.Points(g,new T.PointsMaterial({size:2.5,sizeAttenuation:false,vertexColors:true,transparent:true,opacity:.9}));points.frustumCulled=false;galaxy.add(points);
- records=list;filtered=list;status.textContent=list.length.toLocaleString('ru-RU')+' систем Spansh · выборка, не полная галактика';
+ records=list;filtered=list;
+ const inhabitedCount=list.reduce((n,r)=>n+(r.p>0?1:0),0);
+ inhBtn.disabled=!(populationAvailable&&inhabitedCount>0);
+ inhBtn.textContent=populationAvailable?(inhabitedCount?'ОБЖИТЫЕ':'ОБЖИТЫЕ · НЕТ В ВЫБОРКЕ'):'ОБЖИТЫЕ · НЕТ ДАННЫХ';
+ inhBtn.title=inhBtn.disabled?'В источнике Spansh нет пригодных данных о населении для фильтрации.':'Показать системы с населением больше нуля.';
+ status.textContent=list.length.toLocaleString('ru-RU')+' систем Spansh · выборка, не полная галактика'+(populationAvailable?' · обитаемых в выборке: '+inhabitedCount:' · population отсутствует, фильтр отключён');
 }
 async function loadCatalog(){
  if(records.length)return;
  try{
+  const manifestUrl=new URL('./data/elite-dangerous-lite/systems.jsonl.gz.manifest.json',document.baseURI);
+  const manifestResponse=await fetch(manifestUrl,{cache:'no-cache'});
+  if(!manifestResponse.ok)throw Error('manifest HTTP '+manifestResponse.status);
+  const manifest=await manifestResponse.json();
+  if(manifest.format!=='starfall-systems-jsonl-v1'||!Number.isInteger(manifest.records)||manifest.records<1)throw Error('неверный manifest');
   const url=new URL('./data/elite-dangerous-lite/systems.jsonl.gz',document.baseURI);
   const res=await fetch(url,{cache:'force-cache'});if(!res.ok)throw Error('HTTP '+res.status);
-  if(!window.DecompressionStream)throw Error('нет DecompressionStream для gzip');
+  if(!res.body||!window.DecompressionStream)throw Error('нет DecompressionStream для gzip');
+  if(!window.crypto||!crypto.subtle)throw Error('Web Crypto SHA-256 недоступен; откройте игру по HTTPS');
+  const compressed=await res.clone().arrayBuffer();
+  if(Number.isInteger(manifest.compressed_bytes)&&compressed.byteLength!==manifest.compressed_bytes)throw Error('размер архива не совпадает с manifest');
+  const digest=await crypto.subtle.digest('SHA-256',compressed);
+  const actual=Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,'0')).join('');
+  if(actual!==manifest.sha256)throw Error('SHA-256 архива не совпадает с manifest');
   const reader=res.body.pipeThrough(new DecompressionStream('gzip')).getReader(),decoder=new TextDecoder();
   let pending='';const list=[];
+  const appendLine=line=>{
+   if(!line)return;
+   const v=JSON.parse(line);
+   if(!v||typeof v.id!=='string'||typeof v.n!=='string'||!Number.isFinite(v.x)||!Number.isFinite(v.y)||!Number.isFinite(v.z))throw Error('некорректная запись каталога');
+   list.push({id:v.id,name:v.n,searchName:v.n.toLocaleLowerCase(),x:v.x,y:v.y,z:v.z,p:+v.p||0,a:v.a||'',g:v.g||'',s:v.s||'',e:v.e||'',e2:v.e2||'',f:v.f||'',bc:+v.bc||0});
+  };
   while(true){const part=await reader.read();if(part.done)break;pending+=decoder.decode(part.value,{stream:true});let cut;
-   while((cut=pending.indexOf('\n'))>=0){const line=pending.slice(0,cut);pending=pending.slice(cut+1);if(!line)continue;const v=JSON.parse(line);
-    if(v.n&&Number.isFinite(+v.x)&&Number.isFinite(+v.y)&&Number.isFinite(+v.z))list.push({id:String(v.id||''),name:String(v.n),searchName:String(v.n).toLocaleLowerCase(),x:+v.x,y:+v.y,z:+v.z,p:+v.p||0,a:v.a||'',g:v.g||'',s:v.s||'',e:v.e||'',e2:v.e2||'',f:v.f||'',bc:+v.bc||0});
-   }
+   while((cut=pending.indexOf('\n'))>=0){appendLine(pending.slice(0,cut));pending=pending.slice(cut+1);}
   }
-  pending+=decoder.decode();if(pending.trim()){const v=JSON.parse(pending);if(v.n&&Number.isFinite(+v.x)&&Number.isFinite(+v.y)&&Number.isFinite(+v.z))list.push({id:String(v.id||''),name:String(v.n),x:+v.x,y:+v.y,z:+v.z,p:+v.p||0,a:v.a||'',g:v.g||'',s:v.s||'',e:v.e||'',e2:v.e2||'',f:v.f||'',bc:+v.bc||0});}
-  if(!list.length)throw Error('пустой каталог');buildPoints(list);
+  pending+=decoder.decode();if(pending.trim())appendLine(pending);
+  if(list.length!==manifest.records)throw Error('число систем не совпадает с manifest: '+list.length+' / '+manifest.records);
+  populationAvailable=Number(manifest.population_field_records)>0;
+  buildPoints(list);
+  status.textContent+=' · SHA-256 подтверждён';
  }catch(e){status.textContent='Каталог Spansh недоступен ('+e.message+'). Доступны 5 локальных систем STARFALL.';console.warn('[STARFALL Galaxy Map]',e);}
 }
 function cameraUpdate(){const cp=Math.cos(pitch);camera.position.set(distance*Math.sin(yaw)*cp,distance*Math.sin(pitch),distance*Math.cos(yaw)*cp);camera.lookAt(0,0,0);}
@@ -164,8 +187,8 @@ function wheel(e){if(!opened)return;e.preventDefault();distance=Math.max(180,Mat
 R.domElement.addEventListener('pointerdown',down);R.domElement.addEventListener('pointermove',move);R.domElement.addEventListener('pointerup',up);R.domElement.addEventListener('pointercancel',()=>drag=null);R.domElement.addEventListener('wheel',wheel,{passive:false});
 search.addEventListener('input',()=>renderSearch(search.value));jumpBtn.addEventListener('click',jumpLocal);routeBtn.addEventListener('click',routeAction);
 [closeTop,closeBtn].forEach(b=>b.addEventListener('click',close));menuBtn.addEventListener('click',open);hudBtn.addEventListener('click',open);
-allBtn.addEventListener('click',()=>{filtered=records;allBtn.disabled=true;inhBtn.disabled=false;});
-inhBtn.addEventListener('click',()=>{filtered=records.filter(r=>r.p>0);inhBtn.disabled=true;allBtn.disabled=false;});
+allBtn.addEventListener('click',()=>{filtered=records;allBtn.disabled=true;inhBtn.disabled=!(populationAvailable&&records.some(r=>r.p>0));});
+inhBtn.addEventListener('click',()=>{if(inhBtn.disabled)return;filtered=records.filter(r=>r.p>0);inhBtn.disabled=true;allBtn.disabled=false;});
 zoomInBtn.addEventListener('click',()=>{distance=Math.max(180,distance*.78);cameraUpdate();});zoomOutBtn.addEventListener('click',()=>{distance=Math.min(9000,distance/ .78);cameraUpdate();});
 resetBtn.addEventListener('click',()=>{yaw=.18;pitch=.12;distance=3300;cameraUpdate();if(routeLine){scene.remove(routeLine);routeLine.geometry.dispose();routeLine=null;}routeStart=routeEnd=null;routeBtn.textContent='НАЧАТЬ МАРШРУТ';});
 addEventListener('keydown',e=>{const target=e.target;if(target&&(target.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)))return;if(e.code==='KeyN'&&!e.repeat&&(opened||state==='menu'||state==='play'||state==='jumpmenu')){e.preventDefault();opened?close():open();}if(e.code==='Escape'&&opened){e.preventDefault();close();}});
