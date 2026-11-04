@@ -47,6 +47,7 @@ const status=node('div',{class:'status',text:'Ожидание каталога 
 node('div',{class:'hint',text:'Мышь / палец — вращение · колесо / ± — масштаб\nКлик по звезде — сведения · поиск — переход · +/− масштаб'},root);
 const bottom=node('div',{class:'bottom'},root);
 const allBtn=node('button',{text:'ВСЕ СИСТЕМЫ'},bottom),inhBtn=node('button',{text:'ОБЖИТЫЕ · НЕТ ДАННЫХ'},bottom),zoomInBtn=node('button',{text:'+'},bottom),zoomOutBtn=node('button',{text:'−'},bottom),resetBtn=node('button',{text:'СБРОС ВИДА'},bottom),closeBtn=node('button',{class:'close',text:'В ИГРУ'},bottom);
+inhBtn.disabled=true;
 const menuBtn=node('button',{id:'sf-galaxy-menu',text:'КАРТА ГАЛАКТИКИ · NAV'});
 $('mnmain')?.appendChild(menuBtn);
 const hudBtn=node('button',{id:'sf-galaxy-hud',text:'КАРТА [N]'},$('hud'));
