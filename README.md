@@ -85,3 +85,8 @@
 ## Полная галактика Elite Dangerous
 
 Потоковая загрузка и локальное хранилище полного Spansh Galaxy Dump: [`docs/ELITE_GALAXY_DATA_PIPELINE.md`](docs/ELITE_GALAXY_DATA_PIPELINE.md). Архивы и базы исключены из Git; импортёр: `tools/elite_galaxy.py`.
+
+
+## Elite Dangerous — lite dataset
+
+Компактный каталог систем (до 50 000 записей, gzip JSONL, лимит 35 MiB) с ручной публикацией через GitHub Actions: [`docs/ELITE_GALAXY_LITE.md`](docs/ELITE_GALAXY_LITE.md).
