@@ -44,14 +44,14 @@ const L = require('./lib');
   L.check('пират эскадрильи после первого попадания горит, дымит и остаётся жив',fleetFirstHit.hp>0&&fleetFirstHit.alive&&fleetFirstHit.burning&&fleetFirstHit.smoking&&fleetFirstHit.minimum,fleetFirstHit);
 
   const movementProfile = await page.evaluate(() => pirateFleet.map(e => ({ty:e.ty,speed:e.speed})));
-  L.check('стартовый состав содержит Головореза и Шакала с заданными скоростями',movementProfile.length===2&&movementProfile[0].ty===movementProfile[1].ty&&movementProfile.every(x=>x.ty>=0&&x.ty<=2&&Math.abs(x.speed-[46,34.5,46][x.ty])<.01),movementProfile);
+  L.check('стартовая пара одного seeded-архетипа использует корректный скоростной профиль',movementProfile.length===2&&movementProfile[0].ty===movementProfile[1].ty&&movementProfile.every(x=>x.ty>=0&&x.ty<=2&&Math.abs(x.speed-[46,34.5,46][x.ty])<.01),movementProfile);
 
   const composition = await page.evaluate(() => ({
     total: pirateFleet.length,
     types: [...new Set(pirateFleet.map(e=>e.ty))].map(ty=>pirateFleet.filter(e=>e.ty===ty).length),
     spawned: pirateFleet.filter(e => !!e.g).length
   }));
-  L.check('стартовая атака содержит ровно Головореза и Шакала', composition.total === 2 && composition.types.length===1 && composition.types[0]===2, composition);
+  L.check('стартовая атака содержит ровно два корабля одного seeded-архетипа', composition.total === 2 && composition.types.length===1 && composition.types[0]===2, composition);
   L.check('оба корабля стартовой атаки созданы', composition.spawned === 2, composition);
   const initialSpawn = await page.evaluate(() => pirateFleet.map(e => {
     const forward = new THREE.Vector3(0,0,-1).applyQuaternion(Q).normalize();
