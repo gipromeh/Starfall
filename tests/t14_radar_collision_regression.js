@@ -6,7 +6,7 @@ const passport = fs.readFileSync(path.join(__dirname, '..', 'STARFALL_PASSPORT.m
 const gameVersion = html.match(/starfall-version\" content=\"(v[0-9.]+)\"/)?.[1];
 const passportVersion = passport.match(/^game_version:\s*\"(v[0-9.]+)\"/m)?.[1];
 const checks = [
- ['HTML build version metadata is present and valid', /<meta name="starfall-version" content="v\d+(?:\.\d+)?">/.test(html)],
+ ['HTML build version matches project passport', !!gameVersion && gameVersion === passportVersion],
  ['laser projectiles explicitly tagged', html.includes('arr.push({m,v,dmg,life,kind:"laser"})')],
  ['ballistic projectiles explicitly tagged', html.includes('arr.push({m,v,dmg,life,kind:"projectile"})')],
  ['hostile homing missiles explicitly tagged', html.includes('q.hm=1;q.kind="hostile-missile"')],
