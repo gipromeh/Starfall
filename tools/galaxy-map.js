@@ -26,6 +26,9 @@ const css = [
 '#sf-galaxy .bottom{pointer-events:auto;position:absolute;z-index:3;right:max(12px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));display:flex;gap:6px}',
 '#sf-galaxy .hint{position:absolute;right:16px;top:72px;z-index:2;padding:8px 10px;background:#020916aa;border:1px solid #4fd0ff33;color:#9fc8df;font-size:10px;line-height:1.55;pointer-events:none}',
 '#sf-galaxy .close{border-color:#ff987788;color:#ffd2c1}#sf-galaxy-menu{min-width:min(440px,86vw);height:48px;font-size:15px;letter-spacing:.14em}',
+'#sf-galaxy .flight-controls{position:absolute;z-index:4;left:max(12px,env(safe-area-inset-left));bottom:max(14px,env(safe-area-inset-bottom));display:none;grid-template-columns:repeat(3,48px);gap:5px;pointer-events:auto}',
+'#sf-galaxy .flight-controls button{height:44px;padding:4px;font-size:14px;background:#06203add;touch-action:none;user-select:none;-webkit-user-select:none}',
+'@media(max-width:700px){#sf-galaxy .flight-controls{grid-template-columns:repeat(3,54px)}#sf-galaxy .flight-controls button{height:50px}}',
 '#sf-galaxy-hud{position:absolute;z-index:12;left:max(14px,env(safe-area-inset-left));bottom:max(18px,env(safe-area-inset-bottom));display:none;min-width:0;padding:8px 13px;font-size:11px;pointer-events:auto}',
 '@media(max-width:700px){#sf-galaxy .title{font-size:12px;white-space:nowrap}#sf-galaxy .top{gap:6px}#sf-galaxy .side{top:60px;width:min(270px,68vw);bottom:90px}#sf-galaxy .hint{display:none}#sf-galaxy .panel{padding:8px}#sf-galaxy .results{max-height:22vh}#sf-galaxy .bottom{left:12px;right:12px;bottom:max(10px,env(safe-area-inset-bottom));flex-wrap:wrap}#sf-galaxy .bottom button{flex:1 1 28%}#sf-galaxy input{width:min(36vw,190px)}}'
 ].join('\n');
@@ -42,12 +45,17 @@ const jumpBtn=node('button',{text:'ПЕРЕЙТИ В СИСТЕМУ',disabled:'t
 const routeBtn=node('button',{text:'НАЧАТЬ МАРШРУТ'},actions);
 const exploreBtn=node('button',{text:'ИССЛЕДОВАТЬ СИСТЕМУ',disabled:'true'},actions);
 const returnBtn=node('button',{text:'← К КАРТЕ'},actions);returnBtn.style.display='none';
+const flightBtn=node('button',{text:'НАЧАТЬ ПОЛЁТ'},actions);flightBtn.style.display='none';
+let flightMode=false,flightShip=null,flightVelocity=null,flightInput={thrust:false,brake:false,left:false,right:false,up:false,down:false,rollL:false,rollR:false},flightCameraDistance=18,flightNearLabel='';
 let externalRoot=null,externalRecord=null,externalCameraState=null;
 const resultsPanel=node('section',{class:'panel'},side);const resultsHeading=node('h3',{text:'ПОИСК'},resultsPanel);
 const results=node('div',{class:'results'},resultsPanel);
 const statusPanel=node('section',{class:'panel'},side);node('h3',{text:'КАТАЛОГ'},statusPanel);
 const status=node('div',{class:'status',text:'Ожидание каталога Spansh…'},statusPanel);
 node('div',{class:'hint',text:'Мышь / палец — вращение · колесо / ± — масштаб\nКлик по звезде — сведения · поиск — переход · +/− масштаб'},root);
+const flightControls=node('div',{class:'flight-controls','aria-label':'Управление полётом'},root);
+const flightButtons=[['up','▲'],['thrust','УСК'],['rollR','↻'],['left','◀'],['brake','ТОРМ'],['right','▶'],['down','▼'],['rollL','↺']];
+flightButtons.forEach(([key,label])=>{const b=node('button',{text:label,'aria-label':key},flightControls);const set=v=>{flightInput[key]=v};b.addEventListener('pointerdown',e=>{e.preventDefault();set(true);try{b.setPointerCapture(e.pointerId)}catch(_){}});['pointerup','pointercancel','lostpointercapture','pointerleave'].forEach(t=>b.addEventListener(t,()=>set(false)));});
 const bottom=node('div',{class:'bottom'},root);
 const allBtn=node('button',{text:'ВСЕ СИСТЕМЫ'},bottom),inhBtn=node('button',{text:'ОБЖИТЫЕ · НЕТ ДАННЫХ'},bottom),zoomInBtn=node('button',{text:'+'},bottom),zoomOutBtn=node('button',{text:'−'},bottom),resetBtn=node('button',{text:'СБРОС ВИДА'},bottom),closeBtn=node('button',{class:'close',text:'В ИГРУ'},bottom);
 inhBtn.disabled=true;
@@ -150,8 +158,43 @@ function renderSearch(q){
  found.slice(0,14).forEach(v=>{const b=node('button',{},results);node('span',{text:v.r.name},b);node('small',{text:v.local?'STARFALL':'SPANSH'},b);b.addEventListener('click',()=>focus(v.r,v.local));});
  if(!found.length)node('div',{class:'meta',text:'Совпадений нет.'},results);
 }
-function leaveExternal(){if(!externalRoot)return;scene.remove(externalRoot);window.SF_EXTERNAL_SYSTEMS.dispose(externalRoot);externalRoot=null;externalRecord=null;galaxy.visible=true;localGroup.visible=true;if(points)points.visible=true;if(externalCameraState){yaw=externalCameraState.yaw;pitch=externalCameraState.pitch;distance=externalCameraState.distance;target.copy(externalCameraState.target);externalCameraState=null;cameraUpdate()}ring.visible=!!selected;if(routeLine)routeLine.visible=true;exploreBtn.style.display='';returnBtn.style.display='none';jumpBtn.style.display='';routeBtn.style.display='';search.disabled=false;resultsHeading.textContent='ПОИСК';renderSearch(search.value);if(selected)setSelected(selected.record,selected.local);}
+function leaveExternal(){if(!externalRoot)return;if(flightMode)setFlightMode(false);scene.remove(externalRoot);window.SF_EXTERNAL_SYSTEMS.dispose(externalRoot);externalRoot=null;externalRecord=null;galaxy.visible=true;localGroup.visible=true;if(points)points.visible=true;if(externalCameraState){yaw=externalCameraState.yaw;pitch=externalCameraState.pitch;distance=externalCameraState.distance;target.copy(externalCameraState.target);externalCameraState=null;cameraUpdate()}ring.visible=!!selected;if(routeLine)routeLine.visible=true;exploreBtn.style.display='';returnBtn.style.display='none';flightBtn.style.display='none';jumpBtn.style.display='';routeBtn.style.display='';search.disabled=false;resultsHeading.textContent='ПОИСК';renderSearch(search.value);if(selected)setSelected(selected.record,selected.local);}
+function buildFlightShip(){
+ const g=new T.Group(),bodyMat=new T.MeshStandardMaterial({color:0xb7cbd7,metalness:.72,roughness:.3}),wingMat=new T.MeshStandardMaterial({color:0x253e53,metalness:.62,roughness:.38}),glowMat=new T.MeshBasicMaterial({color:0x55dfff});
+ const body=new T.Mesh(new T.ConeGeometry(1.45,7.5,8),bodyMat);body.rotation.x=-Math.PI/2;body.position.z=-2.2;g.add(body);
+ const cockpit=new T.Mesh(new T.SphereGeometry(.82,12,8),new T.MeshStandardMaterial({color:0x3ca5ca,metalness:.4,roughness:.18,emissive:0x103c55}));cockpit.scale.set(.72,.55,1.25);cockpit.position.set(0,.72,-1.1);g.add(cockpit);
+ const wings=new T.Mesh(new T.BoxGeometry(8,.22,2.2),wingMat);wings.position.set(0,-.12,.7);g.add(wings);
+ for(const x of [-2.8,2.8]){const engine=new T.Mesh(new T.CylinderGeometry(.25,.42,1.6,8),glowMat);engine.rotation.x=Math.PI/2;engine.position.set(x,-.1,1.6);g.add(engine)}
+ g.userData.flightShip=true;return g;
+}
+function updateFlightCamera(){if(!flightShip)return;const q=flightShip.quaternion,offset=new T.Vector3(0,5.5,flightCameraDistance).applyQuaternion(q),forward=new T.Vector3(0,0,-1).applyQuaternion(q);camera.position.copy(flightShip.position).add(offset);camera.up.set(0,1,0).applyQuaternion(q);camera.lookAt(flightShip.position.clone().addScaledVector(forward,32));camera.updateMatrixWorld();}
+function setFlightMode(on){
+ if(!externalRoot)return;
+ if(on&&!flightMode){flightShip=buildFlightShip();flightVelocity=new T.Vector3();const d=externalRoot.userData.externalSystem.data;flightShip.position.set(0,0,d.star.radius+105);externalRoot.add(flightShip);flightMode=true;flightNearLabel='';flightCameraDistance=18;flightControls.style.display='grid';flightBtn.textContent='ОРБИТАЛЬНЫЙ ОБЗОР';resultsPanel.style.display='none';info.textContent=externalRecord.name+'\nПОЛЁТ ВНЕШНЕЙ СИСТЕМЫ · WASD / стрелки · Shift — форсаж · Space — тормоз';status.textContent='ПОЛЁТ · W/▲ тяга · S/▼ тормоз · A/D поворот · Q/E крен. Исследование не меняет экономику STARFALL.';updateFlightCamera();}
+ else if(!on&&flightMode){flightMode=false;flightControls.style.display='none';resultsPanel.style.display='';if(flightShip){externalRoot.remove(flightShip);flightShip.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose()});flightShip=null;}flightVelocity=null;for(const k in flightInput)flightInput[k]=false;camera.up.set(0,1,0);target.set(0,0,0);yaw=.5;pitch=.22;distance=330;cameraUpdate();flightBtn.textContent='НАЧАТЬ ПОЛЁТ';status.textContent='ОРБИТАЛЬНЫЙ ОБЗОР · выберите объект для фокусировки или снова начните полёт.';}
+}
+function updateFlight(dt){
+ if(!flightMode||!flightShip||!flightVelocity)return;dt=Math.min(.05,Math.max(0,dt));
+ const key=(...codes)=>codes.some(c=>flightKeys.has(c));
+ const left=flightInput.left||key('KeyA','ArrowLeft'),right=flightInput.right||key('KeyD','ArrowRight'),up=flightInput.up||key('ArrowUp'),down=flightInput.down||key('ArrowDown'),thrust=flightInput.thrust||key('KeyW'),brake=flightInput.brake||key('KeyS','Space'),rollL=flightInput.rollL||key('KeyQ'),rollR=flightInput.rollR||key('KeyE');
+ const boost=key('ShiftLeft','ShiftRight'),turn=1.25*dt;
+ if(left)flightShip.rotateY(turn);if(right)flightShip.rotateY(-turn);if(up)flightShip.rotateX(turn);if(down)flightShip.rotateX(-turn);if(rollL)flightShip.rotateZ(turn);if(rollR)flightShip.rotateZ(-turn);
+ const forward=new T.Vector3(0,0,-1).applyQuaternion(flightShip.quaternion).normalize();
+ if(thrust)flightVelocity.addScaledVector(forward,(boost?82:38)*dt);
+ if(brake)flightVelocity.multiplyScalar(Math.exp(-2.8*dt));else if(!thrust)flightVelocity.multiplyScalar(Math.exp(-.075*dt));
+ const maxSpeed=boost?190:105;if(flightVelocity.length()>maxSpeed)flightVelocity.setLength(maxSpeed);
+ flightShip.position.addScaledVector(flightVelocity,dt);externalRoot.updateMatrixWorld(true);
+ const sys=externalRoot.userData.externalSystem,d=sys.data;let collision=null;
+ const resolve=(object,radius,label)=>{if(!object||collision)return;const p=object.getWorldPosition(new T.Vector3()),delta=flightShip.position.clone().sub(p),min=radius+3,dist=delta.length();if(dist<min){const normal=dist>1e-5?delta.multiplyScalar(1/dist):new T.Vector3(0,1,0);flightShip.position.copy(p).addScaledVector(normal,min);const inward=flightVelocity.dot(normal);if(inward<0)flightVelocity.addScaledVector(normal,-1.45*inward);flightVelocity.multiplyScalar(.48);collision=label;}};
+ resolve(d.star.mesh,d.star.radius,'ЗВЕЗДА');for(const p of d.planets)resolve(p.mesh,p.radius,'ПЛАНЕТА '+p.index);if(d.station)resolve(d.station.mesh,7,'СТАНЦИЯ');
+ let nearest='',nearestDist=Infinity;for(const p of d.planets){const wp=p.mesh.getWorldPosition(new T.Vector3()),dist=wp.distanceTo(flightShip.position);if(dist<nearestDist){nearestDist=dist;nearest='ПЛАНЕТА '+p.index+' · '+p.type;}}if(d.station){const wp=d.station.mesh.getWorldPosition(new T.Vector3()),dist=wp.distanceTo(flightShip.position);if(dist<nearestDist){nearestDist=dist;nearest='СТАНЦИЯ';}}if(d.belt){const belt=sys.beltFocus.getWorldPosition(new T.Vector3()),dist=Math.abs(flightShip.position.distanceTo(belt)-d.belt.orbit);if(dist<nearestDist){nearestDist=dist;nearest='ПОЯС АСТЕРОИДОВ';}}
+ if(collision){status.textContent='АВАРИЙНОЕ СБЛИЖЕНИЕ · '+collision+' · скорость снижена';flightNearLabel='';}else if(nearestDist<24){if(flightNearLabel!==nearest){flightNearLabel=nearest;status.textContent='СКАНИРОВАНИЕ · '+nearest+' · '+nearestDist.toFixed(1)+' усл. ед.';}}else flightNearLabel='';
+ info.textContent=externalRecord.name+'\nПОЛЁТ · скорость '+flightVelocity.length().toFixed(1)+' усл. ед./с'+(boost?' · ФОРСАЖ':'');updateFlightCamera();
+}
+const flightKeys=new Set();
 function focusExternalObject(object,radius,label){
+ if(flightMode){setFlightMode(false);}
+
  if(!externalRoot||!object)return;externalRoot.updateMatrixWorld(true);
  const p=object.getWorldPosition(new T.Vector3());target.copy(p);
  distance=Math.max(24,Math.min(1200,radius*7));cameraUpdate();
@@ -182,8 +225,8 @@ function exploreExternal(){
  target.set(0,0,0);yaw=.5;pitch=.22;distance=330;cameraUpdate();
  const d=externalRoot.userData.externalSystem.data;
  info.textContent=externalRecord.name+'\nПРОЦЕДУРНАЯ СИСТЕМА · ID '+d.id+'\nЗвезда: '+d.star.class+' · '+d.star.name+'\nТемпература: '+d.star.temp+'\nПланеты: '+d.planets.length+' · Пояс астероидов: '+(d.belt?'есть':'нет')+'\nСтанция: '+(d.station?d.station.type:'не обнаружена')+'\nОрбитальный обзор · экономика STARFALL не затрагивается';
- exploreBtn.style.display='none';returnBtn.style.display='';jumpBtn.style.display='none';routeBtn.style.display='none';search.disabled=true;
- status.textContent='РЕЖИМ ИССЛЕДОВАНИЯ · вращайте систему, масштабируйте колесом или кнопками. Повторная генерация по ID воспроизводима.';
+ exploreBtn.style.display='none';returnBtn.style.display='';flightBtn.style.display='';jumpBtn.style.display='none';routeBtn.style.display='none';search.disabled=true;
+ status.textContent='ОРБИТАЛЬНЫЙ ОБЗОР · вращайте систему, выбирайте объекты или начните полёт. Генерация по ID воспроизводима.';
 }
 function close(){
  if(!opened)return;if(externalRoot)leaveExternal();opened=false;root.style.display='none';R.domElement.style.touchAction=originalTouchAction;state=previousState;
@@ -224,21 +267,22 @@ function nearest(x,y){
  const test=(arr,isLocal)=>{for(const r of arr){const p=projectedPoint.set(isLocal?r.x:r.x*.035,isLocal?r.y:r.y*.035,isLocal?r.z:r.z*.035);p.project(camera);if(p.z< -1||p.z>1)continue;const dx=(p.x-nx)*rect.width*.5,dy=(p.y-ny)*rect.height*.5,d=dx*dx+dy*dy;if(d<bd){bd=d;best={record:r,local:isLocal};}}};
  test(local,true);test(filtered,false);return best;
 }
-function down(e){if(!opened||e.target.closest('#sf-galaxy .top,#sf-galaxy .side,#sf-galaxy .bottom'))return;drag={x:e.clientX,y:e.clientY,id:e.pointerId,moved:false};try{R.domElement.setPointerCapture(e.pointerId);}catch(_){}}
-function move(e){if(!drag||drag.id!==e.pointerId)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.x=e.clientX;drag.y=e.clientY;if(Math.abs(dx)+Math.abs(dy)>2)drag.moved=true;yaw-=dx*.005;pitch=Math.max(-1.35,Math.min(1.35,pitch+dy*.004));cameraUpdate();}
-function up(e){if(!drag||drag.id!==e.pointerId)return;const moved=drag.moved;drag=null;if(!moved&&externalRoot){pickExternal(e.clientX,e.clientY);}else if(!moved){const h=nearest(e.clientX,e.clientY);if(h){setSelected(h.record,h.local);status.textContent=h.local?'Локальная система STARFALL.':'Запись Spansh: справочные данные.';}}}
-function wheel(e){if(!opened)return;e.preventDefault();distance=Math.max(180,Math.min(9000,distance*Math.exp(e.deltaY*.001)));cameraUpdate();}
+function down(e){if(!opened||e.target.closest('#sf-galaxy .top,#sf-galaxy .side,#sf-galaxy .bottom,#sf-galaxy .flight-controls'))return;drag={x:e.clientX,y:e.clientY,id:e.pointerId,moved:false};try{R.domElement.setPointerCapture(e.pointerId);}catch(_){}}
+function move(e){if(!drag||drag.id!==e.pointerId)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.x=e.clientX;drag.y=e.clientY;if(Math.abs(dx)+Math.abs(dy)>2)drag.moved=true;if(flightMode&&flightShip){flightShip.rotateY(-dx*.004);flightShip.rotateX(-dy*.004);updateFlightCamera();return;}yaw-=dx*.005;pitch=Math.max(-1.35,Math.min(1.35,pitch+dy*.004));cameraUpdate();}
+function up(e){if(!drag||drag.id!==e.pointerId)return;const moved=drag.moved;drag=null;if(!moved&&externalRoot&&!flightMode){pickExternal(e.clientX,e.clientY);}else if(!moved){const h=nearest(e.clientX,e.clientY);if(h){setSelected(h.record,h.local);status.textContent=h.local?'Локальная система STARFALL.':'Запись Spansh: справочные данные.';}}}
+function wheel(e){if(!opened)return;e.preventDefault();if(flightMode){flightCameraDistance=Math.max(9,Math.min(42,flightCameraDistance*Math.exp(e.deltaY*.001)));updateFlightCamera();return;}distance=Math.max(180,Math.min(9000,distance*Math.exp(e.deltaY*.001)));cameraUpdate();}
 R.domElement.addEventListener('pointerdown',down);R.domElement.addEventListener('pointermove',move);R.domElement.addEventListener('pointerup',up);R.domElement.addEventListener('pointercancel',()=>drag=null);R.domElement.addEventListener('wheel',wheel,{passive:false});
-search.addEventListener('input',()=>renderSearch(search.value));jumpBtn.addEventListener('click',jumpLocal);routeBtn.addEventListener('click',routeAction);exploreBtn.addEventListener('click',exploreExternal);returnBtn.addEventListener('click',leaveExternal);
+search.addEventListener('input',()=>renderSearch(search.value));jumpBtn.addEventListener('click',jumpLocal);routeBtn.addEventListener('click',routeAction);exploreBtn.addEventListener('click',exploreExternal);returnBtn.addEventListener('click',leaveExternal);flightBtn.addEventListener('click',()=>setFlightMode(!flightMode));
 [closeTop,closeBtn].forEach(b=>b.addEventListener('click',close));menuBtn.addEventListener('click',open);hudBtn.addEventListener('click',open);
 allBtn.addEventListener('click',()=>{filtered=records;buildPoints(filtered);});
 inhBtn.addEventListener('click',()=>{if(inhBtn.disabled)return;filtered=records.filter(r=>r.p>0);buildPoints(filtered);});
 zoomInBtn.addEventListener('click',()=>{distance=Math.max(180,distance*.78);cameraUpdate();});zoomOutBtn.addEventListener('click',()=>{distance=Math.min(9000,distance/ .78);cameraUpdate();});
 resetBtn.addEventListener('click',()=>{yaw=.18;pitch=.12;distance=3300;target.set(0,0,0);cameraUpdate();if(routeLine){scene.remove(routeLine);routeLine.geometry.dispose();routeLine=null;}routeStart=routeEnd=null;routeBtn.textContent='НАЧАТЬ МАРШРУТ';});
-addEventListener('keydown',e=>{const target=e.target;if(target&&(target.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)))return;if(e.code==='KeyN'&&!e.repeat&&(opened||state==='menu'||state==='play'||state==='jumpmenu')){e.preventDefault();opened?close():open();}if(e.code==='Escape'&&opened){e.preventDefault();close();}});
+addEventListener('keydown',e=>{const target=e.target;if(target&&(target.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)))return;flightKeys.add(e.code);if(e.code==='KeyN'&&!e.repeat&&(opened||state==='menu'||state==='play'||state==='jumpmenu')){e.preventDefault();opened?close():open();}if(e.code==='Escape'&&opened){e.preventDefault();close();}});
+addEventListener('keyup',e=>flightKeys.delete(e.code));addEventListener('blur',()=>{flightKeys.clear();for(const k in flightInput)flightInput[k]=false;});
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();});
-function render(dt){if(!opened)return;if(externalRoot)window.SF_EXTERNAL_SYSTEMS.update(externalRoot,Math.min(.05,Math.max(0,dt||0)));R.render(scene,camera);}
-window.SF_GALAXY_MAP={open,close,render,get stats(){let external=null;if(externalRoot){const data=externalRoot.userData.externalSystem.data,p=data.star.mesh.getWorldPosition(new T.Vector3()).project(camera),rect=R.domElement.getBoundingClientRect();external={name:externalRecord?.name,planets:data.planets.length,star:data.star.class,starScreen:{x:rect.left+(p.x+1)*rect.width*.5,y:rect.top+(1-p.y)*rect.height*.5,visible:p.z>=-1&&p.z<=1}};}return{catalog:records.length,visible:filtered.length,selected:selected?.record?.name||null,external};}};
+function render(dt){if(!opened)return;if(externalRoot){window.SF_EXTERNAL_SYSTEMS.update(externalRoot,Math.min(.05,Math.max(0,dt||0)));if(flightMode)updateFlight(dt||0);}R.render(scene,camera);}
+window.SF_GALAXY_MAP={open,close,render,get stats(){let external=null;if(externalRoot){const data=externalRoot.userData.externalSystem.data,p=data.star.mesh.getWorldPosition(new T.Vector3()).project(camera),rect=R.domElement.getBoundingClientRect();external={name:externalRecord?.name,planets:data.planets.length,star:data.star.class,flight:flightMode,speed:flightVelocity?.length()||0,starScreen:{x:rect.left+(p.x+1)*rect.width*.5,y:rect.top+(1-p.y)*rect.height*.5,visible:p.z>=-1&&p.z<=1}};}return{catalog:records.length,visible:filtered.length,selected:selected?.record?.name||null,external};}};
 try{const oldLift=lift;lift=function(){oldLift();hudBtn.style.display='block';};const oldArrive=arrive;arrive=function(){oldArrive();hudBtn.style.display='block';};}catch(e){console.warn('[STARFALL Galaxy Map] HUD hook',e);}
 if(typeof state!=='undefined'&&state==='play')hudBtn.style.display='block';
 })();
