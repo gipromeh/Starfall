@@ -56,8 +56,8 @@ if (html) {
   check("html:title", Boolean(title), title || "missing");
   if (!title) issue("WARNING", "HTML_TITLE_MISSING", "starfall.html", "Document title is missing.");
 
-  const markup = html.replace(/<script\\b[^>]*>[\\s\\S]*?<\\/script\\s*>/gi, \"\").replace(/<style\\b[^>]*>[\\s\\S]*?<\\/style\\s*>/gi, \"\");\n  const ids = new Map();
-  for (const match of html.matchAll(/\bid\s*=\s*(["'])(.*?)\1/gi)) ids.set(match[2], (ids.get(match[2]) || 0) + 1);
+  const markup = html.replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, "").replace(/<style\b[^>]*>[\s\S]*?<\/style\s*>/gi, "");
+  for (const match of markup.matchAll(/\bid\s*=\s*(["'])(.*?)\1/gi)) ids.set(match[2], (ids.get(match[2]) || 0) + 1);
   const duplicates = [...ids].filter(([, count]) => count > 1);
   check("html:unique-ids", duplicates.length === 0, duplicates.length + " duplicate IDs");
   for (const [id, count] of duplicates) issue("WARNING", "DUPLICATE_HTML_ID", "starfall.html", "ID " + id + " occurs " + count + " times.");
