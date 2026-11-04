@@ -1,4 +1,6 @@
 ## v96 — Пиратская стратегическая симуляция и рейды на торговые маршруты
+- Исправлен игровой цикл ангара: стратегические рейды обновляются в ветке `dock`.
+
 - Стратегические группы патрулируют системы и оценивают реальные торговые и пассажирские маршруты по грузу, пассажирам и риску.
 - Цели выбираются среди действующих `nv[]` NPC с маршрутными данными `nv[].route`, включая пассажирские фрахтовщики от `spawnPlanetFreighter(2)`.
 - Вне боевой зоны рейды повреждают реальный NPC, захватывают груз и завершаются через штатный `killNv()` / `GAL.ev("raid")`.
@@ -195,7 +197,7 @@ tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура
 game_version: "v96"
 last_update: 2026-11-04
 main_file: starfall.html
-main_file_sha256: "34366cc232cc041a308edc701c4d41ff56d585bfc9f5d42dab7a728847340d7b"
+main_file_sha256: "dacc09d70616b418d798fc0024b9de750fa84a9fde69daf00ed483350aa5ceec"
 save_format_version: 3
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"
