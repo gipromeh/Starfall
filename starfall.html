@@ -1830,7 +1830,7 @@ function pirateFleetResolveSockets(g,ty){
 }
 function pirateFleetPrepare(){
  if(pirateFleetTemplates)return;
- pirateFleetTemplates=[mkPirate(0),mkPirate(1),mkPirate(2),mkPirate(3)];
+ pirateFleetTemplates=[mkPirate(0),mkPirate(1),mkPirate(2)];
  pirateFleetTemplates.forEach(g=>{g.visible=false;g.traverse(o=>{if(o.isMesh){o.frustumCulled=true;o.castShadow=false;o.receiveShadow=false}})});
  pirateFleetFlameMat=new T.SpriteMaterial({map:gtex("rgba(255,135,48,1)"),color:0xff8a38,transparent:true,opacity:.72,blending:T.AdditiveBlending,depthWrite:false});
  pirateFleetSmokeTex=gtex("rgba(55,55,58,.92)");pirateFleetFireTex=gtex("rgba(255,75,18,1)");
