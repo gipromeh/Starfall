@@ -49,7 +49,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/elite-dangerous-lite/systems.jsonl.gz data/elite-dangerous-lite/systems.jsonl.gz.manifest.json
+          # This path is intentionally ignored by the broad external-data rule.
+          git add -f data/elite-dangerous-lite/systems.jsonl.gz data/elite-dangerous-lite/systems.jsonl.gz.manifest.json
           if git diff --cached --quiet; then
             echo "Dataset unchanged; no commit needed."
           else
