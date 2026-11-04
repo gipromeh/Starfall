@@ -214,7 +214,7 @@ resetBtn.addEventListener('click',()=>{yaw=.18;pitch=.12;distance=3300;target.se
 addEventListener('keydown',e=>{const target=e.target;if(target&&(target.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)))return;if(e.code==='KeyN'&&!e.repeat&&(opened||state==='menu'||state==='play'||state==='jumpmenu')){e.preventDefault();opened?close():open();}if(e.code==='Escape'&&opened){e.preventDefault();close();}});
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();});
 function render(dt){if(!opened)return;if(externalRoot)window.SF_EXTERNAL_SYSTEMS.update(externalRoot,Math.min(.05,Math.max(0,dt||0)));R.render(scene,camera);}
-window.SF_GALAXY_MAP={open,close,render,get stats(){return{catalog:records.length,visible:filtered.length,selected:selected?.record?.name||null};}};
+window.SF_GALAXY_MAP={open,close,render,get stats(){return{catalog:records.length,visible:filtered.length,selected:selected?.record?.name||null,external:externalRoot?{name:externalRecord?.name,planets:externalRoot.userData.externalSystem.data.planets.length,star:externalRoot.userData.externalSystem.data.star.class}:null};}};
 try{const oldLift=lift;lift=function(){oldLift();hudBtn.style.display='block';};const oldArrive=arrive;arrive=function(){oldArrive();hudBtn.style.display='block';};}catch(e){console.warn('[STARFALL Galaxy Map] HUD hook',e);}
 if(typeof state!=='undefined'&&state==='play')hudBtn.style.display='block';
 })();
