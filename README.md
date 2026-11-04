@@ -1,6 +1,6 @@
 # STARFALL
 
-Браузерная 3D-игра в духе Galaxy on Fire 2 (Three.js, один HTML-файл, ПК + iPhone).
+Браузерная 3D-игра в духе Galaxy on Fire 2 (Three.js, основная сборка `starfall.html`, вспомогательные модули и данные в отдельных каталогах, ПК + iPhone).
 
 ## Файлы
 
