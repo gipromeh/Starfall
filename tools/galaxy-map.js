@@ -163,7 +163,7 @@ function showExternalObjects(){
  add('ЗВЕЗДА · '+d.star.class,d.star.mesh,d.star.radius);
  d.planets.forEach(p=>add('ПЛАНЕТА '+p.index+' · '+p.type,p.mesh,p.radius));
  if(d.station)add('СТАНЦИЯ · '+d.station.type,d.station.mesh,12);
- if(d.belt)add('ПОЯС АСТЕРОИДОВ',externalRoot.userData.externalSystem.beltGroup,d.belt.width);
+ if(d.belt)add('ПОЯС АСТЕРОИДОВ',externalRoot.userData.externalSystem.beltFocus,d.belt.width);
 }
 function exploreExternal(){
  if(!selected||selected.local||!window.SF_EXTERNAL_SYSTEMS)return;
