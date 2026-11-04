@@ -40,3 +40,16 @@ GitHub Actions run #5 executed 12 headless Chromium trials, 20 simulated seconds
 Observed aggregate: 1,824 player laser spawns; 892 hostile laser spawns; 701.82 total pirate HP damage; zero player deaths; zero complete squadron wipes. Some individual trials destroyed one of the two pirates. The test was a stationary-player firing baseline, not a general balance test.
 
 Telemetry correction: the production pirate kill handler resets its `hits` field, so the harness now wraps the actual damage handler to count hit events independently. It also seeds the non-EAI random stream for reproducible visual/gameplay side effects during each trial and asserts that real pirate damage occurs.
+
+
+## Pirate Strategic AI module
+
+`src/ai/PirateStrategicAI.mjs` adds a deterministic, data-only off-screen faction layer. It owns persistent pirate group records, strategic contact selection, patrol/intercept/retreat/return transitions, lightweight movement integration and versioned snapshot/restore. It deliberately does not instantiate rendering or physics objects; the production combat bubble remains authoritative for close-range combat.
+
+Run the module regression with:
+
+```sh
+node tests/t21_pirate_strategic_ai.mjs
+```
+
+The module is currently isolated from production encounter spawning. Production wiring requires the world simulation's stable NPC/contact identifiers and save-schema extension; it must not fabricate those interfaces.
