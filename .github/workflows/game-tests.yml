@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main, fix-v89-pirate-combat-density, lab/elite-combat-ai]
   push:
-    branches: [main, lab/elite-combat-ai]
+    branches: [main, lab/elite-combat-ai, feature/pirate-ai-mainline]
   workflow_dispatch:
 
 # Новые коммиты отменяют устаревшие запуски той же ветки.
@@ -68,6 +68,8 @@ jobs:
           node --check tests/lib.js
           node --check tests/t21_galaxy_map_browser.js
           python3 tools/check_passport.py
+      - name: Pirate strategic integration test syntax
+        run: node --check tests/t22_pirate_strategic_integration.js
       - name: AI Lab architecture regression (static)
         run: node tests/t12_ai_lab.js
       - name: Radar and collision regression (static)
@@ -117,6 +119,7 @@ jobs:
           - nuclear-performance
           - graphics-probe
           - pirate-fleet
+          - pirate-strategic-integration
           - saves-regression
           - performance-leak
           - iphone-chromium
@@ -167,6 +170,9 @@ jobs:
               ;;
             pirate-fleet)
               node tests/t11_pirate_fleet.js
+              ;;
+            pirate-strategic-integration)
+              node tests/t22_pirate_strategic_integration.js
               ;;
             saves-regression)
               node tests/t1_saves.js
