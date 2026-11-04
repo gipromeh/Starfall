@@ -85,9 +85,9 @@ function buildPoints(list){
  list.forEach((r,i)=>{p[i*3]=r.x*.035;p[i*3+1]=r.y*.035;p[i*3+2]=r.z*.035;const pop=+r.p||0,col=new T.Color(pop>1e8?0xffc56f:pop>0?0x68d9e9:0x8a9eb8);c[i*3]=col.r;c[i*3+1]=col.g;c[i*3+2]=col.b;});
  const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(p,3));g.setAttribute('color',new T.BufferAttribute(c,3));
  points=new T.Points(g,new T.PointsMaterial({size:2.5,sizeAttenuation:false,vertexColors:true,transparent:true,opacity:.9}));points.frustumCulled=false;galaxy.add(points);
- records=list;filtered=list;
- const inhabitedCount=list.reduce((n,r)=>n+(r.p>0?1:0),0);
- inhBtn.disabled=!(populationAvailable&&inhabitedCount>0);
+ const inhabitedCount=records.reduce((n,r)=>n+(r.p>0?1:0),0);
+ allBtn.disabled=list.length===records.length;
+ inhBtn.disabled=!(populationAvailable&&inhabitedCount>0)||list.length===inhabitedCount;
  inhBtn.textContent=populationAvailable?(inhabitedCount?'ОБЖИТЫЕ':'ОБЖИТЫЕ · НЕТ В ВЫБОРКЕ'):'ОБЖИТЫЕ · НЕТ ДАННЫХ';
  inhBtn.title=inhBtn.disabled?'В источнике Spansh нет пригодных данных о населении для фильтрации.':'Показать системы с населением больше нуля.';
  status.textContent=list.length.toLocaleString('ru-RU')+' систем Spansh · выборка, не полная галактика'+(populationAvailable?' · обитаемых в выборке: '+inhabitedCount:' · population отсутствует, фильтр отключён');
@@ -122,8 +122,9 @@ async function loadCatalog(){
   }
   pending+=decoder.decode();if(pending.trim())appendLine(pending);
   if(list.length!==manifest.records)throw Error('число систем не совпадает с manifest: '+list.length+' / '+manifest.records);
+  records=list;filtered=list;
   populationAvailable=Number(manifest.population_field_records)>0;
-  buildPoints(list);
+  buildPoints(filtered);
   status.textContent+=' · SHA-256 подтверждён';
  }catch(e){status.textContent='Каталог Spansh недоступен ('+e.message+'). Доступны 5 локальных систем STARFALL.';console.warn('[STARFALL Galaxy Map]',e);}
 }
@@ -139,7 +140,7 @@ function focus(r,isLocal){const p=isLocal?new T.Vector3(r.x,r.y,r.z):posOf(r);ta
 function renderSearch(q){
  results.replaceChildren();q=q.trim().toLocaleLowerCase();if(!q)return;
  const found=[];local.forEach(r=>{if((r.name+' '+r.title).toLocaleLowerCase().includes(q))found.push({r,local:true});});
- for(const r of records){if((r.searchName||r.name.toLocaleLowerCase()).includes(q))found.push({r,local:false});if(found.length>=14)break;}
+ for(const r of filtered){if((r.searchName||r.name.toLocaleLowerCase()).includes(q))found.push({r,local:false});if(found.length>=14)break;}
  found.slice(0,14).forEach(v=>{const b=node('button',{},results);node('span',{text:v.r.name},b);node('small',{text:v.local?'STARFALL':'SPANSH'},b);b.addEventListener('click',()=>focus(v.r,v.local));});
  if(!found.length)node('div',{class:'meta',text:'Совпадений нет.'},results);
 }
@@ -189,8 +190,8 @@ function wheel(e){if(!opened)return;e.preventDefault();distance=Math.max(180,Mat
 R.domElement.addEventListener('pointerdown',down);R.domElement.addEventListener('pointermove',move);R.domElement.addEventListener('pointerup',up);R.domElement.addEventListener('pointercancel',()=>drag=null);R.domElement.addEventListener('wheel',wheel,{passive:false});
 search.addEventListener('input',()=>renderSearch(search.value));jumpBtn.addEventListener('click',jumpLocal);routeBtn.addEventListener('click',routeAction);
 [closeTop,closeBtn].forEach(b=>b.addEventListener('click',close));menuBtn.addEventListener('click',open);hudBtn.addEventListener('click',open);
-allBtn.addEventListener('click',()=>{filtered=records;allBtn.disabled=true;inhBtn.disabled=!(populationAvailable&&records.some(r=>r.p>0));});
-inhBtn.addEventListener('click',()=>{if(inhBtn.disabled)return;filtered=records.filter(r=>r.p>0);inhBtn.disabled=true;allBtn.disabled=false;});
+allBtn.addEventListener('click',()=>{filtered=records;buildPoints(filtered);});
+inhBtn.addEventListener('click',()=>{if(inhBtn.disabled)return;filtered=records.filter(r=>r.p>0);buildPoints(filtered);});
 zoomInBtn.addEventListener('click',()=>{distance=Math.max(180,distance*.78);cameraUpdate();});zoomOutBtn.addEventListener('click',()=>{distance=Math.min(9000,distance/ .78);cameraUpdate();});
 resetBtn.addEventListener('click',()=>{yaw=.18;pitch=.12;distance=3300;target.set(0,0,0);cameraUpdate();if(routeLine){scene.remove(routeLine);routeLine.geometry.dispose();routeLine=null;}routeStart=routeEnd=null;routeBtn.textContent='НАЧАТЬ МАРШРУТ';});
 addEventListener('keydown',e=>{const target=e.target;if(target&&(target.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)))return;if(e.code==='KeyN'&&!e.repeat&&(opened||state==='menu'||state==='play'||state==='jumpmenu')){e.preventDefault();opened?close():open();}if(e.code==='Escape'&&opened){e.preventDefault();close();}});
