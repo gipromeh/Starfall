@@ -34,3 +34,6 @@ assert.match(map, /SF_EXTERNAL_SYSTEMS\.build/);
 assert.match(map, /РЕЖИМ ИССЛЕДОВАНИЯ/);
 assert.match(map, /function leaveExternal/);
 assert.match(html, /\.\/tools\/external-systems\.js/);
+
+assert.match(map, /function showExternalObjects/);
+assert.match(map, /function focusExternalObject/);
