@@ -166,7 +166,7 @@ allBtn.addEventListener('click',()=>{filtered=records;allBtn.disabled=true;inhBt
 inhBtn.addEventListener('click',()=>{filtered=records.filter(r=>r.p>0);inhBtn.disabled=true;allBtn.disabled=false;});
 zoomInBtn.addEventListener('click',()=>{distance=Math.max(180,distance*.78);cameraUpdate();});zoomOutBtn.addEventListener('click',()=>{distance=Math.min(9000,distance/ .78);cameraUpdate();});
 resetBtn.addEventListener('click',()=>{yaw=.18;pitch=.12;distance=3300;cameraUpdate();if(routeLine){scene.remove(routeLine);routeLine.geometry.dispose();routeLine=null;}routeStart=routeEnd=null;routeBtn.textContent='НАЧАТЬ МАРШРУТ';});
-addEventListener('keydown',e=>{if(e.code==='KeyN'&&!e.repeat){e.preventDefault();opened?close():open();}if(e.code==='Escape'&&opened){e.preventDefault();close();}});
+addEventListener('keydown',e=>{if(e.code==='KeyN'&&!e.repeat&&(opened||state==='menu'||state==='play'||state==='jumpmenu')){e.preventDefault();opened?close():open();}if(e.code==='Escape'&&opened){e.preventDefault();close();}});
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();});
 function render(dt){if(!opened)return;galaxy.rotation.y+=Math.min(.02,dt*.012);R.render(scene,camera);}
 window.SF_GALAXY_MAP={open,close,render,get stats(){return{catalog:records.length,visible:filtered.length,selected:selected?.record?.name||null};}};
