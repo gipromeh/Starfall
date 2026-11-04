@@ -89,7 +89,7 @@ pads.forEach((p,i)=>{
  const ring=B.MeshBuilder.CreateTorus('padRing'+i,{diameter:2.05,thickness:0.055,tessellation:32},scene);
  ring.position.set(p[0],p[1]+0.48,p[2]);ring.material=M.glow;ring.metadata={tdefPadIndex:i};
  const marker=B.MeshBuilder.CreateCylinder('padMarker'+i,{diameter:0.55,height:0.035,tessellation:4},scene);
- marker.position.set(p[0],p[1]+0.49,p[2]);marker.rotation.y=Math.PI/4;marker.material=M.gold;
+ marker.position.set(p[0],p[1]+0.49,p[2]);marker.rotation.y=Math.PI/4;marker.material=M.gold;marker.metadata={tdefPadIndex:i};
 });
 
 // Castle at the route endpoint.
