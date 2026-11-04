@@ -3105,7 +3105,7 @@ mkFreighter=function(){
   model.userData.trafficModel="nasa-argo";
   return model;
  }
- if(MC["f0"]&&roll<.75){
+ if(MC["f0"]&&roll>=.45&&roll<.75){
   const model=MC["f0"].clone(true);
   model.userData.trafficModel="nasa-shuttle-b";
   return model;
