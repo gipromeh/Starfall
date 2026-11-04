@@ -24,7 +24,7 @@ const checks = [
  ['NPC collision solver separates overlapping ships', html.includes('penetration=minimum-distance+.05')],
  ['NPC collision solver includes neutral transports', html.includes('n.g&&!n.tur&&n.g.visible!==false&&n.v')],
  ['collision solver runs every frame', html.includes('pirateFleetUpdate(dt);resolvePirateShipCollisions();')],
- ['pirate fleet has only two initial attackers', html.includes('[0,1].forEach((ty,i)=>{const e={slot:i,ty,g:null,hp:0,mx:0,respawn:Infinity,dead:false,flames:[]};pirateFleet.push(e);pirateFleetSpawn(e,i*.18)});')],
+ ['pirate fleet initializes two seeded attackers', html.includes('for(let slot=0;slot<2;slot++){const e={slot,ty:pirateFleetNextType,g:null,hp:0,mx:0,respawn:Infinity,dead:false,flames:[]};pirateFleet.push(e);pirateFleetSpawn(e,slot*.22)}')],
  ['pirate fleet spawns ahead of the player', html.includes('addScaledVector(fw,(760+e.slot*90))')],
  ['pirate fleet does not respawn after destruction', html.includes('e.respawn=Infinity;e.hits=0;')],
  ['pirate fleet opens fire only inside 420 units', html.includes('const canFire=e.state==="ATTACK"&&dist<420&&(fireAngle<.9||(dist<300&&fireAngle<1.35));')],
