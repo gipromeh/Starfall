@@ -8,11 +8,11 @@ if(!canvas) throw new Error('Canvas #renderCanvas не найден');
 const engine=new B.Engine(canvas,true,{antialias:true,stencil:true});
 const scene=new B.Scene(engine);
 scene.clearColor=new B.Color4(0.67,0.78,0.79,1);
-scene.fogMode=B.Scene.FOGMODE_EXP2; scene.fogDensity=0.008; scene.fogColor=new B.Color3(0.67,0.78,0.79);
+scene.fogMode=B.Scene.FOGMODE_NONE;
 
 const camera=new B.ArcRotateCamera('isometricCamera',-Math.PI/3.2,1.05,39,new B.Vector3(0,1,0),scene);
 camera.mode=B.Camera.ORTHOGRAPHIC_CAMERA; camera.attachControl(canvas,true);
-camera.lowerRadiusLimit=20; camera.upperRadiusLimit=65; camera.wheelDeltaPercentage=0.015;
+camera.lowerRadiusLimit=4; camera.upperRadiusLimit=65; camera.wheelDeltaPercentage=0.04;
 camera.panningSensibility=85; camera.angularSensibilityX=700; camera.angularSensibilityY=700; camera.inertia=0.78;
 
 const hemi=new B.HemisphericLight('skyLight',new B.Vector3(0.15,1,0.1),scene);
@@ -82,8 +82,10 @@ for(let i=0;i<145;i++){
 // Eight future tower pads.
 const pads=[[-12.4,0.2,0],[-10.5,0.2,-6.4],[-5.2,0.2,-8.4],[0.1,0.2,-7.2],[4.5,0.2,2.8],[8.8,0.2,4.8],[12.1,0.2,-4.2],[-2.5,0.2,6.8]];
 pads.forEach((p,i)=>{
- cylinder('towerPadBase'+i,p[0],p[1],p[2],2.55,0.28,M.edge,12);
- cylinder('towerPad'+i,p[0],p[1]+0.28,p[2],2.28,0.12,M.pad,12);
+ const padBase=cylinder('towerPadBase'+i,p[0],p[1],p[2],2.55,0.28,M.edge,12);
+ padBase.metadata={tdefPadIndex:i};
+ const padTop=cylinder('towerPad'+i,p[0],p[1]+0.28,p[2],2.28,0.12,M.pad,12);
+ padTop.metadata={tdefPadIndex:i};
  const ring=B.MeshBuilder.CreateTorus('padRing'+i,{diameter:2.05,thickness:0.055,tessellation:32},scene);
  ring.position.set(p[0],p[1]+0.48,p[2]);ring.material=M.glow;ring.metadata={tdefPadIndex:i};
  const marker=B.MeshBuilder.CreateCylinder('padMarker'+i,{diameter:0.55,height:0.035,tessellation:4},scene);
@@ -167,8 +169,10 @@ ground.position.y=-2.05;ground.material=material('backgroundGroundMat','#34483a'
 function resizeCamera(){
  const aspect=engine.getRenderWidth()/Math.max(1,engine.getRenderHeight());
  const halfHeight=Math.max(10.8,18.8/Math.max(0.35,aspect))*1.06;
- camera.orthoLeft=-halfHeight*aspect;camera.orthoRight=halfHeight*aspect;
- camera.orthoTop=halfHeight;camera.orthoBottom=-halfHeight;
+ const zoom=Math.max(0.1,camera.radius/39);
+ const visibleHeight=halfHeight*zoom;
+ camera.orthoLeft=-visibleHeight*aspect;camera.orthoRight=visibleHeight*aspect;
+ camera.orthoTop=visibleHeight;camera.orthoBottom=-visibleHeight;
 }
 engine.onResizeObservable.add(resizeCamera);resizeCamera();
 scene.onBeforeRenderObservable.add(()=>{
