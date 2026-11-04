@@ -20,7 +20,9 @@ export function createPirateStrategicAI({seed=0x51fa11,maxGroups=48,maxShips=6,d
   const makeId=()=> 'pirate-'+(nextId++).toString(36);
   function normalizeGroup(input={}) {
     const id=typeof input.id==='string'&&input.id?input.id:makeId();
-    const ships=clamp(Math.trunc(input.ships||2),1,maxShips);
+    const requestedShips=Math.trunc(input.ships??2);
+    if(!Number.isFinite(requestedShips)||requestedShips<1||requestedShips>maxShips)throw new RangeError('ships must be between 1 and '+maxShips);
+    const ships=requestedShips;
     const state=states.has(input.state)?input.state:'patrol';
     const role=roles.includes(input.role)?input.role:'raider';
     const position=copyPosition(input.position);
@@ -57,7 +59,8 @@ export function createPirateStrategicAI({seed=0x51fa11,maxGroups=48,maxShips=6,d
     const threat=Number(context.threatByGroup?.[g.id]||0);
     const damage=1-g.hull;
     if(damage>.72||g.morale<.18||threat>g.ships*1.35){transition(g,'retreat','loss-risk');return;}
-    if(g.state==='retreat'||g.state==='return'||g.state==='disabled'){
+    if(g.state==='disabled')return;
+    if(g.state==='retreat'||g.state==='return'){
       if(g.homeId&&context.homePositions?.[g.homeId]){
         const home=copyPosition(context.homePositions[g.homeId]);
         if(distance(g.position,home)<5000){transition(g,'patrol','reached-safe-haven');g.targetId=null;return;}
@@ -85,6 +88,10 @@ export function createPirateStrategicAI({seed=0x51fa11,maxGroups=48,maxShips=6,d
     } else if(g.state==='return'&&g.homeId&&context.homePositions?.[g.homeId]) {
       const p=copyPosition(context.homePositions[g.homeId]),dx=p.x-g.position.x,dy=p.y-g.position.y,dz=p.z-g.position.z,n=Math.hypot(dx,dy,dz)||1;
       desired={x:dx/n,y:dy/n,z:dz/n};
+    } else if(g.state==='retreat') {
+      const p=g.homeId&&context.homePositions?.[g.homeId]?copyPosition(context.homePositions[g.homeId]):g.position;
+      const dx=g.position.x-p.x,dy=g.position.y-p.y,dz=g.position.z-p.z,n=Math.hypot(dx,dy,dz)||1;
+      desired={x:dx/n,y:dy/n,z:dz/n};
     } else {
       const phase=worldTime*.07+(g.seed%10000)*.001;
       desired={x:Math.cos(phase),y:Math.sin(phase*.37)*.12,z:Math.sin(phase)};
@@ -109,12 +116,16 @@ export function createPirateStrategicAI({seed=0x51fa11,maxGroups=48,maxShips=6,d
     return {groups:groups.size,decisions,worldTime};
   }
   function snapshot(){return {version:1,seed:seed>>>0,rngState,nextId,worldTime,clock,groups:[...groups.values()].map(snapshotGroup)};}
+  const idSafe=id=>id;
   function restore(data){
     if(!data||data.version!==1||!Array.isArray(data.groups)||data.groups.length>maxGroups)throw new TypeError('Invalid pirate strategic save');
     const next=new Map();
-    for(const row of data.groups){const g=normalizeGroup(row);if(next.has(g.id))throw new Error('Duplicate saved pirate group: '+g.id);next.set(g.id,g);}
+    for(const row of data.groups){
+      if(!row||typeof row.id!=='string'||!row.id||!states.has(row.state)||!roles.includes(row.role)||!Number.isInteger(row.ships)||row.ships<1||row.ships>maxShips)throw new TypeError('Invalid saved pirate group');
+      const g=normalizeGroup(row);if(next.has(g.id))throw new Error('Duplicate saved pirate group: '+g.id);next.set(idSafe(g.id),g);
+    }
     groups.clear();for(const [id,g] of next)groups.set(id,g);
-    rngState=(data.rngState>>>0)||((data.seed>>>0)||0x51fa11);nextId=Math.max(1,Math.trunc(data.nextId)||1);worldTime=Math.max(0,Number(data.worldTime)||0);clock=clamp(Number(data.clock)||0,0,decisionInterval);
+    rngState=(data.rngState>>>0)||((data.seed>>>0)||0x51fa11);nextId=Math.max(1,Math.trunc(data.nextId)||1);worldTime=Math.max(0,Number(data.worldTime)||0);clock=clamp(Number(data.clock)||0,0,clamp(decisionInterval,.25,10));
   }
   return {addGroup,removeGroup,update,snapshot,restore,getGroup:id=>groups.has(id)?snapshotGroup(groups.get(id)):null,list:()=>[...groups.values()].map(snapshotGroup)};
 }
