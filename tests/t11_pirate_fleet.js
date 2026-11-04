@@ -27,6 +27,13 @@ const L = require('./lib');
   L.check('атмосферы планет согласованы с направлением реального солнца', scene.atmosphereVectors >= 6 && scene.atmosphereAligned, scene);
   await page.evaluate(() => { lift(); QL.setMode('low'); pirateFleetInit(); });
   await page.waitForFunction(() => pirateFleet.length === 2, null, { timeout: 15000 });
+  const pirateModels = await page.evaluate(() => {
+    const transport = mkPirateTransport();
+    return { fighter: !!MC.p2 && mkPirate(2).children.length === MC.p2.children.length,
+      transport: !!MC.p3 && !!transport?.userData.pirateTransport && transport.children.length === MC.p3.children.length };
+  });
+  L.check('Pirate3 GLB используется четвёртым боевым архетипом', pirateModels.fighter, pirateModels);
+  L.check('Pirate4 GLB создаётся отдельным пиратским транспортом', pirateModels.transport, pirateModels);
 
 
   const livery = await page.evaluate(() => {
