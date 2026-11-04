@@ -1,0 +1,105 @@
+{
+  "name": "Deep-Space Skybox",
+  "version": "1.0",
+  "licence": "CC0 1.0",
+  "generated": "2026-10-18",
+  "projection": "equirectangular (latitude-longitude), 2:1, wraps horizontally",
+  "sun": {
+    "pixel_in_4k": [
+      1728,
+      888
+    ],
+    "uv_from_top_left": [
+      0.422,
+      0.4338
+    ],
+    "degrees_from_image_centre": 28.1,
+    "degrees_above_horizon": 11.9
+  },
+  "layers": {
+    "combined": "all four layers added together",
+    "stars": "three Voronoi star layers plus a dense band",
+    "galaxy": "the dusty galaxy band",
+    "nebula": "faint blue and red nebula clouds (brighten to taste)",
+    "sun": "sun disk and glow, HDR (peak about 387)"
+  },
+  "made_with": "Blender 5.2 procedural shader nodes, baked with Cycles; no images, scans or third-party assets",
+  "files": [
+    {
+      "file": "hdr/deep_space_combined_4k.hdr",
+      "layer": "combined",
+      "width": 4096,
+      "height": 2048,
+      "bytes": 21341916,
+      "format": "Radiance HDR (RGBE), scene-linear",
+      "peak_luminance": 386.608,
+      "mean_luminance": 0.003988,
+      "seam_diff": 0.000526,
+      "neighbour_diff": 0.001307
+    },
+    {
+      "file": "hdr/deep_space_stars_4k.hdr",
+      "layer": "stars",
+      "width": 4096,
+      "height": 2048,
+      "bytes": 17159764,
+      "format": "Radiance HDR (RGBE), scene-linear",
+      "peak_luminance": 42.224,
+      "mean_luminance": 0.000776,
+      "seam_diff": 0.000492,
+      "neighbour_diff": 0.000769
+    },
+    {
+      "file": "hdr/deep_space_galaxy_4k.hdr",
+      "layer": "galaxy",
+      "width": 4096,
+      "height": 2048,
+      "bytes": 15130701,
+      "format": "Radiance HDR (RGBE), scene-linear",
+      "peak_luminance": 0.162,
+      "mean_luminance": 0.001637,
+      "seam_diff": 4e-05,
+      "neighbour_diff": 7.4e-05
+    },
+    {
+      "file": "hdr/deep_space_nebula_4k.hdr",
+      "layer": "nebula",
+      "width": 4096,
+      "height": 2048,
+      "bytes": 7775663,
+      "format": "Radiance HDR (RGBE), scene-linear",
+      "peak_luminance": 0.018,
+      "mean_luminance": 4.3e-05,
+      "seam_diff": 2e-06,
+      "neighbour_diff": 3e-06
+    },
+    {
+      "file": "hdr/deep_space_sun_4k.hdr",
+      "layer": "sun",
+      "width": 4096,
+      "height": 2048,
+      "bytes": 8817459,
+      "format": "Radiance HDR (RGBE), scene-linear",
+      "peak_luminance": 386.608,
+      "mean_luminance": 0.001532,
+      "seam_diff": 0.0,
+      "neighbour_diff": 0.000474
+    },
+    {
+      "file": "png/deep_space_combined_4k.png",
+      "layer": "combined",
+      "width": 4096,
+      "height": 2048,
+      "bytes": 2831338,
+      "format": "PNG 8-bit sRGB, AgX tone-mapped"
+    },
+    {
+      "file": "png/deep_space_combined_2k.png",
+      "layer": "combined",
+      "width": 2048,
+      "height": 1024,
+      "bytes": 949585,
+      "format": "PNG 8-bit sRGB, AgX tone-mapped"
+    }
+  ]
+}
