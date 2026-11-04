@@ -38,7 +38,8 @@
 
 - **Active:** Argo (45% traffic selection when loaded), Space Shuttle B (30% when loaded), Base Station module (decorative station attachment).
 - **Fallback:** existing procedural freighters remain active for remaining traffic and if NASA GLBs fail to load.
-- **Staged:** ISS B, asteroid, remaining probes/landers/shuttles and cargo models.
+- **Active decorative landmark:** 1999 RQ36 asteroid (one model, 18,240 triangles); it is not mineable and is excluded from the gameplay rock/collision array.
+- **Staged:** ISS B, remaining probes/landers/shuttles and cargo models.
 - **Not implemented:** the five-unit Civilian Research Caravan descriptor is reference data only; no new planet or galaxy GLB was imported.
 
 ## Mobile constraints
