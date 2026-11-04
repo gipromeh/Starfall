@@ -75,6 +75,7 @@ export function createPirateStrategicAI({seed=0x51fa11,maxGroups=48,maxShips=6,d
   }
   function integrate(g,dt,context) {
     const target=g.targetId&&(context.contacts||[]).find(c=>c.id===g.targetId);
+    if(g.state==='disabled')return;
     let desired={x:0,y:0,z:0};
     if(g.state==='intercept'||g.state==='ambush'||g.state==='raid') {
       const point=target?copyPosition(target.position):g.position;
@@ -101,13 +102,14 @@ export function createPirateStrategicAI({seed=0x51fa11,maxGroups=48,maxShips=6,d
   }
   function update(dt,context={}) {
     if(!Number.isFinite(dt)||dt<0)throw new TypeError('dt must be a finite non-negative number');
+    if(!context||typeof context!=='object'||Array.isArray(context))throw new TypeError('context must be an object');
     const step=Math.min(dt,30);worldTime+=step;clock+=step;
     const interval=clamp(decisionInterval,.25,10);let decisions=0;
     while(clock>=interval){clock-=interval;decisions++;}
     for(const g of groups.values())integrate(g,step,context);
     if(decisions){
       const snapshot={...context,contacts:Array.isArray(context.contacts)?context.contacts:[]};
-      for(const g of groups.values())if(g.cooldown<=0)decide(g,snapshot);
+      for(const g of groups.values())decide(g,snapshot);
     }
     return {groups:groups.size,decisions,worldTime};
   }
