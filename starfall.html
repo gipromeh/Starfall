@@ -2070,7 +2070,7 @@ function pirateStrategicUpdate(dt){
   g.state="intercept";
   const nearby=[E,E2].find(en=>en&&en.g&&en.warp<=0&&!en._sfStrategicGroupId&&en.g.position.distanceTo(targetPos)<1500);
   if(nearby){pirateStrategicAttachEnemy(nearby,g);nearby.tn=target;g.targetNpcId=pirateStrategicTagNpc(target);continue}
-  if(state==="play"&&playerDistance<2400&&pos.distanceTo(P)<1900&&!E&&!E2&&!pirateFleet.some(pe=>pe.g&&pe.hp>0)&&g.cooldown<=0){g._targetNpcRef=target;g.cooldown=10;spawnE({strategicGroup:g})}
+  if(state==="play"&&playerDistance<2400&&pos.distanceTo(P)<1900&&!E&&!E2&&g.cooldown<=0){g._targetNpcRef=target;g.cooldown=10;spawnE({strategicGroup:g})}
  }
 }
 function pirateStrategicEnterSystem(index=sy){pirateStrategicSystem(index,true)}
