@@ -22,9 +22,10 @@ const zlib = require('node:zlib');
     const boot = await page.evaluate(() => ({
       mapButton: !!document.getElementById('sf-galaxy-menu'),
       sharedRenderer: !!R && !!R.domElement,
-      version: document.querySelector('meta[name="starfall-version"]')?.content
+      version: document.querySelector('meta[name="starfall-version"]')?.content,
+      passportVersion: document.querySelector('meta[name="starfall-version"]')?.content
     }));
-    L.check('Galaxy Map: загрузчик подключён к игре', boot.mapButton && boot.sharedRenderer && boot.version === 'v95', boot);
+    L.check('Galaxy Map: загрузчик подключён к игре', boot.mapButton && boot.sharedRenderer && boot.version === 'v95' && boot.passportVersion === boot.version, boot);
 
     await page.evaluate(() => window.SF_GALAXY_MAP.open());
     await page.waitForFunction(() => state === 'galaxy', null, { timeout: 10000 });
