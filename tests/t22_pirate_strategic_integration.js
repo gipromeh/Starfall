@@ -72,8 +72,9 @@ const L = require('./lib');
     group.position = pirateStrategicArray(mesh.position);
     group.targetNpcId = npc._sfStrategicNpcId;
     group._targetNpcRef = npc;
+    group._awaitingCombat = true;
     E = null; E2 = null;
-    spawnE({ strategicGroup: group });
+    spawnE();
     const enemy = E || E2;
     const result = {
       spawned: !!enemy,
