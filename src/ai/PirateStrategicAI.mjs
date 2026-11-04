@@ -57,7 +57,7 @@ export function createPirateStrategicAI({seed=0x51fa11,maxGroups=48,maxShips=6,d
     const threat=Number(context.threatByGroup?.[g.id]||0);
     const damage=1-g.hull;
     if(damage>.72||g.morale<.18||threat>g.ships*1.35){transition(g,'retreat','loss-risk');return;}
-    if(g.state==='retreat'||g.state==='return'){
+    if(g.state==='retreat'||g.state==='return'||g.state==='disabled'){
       if(g.homeId&&context.homePositions?.[g.homeId]){
         const home=copyPosition(context.homePositions[g.homeId]);
         if(distance(g.position,home)<5000){transition(g,'patrol','reached-safe-haven');g.targetId=null;return;}
