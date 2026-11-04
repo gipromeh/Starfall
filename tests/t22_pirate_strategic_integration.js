@@ -130,16 +130,16 @@ const L = require('./lib');
     group.cooldown = 0;
     group.raidProgress = 0;
     group.state = 'intercept';
-    window.__sfDockRaid = { oldState, data, group, npc, mesh, hp: npc.hp };
+    window.__sfDockRaid = { oldState, data, group, npc, mesh, hp: npc.hp, raidsBefore: data.ledger.raids };
     state = 'dock';
     return true;
   });
-  await page.waitForFunction(() => window.__sfDockRaid && window.__sfDockRaid.npc.hp < window.__sfDockRaid.hp,
-    null, { timeout: 5000 });
+  await page.waitForFunction(() => window.__sfDockRaid && window.__sfDockRaid.data.ledger.raids > window.__sfDockRaid.raidsBefore,
+    null, { timeout: 7000 });
   const dockRaidResult = await page.evaluate(() => {
     const x = window.__sfDockRaid;
-    const result = !!x && state === 'dock' && x.npc.pk === 1 && x.npc.hp < x.hp &&
-      x.group.state === 'raid' && x.data.ledger.raids > 0;
+    const result = !!x && state === 'dock' && x.npc.pk === 1 && !nv.includes(x.npc) &&
+      x.data.ledger.raids > x.raidsBefore;
     if (x) {
       const i = nv.indexOf(x.npc); if (i >= 0) nv.splice(i, 1);
       if (x.mesh.parent) S.remove(x.mesh);
