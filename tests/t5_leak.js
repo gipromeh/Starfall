@@ -8,7 +8,7 @@ const ff = (page, sec) => page.evaluate(s => { const n = Math.round(s / .05); fo
   await page.click('#play'); await page.waitForFunction(() => state === 'dock', null, { timeout: 60000 }); await L.sleep(500);
   await page.evaluate(() => lift()); await page.waitForFunction(() => pirateAssetsReady, null, { timeout: 30000 }); await L.sleep(500);
   // Изолируем E/E2: стартовая эскадрилья v89 стреляет независимо и не должна считаться утечкой в этом тесте.
-  await page.evaluate(() => { for(const e of [E,E2])if(e?.g){S.remove(e.g);pirateDamageFxClear(e);} E=null;E2=null;spawnT=1e9;for(const b of eb)S.remove(b.m);eb.length=0;pirateFleetClear();pirateFleetReady=true; });
+  await page.evaluate(() => { for(const e of [E,E2])if(e?.g){S.remove(e.g);pirateDamageFxClear(e);} E=null;E2=null;spawnT=1e9;firstWavePending=false;firstWaveSpawn=2;for(const b of eb)S.remove(b.m);eb.length=0;pirateFleetClear();pirateFleetReady=true;SF_PIRATE_STRATEGIC.setEnabled(false); });
   L.check('изолированная проверка: стартовая эскадрилья выключена', await page.evaluate(() => pirateFleetReady && pirateFleet.length === 0));
 
   console.log('\n[Q1] профили (ручной режим — адаптация выключена)');
@@ -24,10 +24,10 @@ const ff = (page, sec) => page.evaluate(s => { const n = Math.round(s / .05); fo
   console.log('\n[Q9] утечки в бою: прогрев, затем 8 раундов «спавн → убийство», перемотка 40 с игрового времени');
   await page.evaluate(() => QL.setMode('low'));
   // прогрев: все кеши (материалы лучей, текстуры взрывов, модели) создаются при первом использовании
-  for (let r = 0; r < 2; r++) { await page.evaluate(() => { if (!E) spawnE(); if(E){E.fire=1e9;E.burstLeft=0;E.burstGap=1e9;} }); await ff(page, 4); await page.evaluate(() => { if (E) hurtEn(E, 1e6, false); spawnT=1e9; }); await ff(page, 3); }
+  for (let r = 0; r < 2; r++) { await page.evaluate(() => { if (!E&&!E2) spawnE(); if(E){E.fire=1e9;E.burstLeft=0;E.burstGap=1e9;} }); await ff(page, 4); await page.evaluate(() => { if (E) hurtEn(E, 1e6, false); if (E2) hurtEn(E2, 1e6, false); spawnT=1e9; }); await ff(page, 3); }
   // Прогреваем ленивые кэши босса и тяжёлого архетипа до замера памяти.
   await page.evaluate(() => { if(!E){wave=5;spawnE();} if(E){E.fire=1e9;E.burstLeft=0;E.burstGap=1e9;} });
-  await ff(page, 4); await page.evaluate(() => { if(E)hurtEn(E,1e6,false);spawnT=1e9; }); await ff(page, 3);
+  await ff(page, 4); await page.evaluate(() => { if(E)hurtEn(E,1e6,false);if(E2)hurtEn(E2,1e6,false);spawnT=1e9; }); await ff(page, 3);
   await page.evaluate(() => { const old=Math.random;let n=0;Math.random=()=>[.1,.99,.99,.99,.99][n++]??.99;wave=6;spawnE();Math.random=old;if(E){E.fire=1e9;E.burstLeft=0;E.burstGap=1e9;} });
   await ff(page, 4); await page.evaluate(() => { if(E)hurtEn(E,1e6,false);spawnT=1e9; }); await ff(page, 3);
   await ff(page, 40);
