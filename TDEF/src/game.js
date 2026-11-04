@@ -76,7 +76,7 @@ export function attachGame({ B: Babylon, scene, engine, curve, pads }) {
     const barrel = B.MeshBuilder.CreateBox('gunnerBarrel' + index, { width: 0.22, height: 0.22, depth: 0.95 }, scene);
     barrel.parent = root; barrel.position.set(0, 0.78, 0.56); barrel.material = towerMat;
     const ring = B.MeshBuilder.CreateTorus('gunnerRange' + index, { diameter: CONFIG.gunner.range * 2, thickness: 0.025, tessellation: 64 }, scene);
-    ring.parent = root; ring.position.y = 0.035; ring.rotation.x = Math.PI / 2;
+    ring.parent = root; ring.position.y = 0.035;
     const rangeMat = mat('gunnerRangeMat' + index, '#e8d18b', true);
     rangeMat.alpha = 0.22; ring.material = rangeMat; ring.isVisible = false; ring.isPickable = false;
     return { index, root, head, barrel, ring, cooldown: 0, cost: CONFIG.gunner.cost };
