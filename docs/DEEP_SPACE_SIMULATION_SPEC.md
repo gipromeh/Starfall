@@ -105,3 +105,16 @@ Elite Game Passport используется только как исследо�
 ## Границы реализации v90
 
 NPC движутся по маршрутам, отображаются на радаре и доступны для вызова, но пока не запускают полноценные отдельные торговые/боевые миссии. Каталог data-driven, без отдельного UI-редактора. WebKit CI не заменяет физическую проверку на iPhone.
+
+
+## Production integration update — Pirate Strategic AI
+
+The production game now connects strategic pirate groups to the existing system traffic:
+
+- Groups select live `nv[]` traffic using route cargo, passenger exposure and distance.
+- Off-screen raids damage the real NPC record and resolve through the existing `killNv()`/galaxy raid consequence path.
+- Near the player, the group hands the target to the existing `E`/`E2` pirate combatants; their production steering, projectiles and collision handling remain authoritative.
+- The `pirateFleet` combat slots are mirrored into strategic records without replacing their player-facing controller.
+- SaveSystem v3 stores strategic groups and per-system raid ledgers in an optional `ps` field. Older saves without this field load with an empty strategic state.
+
+The production browser regression is `tests/t22_pirate_strategic_integration.js`; the existing pirate-fleet and SaveSystem suites remain required.
