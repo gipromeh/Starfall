@@ -2031,7 +2031,7 @@ function pirateStrategicEnemyDestroyed(en){
 function pirateStrategicAttachFleet(e){
  if(!e)return null;const data=pirateStrategicSystem(sy,true),id="fleet-"+sy+"-"+e.slot;let g=data.groups.find(x=>x.id===id);
  if(!g){g=pirateStrategicCreateGroup(sy,"fleet",e.g&&e.g.position||P,"raider",1);g.id=id}
- g.source="fleet";g.state="engage";g._fleetRef=e;g.position=pirateStrategicArray(e.g.position);g.hull=1;e._sfStrategicGroupId=g.id;return g;
+ g.source="fleet";g.state="engage";g.ships=1;g.morale=1;g._fleetRef=e;g.position=pirateStrategicArray(e.g.position);g.hull=1;e._sfStrategicGroupId=g.id;return g;
 }
 function pirateStrategicFleetDamaged(e,destroyed){
  const data=pirateStrategicSystem(sy,false),g=data&&data.groups.find(x=>x.id===e._sfStrategicGroupId);if(!g)return;
@@ -2048,14 +2048,14 @@ function pirateStrategicUpdate(dt){
   if(g.source==="fleet"){if(g._fleetRef&&g._fleetRef.g){g.position=pirateStrategicArray(g._fleetRef.g.position);g.hull=pirateStrategicClamp(g._fleetRef.hp/Math.max(1,g._fleetRef.mx),0,1)}continue}
   if(g._enemyRef&&g._enemyRef.g&&g._enemyRef.hp>0){
    const en=g._enemyRef;g.position=pirateStrategicArray(en.g.position);g.hull=pirateStrategicClamp(en.hp/Math.max(1,en.mx||en.hp),0,1);g.state=en.aiIntent==="EVADE"?"retreat":"intercept";
-   let target=pirateStrategicFindNpc(g.targetNpcId);if(!target||target.g.position.distanceTo(en.g.position)>4200)target=pirateStrategicPickTarget(g,3600);
+   let target=pirateStrategicFindNpc(g.targetNpcId);if(!target||target.g.position.distanceTo(en.g.position)>4200){target=pirateStrategicPickTarget(g,3600);if(!target)en.tn=null}
    if(target){g.targetNpcId=pirateStrategicTagNpc(target);en.tn=target}else{g.targetNpcId=null;if(en.tn&&!nv.includes(en.tn))en.tn=null}continue;
   }
   g._enemyRef=null;g.cooldown=Math.max(0,g.cooldown-step);
   if(g.state==="retreat"){
-   const pos=pirateStrategicVec(g.position),home=pirateStrategicVec(g.home),away=pos.clone().sub(P).normalize();
+   const pos=pirateStrategicVec(g.position),home=pirateStrategicVec(g.home),returnDir=home.clone().sub(pos).normalize();
    if(pos.distanceTo(home)<100||g.cooldown<=0){g.state="patrol";g.targetNpcId=null}
-   else{const v=pirateStrategicVec(g.velocity).lerp(away.multiplyScalar(82),Math.min(1,step*1.2));pos.addScaledVector(v,step);g.velocity=pirateStrategicArray(v);g.position=pirateStrategicArray(pos)}continue;
+   else{const v=pirateStrategicVec(g.velocity).lerp(returnDir.multiplyScalar(82),Math.min(1,step*1.2));pos.addScaledVector(v,step);g.velocity=pirateStrategicArray(v);g.position=pirateStrategicArray(pos)}continue;
   }
   let target=pirateStrategicFindNpc(g.targetNpcId);
   if(!target&&g.cooldown<=0){target=pirateStrategicPickTarget(g,90000);g.targetNpcId=target?pirateStrategicTagNpc(target):null;g.raidProgress=0}
