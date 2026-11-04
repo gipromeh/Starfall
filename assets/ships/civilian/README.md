@@ -4,8 +4,11 @@
 
 ## Runtime-integrated
 
-- `argo/model.glb` — used by the main game's neutral civilian traffic. Its long axis is aligned to STARFALL local -Z and normalized to 98 game units. The procedural freighter remains the loading/error fallback. Source model: 9,221 triangles, 8 materials, no embedded images.
-- `space_shuttle_b/model.glb` — retained in the cafe/ship-visual subsystem as the low-poly Shuttle B variant. Source model: 2,476 triangles.
+- `argo/model.glb` — selected for 45% of neutral traffic spawns when loaded. Its long axis is aligned to STARFALL local -Z and normalized to 98 game units. Source model: 9,221 triangles, 8 materials, no embedded images.
+- `space_shuttle_b/model.glb` — selected for the next 30% of neutral traffic spawns when loaded. Its long axis is aligned to local -Z and normalized to 70 game units (runtime visual scale 1.6). Source model: 2,476 triangles, 1 material, no embedded images.
+- Procedural freighters remain the fallback and account for the remaining traffic variants. If either GLB fails to load, the procedural models remain available.
+
+All GLB variants are cloned from cached templates; geometry/material resources are shared. Cast/receive shadows are disabled for the imported civilian models. The runtime integration changes only neutral traffic visuals; HP, hit detection, routes, traffic AI, economy and SAVE remain unchanged.
 
 ## Staged, not runtime-integrated
 
