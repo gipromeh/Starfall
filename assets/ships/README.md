@@ -50,3 +50,4 @@ assets/ships/
 
 - `pirate/pirate_fighter_001/` — TIE-пират «Шакал» (GLB, 33 885 треугольников до объединения мешей, тип 1).
 - `pirate/pirate_fighter_002/` — Pirate Fighter 002, «Ржавый череп» (GLB, 854 треугольника, тип 0).
+- `civilian/space_shuttle_b/` — NASA Space Shuttle B (2 476 треугольников, 1 материал); подключён как вариант гражданского трафика, с процедурным fallback.

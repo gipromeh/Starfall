@@ -1,3 +1,11 @@
+## 2026-11-04 — NASA Argo civilian traffic and base-station module
+- Подключены Argo и Space Shuttle B GLB как визуальные варианты нейтрального транспортного трафика (45% / 30% при успешной загрузке); процедурные варианты сохранены как fallback и дополнительная вариация.
+- Shuttle Payload подключён как отдельный грузовой модуль Argo; загрузка асинхронная, без него Argo продолжает работать как самостоятельный корабль.
+- Добавлен низкополигональный NASA Base Station как декоративный модуль орбитальной станции; при поздней загрузке он присоединяется к текущей станции.
+- Добавлен NASA 1999 RQ36 как один декоративный объект в планетном поясе астероидов; добыча и коллизии остаются на существующих процедурных астероидах.
+- Не менялись коллизии, стыковка, экономика, маршруты, AI и SAVE.
+- ISS и остальные тяжёлые/непроверенные NASA-модели оставлены в каталоге без runtime-активации до LOD и визуальной проверки.
+
 ## 2026-11-03 — v92.1: исправление атаки Шакала
 - Синхронизирован отображаемый номер релиза: HTML, паспорт и мастер-инструкция фиксируют v92.1.
 - Перехватчик «Шакал» больше не отвлекается на нейтральный транспорт и выбирает игрока основной целью.
@@ -652,3 +660,21 @@ tags: [starfall, changelog]
 
 - Updated `main_file_sha256` after extending the shared Elite-derived pilot to boss flight; `last_update` refreshed.
 - SHA-256: `32c6d0a01e6691d046d9c7657fcb18a3b14201786b8f51757a7862008029c07c`.
+
+
+## Free space GLB collection (2026-11-04, isolated asset branch)
+
+- Imported 17 NASA 3D Resources GLB files: 14 civilian spacecraft/landers/probes/cargo components, 2 orbital stations and 1 asteroid.
+- Added source inventory and usage notes in `assets/SPACE_ASSET_CREDITS.md`.
+- Added a five-unit civilian research caravan formation descriptor.
+- Existing planet model preserved; no new planet or galaxy mesh imported in this batch. Galaxy backgrounds should use skybox/equirectangular textures or shader-based rendering.
+- Assets are staged only; no gameplay/runtime integration or mobile performance validation has been performed.
+
+
+## v92.2 — Civilian Shuttle B runtime integration (2026-11-04)
+
+- Подключён `assets/ships/civilian/space_shuttle_b/model.glb` как вариант гражданского трафика (`freighter` variant 0).
+- Модель содержит 2 476 треугольников, 1 материал и не содержит текстур; длина нормализуется до 70 игровых единиц, длинная ось направляется вдоль локальной -Z, геометрия и материалы совместно используются через существующий кэш.
+- При ошибке загрузки или подготовки остаётся штатный процедурный транспорт.
+- Игрок, пираты, экономика, урон, SAVE и существующая логика транспортных маршрутов не изменялись.
+- Остальные NASA GLB оставлены в библиотеке до проверки и оптимизации.
