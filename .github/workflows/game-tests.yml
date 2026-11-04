@@ -62,7 +62,9 @@ jobs:
           PY
           for script in /tmp/starfall-inline-*.js; do node --check "$script"; done
           node --check tools/galaxy-map.js
+          node --check tools/external-systems.js
           node tests/t20_galaxy_map.js
+          node tests/t22_external_systems.js
           node --check tests/lib.js
           node --check tests/t21_galaxy_map_browser.js
           python3 tools/check_passport.py
