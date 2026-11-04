@@ -115,6 +115,7 @@ jobs:
           - iphone-chromium
           - iphone-webkit
           - deep-space
+          - space-assets
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -173,6 +174,9 @@ jobs:
               ;;
             deep-space)
               node tests/t16_deep_space.js
+              ;;
+            space-assets)
+              node tests/t22_space_assets.js
               ;;
             *)
               echo "::error::Unknown test: ${{ matrix.test }}"
