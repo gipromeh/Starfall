@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="claude:viewport-fit-sides" content="cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#02030a"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>STARFALL</title>
-<meta name="starfall-version" content="v92.6">
+<meta name="starfall-version" content="v92.7">
 <meta name="starfall-telemetry-endpoint" content="">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 <style>
@@ -2026,7 +2026,7 @@ upd=function(dt){_updWithPirateFleet(dt);pirateFleetUpdate(dt);resolvePirateShip
  const start=()=>{
   const date=iso(),stamp=date.replace(/[-:]/g,"").replace(/\.\d{3}Z$/,"Z");
   active={id:"sf-"+date.slice(0,10)+"-"+(crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2,14)),startedAt:date,elapsed:0,chunkIndex:1,records:[],seen:new Map(),projectiles:new Map()};
-  nextEntity=1;emit("session_start",{gameVersion:"v92.6",schemaVersion:SCHEMA,platform:matchMedia("(pointer:coarse)").matches?"touch":"desktop",system:typeof sy==="number"?sy:null,ship:typeof shp==="number"?shp:null,difficulty:typeof dif==="number"?dif:null,stamp});
+  nextEntity=1;emit("session_start",{gameVersion:"v92.7",schemaVersion:SCHEMA,platform:matchMedia("(pointer:coarse)").matches?"touch":"desktop",system:typeof sy==="number"?sy:null,ship:typeof shp==="number"?shp:null,difficulty:typeof dif==="number"?dif:null,stamp});
  };
  const finish=reason=>{
   if(!active)return;
