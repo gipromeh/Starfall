@@ -102,15 +102,19 @@ const L = require('./lib');
     const loaded = SV.load();
     const persisted = loaded.ok && loaded.d.ps && loaded.d.ps.version === 1 &&
       loaded.d.ps.systems[sy] && loaded.d.ps.systems[sy].groups.length > 0;
+    const legacyPayload = loaded.ok ? { ...loaded.d } : {};
+    delete legacyPayload.ps;
+    const legacyCompatible = SV.validate(legacyPayload).ok &&
+      SV.validate(legacyPayload).d.ps.version === 1;
     const previousCount = SF_PIRATE_STRATEGIC.stats()?.groups || 0;
     pirateStrategicRestore(loaded.d.ps);
     const restoredCount = SF_PIRATE_STRATEGIC.stats()?.groups || 0;
-    return { valid, saved, loaded: loaded.ok, persisted, previousCount, restoredCount,
+    return { valid, saved, loaded: loaded.ok, persisted, legacyCompatible, previousCount, restoredCount,
       raidLedger: SF_PIRATE_STRATEGIC.stats()?.raids || 0 };
   });
   L.check('система сохранений SV валидирует, записывает и восстанавливает стратегические группы',
     persistence.valid && persistence.saved && persistence.loaded && persistence.persisted &&
-    persistence.restoredCount > 0, persistence);
+    persistence.legacyCompatible && persistence.restoredCount > 0, persistence);
 
   L.check('нет ошибок JavaScript', page.errors.length === 0, page.errors);
   process.exitCode = L.summary();
