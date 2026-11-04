@@ -1,3 +1,11 @@
+## v95 maintenance — mobile flight controls and resource diagnostics (2026-11-04)
+
+- Added a dedicated touch-screen boost control to external-system flight; keyboard Shift remains supported.
+- Corrected flight HUD instructions: S/Space brakes, arrow keys control pitch, and the on-screen boost control is labelled separately.
+- Marked the three shared laser-beam geometries as retained cache resources. Leak diagnostics now distinguish explicitly retained detached cache geometry from genuinely orphaned geometry and fail on the latter.
+- Extended Galaxy Map browser regression coverage to exercise the touch-pointer boost path and verify acceleration.
+- No game-version bump: this is a maintenance correction to the v95 flight feature. Passport SHA-256 is synchronized with the updated `starfall.html`.
+
 ## STARFALL v95 — внешний свободный полёт (2026-11-04)
 
 - Синхронизирован SHA-256 паспорта с текущим `starfall.html` после обновления v95.
