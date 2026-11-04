@@ -58,7 +58,7 @@ const zlib = require('node:zlib');
     const exploration = await page.evaluate(() => window.SF_GALAXY_MAP.stats.external);
     L.check('Galaxy Map: внешняя система процедурно сгенерирована', !!exploration && exploration.planets >= 2 && exploration.planets <= 8 && !!exploration.star, exploration);
     const explorationStatus = await page.locator('#sf-galaxy .status').textContent();
-    L.check('Galaxy Map: внешний режим изолирован от экономики', explorationStatus.includes('РЕЖИМ ИССЛЕДОВАНИЯ'), explorationStatus);
+    L.check('Galaxy Map: внешний режим изолирован от экономики', explorationStatus.includes('ОРБИТАЛЬНЫЙ ОБЗОР'), explorationStatus);
     await page.evaluate(() => { const c=R.domElement,p=window.SF_GALAXY_MAP.stats.external.starScreen;if(!p?.visible)throw new Error('Звезда вне области камеры');const ev=(type)=>c.dispatchEvent(new PointerEvent(type,{pointerId:77,pointerType:'mouse',clientX:p.x,clientY:p.y,bubbles:true}));ev('pointerdown');ev('pointerup'); });
     const canvasPickStatus = await page.locator('#sf-galaxy .status').textContent();
     L.check('Galaxy Map: выбор звезды прямым нажатием на 3D-сцену', canvasPickStatus.includes('ОБЗОР ОБЪЕКТА · ЗВЕЗДА'), canvasPickStatus);
