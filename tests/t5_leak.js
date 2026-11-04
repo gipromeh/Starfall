@@ -71,15 +71,23 @@ const ff = (page, sec) => page.evaluate(s => { const n = Math.round(s / .05); fo
     S.traverse(o => { if(o.geometry) attached.add(o.geometry.uuid); });
     const old = new Set(base);
     const fresh = [...window.__sfGeomDiag.records.values()].filter(r => !old.has(r.uuid));
-    const leaked = fresh.filter(r => !r.disposed && !attached.has(r.uuid));
+    const detached = fresh.filter(r => !r.disposed && !attached.has(r.uuid));
+    const leaked = detached.filter(r => !r.keep);
+    const retained = detached.filter(r => r.keep);
     const grouped = {};
     for(const r of leaked) {
       const k=r.type||"unknown";
       (grouped[k]||(grouped[k]=[])).push({uuid:r.uuid,refs:r.refs,keep:r.keep,rc:r.rc,stack:r.firstAttach});
     }
-    return {trackedNew:fresh.length,disposed:fresh.filter(r=>r.disposed).length,stillAttached:fresh.filter(r=>attached.has(r.uuid)).length,detachedUndisposed:leaked.length,byType:grouped};
+    const retainedByType = {};
+    for(const r of retained) {
+      const k=r.type||"unknown";
+      (retainedByType[k]||(retainedByType[k]=[])).push({uuid:r.uuid,refs:r.refs,rc:r.rc,stack:r.firstAttach});
+    }
+    return {trackedNew:fresh.length,disposed:fresh.filter(r=>r.disposed).length,stillAttached:fresh.filter(r=>attached.has(r.uuid)).length,detachedUndisposed:leaked.length,detachedRetained:retained.length,byType:grouped,retainedByType};
   },geomBaseline);
   console.log('  диагностика геометрий:',JSON.stringify(geomLeaks));
+  L.check('нет отсоединённых геометрий без владельца', geomLeaks.detachedUndisposed === 0, geomLeaks);
   console.log('  до   :', JSON.stringify(b0)); console.log('  после:', JSON.stringify(b1));
   L.check('убийства происходили (wave вырос)', b1.wave >= b0.wave + 6, { w0: b0.wave, w1: b1.wave });
   L.check('объекты сцены после затухания эффектов вернулись к исходному уровню (±15)', Math.abs(b1.ch - b0.ch) <= 15, { c0: b0.ch, c1: b1.ch });
