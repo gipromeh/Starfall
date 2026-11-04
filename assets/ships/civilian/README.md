@@ -5,6 +5,7 @@
 ## Runtime-integrated
 
 - `argo/model.glb` — selected for 45% of neutral traffic spawns when loaded. Its long axis is aligned to STARFALL local -Z and normalized to 98 game units. Source model: 9,221 triangles, 8 materials, no embedded images.
+- `shuttle_payload/model.glb` — attached as a cargo module to Argo when its GLB is loaded. The module is aligned to local -Z, normalized to 36 units and scaled to 65% on attachment. Source model: 2,487 triangles, 6 materials, 1 embedded image.
 - `space_shuttle_b/model.glb` — selected for the next 30% of neutral traffic spawns when loaded. Its long axis is aligned to local -Z and normalized to 70 game units; the normalized root scale is preserved when cloning. Source model: 2,476 triangles, 1 material, no embedded images.
 - Procedural freighters remain the fallback and account for the remaining traffic variants. If either GLB fails to load, the procedural models remain available.
 
