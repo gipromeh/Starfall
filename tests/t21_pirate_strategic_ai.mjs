@@ -16,6 +16,15 @@ const saved=ai.snapshot(),restored=createPirateStrategicAI({seed:1,maxGroups:4})
 assert.deepEqual(restored.snapshot(),saved);
 restored.update(1,{contacts,threatByGroup:{'corsairs-a':99}});
 assert.equal(restored.getGroup('corsairs-a').state,'retreat');
-const home=restored.getGroup('corsairs-a');
-assert.equal(home.state,'retreat');
-console.log('Pirate strategic AI: group lifecycle, contact selection, movement, retreat and save/restore passed');
+const noTarget=restored.getGroup('corsairs-a').targetId;
+assert.equal(noTarget,null);
+const stateA=ai.snapshot(),stateB=createPirateStrategicAI({seed:999,maxGroups:4});
+stateB.restore(stateA);stateA.groups[0].position.x+=100;
+assert.notEqual(stateB.getGroup('corsairs-a').position.x,stateA.groups[0].position.x);
+assert.throws(()=>restored.restore({version:9,groups:[]}),/Invalid/);
+const deterministicA=createPirateStrategicAI({seed:88}),deterministicB=createPirateStrategicAI({seed:88});
+deterministicA.addGroup({id:'seeded'});deterministicB.addGroup({id:'seeded'});
+assert.deepEqual(deterministicA.snapshot(),deterministicB.snapshot());
+assert.throws(()=>ai.update(-1),/dt/);
+assert.throws(()=>ai.update(NaN),/dt/);
+console.log('Pirate strategic AI: group lifecycle, contact selection, movement, retreat, RNG determinism and save/restore passed');
