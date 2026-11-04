@@ -25,6 +25,11 @@ const ff = (page, sec) => page.evaluate(s => { const n = Math.round(s / .05); fo
   await page.evaluate(() => QL.setMode('low'));
   // прогрев: все кеши (материалы лучей, текстуры взрывов, модели) создаются при первом использовании
   for (let r = 0; r < 2; r++) { await page.evaluate(() => { if (!E) spawnE(); if(E){E.fire=1e9;E.burstLeft=0;E.burstGap=1e9;} }); await ff(page, 4); await page.evaluate(() => { if (E) hurtEn(E, 1e6, false); spawnT=1e9; }); await ff(page, 3); }
+  // Прогреваем ленивые кэши босса и тяжёлого архетипа до замера памяти.
+  await page.evaluate(() => { if(!E){wave=5;spawnE();} if(E){E.fire=1e9;E.burstLeft=0;E.burstGap=1e9;} });
+  await ff(page, 4); await page.evaluate(() => { if(E)hurtEn(E,1e6,false);spawnT=1e9; }); await ff(page, 3);
+  await page.evaluate(() => { const old=Math.random;let n=0;Math.random=()=>[.1,.99,.99,.99,.99][n++]??.99;wave=6;spawnE();Math.random=old;if(E){E.fire=1e9;E.burstLeft=0;E.burstGap=1e9;} });
+  await ff(page, 4); await page.evaluate(() => { if(E)hurtEn(E,1e6,false);spawnT=1e9; }); await ff(page, 3);
   await ff(page, 40);
   const b0 = await mem(page);
   for (let r = 0; r < 8; r++) { await page.evaluate(() => { if (!E) spawnE(); if(E){E.fire=1e9;E.burstLeft=0;E.burstGap=1e9;} }); await ff(page, 5); await page.evaluate(() => { firing = true; }); await ff(page, 2); await page.evaluate(() => { firing = false; if (E) hurtEn(E, 1e6, false); spawnT=1e9; }); await ff(page, 3); }
