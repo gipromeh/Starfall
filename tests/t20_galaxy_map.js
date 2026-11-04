@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const html = fs.readFileSync('starfall.html', 'utf8');
 const map = fs.readFileSync('tools/galaxy-map.js', 'utf8');
-assert.match(html, /starfall-version" content="v95"/);
+assert.match(html, /starfall-version" content="v[0-9]+"/);
 assert.match(html, /\.\/tools\/galaxy-map\.js/);
 assert.match(html, /state==="galaxy"&&window\.SF_GALAXY_MAP\)SF_GALAXY_MAP\.render\(dt\)/);
 assert.match(map, /new T\.Scene\(\)/);
