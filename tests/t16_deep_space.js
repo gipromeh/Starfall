@@ -18,6 +18,10 @@ const L=require('./lib');
   L.check('SAVE v3: deep-space state is serialized',save.version===3&&save.sector&&save.signals>=7,save);
   const ui=await page.evaluate(()=>{const b=document.querySelector('#ds-open'),r=b.getBoundingClientRect();b.click();return{width:r.width,height:r.height,right:innerWidth-r.right,top:r.top,open:document.querySelector('#ds-panel').style.display==='block'}});
   L.check('Deep Space: scanner opens from the upper-right control without covering the lower-left radar',ui.width>=44&&ui.height>=44&&ui.right>=0&&ui.top>=0&&ui.open,ui);
+  await page.evaluate(()=>SF_GALAXY_MAP.open());
+  const galaxy=await page.evaluate(()=>({catalog:SF_GALAXY_MAP.stats.catalog,inhabitedDisabled:document.querySelectorAll('#sf-galaxy .bottom button')[1].disabled,status:document.querySelector('#sf-galaxy .status')?.textContent||'',state:__STARFALL_DIAG__.state()}));
+  L.check('Galaxy Map: verifies and loads the 50,000-system catalogue; population filter stays disabled when source has no population',galaxy.catalog===50000&&galaxy.inhabitedDisabled&&galaxy.status.includes('SHA-256 подтверждён')&&galaxy.status.includes('population отсутствует')&&galaxy.state==='galaxy',galaxy);
+  await page.evaluate(()=>SF_GALAXY_MAP.close());
   L.check('Deep Space: no JavaScript errors',page.errors.length===0,page.errors);process.exitCode=L.summary();
  }finally{await ctx.close();await browser.close()}
 })().catch(e=>{console.error('DEEP SPACE TEST CRASH',e);process.exit(2)});
