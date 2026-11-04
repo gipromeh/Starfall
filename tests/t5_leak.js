@@ -11,13 +11,13 @@ const ff = (page, sec) => page.evaluate(s => { const n = Math.round(s / .05); fo
   await page.evaluate(() => {
     pirateFleetClear(); pirateFleetReady = true;
     pirateStrategicReset();
-    pirateStrategicUpdate = () => {};
+    SF_PIRATE_STRATEGIC.setEnabled(false);
     if (E) { S.remove(E.g); E = null; }
     if (E2) { S.remove(E2.g); E2 = null; }
   });
   L.check('изолированная проверка: эскадрилья и стратегический планировщик выключены',
     await page.evaluate(() => pirateFleetReady && pirateFleet.length === 0 &&
-      typeof pirateStrategicUpdate === 'function' && !E && !E2));
+      SF_PIRATE_STRATEGIC.setEnabled(false) === false && !E && !E2));
 
   console.log('\n[Q1] профили (ручной режим — адаптация выключена)');
   const res = [];
