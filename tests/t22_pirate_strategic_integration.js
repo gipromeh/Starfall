@@ -1,0 +1,118 @@
+const L = require('./lib');
+
+(async () => {
+  const browser = await L.launch();
+  const ctx = await L.newCtx(browser, { viewport: { width: 900, height: 520 }, dpr: 1 });
+  const page = await L.openGame(ctx);
+  page.on('pageerror', e => console.error('pageerror', e.message));
+  await page.click('#play');
+  await page.waitForFunction(() => state === 'dock', null, { timeout: 60000 });
+  await page.evaluate(() => { lift(); QL.setMode('low'); });
+  await page.waitForFunction(() => state === 'play' && typeof pirateStrategicSystem === 'function', null, { timeout: 30000 });
+  await page.waitForFunction(() => pirateAssetsReady === true, null, { timeout: 60000 });
+
+  const raid = await page.evaluate(() => {
+    const data = pirateStrategicSystem(sy, true);
+    const group = data.groups.find(g => g.source === 'patrol');
+    if (!group) throw new Error('No persistent patrol group was initialized');
+    const mesh = new THREE.Group();
+    mesh.position.copy(P).add(new THREE.Vector3(4500, 0, 0));
+    S.add(mesh);
+    const npc = {
+      g: mesh, v: new THREE.Vector3(), hp: 18, mx: 18, hit: 0, pk: 0,
+      route: {
+        destination: mesh.position.clone().add(new THREE.Vector3(2500, 0, 0)),
+        direction: new THREE.Vector3(1, 0, 0), speed: 0,
+        from: 'TEST-A', to: 'TEST-B', kind: 0, cargo: 80, passengers: 0
+      }
+    };
+    nv.push(npc);
+    pirateStrategicTagNpc(npc);
+    group.position = pirateStrategicArray(mesh.position);
+    group.velocity = [0, 0, 0];
+    group.targetNpcId = npc._sfStrategicNpcId;
+    group.cooldown = 0;
+    group.state = 'intercept';
+    for (let i = 0; i < 30 && nv.includes(npc); i++) pirateStrategicUpdate(.1);
+    const result = {
+      removed: !nv.includes(npc),
+      pirateOwned: npc.pk === 1,
+      raids: data.ledger.raids,
+      cargoLedger: data.ledger.cargo,
+      routeId: npc._sfStrategicNpcId,
+      routeFrom: npc.route.from,
+      routeTo: npc.route.to
+    };
+    if (nv.includes(npc)) nv.splice(nv.indexOf(npc), 1);
+    if (mesh.parent) S.remove(mesh);
+    return result;
+  });
+  L.check('стратегическая группа атакует реальный NPC торгового маршрута и фиксирует захват груза',
+    raid.removed && raid.pirateOwned && raid.raids >= 1 && raid.cargoLedger >= 80 &&
+    raid.routeFrom === 'TEST-A' && raid.routeTo === 'TEST-B', raid);
+
+  const combat = await page.evaluate(() => {
+    const oldE = E, oldE2 = E2;
+    const data = pirateStrategicSystem(sy, true);
+    const group = data.groups.find(g => g.source === 'patrol' && g.state !== 'destroyed');
+    const mesh = new THREE.Group();
+    mesh.position.copy(P).add(new THREE.Vector3(0, 0, -900));
+    S.add(mesh);
+    const npcMesh = new THREE.Group();
+    npcMesh.position.copy(mesh.position).add(new THREE.Vector3(0, 0, -120));
+    S.add(npcMesh);
+    const npc = {
+      g: npcMesh, v: new THREE.Vector3(), hp: 100, mx: 100, hit: 0, pk: 0,
+      route: { destination: npcMesh.position.clone().add(new THREE.Vector3(0, 0, -2000)),
+        direction: new THREE.Vector3(0, 0, -1), speed: 60, from: 'INNER', to: 'OUTER', kind: 0, cargo: 30, passengers: 0 }
+    };
+    nv.push(npc);
+    pirateStrategicTagNpc(npc);
+    group.position = pirateStrategicArray(mesh.position);
+    group.targetNpcId = npc._sfStrategicNpcId;
+    group._targetNpcRef = npc;
+    E = null; E2 = null;
+    spawnE({ strategicGroup: group });
+    const enemy = E || E2;
+    const result = {
+      spawned: !!enemy,
+      boundToRealNpc: !!enemy && enemy.tn === npc,
+      hasStableGroupId: !!enemy && enemy._sfStrategicGroupId === group.id,
+      routeId: npc._sfStrategicNpcId
+    };
+    if (enemy && enemy.g && enemy.g.parent) S.remove(enemy.g);
+    group._enemyRef = null;
+    group.state = 'destroyed';
+    E = oldE; E2 = oldE2;
+    const index = nv.indexOf(npc);
+    if (index >= 0) nv.splice(index, 1);
+    if (mesh.parent) S.remove(mesh);
+    if (npcMesh.parent) S.remove(npcMesh);
+    return result;
+  });
+  L.check('стратегическая группа разворачивает реальный боевой корабль и назначает NPC целью',
+    combat.spawned && combat.boundToRealNpc && combat.hasStableGroupId, combat);
+
+  const persistence = await page.evaluate(() => {
+    const before = pirateStrategicSnapshot();
+    const validated = pirateStrategicValidate(before);
+    const valid = validated.version === 1 && validated.systems[sy] &&
+      validated.systems[sy].groups.length === before.systems[sy].groups.length;
+    const saved = SV.save('pirate-strategic-regression');
+    const loaded = SV.load();
+    const persisted = loaded.ok && loaded.d.ps && loaded.d.ps.version === 1 &&
+      loaded.d.ps.systems[sy] && loaded.d.ps.systems[sy].groups.length > 0;
+    const previousCount = SF_PIRATE_STRATEGIC.stats()?.groups || 0;
+    pirateStrategicRestore(loaded.d.ps);
+    const restoredCount = SF_PIRATE_STRATEGIC.stats()?.groups || 0;
+    return { valid, saved, loaded: loaded.ok, persisted, previousCount, restoredCount,
+      raidLedger: SF_PIRATE_STRATEGIC.stats()?.raids || 0 };
+  });
+  L.check('система сохранений SV валидирует, записывает и восстанавливает стратегические группы',
+    persistence.valid && persistence.saved && persistence.loaded && persistence.persisted &&
+    persistence.restoredCount > 0, persistence);
+
+  L.check('нет ошибок JavaScript', page.errors.length === 0, page.errors);
+  process.exitCode = L.summary();
+  await browser.close();
+})().catch(e => { console.error('CRASH', e); process.exit(2); });
