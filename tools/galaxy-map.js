@@ -78,6 +78,7 @@ const ring=new T.Mesh(new T.TorusGeometry(13,.8,6,48),new T.MeshBasicMaterial({c
 const routeMat=new T.LineBasicMaterial({color:0xffc46b,transparent:true,opacity:.9});
 let routeLine=null,records=[],filtered=[],selected=null,routeStart=null,routeEnd=null,points=null;let populationAvailable=false;
 let previousState='menu',previousHud='',opened=false,yaw=.18,pitch=.12,distance=3300,drag=null,target=new T.Vector3();
+const originalTouchAction=R.domElement.style.touchAction;
 const posOf=r=>new T.Vector3(r.x*.035,r.y*.035,r.z*.035);
 function disposePoints(){if(points){galaxy.remove(points);points.geometry.dispose();points.material.dispose();points=null;}}
 function buildPoints(list){
@@ -99,8 +100,9 @@ async function loadCatalog(){
   const manifestResponse=await fetch(manifestUrl,{cache:'no-cache'});
   if(!manifestResponse.ok)throw Error('manifest HTTP '+manifestResponse.status);
   const manifest=await manifestResponse.json();
-  if(manifest.format!=='starfall-systems-jsonl-v1'||!Number.isInteger(manifest.records)||manifest.records<1)throw Error('неверный manifest');
+  if(manifest.format!=='starfall-systems-jsonl-v1'||!Number.isInteger(manifest.records)||manifest.records<1||!/^[a-f0-9]{64}$/i.test(manifest.sha256)||!Number.isInteger(manifest.compressed_bytes)||manifest.compressed_bytes<1)throw Error('неверный manifest');
   const url=new URL('./data/elite-dangerous-lite/systems.jsonl.gz',document.baseURI);
+  url.searchParams.set('sha256',manifest.sha256);
   const res=await fetch(url,{cache:'force-cache'});if(!res.ok)throw Error('HTTP '+res.status);
   if(!res.body||!window.DecompressionStream)throw Error('нет DecompressionStream для gzip');
   if(!window.crypto||!crypto.subtle)throw Error('Web Crypto SHA-256 недоступен; откройте игру по HTTPS');
@@ -145,7 +147,7 @@ function renderSearch(q){
  if(!found.length)node('div',{class:'meta',text:'Совпадений нет.'},results);
 }
 function close(){
- if(!opened)return;opened=false;root.style.display='none';state=previousState;
+ if(!opened)return;opened=false;root.style.display='none';R.domElement.style.touchAction=originalTouchAction;state=previousState;
  if($('hud'))$('hud').style.display=previousHud;
  if(previousState==='menu')$('menu')?.classList.remove('hide');
  if(previousState==='jumpmenu')$('jmp')?.classList.remove('hide');
@@ -158,7 +160,7 @@ async function open(){
  if(previousState==='jumpmenu')$('jmp')?.classList.add('hide');
  if(previousState==='dock')$('mkt')?.classList.add('hide');
  state='galaxy';if($('hud'))$('hud').style.display='none';hudBtn.style.display='none';
- root.style.display='block';opened=true;cameraUpdate();await loadCatalog();if(selected)setSelected(selected.record,selected.local);
+ root.style.display='block';opened=true;R.domElement.style.touchAction='none';cameraUpdate();await loadCatalog();if(selected)setSelected(selected.record,selected.local);
 }
 function jumpLocal(){
  if(!selected||!selected.local||previousState!=='play'||selected.record.index===sy)return;
