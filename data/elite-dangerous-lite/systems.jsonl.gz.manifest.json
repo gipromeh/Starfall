@@ -1,0 +1,12 @@
+{
+  "format": "starfall-systems-jsonl-v1",
+  "source": "systems_1month.json.gz",
+  "eligible_records": 2658680,
+  "records": 50000,
+  "invalid_records_skipped": 0,
+  "compressed_bytes": 1408395,
+  "sha256": "0be8c6c915244552095fb0057da99a68a91fe91cfd842e6dc4ac063a33942f9e",
+  "sample_seed": 20261104,
+  "selection": "deterministic reservoir sample",
+  "complete_galaxy": false
+}
