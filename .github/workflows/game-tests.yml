@@ -102,7 +102,7 @@ jobs:
   browser-tests:
     name: browser-tests (${{ matrix.test }})
     needs: [quick-checks, prepare-browser]
-    runs-on: ${{ matrix.test == 'iphone-webkit' && 'macos-latest' || 'ubuntu-latest' }}
+    runs-on: ${{ (matrix.test == 'iphone-webkit' || matrix.test == 'galaxy-map-webkit') && 'macos-latest' || 'ubuntu-latest' }}
     timeout-minutes: 20
     strategy:
       fail-fast: false
@@ -117,6 +117,8 @@ jobs:
           - iphone-chromium
           - iphone-webkit
           - deep-space
+          - galaxy-map
+          - galaxy-map-webkit
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -175,6 +177,12 @@ jobs:
               ;;
             deep-space)
               node tests/t16_deep_space.js
+              ;;
+            galaxy-map)
+              node tests/t21_galaxy_map_browser.js
+              ;;
+            galaxy-map-webkit)
+              SF_WEBKIT=1 node tests/t21_galaxy_map_browser.js
               ;;
             *)
               echo "::error::Unknown test: ${{ matrix.test }}"
