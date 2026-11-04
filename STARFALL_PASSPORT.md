@@ -1,3 +1,5 @@
+## v95 — Пиратская стратегическая симуляция и рейды на торговые маршруты
+
 ## v95 — свободный полёт во внешних системах
 - В процедурную систему добавлен управляемый корабль с инерционной моделью, тягой, форсажем, торможением, yaw/pitch/roll и камерой преследования.
 - Управление: WASD/стрелки, Shift, Space, Q/E; на сенсорных экранах доступны экранные кнопки. Колесо меняет дистанцию камеры, перетаскивание мышью/пальцем управляет ориентацией.
@@ -186,7 +188,7 @@ tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура
 game_version: "v95"
 last_update: 2026-11-04
 main_file: starfall.html
-main_file_sha256: "328e1bb02c04c5e89b06914bb490f56e0c7e3d99fc14788e41b0fc8360d7d8fa"
+main_file_sha256: "b36311c47c31f2083d53284c8ad705878fbe83deeb3c921d5a61d60a9803dc00"
 save_format_version: 3
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"
