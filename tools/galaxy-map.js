@@ -10,12 +10,12 @@ const node = (tag, attrs, parent) => {
   if(parent)parent.appendChild(n);return n;
 };
 const css = [
-'#sf-galaxy{position:fixed;inset:0;z-index:80;display:none;color:#d7f2ff;background:radial-gradient(ellipse at 50% 45%,#09203b,#020711 68%,#010309);font:13px "Exo 2",sans-serif;letter-spacing:.04em}',
-'#sf-galaxy .top{position:absolute;z-index:3;left:0;right:0;top:0;display:flex;align-items:center;gap:9px;padding:max(10px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) 10px max(14px,env(safe-area-inset-left));background:linear-gradient(#020813ee,#02081399,transparent)}',
+'#sf-galaxy{position:fixed;inset:0;z-index:80;display:none;pointer-events:none;color:#d7f2ff;background:radial-gradient(ellipse at 50% 45%,#09203b,#020711 68%,#010309);font:13px "Exo 2",sans-serif;letter-spacing:.04em}',
+'#sf-galaxy .top{pointer-events:auto;position:absolute;z-index:3;left:0;right:0;top:0;display:flex;align-items:center;gap:9px;padding:max(10px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) 10px max(14px,env(safe-area-inset-left));background:linear-gradient(#020813ee,#02081399,transparent)}',
 '#sf-galaxy .title{font:19px "Russo One",sans-serif;letter-spacing:.14em;color:#72dfff;text-shadow:0 0 16px #28bfff}',
 '#sf-galaxy .spacer{flex:1}#sf-galaxy button{min-width:0;padding:8px 12px;border:1px solid #4fd0ff99;background:#06203aee;color:#d7f2ff;font:700 11px "Exo 2",sans-serif;letter-spacing:.06em;cursor:pointer}',
 '#sf-galaxy button:disabled{opacity:.35}#sf-galaxy input{width:min(270px,42vw);padding:9px 11px;border:1px solid #4fd0ff88;background:#031426ee;color:#e8f8ff;outline:none;font:13px "Exo 2",sans-serif}',
-'#sf-galaxy .side{position:absolute;z-index:3;left:max(12px,env(safe-area-inset-left));top:68px;bottom:max(12px,env(safe-area-inset-bottom));width:min(320px,36vw);display:flex;flex-direction:column;gap:8px;pointer-events:none}',
+'#sf-galaxy .side{pointer-events:none;position:absolute;z-index:3;left:max(12px,env(safe-area-inset-left));top:68px;bottom:max(12px,env(safe-area-inset-bottom));width:min(320px,36vw);display:flex;flex-direction:column;gap:8px;pointer-events:none}',
 '#sf-galaxy .panel{pointer-events:auto;border:1px solid #4fd0ff55;background:linear-gradient(135deg,#061a2def,#020916ef);box-shadow:0 0 22px #001a33aa;padding:10px;backdrop-filter:blur(8px)}',
 '#sf-galaxy h3{margin:0 0 8px;color:#76dfff;font:13px "Russo One",sans-serif;letter-spacing:.12em}',
 '#sf-galaxy .meta{font-size:11px;line-height:1.6;color:#9fc8df;overflow-wrap:anywhere;white-space:pre-line}',
@@ -23,7 +23,7 @@ const css = [
 '#sf-galaxy .results button{text-align:left;text-transform:none;display:flex;justify-content:space-between;gap:8px}',
 '#sf-galaxy .results small{color:#80b5d2;white-space:nowrap}#sf-galaxy .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}',
 '#sf-galaxy .status{font-size:11px;line-height:1.5;color:#8ebbd4;min-height:30px}',
-'#sf-galaxy .bottom{position:absolute;z-index:3;right:max(12px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));display:flex;gap:6px}',
+'#sf-galaxy .bottom{pointer-events:auto;position:absolute;z-index:3;right:max(12px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));display:flex;gap:6px}',
 '#sf-galaxy .hint{position:absolute;right:16px;top:72px;z-index:2;padding:8px 10px;background:#020916aa;border:1px solid #4fd0ff33;color:#9fc8df;font-size:10px;line-height:1.55;pointer-events:none}',
 '#sf-galaxy .close{border-color:#ff987788;color:#ffd2c1}#sf-galaxy-menu{min-width:min(440px,86vw);height:48px;font-size:15px;letter-spacing:.14em}',
 '#sf-galaxy-hud{position:absolute;z-index:12;left:max(14px,env(safe-area-inset-left));bottom:max(18px,env(safe-area-inset-bottom));display:none;min-width:0;padding:8px 13px;font-size:11px;pointer-events:auto}',
@@ -169,5 +169,6 @@ addEventListener('keydown',e=>{if(e.code==='KeyN'&&!e.repeat){e.preventDefault()
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();});
 function render(dt){if(!opened)return;galaxy.rotation.y+=Math.min(.02,dt*.012);R.render(scene,camera);}
 window.SF_GALAXY_MAP={open,close,render,get stats(){return{catalog:records.length,visible:filtered.length,selected:selected?.record?.name||null};}};
+try{const oldLift=lift;lift=function(){oldLift();hudBtn.style.display='block';};const oldArrive=arrive;arrive=function(){oldArrive();hudBtn.style.display='block';};}catch(e){console.warn('[STARFALL Galaxy Map] HUD hook',e);}
 if(typeof state!=='undefined'&&state==='play')hudBtn.style.display='block';
 })();
