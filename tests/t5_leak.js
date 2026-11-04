@@ -89,7 +89,7 @@ const ff = (page, sec) => page.evaluate(s => { const n = Math.round(s / .05); fo
     const g = SKIT.mkFreighter(2, gtex);
     g.position.set(0, 0, -120);
     S.add(g);
-    nv.push({ g, v:new THREE.Vector3(), hp:420, route:{kind:2} });
+    nv.push({ g, v:new T.Vector3(), hp:420, route:{kind:2} });
   });
   await L.sleep(400);
   const freighterBeforeRemoval = await mem(page);
