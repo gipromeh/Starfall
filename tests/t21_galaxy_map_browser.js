@@ -76,6 +76,21 @@ const zlib = require('node:zlib');
     await page.keyboard.down('KeyW'); await L.sleep(650); await page.keyboard.up('KeyW');
     const flightMotion = await page.evaluate(() => window.SF_GALAXY_MAP.stats.external);
     L.check('Galaxy Map: тяга перемещает корабль в процедурной системе', flightMotion?.flight === true && flightMotion.speed > 1, flightMotion);
+    const boostButton = page.locator('#sf-galaxy .flight-controls button[aria-label="boost"]');
+    L.check('Galaxy Map: сенсорная кнопка форсажа доступна', await boostButton.count() === 1, await boostButton.count());
+    const speedBeforeBoost = flightMotion.speed;
+    await page.evaluate(() => {
+      const thrust = document.querySelector('#sf-galaxy .flight-controls button[aria-label="thrust"]');
+      const boost = document.querySelector('#sf-galaxy .flight-controls button[aria-label="boost"]');
+      for (const button of [thrust, boost]) button.dispatchEvent(new PointerEvent('pointerdown', { bubbles:true, pointerId:91, pointerType:'touch', isPrimary:true, button:0 }));
+    });
+    await L.sleep(650);
+    await page.evaluate(() => {
+      for (const key of ['thrust','boost']) document.querySelector('#sf-galaxy .flight-controls button[aria-label="'+key+'"]')
+        .dispatchEvent(new PointerEvent('pointerup', { bubbles:true, pointerId:91, pointerType:'touch', isPrimary:true, button:0 }));
+    });
+    const touchBoostMotion = await page.evaluate(() => window.SF_GALAXY_MAP.stats.external);
+    L.check('Galaxy Map: сенсорный форсаж увеличивает скорость', touchBoostMotion?.speed > speedBeforeBoost + 10, { before:speedBeforeBoost, after:touchBoostMotion?.speed });
     await page.locator('#sf-galaxy .actions button').filter({ hasText: 'ОРБИТАЛЬНЫЙ ОБЗОР' }).click();
     const flightExited = await page.evaluate(() => window.SF_GALAXY_MAP.stats.external?.flight === false);
     L.check('Galaxy Map: возврат из полёта в орбитальный обзор', flightExited, flightExited);

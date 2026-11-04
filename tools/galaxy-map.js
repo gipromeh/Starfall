@@ -46,7 +46,7 @@ const routeBtn=node('button',{text:'НАЧАТЬ МАРШРУТ'},actions);
 const exploreBtn=node('button',{text:'ИССЛЕДОВАТЬ СИСТЕМУ',disabled:'true'},actions);
 const returnBtn=node('button',{text:'← К КАРТЕ'},actions);returnBtn.style.display='none';
 const flightBtn=node('button',{text:'НАЧАТЬ ПОЛЁТ'},actions);flightBtn.style.display='none';
-let flightMode=false,flightShip=null,flightVelocity=null,flightInput={thrust:false,brake:false,left:false,right:false,up:false,down:false,rollL:false,rollR:false},flightCameraDistance=18,flightNearLabel='';
+let flightMode=false,flightShip=null,flightVelocity=null,flightInput={thrust:false,boost:false,brake:false,left:false,right:false,up:false,down:false,rollL:false,rollR:false},flightCameraDistance=18,flightNearLabel='';
 let externalRoot=null,externalRecord=null,externalCameraState=null;
 const resultsPanel=node('section',{class:'panel'},side);const resultsHeading=node('h3',{text:'ПОИСК'},resultsPanel);
 const results=node('div',{class:'results'},resultsPanel);
@@ -54,7 +54,7 @@ const statusPanel=node('section',{class:'panel'},side);node('h3',{text:'КАТА
 const status=node('div',{class:'status',text:'Ожидание каталога Spansh…'},statusPanel);
 node('div',{class:'hint',text:'Мышь / палец — вращение · колесо / ± — масштаб\nКлик по звезде — сведения · поиск — переход · +/− масштаб'},root);
 const flightControls=node('div',{class:'flight-controls','aria-label':'Управление полётом'},root);
-const flightButtons=[['up','▲'],['thrust','УСК'],['rollR','↻'],['left','◀'],['brake','ТОРМ'],['right','▶'],['down','▼'],['rollL','↺']];
+const flightButtons=[['up','▲'],['thrust','УСК'],['boost','ФОРС'],['left','◀'],['brake','ТОРМ'],['right','▶'],['down','▼'],['rollL','↺'],['rollR','↻']];
 flightButtons.forEach(([key,label])=>{const b=node('button',{text:label,'aria-label':key},flightControls);const set=v=>{flightInput[key]=v};b.addEventListener('pointerdown',e=>{e.preventDefault();set(true);try{b.setPointerCapture(e.pointerId)}catch(_){}});['pointerup','pointercancel','lostpointercapture','pointerleave'].forEach(t=>b.addEventListener(t,()=>set(false)));});
 const bottom=node('div',{class:'bottom'},root);
 const allBtn=node('button',{text:'ВСЕ СИСТЕМЫ'},bottom),inhBtn=node('button',{text:'ОБЖИТЫЕ · НЕТ ДАННЫХ'},bottom),zoomInBtn=node('button',{text:'+'},bottom),zoomOutBtn=node('button',{text:'−'},bottom),resetBtn=node('button',{text:'СБРОС ВИДА'},bottom),closeBtn=node('button',{class:'close',text:'В ИГРУ'},bottom);
@@ -170,14 +170,14 @@ function buildFlightShip(){
 function updateFlightCamera(){if(!flightShip)return;const q=flightShip.quaternion,offset=new T.Vector3(0,5.5,flightCameraDistance).applyQuaternion(q),forward=new T.Vector3(0,0,-1).applyQuaternion(q);camera.position.copy(flightShip.position).add(offset);camera.up.set(0,1,0).applyQuaternion(q);camera.lookAt(flightShip.position.clone().addScaledVector(forward,32));camera.updateMatrixWorld();}
 function setFlightMode(on){
  if(!externalRoot)return;
- if(on&&!flightMode){flightShip=buildFlightShip();flightVelocity=new T.Vector3();const d=externalRoot.userData.externalSystem.data;flightShip.position.set(0,0,d.star.radius+105);externalRoot.add(flightShip);flightMode=true;flightNearLabel='';flightCameraDistance=18;flightControls.style.display='grid';bottom.style.display='none';flightBtn.textContent='ОРБИТАЛЬНЫЙ ОБЗОР';resultsPanel.style.display='none';info.textContent=externalRecord.name+'\nПОЛЁТ ВНЕШНЕЙ СИСТЕМЫ · WASD / стрелки · Shift — форсаж · Space — тормоз';status.textContent='ПОЛЁТ · W/▲ тяга · S/▼ тормоз · A/D поворот · Q/E крен. Исследование не меняет экономику STARFALL.';updateFlightCamera();}
+ if(on&&!flightMode){flightShip=buildFlightShip();flightVelocity=new T.Vector3();const d=externalRoot.userData.externalSystem.data;flightShip.position.set(0,0,d.star.radius+105);externalRoot.add(flightShip);flightMode=true;flightNearLabel='';flightCameraDistance=18;flightControls.style.display='grid';bottom.style.display='none';flightBtn.textContent='ОРБИТАЛЬНЫЙ ОБЗОР';resultsPanel.style.display='none';info.textContent=externalRecord.name+'\nПОЛЁТ ВНЕШНЕЙ СИСТЕМЫ · WASD / стрелки · Shift / ФОРС — форсаж · Space — тормоз';status.textContent='ПОЛЁТ · W/УСК тяга · Shift/ФОРС форсаж · S/Space тормоз · стрелки тангаж · A/D поворот · Q/E крен. Исследование не меняет экономику STARFALL.';updateFlightCamera();}
  else if(!on&&flightMode){flightMode=false;flightControls.style.display='none';bottom.style.display='';resultsPanel.style.display='';if(flightShip){externalRoot.remove(flightShip);flightShip.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose()});flightShip=null;}flightVelocity=null;for(const k in flightInput)flightInput[k]=false;camera.up.set(0,1,0);target.set(0,0,0);yaw=.5;pitch=.22;distance=330;cameraUpdate();flightBtn.textContent='НАЧАТЬ ПОЛЁТ';status.textContent='ОРБИТАЛЬНЫЙ ОБЗОР · выберите объект для фокусировки или снова начните полёт.';}
 }
 function updateFlight(dt){
  if(!flightMode||!flightShip||!flightVelocity)return;dt=Math.min(.05,Math.max(0,dt));
  const key=(...codes)=>codes.some(c=>flightKeys.has(c));
  const left=flightInput.left||key('KeyA','ArrowLeft'),right=flightInput.right||key('KeyD','ArrowRight'),up=flightInput.up||key('ArrowUp'),down=flightInput.down||key('ArrowDown'),thrust=flightInput.thrust||key('KeyW'),brake=flightInput.brake||key('KeyS','Space'),rollL=flightInput.rollL||key('KeyQ'),rollR=flightInput.rollR||key('KeyE');
- const boost=key('ShiftLeft','ShiftRight'),turn=1.25*dt;
+ const boost=flightInput.boost||key('ShiftLeft','ShiftRight'),turn=1.25*dt;
  if(left)flightShip.rotateY(turn);if(right)flightShip.rotateY(-turn);if(up)flightShip.rotateX(turn);if(down)flightShip.rotateX(-turn);if(rollL)flightShip.rotateZ(turn);if(rollR)flightShip.rotateZ(-turn);
  const forward=new T.Vector3(0,0,-1).applyQuaternion(flightShip.quaternion).normalize();
  if(thrust)flightVelocity.addScaledVector(forward,(boost?82:38)*dt);
