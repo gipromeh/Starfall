@@ -63,6 +63,8 @@ jobs:
           for script in /tmp/starfall-inline-*.js; do node --check "$script"; done
           node --check tools/galaxy-map.js
           node tests/t20_galaxy_map.js
+          node --check tests/lib.js
+          node --check tests/t21_galaxy_map_browser.js
       - name: AI Lab architecture regression (static)
         run: node tests/t12_ai_lab.js
       - name: Radar and collision regression (static)
