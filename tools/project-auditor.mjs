@@ -57,6 +57,7 @@ if (html) {
   if (!title) issue("WARNING", "HTML_TITLE_MISSING", "starfall.html", "Document title is missing.");
 
   const markup = html.replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, "").replace(/<style\b[^>]*>[\s\S]*?<\/style\s*>/gi, "");
+  const ids = new Map();
   for (const match of markup.matchAll(/\bid\s*=\s*(["'])(.*?)\1/gi)) ids.set(match[2], (ids.get(match[2]) || 0) + 1);
   const duplicates = [...ids].filter(([, count]) => count > 1);
   check("html:unique-ids", duplicates.length === 0, duplicates.length + " duplicate IDs");
