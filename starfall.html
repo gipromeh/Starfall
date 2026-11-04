@@ -1878,10 +1878,35 @@ function pirateFleetUpdate(dt){
   const g=e.g,toPlayer=P.clone().sub(g.position),dist=toPlayer.length(),aiThink=EAI.think(e,dt);if(dist<1)continue;
   let incoming=false;
   if(aiThink)for(let bi=bul.length-1;bi>=0;bi--){const b=bul[bi],delta=g.position.clone().sub(b.m.position);if(delta.length()<135&&b.v.dot(delta)>0){incoming=true;break}}
-  const aim=EAI.chooseVector(e,toPlayer,aiThink,{up:pirateFleetUp,nearX:190,nearY:150,nearZ:200,reengageDistance:720,minEvadeTicks:8,incoming});
+  const baseAim=EAI.chooseVector(e,toPlayer,aiThink,{up:pirateFleetUp,nearX:[150,210,260,190][e.ty],nearY:[125,170,190,230][e.ty],nearZ:[170,230,300,220][e.ty],reengageDistance:720,minEvadeTicks:[7,10,12,9][e.ty],incoming});
   e.state=e.aiIntent;
-  const targetSpeed=46*[1,.75,1,1][e.ty];
-  if(aiThink)EAI.command(e,aim,dist,{speed:targetSpeed,acceleration:60,turnRate:1.8});
+  const right=new T.Vector3().crossVectors(toPlayer.clone().normalize(),pirateFleetUp).normalize();
+  const profilePhase=(e.aiTicks||0)*.19+e.slot*1.7;
+  let aim=baseAim.clone(),targetSpeed=[49,56,34,47][e.ty],turnRate=[2.05,2.35,1.25,1.75][e.ty],acceleration=[68,76,38,58][e.ty];
+  if(e.state!=="EVADE"){
+   if(e.ty===0){
+    // Головорез: прямой агрессивный перехват, минимальный боковой уход.
+    aim.lerp(toPlayer.clone().normalize(),.38).normalize();targetSpeed=dist>260?54:43;
+   }else if(e.ty===1){
+    // Шакал: быстрый фланговый заход с периодической сменой борта.
+    const flank=Math.sin(profilePhase*.72)>=0?1:-1;
+    aim.addScaledVector(right,flank*(dist>260?.82:.48)).addScaledVector(pirateFleetUp,Math.sin(profilePhase)*.16).normalize();
+    targetSpeed=dist>330?61:48;turnRate=2.5;
+   }else if(e.ty===2){
+    // Мародёр: удерживает дальнюю дистанцию и не входит в ближнюю свалку.
+    const rangeError=dist-360;
+    aim.copy(toPlayer).normalize().multiplyScalar(Math.max(-.65,Math.min(.8,rangeError/180)));
+    aim.addScaledVector(right,Math.sin(profilePhase*.42)*.22).normalize();
+    targetSpeed=dist<270?43:dist>470?38:27;turnRate=1.2;acceleration=36;
+   }else{
+    // Гарпия: широкая орбита с вертикальными сменами высоты.
+    aim.addScaledVector(right,Math.sin(profilePhase*.55)*.9).addScaledVector(pirateFleetUp,Math.sin(profilePhase*.8)*.42).normalize();
+    targetSpeed=dist>390?53:45;turnRate=1.85;
+   }
+  }else{
+   targetSpeed=[50,59,39,51][e.ty];
+  }
+  if(aiThink)EAI.command(e,aim,dist,{speed:targetSpeed,acceleration,turnRate});
   EAI.integrate(e,dt,g,pirateFleetUp);
   pirateFleetHeading.copy(e.hd).normalize();g.quaternion.setFromUnitVectors(pirateFleetForward,pirateFleetHeading);
   g.rotateZ(Math.max(-.2,Math.min(.2,(e.ocsYaw||0)*-.008)));
@@ -1890,10 +1915,11 @@ function pirateFleetUpdate(dt){
   if(e.smoke)e.smoke.material.opacity=.25+.18*(.5+.5*Math.sin(performance.now()*.003+e.slot));
   if(e.fireFx){const fr=e.hitFxRadius||e.r||8;e.fireFx.material.opacity=.62+.34*(.5+.5*Math.sin(performance.now()*.02+e.slot));e.fireFx.scale.set(fr*1.15,fr*(1.45+.12*Math.sin(performance.now()*.018+e.slot)),1)}
   const shotSpeed=200,leadTime=Math.min(6.2,dist/shotSpeed),targetPoint=P.clone().addScaledVector(vel,leadTime),aimAt=targetPoint.clone().sub(g.position).normalize(),projection=EAI.project(aimAt,pirateFleetHeading),fireAngle=Math.acos(Math.max(-1,Math.min(1,projection.forward)));
-  const canFire=e.state==="ATTACK"&&dist<420&&(fireAngle<.9||(dist<300&&fireAngle<1.35));
+  const fireRange=[390,330,520,430][e.ty],fireCone=[.82,.72,.62,.95][e.ty];
+  const canFire=e.state==="ATTACK"&&dist<fireRange&&(fireAngle<fireCone||(dist<260&&fireAngle<1.3));
   e.fire-=dt;e.burst=e.burst||0;e.burstGap=Math.max(0,(e.burstGap||0)-dt);
   const fireOCS=EAI.projectOCS(targetPoint.clone().sub(g.position),pirateFleetHeading);
-  if(aiThink&&canFire&&e.fire<=0&&e.burst<=0&&EAI.fireGate(fireOCS,dist,420,EAI.fireChance(projection,dist,420),score>=500))e.burst=3;
+  if(aiThink&&canFire&&e.fire<=0&&e.burst<=0&&EAI.fireGate(fireOCS,dist,fireRange,EAI.fireChance(projection,dist,fireRange),score>=500))e.burst=[4,3,2,3][e.ty];
   if(canFire&&e.burst>0&&e.burstGap<=0){
    const guns=e.muzzleNodes&&e.muzzleNodes.length?e.muzzleNodes:[null];
    for(const gun of guns){
@@ -1902,7 +1928,7 @@ function pirateFleetUpdate(dt){
     shootLaser(eb,muzzle,shotDir.multiplyScalar(shotSpeed),0xffc34a,5.2,7.0);
     eb[eb.length-1].pirateFleet=true;eb[eb.length-1].pirateFleetSlot=e.slot;
    }
-   e.burst--;e.burstGap=.18;if(e.burst<=0)e.fire=.7+EAI.rand()*.4;sfx("l2");
+   e.burst--;e.burstGap=.18;if(e.burst<=0)e.fire=[.55,.85,1.25,1.05][e.ty]+EAI.rand()*[.25,.35,.55,.4][e.ty];sfx("l2");
   }
  }
 }
