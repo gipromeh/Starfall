@@ -8,7 +8,7 @@ const ff = (page, sec) => page.evaluate(s => { const n = Math.round(s / .05); fo
   await page.click('#play'); await page.waitForFunction(() => state === 'dock', null, { timeout: 60000 }); await L.sleep(500);
   await page.evaluate(() => lift()); await L.sleep(1500);
   // Изолируем E/E2: стартовая эскадрилья v89 стреляет независимо и не должна считаться утечкой в этом тесте.
-  await page.evaluate(() => { pirateFleetClear(); pirateFleetReady = true; });
+  await page.evaluate(() => { for(const e of [E,E2])if(e?.g){S.remove(e.g);pirateDamageFxClear(e);} E=null;E2=null;spawnT=1e9;pirateFleetClear();pirateFleetReady=true; });
   L.check('изолированная проверка: стартовая эскадрилья выключена', await page.evaluate(() => pirateFleetReady && pirateFleet.length === 0));
 
   console.log('\n[Q1] профили (ручной режим — адаптация выключена)');
@@ -24,10 +24,10 @@ const ff = (page, sec) => page.evaluate(s => { const n = Math.round(s / .05); fo
   console.log('\n[Q9] утечки в бою: прогрев, затем 8 раундов «спавн → убийство», перемотка 40 с игрового времени');
   await page.evaluate(() => QL.setMode('low'));
   // прогрев: все кеши (материалы лучей, текстуры взрывов, модели) создаются при первом использовании
-  for (let r = 0; r < 2; r++) { await page.evaluate(() => { if (!E) spawnE(); }); await ff(page, 4); await page.evaluate(() => { if (E) hurtEn(E, 1e6, false); }); await ff(page, 3); }
+  for (let r = 0; r < 2; r++) { await page.evaluate(() => { if (!E) spawnE(); }); await ff(page, 4); await page.evaluate(() => { if (E) hurtEn(E, 1e6, false); spawnT=1e9; }); await ff(page, 3); }
   await ff(page, 40);
   const b0 = await mem(page);
-  for (let r = 0; r < 8; r++) { await page.evaluate(() => { if (!E) spawnE(); }); await ff(page, 5); await page.evaluate(() => { firing = true; }); await ff(page, 2); await page.evaluate(() => { firing = false; if (E) hurtEn(E, 1e6, false); }); await ff(page, 3); }
+  for (let r = 0; r < 8; r++) { await page.evaluate(() => { if (!E) spawnE(); }); await ff(page, 5); await page.evaluate(() => { firing = true; }); await ff(page, 2); await page.evaluate(() => { firing = false; if (E) hurtEn(E, 1e6, false); spawnT=1e9; }); await ff(page, 3); }
   await ff(page, 40);
   const b1 = await mem(page);
   console.log('  до   :', JSON.stringify(b0)); console.log('  после:', JSON.stringify(b1));
