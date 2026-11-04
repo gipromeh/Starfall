@@ -2,6 +2,7 @@ const L = require('./lib');
 
 (async () => {
   const browser = await L.launch();
+  try {
   const ctx = await L.newCtx(browser, { viewport: { width: 960, height: 540 }, dpr: 1 });
   const page = await L.openGame(ctx);
 
@@ -41,7 +42,9 @@ const L = require('./lib');
   }));
   L.check('NASA Base Station is attached to the active orbital station', station.attached && !station.pending && station.children > 0, station);
 
-  await browser.close();
+  } finally {
+    await browser.close();
+  }
 })().catch(error => {
   console.error(error);
   process.exitCode = 1;
