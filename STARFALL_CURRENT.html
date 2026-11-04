@@ -3099,7 +3099,23 @@ if(T.GLTFLoader&&location.protocol!=="file:"){
 }
 mkBoss=function(){return cached("boss",()=>applyPirateLivery(SKIT.mkBoss(gtex)))};
 mkStation=function(){return SKIT.mkStation(gtex)};
-mkFreighter=function(){const k=Math.random()<.6?0:1,g=cached("f"+k,()=>{const f=SKIT.mkFreighter(k,gtex);f.userData.sc=1.6;return f});return g};
+mkFreighter=function(){
+ const roll=Math.random();
+ if(civilianArgoTemplate&&roll<.45){
+  const model=civilianArgoTemplate.clone(true);
+  model.userData.trafficModel="nasa-argo";
+  return model;
+ }
+ if(MC["f0"]&&roll<.75){
+  const model=cached("f0",()=>MC["f0"]);
+  model.userData.trafficModel="nasa-shuttle-b";
+  return model;
+ }
+ const k=roll<.875?0:1;
+ const model=cached("f"+k,()=>{const f=SKIT.mkFreighter(k,gtex);f.userData.sc=1.6;return f});
+ model.userData.trafficModel="procedural";
+ return model;
+};
 // ангар: шкалы под новые корабли
 {const _h=hgrView;hgrView=function(box,s,n){_h(box,s,n);const b=box.querySelectorAll(".hg-s b"),q=SHIPS[shp];if(b.length>=4){b[0].style.width=Math.min(100,q.hull/4.5)+"%";b[1].style.width=Math.min(100,q.spd*80)+"%";b[3].style.width=Math.min(100,q.cargo*3.4)+"%"}}}
 applyShip();
