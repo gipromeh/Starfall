@@ -6,6 +6,12 @@
 - Внешние системы остаются справочными: SYS/GAL, экономика, миссии и SAVE не заменяются и не расширяются.
 - Добавлены `tools/galaxy-map.js`, `docs/GALAXY_MAP.md`, source-contract и Playwright browser regressions для Chromium и WebKit. CI должен подтвердить выполнение; физический iPhone Safari playtest не заявляется.
 
+## 2026-11-04 — Galaxy Map: мобильный ввод и cache invalidation
+- При открытии карты `touch-action: none` применяется только к игровому canvas, позволяя вращать камеру пальцем; при закрытии исходное значение восстанавливается.
+- URL gzip-каталога получает SHA-256 manifest в query string: обновлённый каталог не может незаметно подмениться устаревшим browser/CDN cache.
+- Manifest дополнительно проверяется на 64-символьный SHA-256 и положительный `compressed_bytes` до загрузки архива.
+- Добавлены source-contract assertions для этих гарантий.
+
 ## 2026-11-04 — Galaxy Map: проверка целостности и population filter
 - Загрузчик карты проверяет SHA-256 и размер gzip-архива по manifest, а после распаковки сверяет фактическое число записей.
 - Фильтр «Обжитые» отключён для текущего источника: `population_field_records: 0`. Он станет доступен только при появлении реальных population-данных.
