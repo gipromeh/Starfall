@@ -15,6 +15,7 @@ assert.match(map, /crypto\.subtle\.digest\('SHA-256'/);
 assert.match(map, /list\.length!==manifest\.records/);
 assert.match(map, /populationAvailable=Number\(manifest\.population_field_records\)>0/);
 assert.match(map, /ОБЖИТЫЕ · НЕТ ДАННЫХ/);
+assert.match(map, /inhBtn\.disabled=true/);
 assert.match(map, /Каталог Spansh недоступен/);
 assert.match(map, /jd=target;jt=2\.2;state='jump'/);
 assert.doesNotMatch(map, /new T\.WebGLRenderer\(/);
