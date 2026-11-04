@@ -21,6 +21,28 @@
       "config": "config.json",
       "status": "integrated",
       "model": "model.glb"
+    },
+    {
+      "id": "pirate_fighter_003",
+      "name": "Pirate Fighter 003 — TIE Raider",
+      "faction": "pirate",
+      "category": "fighter",
+      "path": "/",
+      "config": null,
+      "status": "integrated",
+      "model": "Pirate3.glb",
+      "role": "fighter"
+    },
+    {
+      "id": "pirate_transport_001",
+      "name": "Pirate Transport 001 — Millennium Falcon",
+      "faction": "pirate",
+      "category": "transport",
+      "path": "assets/ships/pirate/",
+      "config": null,
+      "status": "integrated",
+      "model": "Pirate4.glb",
+      "role": "transport"
     }
   ]
 }
