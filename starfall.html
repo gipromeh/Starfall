@@ -2995,7 +2995,31 @@ const GLB_PIR=[
  {ty:1,url:"assets/ships/pirate/pirate_fighter_001/pirate_droid_001.glb",sc:1,bake:1}
 ];
 let pirateAssetsDone=0;
-function pirateAssetDone(){if(++pirateAssetsDone>=GLB_PIR.length)pirateAssetsReady=true}
+const GLB_EXTRA_PIR=[
+ {ty:2,url:"Pirate3.glb",size:10,yaw:Math.PI,author:"Mickael Boitte",license:"CC-BY-4.0"},
+ {ty:3,url:"assets/ships/pirate/Pirate4.glb",size:10,yaw:Math.PI,author:"Quiznos323",license:"CC-BY-NC-SA-4.0"}
+];
+function fitPirateAsset(src,targetSize=10,yaw=Math.PI){
+ src.updateMatrixWorld(true);
+ const box=new T.Box3().setFromObject(src),size=box.getSize(new T.Vector3()),center=box.getCenter(new T.Vector3());
+ const root=new T.Group();root.name="STARFALL_NORMALIZED_PIRATE_GLB";root.add(src);
+ src.position.sub(center);root.rotation.y=yaw;
+ const maxDim=Math.max(size.x,size.y,size.z,1e-4);root.scale.setScalar(targetSize/maxDim);
+ root.updateMatrixWorld(true);return root;
+}
+function loadExtraPirateAssets(){
+ if(!T.GLTFLoader||location.protocol==="file:")return;
+ const loader=new T.GLTFLoader();
+ GLB_EXTRA_PIR.forEach(d=>loader.load(d.url,gl=>{
+  try{
+   const g=fitPirateAsset(gl.scene,d.size,d.yaw);
+   applyPirateLivery(g);g.traverse(o=>{if(o.isMesh&&o.geometry){o.geometry.userData.keep=1;o.castShadow=false;o.receiveShadow=false}});
+   g.userData={sc:1};MC["p"+d.ty]=g;
+   console.info("STARFALL: pirate GLB ready",d.ty,d.url);
+  }catch(e){console.warn("GLB extra pirate processing failed:",d.url,e)}
+ },undefined,e=>console.warn("GLB extra pirate unavailable; procedural fallback active:",d.url,e)));
+}
+function pirateAssetDone(){if(++pirateAssetsDone>=GLB_PIR.length){pirateAssetsReady=true;loadExtraPirateAssets()}}
 if(T.GLTFLoader&&location.protocol!=="file:"){
  const GL_=new T.GLTFLoader();
  GLB_PIR.forEach(d=>GL_.load(d.url,gl=>{
