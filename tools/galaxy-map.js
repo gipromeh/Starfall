@@ -40,6 +40,9 @@ const info=node('div',{class:'meta',text:'Выберите звёздную си
 const actions=node('div',{class:'actions'},panel);
 const jumpBtn=node('button',{text:'ПЕРЕЙТИ В СИСТЕМУ',disabled:'true'},actions);
 const routeBtn=node('button',{text:'НАЧАТЬ МАРШРУТ'},actions);
+const exploreBtn=node('button',{text:'ИССЛЕДОВАТЬ СИСТЕМУ',disabled:'true'},actions);
+const returnBtn=node('button',{text:'← К КАРТЕ'},actions);returnBtn.style.display='none';
+let externalRoot=null,externalRecord=null;
 const resultsPanel=node('section',{class:'panel'},side);node('h3',{text:'ПОИСК'},resultsPanel);
 const results=node('div',{class:'results'},resultsPanel);
 const statusPanel=node('section',{class:'panel'},side);node('h3',{text:'КАТАЛОГ'},statusPanel);
@@ -132,7 +135,7 @@ async function loadCatalog(){
 }
 function cameraUpdate(){const cp=Math.cos(pitch);camera.position.set(target.x+distance*Math.sin(yaw)*cp,target.y+distance*Math.sin(pitch),target.z+distance*Math.cos(yaw)*cp);camera.lookAt(target);}
 function setSelected(r,isLocal){
- selected=r?{record:r,local:isLocal}:null;jumpBtn.disabled=!(selected&&isLocal&&previousState==='play'&&r.index!==sy);ring.visible=!!selected;
+ selected=r?{record:r,local:isLocal}:null;jumpBtn.disabled=!(selected&&isLocal&&previousState==='play'&&r.index!==sy);exploreBtn.disabled=!(selected&&!isLocal&&!!window.SF_EXTERNAL_SYSTEMS);ring.visible=!!selected;
  if(!selected){info.textContent='Выберите звёздную систему на карте или через поиск.';return;}
  const p=isLocal?new T.Vector3(r.x,r.y,r.z):posOf(r);ring.position.copy(p);ring.scale.setScalar(isLocal?1:.02);ring.rotation.x=Math.PI/2;
  info.textContent=isLocal?r.name+' / '+r.title+' · сектор STARFALL\nТип: игровая система · гиперпрыжок поддерживается':
@@ -146,8 +149,20 @@ function renderSearch(q){
  found.slice(0,14).forEach(v=>{const b=node('button',{},results);node('span',{text:v.r.name},b);node('small',{text:v.local?'STARFALL':'SPANSH'},b);b.addEventListener('click',()=>focus(v.r,v.local));});
  if(!found.length)node('div',{class:'meta',text:'Совпадений нет.'},results);
 }
+function leaveExternal(){if(!externalRoot)return;scene.remove(externalRoot);window.SF_EXTERNAL_SYSTEMS.dispose(externalRoot);externalRoot=null;externalRecord=null;galaxy.visible=true;localGroup.visible=true;if(points)points.visible=true;ring.visible=!!selected;exploreBtn.style.display='';returnBtn.style.display='none';jumpBtn.style.display='';routeBtn.style.display='';}
+function exploreExternal(){
+ if(!selected||selected.local||!window.SF_EXTERNAL_SYSTEMS)return;
+ if(externalRoot)leaveExternal();
+ externalRecord=selected.record;galaxy.visible=false;localGroup.visible=false;if(points)points.visible=false;ring.visible=false;
+ externalRoot=window.SF_EXTERNAL_SYSTEMS.build(externalRecord,T,matchMedia('(pointer:coarse)').matches);scene.add(externalRoot);
+ target.set(0,0,0);yaw=.5;pitch=.22;distance=330;cameraUpdate();
+ const d=externalRoot.userData.externalSystem.data;
+ info.textContent=externalRecord.name+'\\nПРОЦЕДУРНАЯ СИСТЕМА · ID '+d.id+'\\nЗвезда: '+d.star.class+' · '+d.star.name+'\\nТемпература: '+d.star.temp+'\\nПланеты: '+d.planets.length+' · Пояс астероидов: '+(d.belt?'есть':'нет')+'\\nСтанция: '+(d.station?d.station.type:'не обнаружена')+'\\nОрбитальный обзор · экономика STARFALL не затрагивается';
+ exploreBtn.style.display='none';returnBtn.style.display='';jumpBtn.style.display='none';routeBtn.style.display='none';
+ status.textContent='РЕЖИМ ИССЛЕДОВАНИЯ · вращайте систему, масштабируйте колесом или кнопками. Повторная генерация по ID воспроизводима.';
+}
 function close(){
- if(!opened)return;opened=false;root.style.display='none';R.domElement.style.touchAction=originalTouchAction;state=previousState;
+ if(!opened)return;if(externalRoot)leaveExternal();opened=false;root.style.display='none';R.domElement.style.touchAction=originalTouchAction;state=previousState;
  if($('hud'))$('hud').style.display=previousHud;
  if(previousState==='menu')$('menu')?.classList.remove('hide');
  if(previousState==='jumpmenu')$('jmp')?.classList.remove('hide');
@@ -190,7 +205,7 @@ function move(e){if(!drag||drag.id!==e.pointerId)return;const dx=e.clientX-drag.
 function up(e){if(!drag||drag.id!==e.pointerId)return;const moved=drag.moved;drag=null;if(!moved){const h=nearest(e.clientX,e.clientY);if(h){setSelected(h.record,h.local);status.textContent=h.local?'Локальная система STARFALL.':'Запись Spansh: справочные данные.';}}}
 function wheel(e){if(!opened)return;e.preventDefault();distance=Math.max(180,Math.min(9000,distance*Math.exp(e.deltaY*.001)));cameraUpdate();}
 R.domElement.addEventListener('pointerdown',down);R.domElement.addEventListener('pointermove',move);R.domElement.addEventListener('pointerup',up);R.domElement.addEventListener('pointercancel',()=>drag=null);R.domElement.addEventListener('wheel',wheel,{passive:false});
-search.addEventListener('input',()=>renderSearch(search.value));jumpBtn.addEventListener('click',jumpLocal);routeBtn.addEventListener('click',routeAction);
+search.addEventListener('input',()=>renderSearch(search.value));jumpBtn.addEventListener('click',jumpLocal);routeBtn.addEventListener('click',routeAction);exploreBtn.addEventListener('click',exploreExternal);returnBtn.addEventListener('click',leaveExternal);
 [closeTop,closeBtn].forEach(b=>b.addEventListener('click',close));menuBtn.addEventListener('click',open);hudBtn.addEventListener('click',open);
 allBtn.addEventListener('click',()=>{filtered=records;buildPoints(filtered);});
 inhBtn.addEventListener('click',()=>{if(inhBtn.disabled)return;filtered=records.filter(r=>r.p>0);buildPoints(filtered);});
@@ -198,7 +213,7 @@ zoomInBtn.addEventListener('click',()=>{distance=Math.max(180,distance*.78);came
 resetBtn.addEventListener('click',()=>{yaw=.18;pitch=.12;distance=3300;target.set(0,0,0);cameraUpdate();if(routeLine){scene.remove(routeLine);routeLine.geometry.dispose();routeLine=null;}routeStart=routeEnd=null;routeBtn.textContent='НАЧАТЬ МАРШРУТ';});
 addEventListener('keydown',e=>{const target=e.target;if(target&&(target.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)))return;if(e.code==='KeyN'&&!e.repeat&&(opened||state==='menu'||state==='play'||state==='jumpmenu')){e.preventDefault();opened?close():open();}if(e.code==='Escape'&&opened){e.preventDefault();close();}});
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();});
-function render(){if(!opened)return;R.render(scene,camera);}
+function render(dt){if(!opened)return;if(externalRoot)window.SF_EXTERNAL_SYSTEMS.update(externalRoot,Math.min(.05,Math.max(0,dt||0)));R.render(scene,camera);}
 window.SF_GALAXY_MAP={open,close,render,get stats(){return{catalog:records.length,visible:filtered.length,selected:selected?.record?.name||null};}};
 try{const oldLift=lift;lift=function(){oldLift();hudBtn.style.display='block';};const oldArrive=arrive;arrive=function(){oldArrive();hudBtn.style.display='block';};}catch(e){console.warn('[STARFALL Galaxy Map] HUD hook',e);}
 if(typeof state!=='undefined'&&state==='play')hudBtn.style.display='block';
