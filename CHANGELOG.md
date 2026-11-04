@@ -661,3 +661,12 @@ tags: [starfall, changelog]
 - Added a five-unit civilian research caravan formation descriptor.
 - Existing planet model preserved; no new planet or galaxy mesh imported in this batch. Galaxy backgrounds should use skybox/equirectangular textures or shader-based rendering.
 - Assets are staged only; no gameplay/runtime integration or mobile performance validation has been performed.
+
+
+## v92.2 — Civilian Shuttle B runtime integration (2026-11-04)
+
+- Подключён `assets/ships/civilian/space_shuttle_b/model.glb` как вариант гражданского трафика (`freighter` variant 0).
+- Модель содержит 2 476 треугольников, 1 материал и не содержит текстур; длина нормализуется до 70 игровых единиц, длинная ось направляется вдоль локальной -Z, геометрия и материалы совместно используются через существующий кэш.
+- При ошибке загрузки или подготовки остаётся штатный процедурный транспорт.
+- Игрок, пираты, экономика, урон, SAVE и существующая логика транспортных маршрутов не изменялись.
+- Остальные NASA GLB оставлены в библиотеке до проверки и оптимизации.
