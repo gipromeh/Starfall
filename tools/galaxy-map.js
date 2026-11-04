@@ -81,6 +81,7 @@ const ring=new T.Mesh(new T.TorusGeometry(13,.8,6,48),new T.MeshBasicMaterial({c
 const routeMat=new T.LineBasicMaterial({color:0xffc46b,transparent:true,opacity:.9});
 let routeLine=null,records=[],filtered=[],selected=null,routeStart=null,routeEnd=null,points=null;let populationAvailable=false;
 let previousState='menu',previousHud='',opened=false,yaw=.18,pitch=.12,distance=3300,drag=null,target=new T.Vector3();
+const externalRaycaster=new T.Raycaster(),externalPointer=new T.Vector2();
 const originalTouchAction=R.domElement.style.touchAction;
 const posOf=r=>new T.Vector3(r.x*.035,r.y*.035,r.z*.035);
 function disposePoints(){if(points){galaxy.remove(points);points.geometry.dispose();points.material.dispose();points=null;}}
@@ -156,6 +157,14 @@ function focusExternalObject(object,radius,label){
  distance=Math.max(24,Math.min(1200,radius*7));cameraUpdate();
  status.textContent='ОБЗОР ОБЪЕКТА · '+label+' · масштаб '+Math.round(distance)+' усл. ед.';
 }
+function pickExternal(clientX,clientY){
+ if(!externalRoot)return false;const rect=R.domElement.getBoundingClientRect();if(!rect.width||!rect.height)return false;
+ externalPointer.set((clientX-rect.left)/rect.width*2-1,-((clientY-rect.top)/rect.height*2-1));
+ externalRaycaster.setFromCamera(externalPointer,camera);
+ const hits=externalRaycaster.intersectObject(externalRoot,true);
+ for(const hit of hits){let object=hit.object;while(object&&object!==externalRoot&&!object.userData.externalFocus)object=object.parent;if(object&&object.userData.externalFocus){const f=object.userData.externalFocus;focusExternalObject(object,f.radius,f.label);return true}}
+ return false;
+}
 function showExternalObjects(){
  resultsHeading.textContent='ОБЪЕКТЫ СИСТЕМЫ';results.replaceChildren();
  const d=externalRoot.userData.externalSystem.data;
@@ -217,7 +226,7 @@ function nearest(x,y){
 }
 function down(e){if(!opened||e.target.closest('#sf-galaxy .top,#sf-galaxy .side,#sf-galaxy .bottom'))return;drag={x:e.clientX,y:e.clientY,id:e.pointerId,moved:false};try{R.domElement.setPointerCapture(e.pointerId);}catch(_){}}
 function move(e){if(!drag||drag.id!==e.pointerId)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.x=e.clientX;drag.y=e.clientY;if(Math.abs(dx)+Math.abs(dy)>2)drag.moved=true;yaw-=dx*.005;pitch=Math.max(-1.35,Math.min(1.35,pitch+dy*.004));cameraUpdate();}
-function up(e){if(!drag||drag.id!==e.pointerId)return;const moved=drag.moved;drag=null;if(!moved&&!externalRoot){const h=nearest(e.clientX,e.clientY);if(h){setSelected(h.record,h.local);status.textContent=h.local?'Локальная система STARFALL.':'Запись Spansh: справочные данные.';}}}
+function up(e){if(!drag||drag.id!==e.pointerId)return;const moved=drag.moved;drag=null;if(!moved&&externalRoot){pickExternal(e.clientX,e.clientY);}else if(!moved){const h=nearest(e.clientX,e.clientY);if(h){setSelected(h.record,h.local);status.textContent=h.local?'Локальная система STARFALL.':'Запись Spansh: справочные данные.';}}}
 function wheel(e){if(!opened)return;e.preventDefault();distance=Math.max(180,Math.min(9000,distance*Math.exp(e.deltaY*.001)));cameraUpdate();}
 R.domElement.addEventListener('pointerdown',down);R.domElement.addEventListener('pointermove',move);R.domElement.addEventListener('pointerup',up);R.domElement.addEventListener('pointercancel',()=>drag=null);R.domElement.addEventListener('wheel',wheel,{passive:false});
 search.addEventListener('input',()=>renderSearch(search.value));jumpBtn.addEventListener('click',jumpLocal);routeBtn.addEventListener('click',routeAction);exploreBtn.addEventListener('click',exploreExternal);returnBtn.addEventListener('click',leaveExternal);
