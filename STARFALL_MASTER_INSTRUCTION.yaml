@@ -1,4 +1,4 @@
-# STARFALL "Void Hunter" — МАСТЕР-ИНСТРУКЦИЯ v2.6 (2026-11-02)
+# STARFALL — МАСТЕР-ИНСТРУКЦИЯ v2.6 (2026-11-02)
 # Единственная актуальная инструкция. Лежит в репозитории gipromeh/Starfall, ветка main.
 # Claude читает её ПЕРВОЙ в каждом чате, перед любой правкой, без напоминаний.
 # Все прежние версии инструкции (в проекте Claude, в старых чатах) — архив.
@@ -49,7 +49,7 @@ golden_rule:
     что уже успешно работает. Меняем только то, что просят, и добавляем только новое.
   how:
     - Найти место правки поиском (Grep по имени функции/переменной), прочитать только нужный кусок файла (Read с offset/limit), не весь файл.
-    - Менять через Edit: old_string → new_string, старая подстрока уникальна. Не Write всего STARFALL_CURRENT.html.
+    - Менять через Edit: old_string → new_string, старая подстрока уникальна. Не Write всего starfall.html.
     - Новое — отдельным блоком рядом с похожим кодом, с «приклейкой» минимумом строк в существующие функции.
     - Рабочие системы (полёт, бой, ИИ, взрывы, столкновения, станция, бар, сохранения, HUD) не рефакторить, не «улучшать попутно», не переименовывать, не переформатировать.
     - Видишь проблему вне задачи — не чини молча: запиши в паспорт (§11 «Известные ограничения») и скажи пользователю одной строкой.
@@ -88,32 +88,32 @@ sanity_check:
 # ПРОЦЕСС РАБОТЫ С GITHUB (единственный источник правды)
 process:
   repo: https://github.com/gipromeh/Starfall   # ветка main
-  current_version: v92.1
+  current_version: v92.2
   files:
-    game: STARFALL_CURRENT.html        # единственная актуальная версия игры
+    game: starfall.html        # единственная актуальная версия игры
     passport: STARFALL_PASSPORT.md     # архитектура, переменные, таблицы, правила правок
     changelog: CHANGELOG.md
     instruction: STARFALL_MASTER_INSTRUCTION.yaml   # этот файл
-    entry: index.html                  # редирект на STARFALL_CURRENT.html
+    entry: index.html                  # редирект на starfall.html
   archive_warning: >
-    Всё, что лежит в проекте Claude (STARFALL_2.html, STARFALL 2.html, claude/STARFALL_CURRENT.html,
+    Всё, что лежит в проекте Claude (STARFALL_2.html, STARFALL 2.html, claude/starfall.html,
     паспорта, changelog) — архив на момент v40. Брать за основу нельзя, перезаписывать не нужно.
-    Приложенный файл игры из другого места не заменяет репозиторий: сравнить дифф с STARFALL_CURRENT.html
+    Приложенный файл игры из другого места не заменяет репозиторий: сравнить дифф с starfall.html
     и перенести только нужные правки.
   chat_start:
     - Подключить репозиторий (add_repo, право записи), склонировать одним clone, прочитать эту инструкцию и STARFALL_PASSPORT.md.
-    - STARFALL_CURRENT.html читать точечно (Grep + Read кусками), а не целиком.
+    - starfall.html читать точечно (Grep + Read кусками), а не целиком.
   chat_work:
     - Правки только в клоне, по золотому правилу.
     - Перед коммитом проверка скрипта (команды в паспорте §12): node --check основного <script>, ESLint.
   chat_end:
-    - "Перед завершением любой задачи сверить фактическую версию игры в STARFALL_CURRENT.html, STARFALL_PASSPORT.md и process.current_version."
+    - "Перед завершением любой задачи сверить фактическую версию игры в starfall.html, STARFALL_PASSPORT.md и process.current_version."
     - "Обновить паспорт и CHANGELOG.md при каждом изменении игрового кода; не оставлять сведения о версии и SHA устаревшими."
     - "Один коммит на версию, сообщение «vNN[.PATCH]: что сделано»; push в main. Метки git не пушить (прокси блокирует)."
     - "После push проверить commit main, CI и доступную GitHub Pages сборку; не объявлять релиз завершённым до проверки."
     - "В проект Claude ничего не записывать."
   release_versioning:
-    authority: "Единственный источник фактической версии — meta[name=starfall-version] в STARFALL_CURRENT.html; паспорт и process.current_version обязаны совпадать с ним."
+    authority: "Единственный источник фактической версии — meta[name=starfall-version] в starfall.html; паспорт и process.current_version обязаны совпадать с ним."
     format: "vMAJOR[.PATCH], например v92, v92.1, v92.2."
     rules:
       - "Любой релиз с изменением игрового HTML обязан обновить маркер starfall-version, game_version в паспорте, process.current_version в этой инструкции, main_file_sha256 в паспорте и запись CHANGELOG.md в одном релизном коммите."
@@ -126,7 +126,7 @@ process:
       - "В ответе пользователю указывать фактический номер из HTML, краткий состав релиза и статус CI; отдельно обозначать, если проверка на реальном iPhone/PC не проводилась."
     release_checklist:
       - "HTML version marker == passport game_version == process.current_version."
-      - "Passport SHA-256 matches STARFALL_CURRENT.html."
+      - "Passport SHA-256 matches starfall.html."
       - "CHANGELOG entry uses the same release number and describes only shipped changes."
       - "Automated tests and CI pass."
       - "GitHub Pages serves the intended main build."
@@ -134,8 +134,8 @@ process:
 
 # ─────────────────────────────────────────────
 meta:
-  project: STARFALL "Void Hunter"
-  entry_point: STARFALL_CURRENT.html
+  project: STARFALL
+  entry_point: starfall.html
   passport: STARFALL_PASSPORT.md   # сначала прочитать, не переоткрывать архитектуру
   stack: HTML5 + Three.js, один самодостаточный файл, работает офлайн
   platforms: [PC (клавиатура+мышь), iPhone (тач, Safari/PWA)]
@@ -377,7 +377,7 @@ acceptance_checklist:
 
 # ─────────────────────────────────────────────
 deliverables:
-  - STARFALL_CURRENT.html (обновлённый точечными правками, один файл) в репозитории, ветка main
+  - starfall.html (обновлённый точечными правками, один файл) в репозитории, ветка main
   - STARFALL_PASSPORT.md и CHANGELOG.md (точечно: что добавлено, где в коде, какие параметры)
   - Краткий список изменений и известных ограничений (до 10 строк)
 

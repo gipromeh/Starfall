@@ -53,7 +53,7 @@ jobs:
                       self.active = False
 
           parser = Scripts()
-          parser.feed(Path("STARFALL_CURRENT.html").read_text(encoding="utf-8"))
+          parser.feed(Path("starfall.html").read_text(encoding="utf-8"))
           if not parser.scripts:
               raise SystemExit("No inline JavaScript blocks found")
           for index, source in enumerate(parser.scripts):

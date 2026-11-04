@@ -1,3 +1,9 @@
+## v92.2 — единое имя основной сборки
+- Основной игровой файл переименован в `starfall.html`; игровые системы и SAVE не переписывались.
+- Название браузерной вкладки и главного меню унифицировано до STARFALL.
+- Версия релиза синхронизирована: HTML, паспорт и мастер-инструкция — v92.2.
+- SHA-256 обновлён для `starfall.html`.
+
 ## v92.1 — исправление агрессии Шакала
 - Перехватчик типа 1 («Шакал») больше не выбирает нейтральный транспорт своей основной целью: он преследует игрока.
 - Порог перехода пиратов из ATTACK в EVADE уменьшен по локальным осям. Это расширяет реальное окно атаки и не позволяет преждевременно уходить от игрока до открытия огня.
@@ -60,7 +66,7 @@
 - Run 41354157146 завершился не зависанием, а FAIL: сценарии 1–10 прошли; сценарий 11 завершился TimeoutError на ожидании state=over (tests/t1_saves.js:186).
 - Причина: сценарий 10 после теста visibilitychange явно возвращает state=play. Сценарий 11 ошибочно предполагал, что игра всё ещё находится в over. Теперь тест явно инициирует штатный переход dying → over через dyT=0.15 и затем нажимает #men2.
 - Исправлены реальные stage-маркеры: отдельная метка перед запуском браузера и перед каждым логическим блоком 1–12, включая охоту и расходники. Watchdog теперь выводит фактический последний этап и его длительность.
-- Изменены только тест и документация; STARFALL_CURRENT.html и SAVE runtime не менялись.
+- Изменены только тест и документация; starfall.html и SAVE runtime не менялись.
 - Проверка: наличие маркеров подтверждено статически; итоговая проверка — повторный GitHub Actions run. Статус: IMPLEMENTED, CI PENDING.
 
 ## 2026-11-02 — SAVE regression: корректировка сценариев 10–11
@@ -134,7 +140,7 @@
 - Для type 0 добавлена процедурная неоновая ливрея с тремя надписями и светящимися полосами корпуса. Общие текстуры/материалы кэшируются; остальные типы не изменяются.
 - Радар переработан по принципу 3D-сканера Elite Dangerous: круговая плоскость контактов ориентирована по курсу корабля, азимут и дальность читаются по сетке и кольцам, высота цели относительно плоскости показывается вертикальным штоком: основание находится на плоскости, маркер контакта — на конце штока. Добавлены вращающийся янтарный sweep-луч с коротким сектором послесвечения, сохранены диапазоны 500 м / 1 км / 2 км, маркеры классов, векторы движения, выделение цели и указатели вражеских контактов за пределами диапазона. Состав контактов не изменён: обычные лазерные/баллистические выстрелы не отображаются, управляемые ракеты остаются отдельными маркерами.
 - Добавлена взаимная коррекция столкновений E/E2, пиратской эскадрильи и нейтральных транспортов. Столкновения игрока с пиратской эскадрильей включены в существующий swept collision test; интегратор движения игрока не менялся.
-- `STARFALL_CURRENT.html` — v88; Three.js r128, система сохранений и основной игровой цикл сохранены.
+- `starfall.html` — v88; Three.js r128, система сохранений и основной игровой цикл сохранены.
 - Встроенные JS-блоки прошли V8 syntax check. Browser playtest PC/iPhone Safari не заявляется; необходима визуальная проверка decal на GLB и радара в реальном бою.
 
 ---
@@ -169,12 +175,12 @@
 - Урон, HP, ИИ, управление и SAVE 2.0 не менялись.
 
 date: 2026-10-31
-topic: STARFALL — Void Hunter: паспорт проекта (архитектура, технологии, механика, сохранения, качество)
+topic: STARFALL: паспорт проекта (архитектура, технологии, механика, сохранения, качество)
 tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура]
-game_version: "v92.1"
-last_update: 2026-11-03
-main_file: STARFALL_CURRENT.html
-main_file_sha256: "9b0d3010576ade01bee04df1e7c12e694bb298aee68d75add4843750cccb5ed3"
+game_version: "v92.2"
+last_update: 2026-11-04
+main_file: starfall.html
+main_file_sha256: "31ff74a9039d3311f757692f463185936479884c9c4d4cd3df700526c5b60c40"
 save_format_version: 3
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"
@@ -207,11 +213,11 @@ libs:
 
 ---
 
-# STARFALL — Void Hunter · Паспорт проекта
+# STARFALL · Паспорт проекта
 
 > Назначение файла: дать будущей сессии полный контекст без перечитывания ~360 КБ кода и всей переписки.
-> **Правило:** любое изменение `STARFALL_CURRENT.html` обновляет в том же коммите этот паспорт (в т.ч. `game_version`, `last_update`, `main_file_sha256`) и `CHANGELOG.md`. SHA считается командой `python3 tools/check_passport.py --fix`; проверка есть в CI (`.github/workflows/passport-check.yml`) и локально `python3 tools/check_passport.py`.
-> Перед правками всё равно открыть актуальный `STARFALL_CURRENT.html` — этот паспорт описывает устройство, а не заменяет код.
+> **Правило:** любое изменение `starfall.html` обновляет в том же коммите этот паспорт (в т.ч. `game_version`, `last_update`, `main_file_sha256`) и `CHANGELOG.md`. SHA считается командой `python3 tools/check_passport.py --fix`; проверка есть в CI (`.github/workflows/passport-check.yml`) и локально `python3 tools/check_passport.py`.
+> Перед правками всё равно открыть актуальный `starfall.html` — этот паспорт описывает устройство, а не заменяет код.
 
 ## v74 — ожидание загрузки пиратских моделей
 - pirateFleetInit и pirateFleetUpdate теперь ожидают pirateAssetsReady=true до создания шаблонов. Это не позволяет закэшировать процедурный fallback до завершения загрузки GLB; при сетевой ошибке сохраняется резервная модель.
@@ -261,7 +267,7 @@ libs:
 - Стрельба переведена на короткие очереди; направление огня рассчитывается с упреждением по относительной скорости цели. Ракетный тип сохраняет отдельную ракетную атаку.
 - Из сопел пиратских кораблей добавлены анимированные горячее ядро и внешний факел, а за кораблём остаётся реактивный след. При повреждении появляются дым, затем устойчивое пламя и огненные частицы.
 - Формат SAVE 2.0, экономика, управление игроком, боссы и торговля не менялись.
-- Проверка: точечные изменения актуального `STARFALL_CURRENT.html`; результаты CI будут проверены после push. Реальный iPhone не тестировался.
+- Проверка: точечные изменения актуального `starfall.html`; результаты CI будут проверены после push. Реальный iPhone не тестировался.
 
 ## v63 — естественная цветопередача планет без солнечной засветки
 - Солнечный точечный свет ослаблен примерно в 3,6 раза; общий нейтральный ambient-fill немного повышен, чтобы сохранить читаемость теневой стороны без искусственного свечения.
@@ -288,10 +294,10 @@ libs:
 
 | Поле | Значение |
 |---|---|
-| Название | STARFALL — Void Hunter |
+| Название | STARFALL |
 | Жанр | 3D космический экшен + торговля + добыча + прогрессия корабля (в духе Galaxy on Fire 2, с элементами Elite) |
 | Платформа | Браузер (HTML5 / WebGL; `THREE.WebGLRenderer` r128 берёт WebGL2, если он есть, иначе WebGL1). ПК (клавиатура + мышь) и iPhone/планшет (сенсор) |
-| Файл | `STARFALL_CURRENT.html` — один HTML-файл ≈ 360 КБ (HTML + CSS + JS; второй `<script id="cafe-mod">` — 3D-бар). Требование «один офлайн-файл» **отменено**: библиотеки грузятся с CDN, нужен интернет |
+| Файл | `starfall.html` — один HTML-файл ≈ 360 КБ (HTML + CSS + JS; второй `<script id="cafe-mod">` — 3D-бар). Требование «один офлайн-файл» **отменено**: библиотеки грузятся с CDN, нужен интернет |
 | Публикация | GitHub Pages: https://gipromeh.github.io/Starfall/ (ветка `main`); `index.html` только перенаправляет |
 | Камера | От третьего лица, позади корабля |
 | Ориентир по дизайну | GDD «Космическая игра в духе GoF2» (присылался пользователем), исходное ТЗ STARFALL v2.1 (YAML) |
@@ -559,7 +565,7 @@ J (или «ПРЫЖОК» в меню ≡) — только в космосе �
 1. Работать в клоне `gipromeh/Starfall`; правки точечные (old→new), каждая подстрока должна встречаться **ровно 1 раз**. Не переписывать с нуля.
 2. После правок обязательно:
    ```bash
-   python3 -c "import re;h=open('STARFALL_CURRENT.html',encoding='utf8').read();open('/tmp/g.js','w').write(re.findall(r'<script>(.*?)</script>',h,re.S)[0])"
+   python3 -c "import re;h=open('starfall.html',encoding='utf8').read();open('/tmp/g.js','w').write(re.findall(r'<script>(.*?)</script>',h,re.S)[0])"
    node --check /tmp/g.js
    npx eslint --no-eslintrc --env browser,es2021 --global THREE,tsParticles,cafeBoot --rule '{"no-undef":"error","no-const-assign":"error"}' /tmp/g.js
    ```
@@ -630,15 +636,15 @@ J (или «ПРЫЖОК» в меню ≡) — только в космосе �
 
 **★ Золотое правило:** код не переписываем, только точечные изменения и добавления; всё, что работает, не трогаем (Grep → Read куска → Edit, без Write всего файла). **★ Проверка правок:** любой запрос на правки сначала проверять на здравый смысл (ссылки, побочные эффекты, реальность выигрыша), при вреде для игры возражать (секция `sanity_check`). Полный текст и процесс — в `STARFALL_MASTER_INSTRUCTION.yaml` v2.0 (секции `golden_rule`, `process`), которую читать первой в каждом чате.
 
-**Единственный источник правды — репозиторий https://github.com/gipromeh/Starfall, ветка `main`.** Актуальная версия игры — `STARFALL_CURRENT.html` оттуда (v42). Любые HTML и паспорты в проекте Claude, в старых чатах и артефактах — архив; брать за основу их нельзя.
+**Единственный источник правды — репозиторий https://github.com/gipromeh/Starfall, ветка `main`.** Актуальная версия игры — `starfall.html` оттуда (v42). Любые HTML и паспорты в проекте Claude, в старых чатах и артефактах — архив; брать за основу их нельзя.
 
-Состав текущей версии (v42): SDF-портреты пришельцев (v33), модели кораблей SHIPS 4.0 (5 кораблей игрока, 4 пирата, босс, 2 транспорта), 3D-кафе на Babylon.js 7.0.0 (§9c) с запасным вариантом на SDF-холл. Кафе возвращено 2026-10-30 из старой версии `STARFALL — Void Hunter.html` (блок `<script id="cafe-mod">`, CSS `.cafe-*`, «приклейка» после `drawMkt=stnDraw;`, правки в `loop` и `lift`).
+Состав текущей версии (v42): SDF-портреты пришельцев (v33), модели кораблей SHIPS 4.0 (5 кораблей игрока, 4 пирата, босс, 2 транспорта), 3D-кафе на Babylon.js 7.0.0 (§9c) с запасным вариантом на SDF-холл. Кафе возвращено 2026-10-30 из старой версии `STARFALL.html` (блок `<script id="cafe-mod">`, CSS `.cafe-*`, «приклейка» после `drawMkt=stnDraw;`, правки в `loop` и `lift`).
 
 **Только через GitHub (с 2026-10-30):**
-- **Начало чата:** подключить репозиторий `gipromeh/Starfall` (add_repo, право записи), склонировать, прочитать `STARFALL_PASSPORT.md` и `STARFALL_CURRENT.html` из клона. Версии из проекта, из вложений и из памяти не использовать.
+- **Начало чата:** подключить репозиторий `gipromeh/Starfall` (add_repo, право записи), склонировать, прочитать `STARFALL_PASSPORT.md` и `starfall.html` из клона. Версии из проекта, из вложений и из памяти не использовать.
 - **Работа:** правки только в клоне, перед коммитом `node --check` и ESLint основного скрипта (команды в §12), `python3 tools/check_passport.py --fix`.
-- **Конец чата:** обновить `STARFALL_CURRENT.html`, паспорт и `CHANGELOG.md`, один коммит на версию (сообщение `vNN: что сделано`), push в `main` (метки git из сессии не пушатся: прокси их блокирует). В проект Claude ничего не записывать.
-- **Если приложен файл игры из другого места:** не заменять им репозиторий. Сначала сравнить с `STARFALL_CURRENT.html` (дифф) и перенести только нужные правки.
+- **Конец чата:** обновить `starfall.html`, паспорт и `CHANGELOG.md`, один коммит на версию (сообщение `vNN: что сделано`), push в `main` (метки git из сессии не пушатся: прокси их блокирует). В проект Claude ничего не записывать.
+- **Если приложен файл игры из другого места:** не заменять им репозиторий. Сначала сравнить с `starfall.html` (дифф) и перенести только нужные правки.
 - **Проверка на телефоне:** https://gipromeh.github.io/Starfall/ (GitHub Pages, обновляется ~1 мин после push).
 
 ## Управление и бой v2 (2026-10-30)
@@ -701,7 +707,7 @@ PV (конец скрипта): ангар-превью, обёртка hgrView;
 - `tests/t13_ai_lab_browser.js` — browser smoke test AI Lab.
 - `tests/t15_iphone_webkit.js` — Playwright WebKit на macOS с мобильным профилем: WebGL, touch controls, pointerdown/up, движение прицела и resize.
 
-**Статические проверки:** `node --check` всех встроенных JS-блоков `STARFALL_CURRENT.html`, `tests/t12_ai_lab.js`, `tests/t14_radar_collision_regression.js`.
+**Статические проверки:** `node --check` всех встроенных JS-блоков `starfall.html`, `tests/t12_ai_lab.js`, `tests/t14_radar_collision_regression.js`.
 
 **CI:** `.github/workflows/game-tests.yml` запускается на PR в `main` и push в `main`. Quick checks отделены от браузерной матрицы; Playwright browser/npm cache прогревается один раз. `ci-metrics` публикует длительности и ошибки. `.github/workflows/passport-check.yml` проверяет SHA-256 и согласованность основного файла, паспорта и CHANGELOG.
 
@@ -728,7 +734,7 @@ PV (конец скрипта): ангар-превью, обёртка hgrView;
 
 ### v67 — Пурпурная планета
 - Источник модели: `assets/planets/purple_planet.glb`.
-- Загрузка выполняется существующим `THREE.GLTFLoader` из `STARFALL_CURRENT.html`.
+- Загрузка выполняется существующим `THREE.GLTFLoader` из `starfall.html`.
 - Модель добавляется в `worldBodies` как самостоятельное тело орбитальной системы; параметры орбиты хранятся в `planetOrbits`, запись радара — в `worldPlanets`.
 - Габарит модели нормализуется до целевого радиуса 2520 игровых единиц; добавляется атмосфера с оттенком `#b58cff`.
 - Отказ загрузки обрабатывается через `console.warn`; остальные планеты и игровые подсистемы продолжают работать.
@@ -805,7 +811,7 @@ PV (конец скрипта): ангар-превью, обёртка hgrView;
 - Projectile telemetry records launch, collision hit and expiration without collision (miss), including projectile identity, owner, type and coordinates.
 - Added JSON session export via the **ЗАПИСЬ JSON** control. The recording is local to the browser session; it is not streamed to ChatGPT.
 - Recording buffer is capped at 90,000 frames (approximately five hours at 5 Hz); excess frames are counted as dropped.
-- Production game `STARFALL_CURRENT.html` remains unchanged.
+- Production game `starfall.html` remains unchanged.
 - Commit: `5c7437733e3d2f6f9144651b1ae7ac77ccdcb8d2`.
 
 
@@ -829,7 +835,7 @@ PV (конец скрипта): ангар-превью, обёртка hgrView;
 
 ## Headless Combat AI Lab — isolated branch (2026-11-02)
 
-- Branch: `lab/elite-combat-ai`; production branch `main` and `STARFALL_CURRENT.html` are unchanged.
+- Branch: `lab/elite-combat-ai`; production branch `main` and `starfall.html` are unchanged.
 - Added `tools/combat-ai-lab/elite-eai.mjs`: Node.js port of the v90 EAI tactical kernel (15 Hz decision tick, OCS projections, discrete steering commands, per-frame integration, seeded xorshift32, fire chance and fire gates).
 - Added `tools/combat-ai-lab/run.mjs`: deterministic batch runner for 1,200 seeded 1v1 trials across three pilot parameter profiles; writes machine-readable JSON reports.
 - Added `tests/t17_combat_ai_lab.mjs` for kernel invariants and `.github/workflows/combat-ai-lab.yml` for automatic push and nightly runs.
@@ -839,7 +845,7 @@ PV (конец скрипта): ангар-превью, обёртка hgrView;
 
 ## Production EAI parity validation — isolated combat lab (2026-11-02)
 
-- Added browser parity test `tests/t18_eai_parity.js`. It loads the unchanged production `STARFALL_CURRENT.html` in headless Chromium and compares the Node.js EAI port against the actual in-game `EAI` object.
+- Added browser parity test `tests/t18_eai_parity.js`. It loads the unchanged production `starfall.html` in headless Chromium and compares the Node.js EAI port against the actual in-game `EAI` object.
 - Coverage: 32 deterministic vector/projection/command/integration cases, 32 seeded PRNG outputs, decision cadence phases, and 16 fire-gate cases.
 - GitHub Actions now runs this parity test before the 1,200-trial batch simulation.
 - This validates the extracted EAI math only. It does not validate the separate abstract projectile hit model or claim parity for production projectile collision, the full pirate FSM, squadron behavior, or damage lifecycle.

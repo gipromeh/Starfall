@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Проверка паспорта: SHA-256 STARFALL_CURRENT.html должен совпадать с main_file_sha256.
+"""Проверка паспорта: SHA-256 starfall.html должен совпадать с main_file_sha256.
 python3 tools/check_passport.py        — проверить (код 1 при расхождении)
 python3 tools/check_passport.py --fix  — обновить SHA и last_update в паспорте
 """
 import hashlib, re, sys, datetime, pathlib
 root = pathlib.Path(__file__).resolve().parent.parent
-game = root / "STARFALL_CURRENT.html"
+game = root / "starfall.html"
 pp = root / "STARFALL_PASSPORT.md"
 sha = hashlib.sha256(game.read_bytes()).hexdigest()
 text = pp.read_text(encoding="utf-8")

@@ -2,7 +2,7 @@ let playwright; try { playwright = require('playwright'); } catch (e) { playwrig
 const { chromium, webkit } = playwright;
 const fs = require('fs'), path = require('path');
 const NM = process.env.SF_NM || path.join(__dirname, 'node_modules');
-const GAME = path.join(__dirname, '..', 'STARFALL_CURRENT.html');
+const GAME = path.join(__dirname, '..', 'starfall.html');
 const ORIGIN = 'http://game.local';
 const MAP = [
   [/cdnjs\.cloudflare\.com\/ajax\/libs\/three\.js\/r128\/three\.min\.js/, NM + '/three/build/three.min.js'],
@@ -22,7 +22,7 @@ async function newCtx(browser, o = {}) {
     const url = route.request().url();
     if (url.startsWith(ORIGIN)) {
       const u = new URL(url);
-      if (u.pathname === '/' || u.pathname.endsWith('STARFALL_CURRENT.html')) return route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: fs.readFileSync(o.game || GAME, 'utf8') });
+      if (u.pathname === '/' || u.pathname.endsWith('starfall.html')) return route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: fs.readFileSync(o.game || GAME, 'utf8') });
       if (u.pathname.startsWith('/assets/')) { const f = path.join(__dirname, '..', decodeURIComponent(u.pathname)); if (f.startsWith(path.join(__dirname, '..', 'assets')) && fs.existsSync(f)) return route.fulfill({ status: 200, contentType: f.endsWith('.glb') ? 'model/gltf-binary' : 'application/octet-stream', body: fs.readFileSync(f, 'utf8') }); }
       return route.fulfill({ status: 404, body: '' });
     }

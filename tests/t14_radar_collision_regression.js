@@ -1,9 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
-const html = fs.readFileSync(path.join(__dirname, '..', 'STARFALL_CURRENT.html'), 'utf8');
+const html = fs.readFileSync(path.join(__dirname, '..', 'starfall.html'), 'utf8');
 const checks = [
- ['HTML build version is v92.1', html.includes('<meta name="starfall-version" content="v92.1">')],
+ ['HTML build version is v92.2', html.includes('<meta name="starfall-version" content="v92.2">')],
  ['laser projectiles explicitly tagged', html.includes('arr.push({m,v,dmg,life,kind:"laser"})')],
  ['ballistic projectiles explicitly tagged', html.includes('arr.push({m,v,dmg,life,kind:"projectile"})')],
  ['hostile homing missiles explicitly tagged', html.includes('q.hm=1;q.kind="hostile-missile"')],

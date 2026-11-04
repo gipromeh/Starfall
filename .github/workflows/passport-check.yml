@@ -14,7 +14,7 @@ jobs:
           [ "${{ github.event_name }}" = "pull_request" ] && base="${{ github.event.pull_request.base.sha }}"
           if [ -n "$base" ] && ! echo "$base" | grep -q '^0*$' && git cat-file -e "$base" 2>/dev/null; then
             changed=$(git diff --name-only "$base" HEAD)
-            if echo "$changed" | grep -qx 'STARFALL_CURRENT.html'; then
+            if echo "$changed" | grep -qx 'starfall.html'; then
               echo "$changed" | grep -qx 'STARFALL_PASSPORT.md' || { echo "Игра изменена без паспорта"; exit 1; }
               echo "$changed" | grep -qx 'CHANGELOG.md' || { echo "Игра изменена без CHANGELOG"; exit 1; }
             fi
