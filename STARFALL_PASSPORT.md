@@ -177,10 +177,10 @@
 date: 2026-10-31
 topic: STARFALL: паспорт проекта (архитектура, технологии, механика, сохранения, качество)
 tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура]
-game_version: "v92.8"
+game_version: "v93"
 last_update: 2026-11-04
 main_file: starfall.html
-main_file_sha256: "780fde1abbf6702432f8de636c478bb52b732ef65ed2f834bb204d45bb5beeb6"
+main_file_sha256: "445bd397670a1e316543ab1cdbbd2479dce204286c441185c9b49bee617b3b4d"
 save_format_version: 3
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"
@@ -910,7 +910,7 @@ PV (конец скрипта): ангар-превью, обёртка hgrView;
 - Статус: код и workflow добавлены; сборка/публикация dataset ещё не запускались. Игровой HTML не менялся.
 
 
-## v92.8 — интеграция Galaxy Map
+## v93 — интеграция Galaxy Map
 - Добавлен отдельный режим 3D-карты галактики на существующем Three.js r128 renderer; второй WebGL-контекст не создаётся.
 - Локальные пять систем STARFALL отображаются в отдельном условном кластере; выбор локальной системы из полёта запускает существующий гиперпрыжок.
 - Подключён загрузчик Spansh Lite gzip JSONL с потоковой распаковкой, поиском, фильтром обитаемых систем, карточкой системных метаданных и справочными маршрутами.
