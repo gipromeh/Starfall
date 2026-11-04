@@ -21,4 +21,6 @@ assert.doesNotMatch(map, /new T\.WebGLRenderer\(/);
 assert.doesNotMatch(map, /SYS\s*=/);
 assert.ok(map.includes('target.isContentEditable'));
 assert.match(map, /previousState==='dock'/);
+assert.ok(map.includes('background:transparent'));
+assert.ok(map.includes('routeStart.local!==routeEnd.local'));
 console.log('Galaxy Map source contracts: PASS');
