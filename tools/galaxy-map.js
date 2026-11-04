@@ -217,7 +217,7 @@ function nearest(x,y){
 }
 function down(e){if(!opened||e.target.closest('#sf-galaxy .top,#sf-galaxy .side,#sf-galaxy .bottom'))return;drag={x:e.clientX,y:e.clientY,id:e.pointerId,moved:false};try{R.domElement.setPointerCapture(e.pointerId);}catch(_){}}
 function move(e){if(!drag||drag.id!==e.pointerId)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.x=e.clientX;drag.y=e.clientY;if(Math.abs(dx)+Math.abs(dy)>2)drag.moved=true;yaw-=dx*.005;pitch=Math.max(-1.35,Math.min(1.35,pitch+dy*.004));cameraUpdate();}
-function up(e){if(!drag||drag.id!==e.pointerId)return;const moved=drag.moved;drag=null;if(!moved){const h=nearest(e.clientX,e.clientY);if(h){setSelected(h.record,h.local);status.textContent=h.local?'Локальная система STARFALL.':'Запись Spansh: справочные данные.';}}}
+function up(e){if(!drag||drag.id!==e.pointerId)return;const moved=drag.moved;drag=null;if(!moved&&!externalRoot){const h=nearest(e.clientX,e.clientY);if(h){setSelected(h.record,h.local);status.textContent=h.local?'Локальная система STARFALL.':'Запись Spansh: справочные данные.';}}}
 function wheel(e){if(!opened)return;e.preventDefault();distance=Math.max(180,Math.min(9000,distance*Math.exp(e.deltaY*.001)));cameraUpdate();}
 R.domElement.addEventListener('pointerdown',down);R.domElement.addEventListener('pointermove',move);R.domElement.addEventListener('pointerup',up);R.domElement.addEventListener('pointercancel',()=>drag=null);R.domElement.addEventListener('wheel',wheel,{passive:false});
 search.addEventListener('input',()=>renderSearch(search.value));jumpBtn.addEventListener('click',jumpLocal);routeBtn.addEventListener('click',routeAction);exploreBtn.addEventListener('click',exploreExternal);returnBtn.addEventListener('click',leaveExternal);
