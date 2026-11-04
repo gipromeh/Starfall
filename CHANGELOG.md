@@ -6,6 +6,10 @@
 - Внешние системы остаются справочными: SYS/GAL, экономика, миссии и SAVE не заменяются и не расширяются.
 - Добавлены `tools/galaxy-map.js`, `docs/GALAXY_MAP.md` и source-contract регрессия. Автоматическая проверка CI ожидается после push; физический iPhone Safari playtest не заявляется.
 
+## 2026-11-04 — Galaxy Map: проверка целостности и population filter
+- Загрузчик карты проверяет SHA-256 и размер gzip-архива по manifest, а после распаковки сверяет фактическое число записей.
+- Фильтр «Обжитые» отключён для текущего источника: `population_field_records: 0`. Он станет доступен только при появлении реальных population-данных.
+
 ## 2026-11-04 — GitHub-publishable Elite Dangerous lite dataset
 - Добавлен экспортёр потоковой выборки Spansh systems dump в компактный gzip JSONL: до 50 000 систем, детерминированная reservoir-выборка, лимит 35 MiB, SHA-256 manifest.
 - Добавлен ручной GitHub Actions workflow: скачать Spansh systems_1month, собрать lite-файл и закоммитить его в main.
