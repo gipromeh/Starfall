@@ -30,17 +30,60 @@
   .toast{top:54px;font-size:10px;padding:7px 10px;}
   .modal{max-height:calc(100dvh - 24px);overflow:auto;padding:16px;}
 }
+
+/* Compact strategy HUD */
+.hud{inset:env(safe-area-inset-top) 12px auto;align-items:flex-start}
+.brand{padding:7px 10px;font-size:11px;letter-spacing:.7px;border-width:1px}
+.brand small{font-size:7px;letter-spacing:1px}
+.stats{gap:12px;padding:8px 11px;font-size:12px;border-width:1px}
+.panel{top:68px;left:12px;width:174px;padding:8px;border-width:1px;border-radius:9px;background:#17251ee8}
+.heading{font-size:9px;letter-spacing:1px;margin-bottom:5px}
+.tower{margin:3px 0;padding:8px 7px;font-size:10px;border-radius:6px}
+.tower small,.info,.help{display:none}
+.tower b{font-size:9px}
+#upgrade,#sell{width:calc(50% - 3px);padding:8px 5px;font-size:9px}
+#sell{margin-left:3px}
+.bottom{left:198px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));padding:7px;border-width:1px;border-radius:9px}
+.bottom .btn{padding:10px 9px;font-size:10px}
+.bottom .group{gap:4px}
+.toast{top:65px;font-size:11px}
+@media(max-width:700px){
+ .hud{left:6px;right:6px;gap:5px}
+ .brand{padding:6px 7px;font-size:9px}
+ .brand small{font-size:6px}
+ .stats{gap:7px;padding:7px;font-size:10px}
+ .panel{left:6px;top:54px;width:126px;padding:5px}
+ .heading{font-size:7px;letter-spacing:.5px}
+ .tower{padding:7px 5px;font-size:9px}
+ .tower b{font-size:8px}
+ #upgrade,#sell{font-size:8px;padding:7px 2px}
+ .bottom{left:138px;right:6px;bottom:calc(6px + env(safe-area-inset-bottom));padding:5px;gap:4px}
+ .bottom .btn{padding:9px 6px;font-size:9px}
+ .bottom .group{gap:3px}
+}
+@media(orientation:portrait) and (max-width:600px){
+ .panel{left:6px;right:auto;top:54px;bottom:auto;width:126px;display:flex;flex-direction:column;align-items:stretch;overflow:visible}
+ .tower{width:100%;min-width:0;display:flex;flex-direction:column;align-items:flex-start;margin:2px 0}
+ .bottom{left:138px;right:6px;bottom:calc(6px + env(safe-area-inset-bottom));}
+}
+@media(orientation:landscape) and (max-height:600px) and (max-width:950px){
+ .panel{left:8px;top:52px;bottom:calc(54px + env(safe-area-inset-bottom));width:132px;padding:6px}
+ .bottom{left:148px;right:8px;bottom:calc(6px + env(safe-area-inset-bottom))}
+ .brand{padding:5px 8px}
+ .stats{padding:6px 8px}
+}
+
 </style>
 </head>
 <body><div id="game"></div>
-<header class="hud"><div class="brand">♜ TOWER DEFENDER<small>GOBLIN SIEGE · CAMPAIGN</small></div><div class="stats"><span>◈ <em id="gold">360</em></span><span>♥ <em id="lives">20</em></span><span>⚑ <em id="wave">0/12</em></span></div></header>
-<aside class="panel"><h3 class="heading">АРСЕНАЛ · ВЫБЕРИ БАШНЮ</h3>
+<header class="hud"><div class="brand">♜ ЗАЩИТА ЗАМКА<small>ОСАДА · 12 ВОЛН</small></div><div class="stats"><span>◈ <em id="gold">360</em></span><span>♥ <em id="lives">20</em></span><span>⚑ <em id="wave">0/12</em></span></div></header>
+<aside class="panel"><h3 class="heading">СТРОИТЕЛЬСТВО</h3>
 <button class="tower active" data-kind="archer">🏹 Лучник <b>70 ◈</b><small>Быстрая атака</small></button>
 <button class="tower" data-kind="mage">🔮 Маг <b>110 ◈</b><small>Урон по области</small></button>
 <button class="tower" data-kind="ballista">⚒ Баллиста <b>140 ◈</b><small>Тяжёлый снаряд</small></button>
 <div class="info" id="info">Выбери башню, затем коснись свободной площадки.</div><button class="btn secondary" id="upgrade" disabled>УЛУЧШИТЬ</button> <button class="btn secondary" id="sell" disabled>ПРОДАТЬ</button></aside>
 <div class="help">Изометрический вид · камера фиксирована<br>Сведи / разведи два пальца — масштаб</div>
-<footer class="bottom"><button class="btn" id="start">⚔ НАЧАТЬ ОСАДУ</button><div class="group"><button class="btn secondary" id="volley">🏹 ЗАЛП</button><button class="btn secondary" id="pause">Ⅱ</button><button class="btn secondary" data-speed="1">1×</button><button class="btn secondary" data-speed="2">2×</button><button class="btn secondary" data-speed="3">3×</button></div></footer>
+<footer class="bottom"><button class="btn" id="start">⚔ ОСАДА</button><div class="group"><button class="btn secondary" id="volley">🏹 ЗАЛП</button><button class="btn secondary" id="pause">Ⅱ</button><button class="btn secondary" data-speed="1">1×</button><button class="btn secondary" data-speed="2">2×</button><button class="btn secondary" data-speed="3">3×</button></div></footer>
 <div id="boot-error" style="display:none;position:fixed;z-index:20;inset:25% 7% auto;background:#1a2027;border:1px solid #c9974d;border-radius:14px;padding:18px;color:#fff;font:14px/1.5 system-ui;box-shadow:0 12px 40px #000"> <b style="color:#e6c17b">Не удалось запустить 3D-сцену</b><div id="boot-error-text" style="margin-top:8px;color:#d5d9dc"></div><button onclick="location.reload()" style="margin-top:14px;padding:10px 14px;border:0;border-radius:8px;background:#c9974d;font-weight:700">Повторить запуск</button></div>
 <script>
 (function(){
@@ -72,7 +115,9 @@ const camera=new THREE.OrthographicCamera(-40,40,24,-24,.1,400),renderer=new THR
 scene.add(new THREE.HemisphereLight(0xd8e8ff,0x66705a,2.05));const sun=new THREE.DirectionalLight(0xffe6bd,3.1);sun.position.set(-18,32,14);sun.castShadow=true;sun.shadow.mapSize.set(Math.min(innerWidth,innerHeight)<700?1024:1536,Math.min(innerWidth,innerHeight)<700?1024:1536);scene.add(sun);const hellGlow=new THREE.PointLight(0xb43b24,48,34,2);hellGlow.position.set(21,5,7);scene.add(hellGlow);
 const mat=(c,r=.8,m=0)=>new THREE.MeshStandardMaterial({color:c,roughness:r,metalness:m}),M={grass:mat(0x587247),leaf:mat(0x526b3d),path:mat(0x9a8464),stone:mat(0x4b5155),dark:mat(0x171d22),wood:mat(0x493022),gold:mat(0xa77a3e,.35,.55),steel:mat(0x66727a,.35,.7),blue:mat(0x202e49),green:mat(0x78ad4d),orc:mat(0x4f8d3d),red:mat(0x642a2b),purple:mat(0x49344f),magic:mat(0x55bfff,.2),fire:mat(0xff7137,.25),white:mat(0xb8b4aa)};
 const box=(w,h,d,m,x,y,z,p=scene)=>{let o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;p.add(o);return o},sphere=(r,m,x,y,z,p=scene,sx=1,sy=1,sz=1)=>{let o=new THREE.Mesh(new THREE.SphereGeometry(r,12,9),m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);o.castShadow=true;p.add(o);return o},cyl=(a,b,h,m,x,y,z,p=scene,n=10)=>{let o=new THREE.Mesh(new THREE.CylinderGeometry(a,b,h,n),m);o.position.set(x,y,z);o.castShadow=true;p.add(o);return o},group=(p=scene)=>{let g=new THREE.Group();p.add(g);return g};
-const floor=new THREE.Mesh(new THREE.PlaneGeometry(66,54),M.grass);floor.rotation.x=-Math.PI/2;floor.position.y=-.08;floor.receiveShadow=true;scene.add(floor);\n// Shallow blue river and stone banks frame the battlefield.\nconst riverPath=new THREE.CatmullRomCurve3([new THREE.Vector3(-29,0,-12),new THREE.Vector3(-19,0,-16),new THREE.Vector3(-8,0,-14),new THREE.Vector3(3,0,-17),new THREE.Vector3(15,0,-15),new THREE.Vector3(29,0,-19)]);const riverVerts=[],riverIndices=[];for(let i=0;i<=100;i++){const t=i/100,p=riverPath.getPoint(t),d=riverPath.getTangent(t),nx=-d.z,nz=d.x;riverVerts.push(p.x+nx*1.15,.035,p.z+nz*1.15,p.x-nx*1.15,.035,p.z-nz*1.15);if(i<100){const a=i*2;riverIndices.push(a,a+1,a+2,a+1,a+3,a+2)}}const riverGeo=new THREE.BufferGeometry();riverGeo.setAttribute('position',new THREE.Float32BufferAttribute(riverVerts,3));riverGeo.setIndex(riverIndices);riverGeo.computeVertexNormals();const river=new THREE.Mesh(riverGeo,new THREE.MeshStandardMaterial({color:0x278db5,roughness:.22,metalness:.12,transparent:true,opacity:.94,side:THREE.DoubleSide}));scene.add(river);for(let i=0;i<24;i++){const p=riverPath.getPoint(i/23);const rock=cyl(.32,.48,.42,i%2?M.stone:M.white,p.x,.18,p.z+(i%2?1.3:-1.3),scene,7);rock.rotation.z=Math.random()*.5;}
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(66,54),M.grass);floor.rotation.x=-Math.PI/2;floor.position.y=-.08;floor.receiveShadow=true;scene.add(floor);
+// Shallow blue river and stone banks frame the battlefield.
+const riverPath=new THREE.CatmullRomCurve3([new THREE.Vector3(-29,0,-12),new THREE.Vector3(-19,0,-16),new THREE.Vector3(-8,0,-14),new THREE.Vector3(3,0,-17),new THREE.Vector3(15,0,-15),new THREE.Vector3(29,0,-19)]);const riverVerts=[],riverIndices=[];for(let i=0;i<=100;i++){const t=i/100,p=riverPath.getPoint(t),d=riverPath.getTangent(t),nx=-d.z,nz=d.x;riverVerts.push(p.x+nx*1.15,.035,p.z+nz*1.15,p.x-nx*1.15,.035,p.z-nz*1.15);if(i<100){const a=i*2;riverIndices.push(a,a+1,a+2,a+1,a+3,a+2)}}const riverGeo=new THREE.BufferGeometry();riverGeo.setAttribute('position',new THREE.Float32BufferAttribute(riverVerts,3));riverGeo.setIndex(riverIndices);riverGeo.computeVertexNormals();const river=new THREE.Mesh(riverGeo,new THREE.MeshStandardMaterial({color:0x278db5,roughness:.22,metalness:.12,transparent:true,opacity:.94,side:THREE.DoubleSide}));scene.add(river);for(let i=0;i<24;i++){const p=riverPath.getPoint(i/23);const rock=cyl(.32,.48,.42,i%2?M.stone:M.white,p.x,.18,p.z+(i%2?1.3:-1.3),scene,7);rock.rotation.z=Math.random()*.5;}
 const pts=[[-23,9],[-15,9],[-11,2],[-4,2],[1,8],[9,8],[14,1],[22,1]].map(([x,z])=>new THREE.Vector3(x,0,z)),route=new THREE.CatmullRomCurve3(pts);
 const v=[],idx=[];for(let i=0;i<=180;i++){let t=i/180,p=route.getPoint(t),d=route.getTangent(t),n=new THREE.Vector3(-d.z,0,d.x);for(let s of [-1,1])v.push(p.x+n.x*1.5,.01,p.z+n.z*1.5);if(i<180){let a=i*2;idx.push(a,a+1,a+2,a+1,a+3,a+2)}}let rg=new THREE.BufferGeometry();rg.setAttribute('position',new THREE.Float32BufferAttribute(v,3));rg.setIndex(idx);rg.computeVertexNormals();scene.add(new THREE.Mesh(rg,new THREE.MeshStandardMaterial({color:0xb8a27c,side:THREE.DoubleSide})));
 const fort=group();
