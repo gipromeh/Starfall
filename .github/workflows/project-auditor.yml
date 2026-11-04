@@ -15,8 +15,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  strict-project-audit:
-    name: strict-project-audit
+  hybrid-project-audit:
+    name: hybrid-project-audit
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -28,7 +28,7 @@ jobs:
           node-version: 22
       - name: Validate auditor syntax
         run: node --check tools/project-auditor.mjs
-      - name: Run strict project audit
+      - name: Run hybrid project audit
         id: audit
         run: node tools/project-auditor.mjs --report-dir audit-report
       - name: Publish audit report
