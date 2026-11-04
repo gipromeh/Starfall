@@ -111,6 +111,7 @@ export function attachGame({B:Babylon,scene,engine,curve,pads}) {
     });
     ui.upgrade.hidden=!tower;ui.sell.hidden=!tower;
     if(tower){
+      towers.forEach(t=>{t.ring.isVisible=t===tower;});
       const def=TOWERS[tower.type],upgradeCost=CONFIG.upgradeCosts[tower.level-1];
       ui.menuTitle.textContent=def.name+' · уровень '+tower.level;
       ui.menuInfo.textContent='Урон '+Math.round(def.damage*(1+.5*(tower.level-1)))+' · дальность '+(def.range*(1+.1*(tower.level-1))).toFixed(1);
@@ -233,7 +234,7 @@ export function attachGame({B:Babylon,scene,engine,curve,pads}) {
     if(info.type!==B.PointerEventTypes.POINTERPICK)return;
     if(!info.pickInfo?.hit){hideMenu();return;}
     const index=info.pickInfo.pickedMesh?.metadata?.tdefPadIndex;
-    if(Number.isInteger(index)&&!gameOver)openMenu(index);
+    if(Number.isInteger(index)&&!gameOver)openMenu(index);else hideMenu();
   });
   ui.buildButtons.forEach(button=>button.addEventListener('click',()=>build(selectedPad,button.dataset.build)));
   ui.upgrade.addEventListener('click',upgrade);ui.sell.addEventListener('click',sell);
