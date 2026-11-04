@@ -1,0 +1,64 @@
+name: Update Elite Dangerous lite dataset
+
+on:
+  workflow_dispatch:
+    inputs:
+      max_systems:
+        description: Maximum number of systems to publish
+        required: true
+        default: "50000"
+      inhabited_only:
+        description: Keep only systems with a non-zero population
+        type: boolean
+        required: true
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: elite-lite-dataset
+  cancel-in-progress: false
+
+jobs:
+  build-lite:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install streaming parser
+        run: python -m pip install -r requirements-data.txt
+      - name: Download Spansh systems snapshot
+        run: |
+          mkdir -p data/tmp
+          curl --fail --location --retry 4 --retry-all-errors \
+            https://downloads.spansh.co.uk/systems_1month.json.gz \
+            --output data/tmp/systems_1month.json.gz
+      - name: Build compact GitHub-sized dataset
+        shell: bash
+        run: |
+          args=(--source data/tmp/systems_1month.json.gz --output data/elite-dangerous-lite/systems.jsonl.gz --max-systems "${{ inputs.max_systems }}" --max-mb 35)
+          if [[ "${{ inputs.inhabited_only }}" == "true" ]]; then args+=(--inhabited-only); fi
+          python tools/export_elite_lite.py "${args[@]}"
+      - name: Commit dataset
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/elite-dangerous-lite/systems.jsonl.gz data/elite-dangerous-lite/systems.jsonl.gz.manifest.json
+          if git diff --cached --quiet; then
+            echo "Dataset unchanged; no commit needed."
+          else
+            git commit -m "data: update Elite galaxy lite dataset"
+            git push origin main
+          fi
+      - name: Upload build source as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: elite-dangerous-lite-source
+          path: data/tmp/systems_1month.json.gz
+          retention-days: 1
