@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
 const source=fs.readFileSync('tools/external-systems.js','utf8');
-const context={window:{},matchMedia:()=>({matches:false})};
+const context={window:{}};
 vm.runInNewContext(source,context);
 const gen=context.window.SF_EXTERNAL_SYSTEMS.generate;
 const a=gen({id:'123456789',name:'TEST SYSTEM'});
@@ -18,3 +18,10 @@ assert.ok(a.star.class&&a.star.color&&a.star.temp,'star classification must be c
 assert.ok(a.station===null||a.station.orbit>0,'station orbit must be valid');
 assert.ok(a.belt===null||a.belt.count>0,'asteroid belt instance count must be positive');
 console.log('External system deterministic generation: PASS');
+
+assert.ok(a.planets.every(p=>Number.isInteger(p.moons)&&p.moons>=0&&p.moons<=3),'moon count must be bounded');
+const crossPlatformContext={window:{}};
+vm.runInNewContext(source,crossPlatformContext);
+assert.deepEqual(JSON.parse(JSON.stringify(crossPlatformContext.window.SF_EXTERNAL_SYSTEMS.generate({id:'123456789',name:'TEST SYSTEM'}))),JSON.parse(JSON.stringify(a)),'generation must not depend on viewport APIs');
+assert.match(source,/data\.star\.mesh=new T\.Mesh/,'star must expose a focusable mesh');
+assert.match(source,/mobile\?260:data\.belt\.count/,'mobile asteroid LOD must not change generated system data');
