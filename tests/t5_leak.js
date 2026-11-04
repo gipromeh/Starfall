@@ -84,7 +84,7 @@ const ff = (page, sec) => page.evaluate(s => { const n = Math.round(s / .05); fo
     window.__sfTouristWarmup = [];
   });
   // Изолируем soak-тест от случайного появления новых торговых NPC.
-  await page.evaluate(() => { nvT=1e9; harpyTrafficT=1e9; planetTrafficT=1e9; });
+  await page.evaluate(() => { nvT=1e9; harpyTrafficT=1e9; planetTrafficT=1e9; spawnPlanetFreighter=()=>{}; spawnNv=()=>{}; spawnTour=()=>{}; });
   const freighterGeometryBaseline = await page.evaluate(() => [...window.__sfGeomDiag.records.keys()]);
   await page.evaluate(() => {
     const g = SKIT.mkFreighter(2, gtex);
