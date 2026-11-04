@@ -91,7 +91,7 @@ const zlib = require('node:zlib');
 
     await page.locator('#sf-galaxy .bottom button.close').click();
     await page.waitForFunction(() => state === 'menu', null, { timeout: 10000 });
-    await page.click('#play');
+    await page.locator('#play').dispatchEvent('click');
     await page.waitForFunction(() => state === 'dock', null, { timeout: 90000 });
     await page.evaluate(() => lift());
     await page.waitForFunction(() => state === 'play', null, { timeout: 15000 });
