@@ -27,7 +27,7 @@ const css = [
 '#sf-galaxy .hint{position:absolute;right:16px;top:72px;z-index:2;padding:8px 10px;background:#020916aa;border:1px solid #4fd0ff33;color:#9fc8df;font-size:10px;line-height:1.55;pointer-events:none}',
 '#sf-galaxy .close{border-color:#ff987788;color:#ffd2c1}#sf-galaxy-menu{min-width:min(440px,86vw);height:48px;font-size:15px;letter-spacing:.14em}',
 '#sf-galaxy-hud{position:absolute;z-index:12;left:max(14px,env(safe-area-inset-left));bottom:max(18px,env(safe-area-inset-bottom));display:none;min-width:0;padding:8px 13px;font-size:11px;pointer-events:auto}',
-'@media(max-width:700px){#sf-galaxy .title{font-size:14px}#sf-galaxy .top{gap:6px}#sf-galaxy .side{top:60px;width:min(270px,68vw);bottom:70px}#sf-galaxy .hint{display:none}#sf-galaxy .panel{padding:8px}#sf-galaxy .results{max-height:22vh}#sf-galaxy .bottom{left:12px;right:12px;bottom:max(10px,env(safe-area-inset-bottom))}#sf-galaxy .bottom button{flex:1}#sf-galaxy input{width:min(44vw,210px)}}'
+'@media(max-width:700px){#sf-galaxy .title{font-size:12px;white-space:nowrap}#sf-galaxy .top{gap:6px}#sf-galaxy .side{top:60px;width:min(270px,68vw);bottom:90px}#sf-galaxy .hint{display:none}#sf-galaxy .panel{padding:8px}#sf-galaxy .results{max-height:22vh}#sf-galaxy .bottom{left:12px;right:12px;bottom:max(10px,env(safe-area-inset-bottom));flex-wrap:wrap}#sf-galaxy .bottom button{flex:1 1 28%}#sf-galaxy input{width:min(36vw,190px)}}'
 ].join('\n');
 const style=node('style',{},document.head);style.textContent=css;
 const root=node('section',{id:'sf-galaxy','aria-label':'Галактическая карта STARFALL'},document.body);
