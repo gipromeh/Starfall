@@ -1481,7 +1481,7 @@ const IN=[{d:3.2,s:10,al:10,cam:12},{d:2,s:6,al:5,cam:9},{d:1.3,s:4,al:2.5,cam:7
 function aimDir(){const f=new T.Vector3(0,0,-1).applyQuaternion(Q);if(AS&&E&&E.warp<=0){const tp=E.g.position.clone().addScaledVector(E.vel,E.g.position.distanceTo(P)/420).sub(P).normalize();if(f.angleTo(tp)<[.22,.14,.07][dif])return tp}return f}
 const home=new T.Mesh(new T.SphereGeometry(500,48,32),new T.MeshStandardMaterial({map:ptex("#2a5aa8","#7fc4ff"),roughness:.9}));home.position.set(-300,-620,-900);home.visible=false;home.add(lights(500));S.add(home);
 function recolor(){sun.color.set(SYS[sy].c[1]);spl.forEach((m,i)=>{const c=SYS[(sy+i)%5].c;m.material.map=ptex(c[0],c[1]);m.material.needsUpdate=true})}
-function dock(){bm2.visible=false;tun.visible=false;state="dock";pirateFleetClear();firing=false;[bul,eb,mis,deb,ali,trs,pk].forEach(clr);dockT=0;[E,E2].forEach(en=>{if(en)en.g.visible=false});nv.forEach(n=>n.g.visible=false);if(nk)S.remove(nk.m);nk=null;$("hud").style.display="none";home.visible=true;const c=SYS[sy].c;home.material.map=ptex(c[0],c[1]);home.material.needsUpdate=true;C.fov=70;C.updateProjectionMatrix();rig.visible=true;P.set(0,0,0);rig.quaternion.identity();Q.identity();vel.set(0,0,0);ev="";if(SV.R&&SV.R.ofb&&SV.R.ofr){ofb=SV.R.ofb;ofr=SV.R.ofr;SYS[sy].g=SV.R.g.slice();ev=SV.R.ev||""}else{ofb=(()=>{const n=2+Math.floor(Math.random()*3);return{n,rw:Math.round(n*220*GAL.bwK())}})();ofr={g:Math.floor(Math.random()*3),n:3+Math.floor(Math.random()*4),to:(sy+1+Math.floor(Math.random()*4))%5};{const s=SYS[sy];s.g=[0,1,2,3,4].map(k=>LV[s.l][k]+(sy*7+k*3)%9);if(Math.random()<.3){const k=Math.floor(Math.random()*3),up=Math.random()<.5;s.g[k]=Math.round(s.g[k]*(up?2:.5));ev=GN[k]+(up?" — дефицит, цена ×2":" — переизбыток, цена ÷2")}GAL.price(s)}GAL.visit();ev=(ev||"")+GAL.news()}SV.save("dock");drawMkt()}
+function dock(){bm2.visible=false;tun.visible=false;state="dock";pirateFleetClear();firing=false;[bul,eb,mis,deb,ali,trs,pk].forEach(clr);dockT=0;[E,E2].forEach(en=>{if(en)en.g.visible=false});nv.forEach(n=>n.g.visible=false);pirateStrategicSuspendCombat();if(nk)S.remove(nk.m);nk=null;$("hud").style.display="none";home.visible=true;const c=SYS[sy].c;home.material.map=ptex(c[0],c[1]);home.material.needsUpdate=true;C.fov=70;C.updateProjectionMatrix();rig.visible=true;P.set(0,0,0);rig.quaternion.identity();Q.identity();vel.set(0,0,0);ev="";if(SV.R&&SV.R.ofb&&SV.R.ofr){ofb=SV.R.ofb;ofr=SV.R.ofr;SYS[sy].g=SV.R.g.slice();ev=SV.R.ev||""}else{ofb=(()=>{const n=2+Math.floor(Math.random()*3);return{n,rw:Math.round(n*220*GAL.bwK())}})();ofr={g:Math.floor(Math.random()*3),n:3+Math.floor(Math.random()*4),to:(sy+1+Math.floor(Math.random()*4))%5};{const s=SYS[sy];s.g=[0,1,2,3,4].map(k=>LV[s.l][k]+(sy*7+k*3)%9);if(Math.random()<.3){const k=Math.floor(Math.random()*3),up=Math.random()<.5;s.g[k]=Math.round(s.g[k]*(up?2:.5));ev=GN[k]+(up?" — дефицит, цена ×2":" — переизбыток, цена ÷2")}GAL.price(s)}GAL.visit();ev=(ev||"")+GAL.news()}SV.save("dock");drawMkt()}
 function lift(){cafePause();thl=.25;mnm=false;seen=1;home.visible=false;$("mkt").classList.add("hide");$("hud").style.display="block";C.position.set(0,3.4,10.5);C.quaternion.identity();state="play";if(firstWavePending){firstWavePending=false;firstWaveSpawn=0;enc=2;spawnT=1.2}else spawnT=2.5;makePlanet();pirateStrategicEnterSystem(sy);restoreWorld();say(firstWaveSpawn===0?"ПЕРВАЯ ВОЛНА: «РЖАВЫЙ ЧЕРЕП» И «ШАКАЛ» НА ПЕРЕХВАТЕ":E?"ВЗЛЁТ — ПИРАТЫ ПОБЛИЗОСТИ!":"ВЗЛЁТ — система "+SYS[sy].n,4)}
 var drawMkt;
 function openJump(){state="jumpmenu";$("hud").style.display="none";const m=$("jmp");m.innerHTML="<h2 style='color:var(--ac)'>ГИПЕРДВИГАТЕЛЬ</h2>Двигатель заряжен. Куда прыгаем?<br><small>Отсталые миры: дёшевы еда и руда, дорога техника. Высокотехнологичные: наоборот. Средние — посередине.</small>";[0,1,2,3,4].filter(i=>i!==sy).sort(()=>Math.random()-.5).slice(0,3).forEach(i=>{const b=document.createElement("button");b.textContent=SYS[i].n+" — "+SYS[i].p+" · "+LN[SYS[i].l]+(ct&&ct.to===i?" ★ КОНТРАКТ":"");b.onclick=()=>{m.classList.add("hide");jd=i;jt=2.2;state="jump"};m.appendChild(b)});const cb=document.createElement("button");cb.textContent="ОТМЕНА";cb.onclick=()=>{m.classList.add("hide");$("hud").style.display="block";state="play"};m.appendChild(cb);m.classList.remove("hide")}
@@ -2001,7 +2001,7 @@ function pirateStrategicPickTarget(g,maxDistance=90000){
 function pirateStrategicFindNpc(id){return id?nv.find(n=>n&&n._sfStrategicNpcId===id&&n.hp>0&&!n.gone)||null:null}
 function pirateStrategicAttachEnemy(en,preferred){
  if(!en||!en.g)return null;const data=pirateStrategicSystem(sy,true);
- let g=preferred||data.groups.find(x=>x._enemyRef===en);
+ let g=preferred||data.groups.find(x=>x.id===en._sfStrategicGroupId)||data.groups.find(x=>x._enemyRef===en);
  if(!g)g=pirateStrategicCreateGroup(sy,"encounter",en.g.position,PIRATE_STRATEGIC_ROLES[en.ty%3],1);
  g._enemyRef=en;g.state="intercept";g.position=pirateStrategicArray(en.g.position);g.hull=pirateStrategicClamp(en.hp/Math.max(1,en.mx||en.hp),0,1);en._sfStrategicGroupId=g.id;
  const target=pirateStrategicFindNpc(g.targetNpcId)||pirateStrategicPickTarget(g,3200);
@@ -2010,6 +2010,15 @@ function pirateStrategicAttachEnemy(en,preferred){
 function pirateStrategicAssignTarget(en){
  if(!en||!en.g)return null;const g=pirateStrategicAttachEnemy(en,null),target=pirateStrategicPickTarget(g,3600);
  if(target){g.targetNpcId=pirateStrategicTagNpc(target);en.tn=target}else if(en.tn&&!nv.includes(en.tn))en.tn=null;return target;
+}
+function pirateStrategicSuspendCombat(){
+ const data=pirateStrategicSystem(sy,false);if(!data)return;
+ for(const en of [E,E2]){
+  if(!en||!en._sfStrategicGroupId)continue;
+  const g=data.groups.find(x=>x.id===en._sfStrategicGroupId);
+  if(g){g._enemyRef=null;g.state="patrol";g.targetNpcId=null;g.cooldown=0;g.position=pirateStrategicArray(en.g.position)}
+  en.tn=null;
+ }
 }
 function pirateStrategicEnemyDamaged(en){
  const data=pirateStrategicSystem(sy,false),g=data&&data.groups.find(x=>x.id===en._sfStrategicGroupId);if(g)g.hull=pirateStrategicClamp(en.hp/Math.max(1,en.mx||en.hp),0,1);
