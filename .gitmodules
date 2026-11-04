@@ -1,0 +1,9 @@
+[submodule "external/elite-dangerous/eddn"]
+	path = external/elite-dangerous/eddn
+	url = https://github.com/EDCD/EDDN.git
+[submodule "external/elite-dangerous/ed3d-galaxy-map"]
+	path = external/elite-dangerous/ed3d-galaxy-map
+	url = https://github.com/gbiobob/ED3D-Galaxy-Map.git
+[submodule "external/elite-dangerous/elitenexus"]
+	path = external/elite-dangerous/elitenexus
+	url = https://github.com/uruskan/EliteNexus.git
