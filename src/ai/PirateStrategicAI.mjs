@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
 const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y,a.z-b.z);
-const copyPosition=p=>({x:Number(p?.x)||0,y:Number(p?.y)||0,z:Number(p?.z)||0});
+const copyPosition=p=>({x:Number.isFinite(Number(p?.x))?Number(p.x):0,y:Number.isFinite(Number(p?.y))?Number(p.y):0,z:Number.isFinite(Number(p?.z))?Number(p.z):0});
 
 /**
  * Strategic simulation for pirate groups outside the active combat bubble.
@@ -9,7 +9,8 @@ const copyPosition=p=>({x:Number(p?.x)||0,y:Number(p?.y)||0,z:Number(p?.z)||0});
  */
 export function createPirateStrategicAI({seed=0x51fa11,maxGroups=48,maxShips=6,decisionInterval=2}={}) {
   const groups=new Map();
-  let rngState=seed>>>0||0x51fa11;
+  let rngState=initialSeed;
+  const initialSeed=(seed>>>0)||0x51fa11;
   let clock=0,nextId=1,worldTime=0;
   const roles=['raider','interceptor','ambusher','smuggler'];
   const states=new Set(['patrol','intercept','raid','retreat','return','disabled']);
@@ -112,16 +113,20 @@ export function createPirateStrategicAI({seed=0x51fa11,maxGroups=48,maxShips=6,d
     }
     return {groups:groups.size,decisions,worldTime};
   }
-  function snapshot(){return {version:1,seed:seed>>>0,rngState,nextId,worldTime,clock,groups:[...groups.values()].map(snapshotGroup)};}
+  function snapshot(){return {version:1,seed:initialSeed,rngState,nextId,worldTime,clock,groups:[...groups.values()].map(snapshotGroup)};}
   function restore(data){
     if(!data||data.version!==1||!Array.isArray(data.groups)||data.groups.length>maxGroups)throw new TypeError('Invalid pirate strategic save');
     const next=new Map();
     for(const row of data.groups){
       if(!row||typeof row.id!=='string'||!row.id||!states.has(row.state)||!roles.includes(row.role)||!Number.isInteger(row.ships)||row.ships<1||row.ships>maxShips)throw new TypeError('Invalid saved pirate group');
+      for(const key of ['aggression','morale','hull','cargo','cooldown','lastDecision','kills'])if(!Number.isFinite(Number(row[key])))throw new TypeError('Invalid saved pirate group field: '+key);
+      for(const key of ['x','y','z'])if(!Number.isFinite(Number(row.position?.[key]))||!Number.isFinite(Number(row.velocity?.[key])))throw new TypeError('Invalid saved pirate vector');
       const g=normalizeGroup(row);if(next.has(g.id))throw new Error('Duplicate saved pirate group: '+g.id);next.set(g.id,g);
     }
+    const nextSeed=(data.seed>>>0)||initialSeed,nextRng=(data.rngState>>>0)||nextSeed,nextIdValue=Math.max(1,Math.trunc(data.nextId)||1),nextWorldTime=Number(data.worldTime),nextClock=Number(data.clock);
+    if(!Number.isFinite(nextWorldTime)||nextWorldTime<0||!Number.isFinite(nextClock)||nextClock<0||!Number.isSafeInteger(nextIdValue))throw new TypeError('Invalid pirate strategic clock');
     groups.clear();for(const [id,g] of next)groups.set(id,g);
-    rngState=(data.rngState>>>0)||((data.seed>>>0)||0x51fa11);nextId=Math.max(1,Math.trunc(data.nextId)||1);worldTime=Math.max(0,Number(data.worldTime)||0);clock=clamp(Number(data.clock)||0,0,clamp(decisionInterval,.25,10));
+    rngState=nextRng;nextId=nextIdValue;worldTime=nextWorldTime;clock=clamp(nextClock,0,clamp(decisionInterval,.25,10));
   }
   return {addGroup,removeGroup,update,snapshot,restore,getGroup:id=>groups.has(id)?snapshotGroup(groups.get(id)):null,list:()=>[...groups.values()].map(snapshotGroup)};
 }
