@@ -1494,9 +1494,9 @@ let nasaBaseStationTemplate=null;
 function attachNasaBaseStation(target){
  if(!target||target.userData.nasaBaseStationAttached)return;
  if(!nasaBaseStationTemplate){target.userData.nasaBaseStationPending=true;return}
- const module=nasaBaseStationTemplate.clone(true);
- module.position.set(108,0,0);
- module.scale.multiplyScalar(.9);
+ const module=nasaBaseStationTemplate.clone(true),parentScale=target.scale.x||1;
+ module.position.set(108/parentScale,0,0);
+ module.scale.multiplyScalar(.9/parentScale);
  module.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=false}});
  target.add(module);
  target.userData.nasaBaseStationPending=false;
