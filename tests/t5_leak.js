@@ -83,11 +83,18 @@ const ff = (page, sec) => page.evaluate(s => { const n = Math.round(s / .05); fo
     for (const instance of window.__sfTouristWarmup || []) S.remove(instance);
     window.__sfTouristWarmup = [];
   });
-  await page.evaluate(() => spawnPlanetFreighter(2));
-  await L.sleep(300);
+  // Изолируем soak-тест от случайного появления новых торговых NPC.
+  await page.evaluate(() => { nvT=1e9; harpyTrafficT=1e9; planetTrafficT=1e9; });
+  await page.evaluate(() => {
+    const g = SKIT.mkFreighter(2, gtex);
+    g.position.set(0, 0, -120);
+    S.add(g);
+    nv.push({ g, v:new THREE.Vector3(), hp:420, route:{kind:2} });
+  });
+  await L.sleep(400);
   const freighterBeforeRemoval = await mem(page);
   await page.evaluate(() => removeNvAt(nv.length - 1));
-  await L.sleep(300);
+  await L.sleep(200);
   const freighterAfterRemoval = await mem(page);
   L.check('геометрия планетарного грузовоза освобождается при удалении', freighterAfterRemoval.g < freighterBeforeRemoval.g, { before:freighterBeforeRemoval.g, after:freighterAfterRemoval.g });
   const b0 = await mem(page);
