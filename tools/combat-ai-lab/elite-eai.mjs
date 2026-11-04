@@ -24,11 +24,16 @@ export function createEAI(seed=0x6d2b79f5){
   const hd=norm(e.hd||[0,0,-1]),up=options.up||[0,1,0];
   let right=cross(hd,up);right=norm(Math.hypot(...right)<1e-8?[1,0,0]:right);
   const localUp=norm(cross(right,hd)),lx=dot(relative,right),ly=dot(relative,localUp),lz=dot(relative,hd);
-  const near=Math.abs(lx)<(options.nearX||260)&&Math.abs(ly)<(options.nearY||220)&&Math.abs(lz)<(options.nearZ||340);
+  const distance=Math.hypot(...relative),near=Math.abs(lx)<(options.nearX||260)&&Math.abs(ly)<(options.nearY||220)&&Math.abs(lz)<(options.nearZ||340);
   if(aiThink){
-   if(options.incoming||near){if(e.aiIntent!=="EVADE"){e.aiEvadeSide=api.rand()<.5?-1:1;e.aiEvadeTicks=0;}e.aiIntent="EVADE";}
-   else if(e.aiIntent==="EVADE"){e.aiEvadeTicks=(e.aiEvadeTicks||0)+1;if(e.aiEvadeTicks>=(options.minEvadeTicks||8)&&Math.hypot(...relative)>(options.reengageDistance||720))e.aiIntent="ATTACK";}
-   else e.aiIntent="ATTACK";
+   if(distance>(options.reengageDistance||720))e.aiCloseEvaded=false;
+   if(e.aiIntent==="EVADE"){
+    if(options.incoming)e.aiEvadeTicks=0;else e.aiEvadeTicks=(e.aiEvadeTicks||0)+1;
+    if(!options.incoming&&e.aiEvadeTicks>=(options.minEvadeTicks||8)){e.aiIntent="ATTACK";if(near)e.aiCloseEvaded=true;}
+   }else if(options.incoming||(near&&!e.aiCloseEvaded)){
+    e.aiEvadeSide=api.rand()<.5?-1:1;e.aiEvadeTicks=0;e.aiIntent="EVADE";
+    if(near)e.aiCloseEvaded=true;
+   }else e.aiIntent="ATTACK";
   }
   if(!e.aiIntent)e.aiIntent="ATTACK";
   const side=e.aiEvadeSide||e.aiSideSign||1;
