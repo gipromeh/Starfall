@@ -149,11 +149,11 @@ function renderSearch(q){
  found.slice(0,14).forEach(v=>{const b=node('button',{},results);node('span',{text:v.r.name},b);node('small',{text:v.local?'STARFALL':'SPANSH'},b);b.addEventListener('click',()=>focus(v.r,v.local));});
  if(!found.length)node('div',{class:'meta',text:'Совпадений нет.'},results);
 }
-function leaveExternal(){if(!externalRoot)return;scene.remove(externalRoot);window.SF_EXTERNAL_SYSTEMS.dispose(externalRoot);externalRoot=null;externalRecord=null;galaxy.visible=true;localGroup.visible=true;if(points)points.visible=true;if(externalCameraState){yaw=externalCameraState.yaw;pitch=externalCameraState.pitch;distance=externalCameraState.distance;target.copy(externalCameraState.target);externalCameraState=null;cameraUpdate()}ring.visible=!!selected;exploreBtn.style.display='';returnBtn.style.display='none';jumpBtn.style.display='';routeBtn.style.display='';search.disabled=false;if(selected)setSelected(selected.record,selected.local);}
+function leaveExternal(){if(!externalRoot)return;scene.remove(externalRoot);window.SF_EXTERNAL_SYSTEMS.dispose(externalRoot);externalRoot=null;externalRecord=null;galaxy.visible=true;localGroup.visible=true;if(points)points.visible=true;if(externalCameraState){yaw=externalCameraState.yaw;pitch=externalCameraState.pitch;distance=externalCameraState.distance;target.copy(externalCameraState.target);externalCameraState=null;cameraUpdate()}ring.visible=!!selected;if(routeLine)routeLine.visible=true;exploreBtn.style.display='';returnBtn.style.display='none';jumpBtn.style.display='';routeBtn.style.display='';search.disabled=false;if(selected)setSelected(selected.record,selected.local);}
 function exploreExternal(){
  if(!selected||selected.local||!window.SF_EXTERNAL_SYSTEMS)return;
  if(externalRoot)leaveExternal();
- externalRecord=selected.record;externalCameraState={yaw,pitch,distance,target:target.clone()};galaxy.visible=false;localGroup.visible=false;if(points)points.visible=false;ring.visible=false;
+ externalRecord=selected.record;externalCameraState={yaw,pitch,distance,target:target.clone()};if(routeLine)routeLine.visible=false;galaxy.visible=false;localGroup.visible=false;if(points)points.visible=false;ring.visible=false;
  externalRoot=window.SF_EXTERNAL_SYSTEMS.build(externalRecord,T,matchMedia('(pointer:coarse)').matches);scene.add(externalRoot);
  target.set(0,0,0);yaw=.5;pitch=.22;distance=330;cameraUpdate();
  const d=externalRoot.userData.externalSystem.data;
