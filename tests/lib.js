@@ -3,7 +3,7 @@ const { chromium, webkit } = playwright;
 const fs = require('fs'), path = require('path');
 const NM = process.env.SF_NM || path.join(__dirname, 'node_modules');
 const GAME = path.join(__dirname, '..', 'starfall.html');
-const ORIGIN = 'http://game.local';
+const ORIGIN = 'http://localhost';
 const MAP = [
   [/cdnjs\.cloudflare\.com\/ajax\/libs\/three\.js\/r128\/three\.min\.js/, NM + '/three/build/three.min.js'],
   [/three@0\.128\.0\/examples\/js\/(.*)$/, m => NM + '/three/examples/js/' + m[1]],
@@ -24,6 +24,17 @@ async function newCtx(browser, o = {}) {
       const u = new URL(url);
       if (u.pathname === '/' || u.pathname.endsWith('starfall.html')) return route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: fs.readFileSync(o.game || GAME, 'utf8') });
       if (u.pathname.startsWith('/assets/')) { const f = path.join(__dirname, '..', decodeURIComponent(u.pathname)); if (f.startsWith(path.join(__dirname, '..', 'assets')) && fs.existsSync(f)) return route.fulfill({ status: 200, contentType: f.endsWith('.glb') ? 'model/gltf-binary' : 'application/octet-stream', body: fs.readFileSync(f, 'utf8') }); }
+      if (u.pathname.startsWith('/tools/') || u.pathname.startsWith('/data/')) {
+        const root = path.resolve(__dirname, '..');
+        const file = path.resolve(root, decodeURIComponent(u.pathname.slice(1)));
+        if (file.startsWith(root + path.sep) && fs.existsSync(file) && fs.statSync(file).isFile()) {
+          const type = file.endsWith('.js') ? 'text/javascript; charset=utf-8'
+            : file.endsWith('.json') ? 'application/json; charset=utf-8'
+            : file.endsWith('.gz') ? 'application/gzip'
+            : 'application/octet-stream';
+          return route.fulfill({ status: 200, contentType: type, body: fs.readFileSync(file) });
+        }
+      }
       return route.fulfill({ status: 404, body: '' });
     }
     // WebKit can leave DOMContentLoaded pending when a stylesheet is aborted by Web Inspector.
