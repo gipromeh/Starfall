@@ -56,7 +56,7 @@ if (html) {
   check("html:title", Boolean(title), title || "missing");
   if (!title) issue("WARNING", "HTML_TITLE_MISSING", "starfall.html", "Document title is missing.");
 
-  const ids = new Map();
+  const markup = html.replace(/<script\\b[^>]*>[\\s\\S]*?<\\/script\\s*>/gi, \"\").replace(/<style\\b[^>]*>[\\s\\S]*?<\\/style\\s*>/gi, \"\");\n  const ids = new Map();
   for (const match of html.matchAll(/\bid\s*=\s*(["'])(.*?)\1/gi)) ids.set(match[2], (ids.get(match[2]) || 0) + 1);
   const duplicates = [...ids].filter(([, count]) => count > 1);
   check("html:unique-ids", duplicates.length === 0, duplicates.length + " duplicate IDs");
@@ -78,7 +78,7 @@ if (html) {
 
   const missing = new Set();
   const refs = /\b(?:src|href|poster|data-src)\s*=\s*(["'])(.*?)\1/gi;
-  for (const match of html.matchAll(refs)) {
+  for (const match of markup.matchAll(refs)) {
     const value = match[2].trim();
     if (!value || /^(?:[a-z][a-z0-9+.-]*:|\/\/|#|\/|data:|blob:|javascript:)/i.test(value) || /[{}<>]/.test(value)) continue;
     const target = path.posix.normalize(value.split(/[?#]/, 1)[0]);
