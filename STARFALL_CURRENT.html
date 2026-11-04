@@ -1654,10 +1654,28 @@ if(T.GLTFLoader&&location.protocol!=="file:"){
   }catch(error){console.warn("[STARFALL] Argo GLB initialization failed:",error)}
  },undefined,error=>console.warn("[STARFALL] Argo GLB unavailable; procedural traffic ship retained:",error));
 }
+let civilianCargoTemplate=null;
+if(T.GLTFLoader&&location.protocol!=="file:"){
+ const cargoLoader=new T.GLTFLoader();
+ cargoLoader.load("assets/ships/civilian/shuttle_payload/model.glb",gltf=>{
+  try{
+   const root=new T.Group();root.name="STARFALL_CIVILIAN_CARGO_MODULE";root.add(gltf.scene);
+   root.rotation.y=Math.PI/2;root.updateMatrixWorld(true);
+   const bounds=new T.Box3().setFromObject(root),size=bounds.getSize(new T.Vector3());
+   const length=Math.max(size.x,size.y,size.z)||1;
+   root.scale.setScalar(36/length);root.updateMatrixWorld(true);
+   root.position.sub(new T.Box3().setFromObject(root).getCenter(new T.Vector3()));
+   root.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=false}});
+   civilianCargoTemplate=root;
+   console.info("[STARFALL] NASA shuttle payload loaded as Argo cargo module: 2,487 triangles");
+  }catch(error){console.warn("[STARFALL] NASA cargo module rejected; Argo remains unmodified",error)}
+ },undefined,error=>console.warn("[STARFALL] NASA cargo module unavailable; Argo remains unmodified",error));
+}
 function mkFreighter(){
  if(civilianArgoTemplate){
   const model=civilianArgoTemplate.clone(true);
   model.userData.trafficModel="nasa-argo";
+  if(civilianCargoTemplate){const cargo=civilianCargoTemplate.clone(true);cargo.scale.multiplyScalar(.65);cargo.position.set(0,0,12);cargo.userData.civilianCargoModule=true;model.add(cargo)}
   return model;
  }
  const g=new T.Group(),d=new T.MeshStandardMaterial({color:0x2d3644,metalness:.7,roughness:.5}),m=new T.MeshStandardMaterial({color:0x8c97a6,metalness:.6,roughness:.5}),cols=[0xd0502a,0x2a7ad0,0xd0b02a,0x3aa860],ad=(geo,mat,x,y,z)=>{const o=new T.Mesh(geo,mat);o.position.set(x,y,z);g.add(o);return o};
