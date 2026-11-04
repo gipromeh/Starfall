@@ -1,3 +1,10 @@
+## STARFALL v96 — полный пиратский состав (2026-11-05)
+
+- `Pirate3.glb` задействован как четвёртый боевой архетип (тип 2) через общий `mkPirate`.
+- `Pirate4.glb` задействован как редкий крупный пиратский транспорт в нейтральном трафике; он не участвует в боевых волнах.
+- Каталог дополнен двумя моделями и ролями; существующие AI, оружие, столкновения, SAVE и управление сохранены.
+- Автоматические проверки ожидают CI; физический iPhone Safari/PC playtest не проводился.
+
 ## v95 maintenance — mobile flight controls and resource diagnostics (2026-11-04)
 
 - Added a dedicated touch-screen boost control to external-system flight; keyboard Shift remains supported.
