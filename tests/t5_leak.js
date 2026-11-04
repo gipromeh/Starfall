@@ -6,7 +6,7 @@ const ff = (page, sec) => page.evaluate(s => { const n = Math.round(s / .05); fo
   const ctx = await L.newCtx(browser, { viewport: { width: 480, height: 270 }, dpr: 2 });
   const page = await L.openGame(ctx);
   await page.click('#play'); await page.waitForFunction(() => state === 'dock', null, { timeout: 60000 }); await L.sleep(500);
-  await page.evaluate(() => lift()); await page.waitForFunction(() => pirateAssetsReady, null, { timeout: 30000 }); await L.sleep(500);
+  await page.evaluate(() => { lift(); nvT=999999999; planetTrafficT=999999999; harpyTrafficT=999999999; tuT=999999999; }); await page.waitForFunction(() => pirateAssetsReady, null, { timeout: 30000 }); await L.sleep(500);
   // Изолируем базовый combat leak benchmark от стартовой эскадрильи и стратегического AI; стратегический AI проверяется отдельным t22.
   await page.evaluate(() => { for(const e of [E,E2])if(e?.g){S.remove(e.g);pirateDamageFxClear(e);} E=null;E2=null;spawnT=1e9;firstWavePending=false;firstWaveSpawn=2;for(const b of eb)S.remove(b.m);eb.length=0;pirateFleetClear();pirateFleetReady=true;SF_PIRATE_STRATEGIC.setEnabled(false); });
   L.check('изолированная проверка: стартовая эскадрилья выключена', await page.evaluate(() => pirateFleetReady && pirateFleet.length === 0));
