@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const html = fs.readFileSync('starfall.html', 'utf8');
 const map = fs.readFileSync('tools/galaxy-map.js', 'utf8');
-assert.match(html, /starfall-version" content="v94"/);
+assert.match(html, /starfall-version" content="v95"/);
 assert.match(html, /\.\/tools\/galaxy-map\.js/);
 assert.match(html, /state==="galaxy"&&window\.SF_GALAXY_MAP\)SF_GALAXY_MAP\.render\(dt\)/);
 assert.match(map, /new T\.Scene\(\)/);
@@ -31,9 +31,12 @@ assert.ok(map.includes('routeStart.local!==routeEnd.local'));
 console.log('Galaxy Map source contracts: PASS');
 
 assert.match(map, /SF_EXTERNAL_SYSTEMS\.build/);
-assert.match(map, /РЕЖИМ ИССЛЕДОВАНИЯ/);
+assert.match(map, /ПОЛЁТ ВНЕШНЕЙ СИСТЕМЫ/);
 assert.match(map, /function leaveExternal/);
 assert.match(html, /\.\/tools\/external-systems\.js/);
 
 assert.match(map, /function showExternalObjects/);
 assert.match(map, /function focusExternalObject/);
+assert.match(map, /function updateFlight/);
+assert.match(map, /flightControls/);
+assert.match(map, /function setFlightMode/);
