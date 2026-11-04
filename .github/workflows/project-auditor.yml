@@ -1,0 +1,50 @@
+name: STARFALL Project Auditor
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: starfall-auditor-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  strict-project-audit:
+    name: strict-project-audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate auditor syntax
+        run: node --check tools/project-auditor.mjs
+      - name: Run strict project audit
+        id: audit
+        run: node tools/project-auditor.mjs --report-dir audit-report
+      - name: Publish audit report
+        if: always()
+        run: |
+          if [ -f audit-report/audit-report.md ]; then
+            cat audit-report/audit-report.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "## STARFALL Project Audit" >> "$GITHUB_STEP_SUMMARY"
+            echo "Auditor did not produce a report. Inspect the preceding step." >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Upload machine-readable and Markdown reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: starfall-project-audit-${{ github.run_number }}
+          path: audit-report/
+          if-no-files-found: warn
+          retention-days: 90
