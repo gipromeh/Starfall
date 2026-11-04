@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 2,
+  "id": "civilian_shuttle_b",
+  "name": "Civilian Shuttle B",
+  "displayName": "STARFALL — Civilian Shuttle B",
+  "faction": "trader",
+  "category": "freighter",
+  "status": "integrated",
+  "model": "model.glb",
+  "replaces": {
+    "kind": "transport",
+    "index": 0
+  },
+  "scale": 1.6,
+  "budget": {
+    "triangles": 2476
+  },
+  "design": {
+    "silhouette": "Compact orbital shuttle",
+    "notes": "Low-poly NASA Space Shuttle B; normalized at runtime to 70 world units and aligned along local -Z."
+  },
+  "production": {
+    "glb": true,
+    "uvMaps": true,
+    "bakedPbrTextures": true,
+    "gameplayIntegrated": true
+  }
+}
