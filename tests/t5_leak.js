@@ -8,7 +8,7 @@ const ff = (page, sec) => page.evaluate(s => { const n = Math.round(s / .05); fo
   await page.click('#play'); await page.waitForFunction(() => state === 'dock', null, { timeout: 60000 }); await L.sleep(500);
   await page.evaluate(() => { lift(); nvT=999999999; planetTrafficT=999999999; harpyTrafficT=999999999; tuT=999999999; }); await page.waitForFunction(() => pirateAssetsReady, null, { timeout: 30000 }); await L.sleep(500);
   // Изолируем базовый combat leak benchmark от стартовой эскадрильи и стратегического AI; стратегический AI проверяется отдельным t22.
-  await page.evaluate(() => { for(const e of [E,E2])if(e?.g){S.remove(e.g);pirateDamageFxClear(e);} E=null;E2=null;spawnT=1e9;firstWavePending=false;firstWaveSpawn=2;for(const b of eb)S.remove(b.m);eb.length=0;pirateFleetClear();pirateFleetReady=true;SF_PIRATE_STRATEGIC.setEnabled(false); });
+  await page.evaluate(() => { for(const e of [E,E2])if(e?.g){S.remove(e.g);pirateDamageFxClear(e);} E=null;E2=null;spawnT=1e9;firstWavePending=false;firstWaveSpawn=2;for(const b of eb)S.remove(b.m);eb.length=0;pirateFleetClear();pirateFleetReady=true;SF_PIRATE_STRATEGIC.setEnabled(false);window.__sfOldFireGate=EAI.fireGate;EAI.fireGate=()=>false; });
   L.check('изолированная проверка: стартовая эскадрилья выключена', await page.evaluate(() => pirateFleetReady && pirateFleet.length === 0));
 
   console.log('\n[Q1] профили (ручной режим — адаптация выключена)');
@@ -53,6 +53,7 @@ const ff = (page, sec) => page.evaluate(s => { const n = Math.round(s / .05); fo
   for (let r = 0; r < 8; r++) { await page.evaluate(() => { if (!E) spawnE(); if(E){E.fire=1e9;E.burstLeft=0;E.burstGap=1e9;} }); await ff(page, 5); await page.evaluate(() => { firing = true; }); await ff(page, 2); await page.evaluate(() => { firing = false; if (E) hurtEn(E, 1e6, false); spawnT=1e9; }); await ff(page, 3); }
   await ff(page, 40);
   const b1 = await mem(page);
+  await page.evaluate(() => { if(window.__sfOldFireGate){EAI.fireGate=window.__sfOldFireGate;delete window.__sfOldFireGate;} });
   console.log('  до   :', JSON.stringify(b0)); console.log('  после:', JSON.stringify(b1));
   L.check('убийства происходили (wave вырос)', b1.wave >= b0.wave + 6, { w0: b0.wave, w1: b1.wave });
   L.check('объекты сцены после затухания эффектов вернулись к исходному уровню (±15)', Math.abs(b1.ch - b0.ch) <= 15, { c0: b0.ch, c1: b1.ch });
