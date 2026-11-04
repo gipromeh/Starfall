@@ -40,7 +40,7 @@ export function createPirateStrategicAI({seed=0x51fa11,maxGroups=48,maxShips=6,d
   }
   function snapshotGroup(g) { return {...g,position:{...g.position},velocity:{...g.velocity}}; }
   function removeGroup(id) { return groups.delete(id); }
-  function transition(g,state,reason) { if(g.state!==state){g.state=state;g.lastReason=reason;} }
+  function transition(g,state,reason) { if(g.state!==state){g.state=state;g.lastReason=reason;g.cooldown=.8;} }
   function chooseTarget(g,contacts) {
     let best=null,bestScore=-Infinity;
     for(const c of contacts) {
@@ -101,11 +101,11 @@ export function createPirateStrategicAI({seed=0x51fa11,maxGroups=48,maxShips=6,d
     const step=Math.min(dt,30);worldTime+=step;clock+=step;
     const interval=clamp(decisionInterval,.25,10);let decisions=0;
     while(clock>=interval){clock-=interval;decisions++;}
+    for(const g of groups.values())integrate(g,step,context);
     if(decisions){
       const snapshot={...context,contacts:Array.isArray(context.contacts)?context.contacts:[]};
       for(const g of groups.values())if(g.cooldown<=0)decide(g,snapshot);
     }
-    for(const g of groups.values())integrate(g,step,context);
     return {groups:groups.size,decisions,worldTime};
   }
   function snapshot(){return {version:1,seed:seed>>>0,rngState,nextId,worldTime,clock,groups:[...groups.values()].map(snapshotGroup)};}
