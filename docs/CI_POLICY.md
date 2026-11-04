@@ -43,6 +43,7 @@ Workflow: `.github/workflows/game-tests.yml`.
 Для каждого PR в `main` должны завершиться успешно:
 
 - `passport-check / check`;
+- `STARFALL Project Auditor / strict-project-audit`;
 - `game-tests / quick-checks`;
 - `game-tests / prepare-browser`;
 - `game-tests / browser-tests (ai-lab-browser)`;
