@@ -27,7 +27,7 @@ const ff = (page, sec) => page.evaluate(s => { const n = Math.round(s / .05); fo
   for (let r = 0; r < 2; r++) { await page.evaluate(() => { if (!E) spawnE(); if(E){E.fire=1e9;E.burstLeft=0;E.burstGap=1e9;} }); await ff(page, 4); await page.evaluate(() => { if (E) hurtEn(E, 1e6, false); spawnT=1e9; }); await ff(page, 3); }
   await ff(page, 40);
   const b0 = await mem(page);
-  for (let r = 0; r < 8; r++) { await page.evaluate(() => { if (!E) spawnE(); }); await ff(page, 5); await page.evaluate(() => { firing = true; }); await ff(page, 2); await page.evaluate(() => { firing = false; if (E) hurtEn(E, 1e6, false); spawnT=1e9; }); await ff(page, 3); }
+  for (let r = 0; r < 8; r++) { await page.evaluate(() => { if (!E) spawnE(); if(E){E.fire=1e9;E.burstLeft=0;E.burstGap=1e9;} }); await ff(page, 5); await page.evaluate(() => { firing = true; }); await ff(page, 2); await page.evaluate(() => { firing = false; if (E) hurtEn(E, 1e6, false); spawnT=1e9; }); await ff(page, 3); }
   await ff(page, 40);
   const b1 = await mem(page);
   console.log('  до   :', JSON.stringify(b0)); console.log('  после:', JSON.stringify(b1));
