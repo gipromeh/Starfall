@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="claude:viewport-fit-sides" content="cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#02030a"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>STARFALL</title>
-<meta name="starfall-version" content="v92.4">
+<meta name="starfall-version" content="v92.5">
 <meta name="starfall-telemetry-endpoint" content="">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 <style>
@@ -1583,8 +1583,8 @@ for(let i=0;i<8;i++)ad(new T.BoxGeometry(12,7,7),new T.MeshStandardMaterial({col
 for(const s of[-1,1])ad(new T.CylinderGeometry(3,4,10,10),d,s*5,0,38).rotation.x=Math.PI/2;
 const f=new T.Sprite(new T.SpriteMaterial({map:gtex("rgba(255,160,80,1)"),blending:T.AdditiveBlending,transparent:true,depthWrite:false}));f.position.z=46;f.scale.set(22,22,1);g.add(f);g.scale.setScalar(1.4);return g}
 function spawnNv(){const g=mkFreighter(),d=rd();d.y*=.2;const o=P.clone().addScaledVector(d.normalize(),1600+Math.random()*600),v=P.clone().add(rd().multiplyScalar(500)).sub(o).normalize().multiplyScalar(22+Math.random()*18);g.position.copy(o);g.lookAt(o.clone().sub(v));S.add(g);nv.push({g,v,hp:260,hit:0})}
-let planetTrafficT=18;
-function spawnPlanetFreighter(type){const worlds=worldPlanets.filter(w=>w.kind==="planet");if(worlds.length<2)return;const a=worlds[Math.floor(Math.random()*worlds.length)];let b=worlds[Math.floor(Math.random()*worlds.length)];if(a===b)b=worlds[(worlds.indexOf(a)+1)%worlds.length];const start=a.mesh.position.clone().add(new T.Vector3(0,a.radius+520,0)),destination=b.mesh.position.clone().add(new T.Vector3(0,b.radius+520,0)),kind=Number.isInteger(type)?type:(Math.random()<.42?0:Math.random()<.72?1:2),g=SKIT.mkFreighter(kind,gtex),v=destination.clone().sub(start).normalize().multiplyScalar(kind===2?64+Math.random()*18:52+Math.random()*20);g.position.copy(start);g.lookAt(g.position.clone().sub(v));S.add(g);nv.push({g,v,hp:kind===2?420:260,hit:0,tur:kind===2?1:0,route:{destination,speed:v.length(),from:a.name,to:b.name,kind,passengers:kind===2?18+Math.floor(Math.random()*37):0,cargo:kind===2?12+Math.floor(Math.random()*25):0}})}
+let planetTrafficT=2,harpyTrafficT=0;
+function spawnPlanetFreighter(type){const worlds=worldPlanets.filter(w=>w.kind==="planet");if(worlds.length<2)return;const a=worlds[Math.floor(Math.random()*worlds.length)];let b=worlds[Math.floor(Math.random()*worlds.length)];if(a===b)b=worlds[(worlds.indexOf(a)+1)%worlds.length];const start=a.mesh.position.clone().add(new T.Vector3(0,a.radius+520,0)),destination=b.mesh.position.clone().add(new T.Vector3(0,b.radius+520,0)),kind=Number.isInteger(type)?type:(Math.random()<.42?0:1),direction=destination.clone().sub(start).normalize(),speed=kind===2?64+Math.random()*18:52+Math.random()*20,v=direction.clone().multiplyScalar(speed),g=SKIT.mkFreighter(kind,gtex);g.position.copy(start);g.lookAt(g.position.clone().sub(v));S.add(g);nv.push({g,v,hp:kind===2?420:260,hit:0,tur:kind===2?1:0,route:{destination,direction,speed,from:a.name,to:b.name,kind,passengers:kind===2?18+Math.floor(Math.random()*37):0,cargo:kind===2?12+Math.floor(Math.random()*25):0}})}
 function killNv(i){const n=nv[i],p=n.g.position.clone();boom(p,65,10,0xffaa55,50,1.6);boom(p,20,18,0xffffff,12,.5);ring(p,0xffaa55,6,3);shk=Math.max(shk,.8);sfx("e");for(let j=0;j<5;j++)drop(p.clone().add(rd().multiplyScalar(14)),j<3?3:undefined);S.remove(n.g);nv.splice(i,1);if(!n.pk){const pen=n.tur?600:300;cr=Math.max(0,cr-pen);combo=0;GAL.ev("civ");say((n.tur?"ТУРИСТИЧЕСКИЙ КОРАБЛЬ":"НЕЙТРАЛЬНЫЙ ТРАНСПОРТ")+" УНИЧТОЖЕН — ШТРАФ "+pen,3)}else{GAL.ev("raid");say(n.tur?"ПИРАТЫ УНИЧТОЖИЛИ ТУРИСТОВ":"ПИРАТЫ УНИЧТОЖИЛИ ТРАНСПОРТ",2)}}
 const bm2=new T.Mesh(new T.CylinderGeometry(.35,.35,1,8),new T.MeshBasicMaterial({color:0xffb030,transparent:true,opacity:.85,blending:T.AdditiveBlending,depthWrite:false}));bm2.visible=false;S.add(bm2);
 function mineUpd(dt){let hit=null;mhit=false;if(state==="play"&&mnm&&firing&&!hot){const f=new T.Vector3(0,0,-1).applyQuaternion(Q);let bd=1e9;for(const m of rocks){if(!m.visible||m.userData.hp<=0)continue;const v=m.position.clone().sub(P),d=v.length();if(d<320+m.userData.r&&f.angleTo(v)<Math.atan2(m.userData.r*1.1+8,d)&&d<bd){bd=d;hit=m}}}
@@ -1663,8 +1663,8 @@ for(let i=mis.length-1;i>=0;i--){const m=mis[i],pv=m.m.position.clone();m.t+=dt;
 for(const en of [E,E2])if(!h&&en&&pirateSegmentHit(pv,m.m.position,en,1)){h=true;boom(m.m.position,20,6,0xffcc66,30,.6);hmv=1;hurtEn(en,MS[mt].d,true)}for(const pe of pirateFleet)if(!h&&pe.g&&pe.hp>0&&pirateSegmentHit(pv,m.m.position,pe,1)){h=true;boom(m.m.position,20,6,0xffcc66,30,.6);hmv=1;pirateFleetDamage(pe,MS[mt].d,true)}if(h||reached||m.life<=0){if(!h)boom(m.m.position,15,5,0xffaa44,25,.5);S.remove(m.m);mis.splice(i,1)}}
 for(let i=fx.length-1;i>=0;i--){const f=fx[i],a=f.o.geometry.attributes.position;f.life-=dt;for(let j=0;j<f.vs.length;j++){a.array[j*3]+=f.vs[j].x*dt;a.array[j*3+1]+=f.vs[j].y*dt;a.array[j*3+2]+=f.vs[j].z*dt}a.needsUpdate=true;f.o.material.opacity=Math.max(0,f.life/f.max);if(f.life<=0){S.remove(f.o);f.o.geometry.dispose();fx.splice(i,1)}}
 for(let i=pk.length-1;i>=0;i--){const k=pk[i],dd=k.m.position.distanceTo(P);if(dd<60)k.v.addScaledVector(P.clone().sub(k.m.position).normalize(),90*dt);k.m.position.addScaledVector(k.v,dt);k.v.multiplyScalar(Math.exp(-.8*dt));k.m.rotation.y+=2*dt;k.life-=dt;if(dd<12&&state==="play"&&!(k.t>=3&&cargo.reduce((a,b)=>a+b,0)>=SHIPS[shp].cargo)){[()=>{hull=Math.min(100,hull+25);say("РЕМОНТ +25",1.5)},()=>{miss=Math.min(12,miss+2);say("РАКЕТЫ +2",1.5)},()=>{fuel=100;heat=0;say("ЗАРЯД ФОРСАЖА",1.5)},()=>{pp[1]=pp[1]*cargo[1]/(cargo[1]+1);cargo[1]++;say("РУДА +1",1)},()=>{pp[3]=pp[3]*cargo[3]/(cargo[3]+1);cargo[3]++;say("ТИТАН +1",1)},()=>{pp[4]=pp[4]*cargo[4]/(cargo[4]+1);cargo[4]++;say("КРИСТАЛЛЫ +1",1)}][k.t]();k.life=0}if(k.life<=0){S.remove(k.m);pk.splice(i,1)}}
-for(let i=nv.length-1;i>=0;i--){const n=nv[i];if(n.tur)tourUpd(n,dt);if(n.route){const to=n.route.destination.clone().sub(n.g.position),dl=to.length();if(dl<100)n.gone=1;else{n.v.copy(to.normalize().multiplyScalar(n.route.speed));n.g.lookAt(n.g.position.clone().sub(n.v))}}n.g.position.addScaledVector(n.v,dt);if(n.gone){S.remove(n.g);nv.splice(i,1)}else if(n.hp<=0)killNv(i);else if(!n.route&&n.g.position.distanceTo(P)>3300){S.remove(n.g);nv.splice(i,1)}}
-if(state==="play"){nvT-=dt;if(nvT<=0&&nv.filter(n=>!n.tur&&!n.route).length<3){spawnNv();nvT=20+Math.random()*25}planetTrafficT-=dt;if(planetTrafficT<=0&&nv.filter(n=>n.route).length<5){spawnPlanetFreighter();planetTrafficT=42+Math.random()*28}tuT-=dt;if(tuT<=0){tuT=35+Math.random()*40;if(nv.filter(n=>n.tur).length<3)spawnTour(false)}}
+for(let i=nv.length-1;i>=0;i--){const n=nv[i];if(n.tur)tourUpd(n,dt);if(n.route){if(n.route.kind===2){if(n.g.position.distanceTo(n.route.destination)<Math.max(100,n.route.speed*1.25))n.gone=1;else n.v.copy(n.route.direction).multiplyScalar(n.route.speed)}else{const to=n.route.destination.clone().sub(n.g.position),dl=to.length();if(dl<100)n.gone=1;else{n.v.copy(to.normalize().multiplyScalar(n.route.speed));n.g.lookAt(n.g.position.clone().sub(n.v))}}}n.g.position.addScaledVector(n.v,dt);if(n.gone){S.remove(n.g);nv.splice(i,1)}else if(n.hp<=0)killNv(i);else if(!n.route&&n.g.position.distanceTo(P)>3300){S.remove(n.g);nv.splice(i,1)}}
+if(state==="play"){nvT-=dt;if(nvT<=0&&nv.filter(n=>!n.tur&&!n.route).length<3){spawnNv();nvT=20+Math.random()*25}const harpies=nv.filter(n=>n.route&&n.route.kind===2).length;harpyTrafficT-=dt;if(harpies<10&&harpyTrafficT<=0){spawnPlanetFreighter(2);harpyTrafficT=.8+Math.random()*.7}else if(harpies>=10)harpyTrafficT=.35;planetTrafficT-=dt;if(planetTrafficT<=0&&nv.filter(n=>n.route&&n.route.kind!==2).length<4){spawnPlanetFreighter();planetTrafficT=24+Math.random()*16}tuT-=dt;if(tuT<=0){tuT=35+Math.random()*40;if(nv.filter(n=>n.tur&&!n.route).length<3)spawnTour(false)}}
 for(let i=trs.length-1;i>=0;i--){const t=trs[i];t.l-=dt;t.m.material.opacity=Math.max(0,t.l/.7);t.m.scale.multiplyScalar(1+(t.g||-1.5)*dt);if(t.l<=0){S.remove(t.m);trs.splice(i,1)}}
 xfUpd(dt);for(let i=deb.length-1;i>=0;i--){const d=deb[i];if(d.stationFall&&plt&&plt.visible){const grav=plt.position.clone().sub(d.m.position);if(grav.lengthSq()>1)d.v.addScaledVector(grav.normalize(),5.5*dt);if(d.m.position.distanceTo(plt.position)<PR+12){d.life=Math.min(d.life,.65);if(!d.hitPlanet){d.hitPlanet=1;boom(d.m.position,7,3,0xff9a50,12,.35)}}}d.m.position.addScaledVector(d.v,dt);d.m.rotation.x+=d.w.x*dt;d.m.rotation.y+=d.w.y*dt;d.m.rotation.z+=d.w.z*dt;if(d.m.material.isMeshStandardMaterial){d.m.material.emissiveIntensity=Math.max(0,d.m.material.emissiveIntensity-dt*1.4);d.m.material.emissive.lerp(CL551,Math.min(1,dt*1.5))}d.life-=dt;if(d.life<.8)d.m.scale.multiplyScalar(Math.max(0,1-2*dt));d.tt=(d.tt||0)-dt;if(d.tt<=0&&d.life>1.2){d.tt=d.stationFall?(TCH?.65:.38):(TCH?.2:.11);if(!d.stationFall||Math.random()<.72)trail(d.m.position,Math.random()<.5?"rgba(255,140,50,1)":"rgba(70,62,58,.9)",d.stationFall?2.4:3.2)}if(d.life<=0){S.remove(d.m);if(d.m.material&&d.m.material.dispose)d.m.material.dispose();gRel(d.m.geometry);deb.splice(i,1)}}
 for(let i=ali.length-1;i>=0;i--){const a=ali[i];a.t+=dt;a.v.multiplyScalar(Math.exp(-.7*dt));a.v.y+=.4*dt;if(a.t>.8)a.v.addScaledVector(a.d0,.8*dt);a.g.position.addScaledVector(a.v,dt);a.g.rotation.x+=a.sp.x*dt;a.g.rotation.y+=a.sp.y*dt;a.g.rotation.z+=a.sp.z*dt;a.sp.multiplyScalar(Math.exp(-.6*dt));a.f.scale.setScalar(a.t>.5?1.2+Math.random()*.6:.1);a.life-=dt;
@@ -1695,7 +1695,7 @@ function planetNavUpdate(){
 
 // ===== STARFALL v77 — RESTORED LIGHTING, BARREL FIRE AND ATTACK AI =====
 const pirateFleet=[];
-let pirateFleetReady=false,pirateFleetTemplates=null,pirateFleetFlameMat=null,pirateFleetSmokeTex=null,pirateFleetFireTex=null;
+let pirateFleetReady=false,pirateFleetTemplates=null,pirateFleetFlameMat=null,pirateFleetSmokeTex=null,pirateFleetFireTex=null,pirateFleetNextType=0,pirateFleetWaveTimer=0;
 /* Elite research adaptation: tactical decisions run at 15 Hz (four 60 Hz frames),
    while steering, orientation and world-position integration remain per-frame.
    Coordinates stay in Starfall/Three.js units; no ZX Spectrum scale is imported. */
@@ -1846,7 +1846,7 @@ function pirateFleetAttachFX(e){
 function pirateFleetSpawn(e,delay=0){
  pirateFleetPrepare();
  const g=pirateFleetTemplates[e.ty].clone(true),fw=new T.Vector3(0,0,-1).applyQuaternion(Q).normalize(),right=new T.Vector3(1,0,0).applyQuaternion(Q).normalize();
- g.position.copy(P).addScaledVector(fw,(760+e.slot*90)).addScaledVector(right,(e.slot-1.5)*110).add(new T.Vector3(0,(e.slot-1.5)*28,0));
+ g.position.copy(P).addScaledVector(fw,(760+e.slot*90)).addScaledVector(right,(e.slot-.5)*150).add(new T.Vector3(0,(e.slot-.5)*42,0));
  g.visible=false;S.add(g);e.g=g;const hit=pirateHitBounds(g);Object.assign(e,hit);const sockets=pirateFleetResolveSockets(g,e.ty);e.muzzleNodes=sockets.guns;e.engineNodes=sockets.engines;const fleetWaveScale=1+Math.min(.2,Math.max(0,wave-1)*.015);e.hp=e.mx=Math.max(160,SHIPS[shp].hull*1.65*DF[dif].hp*[1,.78,1.35,.9][e.ty]*fleetWaveScale);e.r=e.ty===0?8.5:7.2;e.warp=.55+delay;e.state="ATTACK";e.aiIntent="ATTACK";e.stateT=0;e.side=e.slot-1.5;e.aiSideSign=e.side<0?-1:1;
  e.aiClock=EAI.STEP*((e.slot+1)%4)/4;e.aiTicks=0;e.fire=.2+EAI.rand()*.22;e.burst=0;e.burstGap=0;e.trailT=.1;e.hits=0;e.vel=P.clone().sub(g.position).normalize().multiplyScalar([46,34.5,46,46][e.ty]||46);e.hd=e.vel.clone().normalize();e.speed=e.vel.length();e.runDir=null;e.dead=false;e.smoke=null;e.fireFx=null;e.flames=[];pirateFleetAttachFX(e);
 }
@@ -1858,8 +1858,9 @@ function pirateFleetClear(){
 function pirateFleetInit(){
  if(pirateFleetReady||state!=="play"||!pirateAssetsReady)return;
  pirateFleetPrepare();pirateFleetReady=true;EAI.seed((((sy+1)*0x9e3779b1)^((wave+1)*0x85ebca6b)^((score+1)*0xc2b2ae35))>>>0);
- [0,1,2].forEach((ty,i)=>{const e={slot:i,ty,g:null,hp:0,mx:0,respawn:Infinity,dead:false,flames:[]};pirateFleet.push(e);pirateFleetSpawn(e,i*.18)});
- say("ПИРАТСКАЯ АТАКА: 3 КОРАБЛЯ",3);
+ pirateFleetNextType=EAI.rand()*3|0;pirateFleetWaveTimer=0;
+ for(let slot=0;slot<2;slot++){const e={slot,ty:pirateFleetNextType,g:null,hp:0,mx:0,respawn:Infinity,dead:false,flames:[]};pirateFleet.push(e);pirateFleetSpawn(e,slot*.22)}
+ say("ПИРАТСКАЯ ПАРА: "+(["ГОЛОВОРЕЗЫ","ШАКАЛЫ","МАРОДЁРЫ"][pirateFleetNextType]),3);
 }
 function pirateDamageFxPrepare(){if(!pirateFleetSmokeTex)pirateFleetSmokeTex=gtex("rgba(55,55,58,.92)");if(!pirateFleetFireTex)pirateFleetFireTex=gtex("rgba(255,75,18,1)")}
 function pirateIgnite(e){if(!e||!e.g)return;pirateDamageFxPrepare();e.hits=(e.hits||0)+1;const c=e.hitCenter||new T.Vector3(),r=e.hitFxRadius||e.r||8;if(!e.fireFx){e.fireFx=new T.Sprite(new T.SpriteMaterial({map:pirateFleetFireTex,color:0xff6724,transparent:true,opacity:.96,blending:T.AdditiveBlending,depthWrite:false,depthTest:false}));e.fireFx.position.copy(c).add(new T.Vector3(0,r*.18,-r*.24));e.fireFx.scale.set(r*1.15,r*1.55,1);e.g.add(e.fireFx)}if(!e.damageFlames){e.damageFlames=[];for(let i=0;i<3;i++){const f=new T.Sprite(new T.SpriteMaterial({map:pirateFleetFireTex,color:[0xff4b18,0xff8a24,0xffc05a][i],transparent:true,opacity:.78,blending:T.AdditiveBlending,depthWrite:false,depthTest:false}));f.position.copy(c).add(new T.Vector3((i-1)*r*.42,r*(i===1?.12:-.08),r*(i===0?.35:-.28)));f.scale.set(r*(.62+i*.08),r*(.9+i*.12),1);e.g.add(f);e.damageFlames.push(f)}}if(!e.smoke){e.smoke=new T.Sprite(new T.SpriteMaterial({map:pirateFleetSmokeTex,transparent:true,opacity:.62,depthWrite:false,depthTest:false}));e.smoke.position.copy(c).add(new T.Vector3(0,r*.62,r*.04));e.smoke.scale.set(r*1.05,r*1.35,1);e.g.add(e.smoke)}e.fireTrailT=0}
@@ -1874,6 +1875,7 @@ function pirateFleetDamage(e,d,missile){
 }
 function pirateFleetUpdate(dt){
  if(state==="play"&&!pirateFleetReady&&pirateAssetsReady)pirateFleetInit();if(!pirateFleetReady||state!=="play")return;
+ if(pirateFleet.every(e=>!e.g)){pirateFleetWaveTimer-=dt;if(pirateFleetWaveTimer<=0){pirateFleetNextType=(pirateFleetNextType+1)%3;pirateFleet.forEach((e,i)=>{e.ty=pirateFleetNextType;e.dead=false;pirateFleetSpawn(e,i*.24)});pirateFleetWaveTimer=7;say("НОВАЯ ПИРАТСКАЯ ПАРА: "+(["ГОЛОВОРЕЗЫ","ШАКАЛЫ","МАРОДЁРЫ"][pirateFleetNextType]),2.5)}}
  for(const e of pirateFleet){
   if(!e.g){e.respawn-=dt;if(e.respawn<=0)pirateFleetSpawn(e,0);continue}
   if(e.warp>0){e.warp-=dt;if(e.warp<=0){e.g.visible=true;boom(e.g.position,22,8,0x88ccff,32,.7);ring(e.g.position,0x88ccff,5,2.4);sfx("e")}continue}
@@ -1885,7 +1887,7 @@ function pirateFleetUpdate(dt){
   const right=new T.Vector3().crossVectors(toPlayer.clone().normalize(),pirateFleetUp).normalize();
   const profilePhase=(e.aiTicks||0)*.19+e.slot*1.7;
   let aim=baseAim.clone(),targetSpeed=[49,56,34,47][e.ty],turnRate=[2.05,2.35,1.25,1.75][e.ty],acceleration=[68,76,38,58][e.ty];
-  if(e.state!=="EVADE"){
+  if(e.state!=="EVADE"){aim.addScaledVector(right,(e.slot===0?-1:1)*.22).normalize();
    if(e.ty===0){
     // Головорез: прямой агрессивный перехват, минимальный боковой уход.
     aim.lerp(toPlayer.clone().normalize(),.38).normalize();targetSpeed=dist>260?54:43;
@@ -2024,7 +2026,7 @@ upd=function(dt){_updWithPirateFleet(dt);pirateFleetUpdate(dt);resolvePirateShip
  const start=()=>{
   const date=iso(),stamp=date.replace(/[-:]/g,"").replace(/\.\d{3}Z$/,"Z");
   active={id:"sf-"+date.slice(0,10)+"-"+(crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2,14)),startedAt:date,elapsed:0,chunkIndex:1,records:[],seen:new Map(),projectiles:new Map()};
-  nextEntity=1;emit("session_start",{gameVersion:"v92.4",schemaVersion:SCHEMA,platform:matchMedia("(pointer:coarse)").matches?"touch":"desktop",system:typeof sy==="number"?sy:null,ship:typeof shp==="number"?shp:null,difficulty:typeof dif==="number"?dif:null,stamp});
+  nextEntity=1;emit("session_start",{gameVersion:"v92.5",schemaVersion:SCHEMA,platform:matchMedia("(pointer:coarse)").matches?"touch":"desktop",system:typeof sy==="number"?sy:null,ship:typeof shp==="number"?shp:null,difficulty:typeof dif==="number"?dif:null,stamp});
  };
  const finish=reason=>{
   if(!active)return;
