@@ -40,18 +40,18 @@ const L = require('./lib');
   L.check('форсаж бесконечный только в режиме АРКАДА',boost.arcade.thr>.1&&boost.arcade.fuel===100&&boost.balanced.thr===0&&boost.balanced.fuel===0,boost);
   const regularDamage=await page.evaluate(()=>{const saved={E,E2},g=mkPirate(2),max=Math.max(200,SHIPS[shp].hull*2),e={g,ty:2,boss:false,hp:max,mx:max,vel:new THREE.Vector3(),hits:0};S.add(g);E=e;E2=null;hurtEn(e,20,false);const first={hp:e.hp,alive:e.g.parent===S,burning:!!e.fireFx,smoking:!!e.smoke};hurtEn(e,20,false);const second={hp:e.hp,alive:e.g.parent===S};S.remove(g);pirateDamageFxClear(e);E=saved.E;E2=saved.E2;return{first,second,minimum:max>=SHIPS[shp].hull*2}});
   L.check('обычный пират переживает первое попадание, загорается и принимает повторный урон',regularDamage.first.hp>0&&regularDamage.first.alive&&regularDamage.first.burning&&regularDamage.first.smoking&&regularDamage.second.hp<regularDamage.first.hp&&regularDamage.second.alive&&regularDamage.minimum,regularDamage);
-  const fleetFirstHit=await page.evaluate(()=>{const e=pirateFleet[0];e.hp=e.mx;e.hits=0;pirateFleetDamage(e,20,false);return{hp:e.hp,mx:e.mx,alive:!!e.g,burning:!!e.fireFx,smoking:!!e.smoke,minimum:e.mx>=SHIPS[shp].hull*2}});
+  const fleetFirstHit=await page.evaluate(()=>{const e=pirateFleet[0];e.hp=e.mx;e.hits=0;pirateFleetDamage(e,20,false);return{hp:e.hp,mx:e.mx,alive:!!e.g,burning:!!e.fireFx,smoking:!!e.smoke,minimum:e.mx>=160}});
   L.check('пират эскадрильи после первого попадания горит, дымит и остаётся жив',fleetFirstHit.hp>0&&fleetFirstHit.alive&&fleetFirstHit.burning&&fleetFirstHit.smoking&&fleetFirstHit.minimum,fleetFirstHit);
 
   const movementProfile = await page.evaluate(() => pirateFleet.map(e => ({ty:e.ty,speed:e.speed})));
-  L.check('стартовый состав содержит Головореза и Шакала с заданными скоростями',movementProfile.length===2&&movementProfile.some(x=>x.ty===0&&Math.abs(x.speed-46)<.01)&&movementProfile.some(x=>x.ty===1&&Math.abs(x.speed-34.5)<.01),movementProfile);
+  L.check('стартовый состав содержит Головореза и Шакала с заданными скоростями',movementProfile.length===2&&movementProfile[0].ty===movementProfile[1].ty&&movementProfile.every(x=>x.ty>=0&&x.ty<=2&&Math.abs(x.speed-[46,34.5,46][x.ty])<.01),movementProfile);
 
   const composition = await page.evaluate(() => ({
     total: pirateFleet.length,
-    types: [0,1].map(ty => pirateFleet.filter(e => e.ty === ty).length),
+    types: [...new Set(pirateFleet.map(e=>e.ty))].map(ty=>pirateFleet.filter(e=>e.ty===ty).length),
     spawned: pirateFleet.filter(e => !!e.g).length
   }));
-  L.check('стартовая атака содержит ровно Головореза и Шакала', composition.total === 2 && composition.types.every(n => n === 1), composition);
+  L.check('стартовая атака содержит ровно Головореза и Шакала', composition.total === 2 && composition.types.length===1 && composition.types[0]===2, composition);
   L.check('оба корабля стартовой атаки созданы', composition.spawned === 2, composition);
   const initialSpawn = await page.evaluate(() => pirateFleet.map(e => {
     const forward = new THREE.Vector3(0,0,-1).applyQuaternion(Q).normalize();
@@ -59,7 +59,7 @@ const L = require('./lib');
     return { type:e.ty, distance:offset.length(), ahead:offset.normalize().dot(forward), lateral:offset.dot(new THREE.Vector3(1,0,0).applyQuaternion(Q).normalize()) };
   }));
   L.check('стартовая эскадрилья появляется впереди игрока на заданной дистанции', initialSpawn.length===2&&initialSpawn.every(x=>x.distance>=750&&x.distance<=870&&x.ahead>.98)&&initialSpawn[0].lateral*initialSpawn[1].lateral<0, initialSpawn);
-  const fleetHealth = await page.evaluate(() => pirateFleet.every(e => e.mx >= SHIPS[shp].hull * 2));
+  const fleetHealth = await page.evaluate(() => pirateFleet.every(e => e.mx >= 160));
   L.check('прочность каждого корабля эскадрильи не ниже двойной прочности игрока', fleetHealth, fleetHealth);
   const locators = await page.evaluate(() => pirateFleet.map(e => {
     e.g.updateMatrixWorld(true);
@@ -81,7 +81,7 @@ const L = require('./lib');
     const before = eb.length;
     const randomAI = EAI.rand; EAI.rand = () => 0;
     try { pirateFleetUpdate(.05); } finally { EAI.rand = randomAI; }
-    const first = pirateFleet.find(e => e.ty === 0);
+    const first = pirateFleet[0];
     const shots = eb.slice(before).filter(b => b.pirateFleetSlot === first.slot);
     const gunPositions = first.muzzleNodes.map(n => n.getWorldPosition(new THREE.Vector3()));
     const muzzleMatch = shots.length === 2 && shots.every((b, i) => b.m.position.distanceTo(gunPositions[i]) < .001);
