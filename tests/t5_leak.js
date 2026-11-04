@@ -85,18 +85,17 @@ const ff = (page, sec) => page.evaluate(s => { const n = Math.round(s / .05); fo
   });
   // Изолируем soak-тест от случайного появления новых торговых NPC.
   await page.evaluate(() => { nvT=1e9; harpyTrafficT=1e9; planetTrafficT=1e9; });
+  const freighterGeometryBaseline = await page.evaluate(() => [...window.__sfGeomDiag.records.keys()]);
   await page.evaluate(() => {
     const g = SKIT.mkFreighter(2, gtex);
     g.position.set(0, 0, -120);
     S.add(g);
-    nv.push({ g, v:new T.Vector3(), hp:420, route:{kind:2} });
+    nv.push({ g, v:new T.Vector3(), hp:420 });
   });
-  await L.sleep(400);
-  const freighterBeforeRemoval = await mem(page);
+  const freighterGeometryIds = await page.evaluate(base => [...window.__sfGeomDiag.records.keys()].filter(id => !base.includes(id)), freighterGeometryBaseline);
   await page.evaluate(() => removeNvAt(nv.length - 1));
-  await L.sleep(200);
-  const freighterAfterRemoval = await mem(page);
-  L.check('геометрия планетарного грузовоза освобождается при удалении', freighterAfterRemoval.g < freighterBeforeRemoval.g, { before:freighterBeforeRemoval.g, after:freighterAfterRemoval.g });
+  const freighterGeometryDisposed = await page.evaluate(ids => ids.length > 0 && ids.every(id => window.__sfGeomDiag.records.get(id)?.disposed), freighterGeometryIds);
+  L.check('геометрия планетарного грузовоза освобождается при удалении', freighterGeometryDisposed, { created:freighterGeometryIds.length, disposed:freighterGeometryDisposed });
   const b0 = await mem(page);
   const geomBaseline = await page.evaluate(() => [...window.__sfGeomDiag.records.keys()]);
   for (let r = 0; r < 8; r++) { await page.evaluate(() => { if (!E) spawnE(); if(E){E.fire=1e9;E.burstLeft=0;E.burstGap=1e9;} }); await ff(page, 5); await page.evaluate(() => { firing = true; }); await ff(page, 2); await page.evaluate(() => { firing = false; if (E) hurtEn(E, 1e6, false); spawnT=1e9; }); await ff(page, 3); }
