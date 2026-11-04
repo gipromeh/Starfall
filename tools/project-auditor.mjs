@@ -81,7 +81,7 @@ if (html) {
   const refs = /\b(?:src|href|poster|data-src)\s*=\s*(["'])(.*?)\1/gi;
   for (const match of markup.matchAll(refs)) {
     const value = match[2].trim();
-    if (!value || /^(?:[a-z][a-z0-9+.-]*:|\/\/|#|\/|data:|blob:|javascript:)/i.test(value) || /[{}<>]/.test(value)) continue;
+    if (!value || /^(?:[a-z][a-z0-9+.-]*:|\/\/|#|\/|data:|blob:|javascript:)/i.test(value) || /[{}<>]/.test(value) || value.includes('+') || value.includes('[') || value.includes(']') || value.includes('$')) continue;
     const target = path.posix.normalize(value.split(/[?#]/, 1)[0]);
     if (!exists(target)) missing.add(target);
   }
