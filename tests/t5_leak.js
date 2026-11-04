@@ -15,7 +15,7 @@ const ff = (page, sec) => page.evaluate(s => { const n = Math.round(s / .05); fo
         const g = o.geometry;
         let r = records.get(g.uuid);
         if (!r) {
-          r = { uuid:g.uuid, type:g.type, refs:0, disposed:false, keep:!!g.userData?.keep, rc:g.userData?.rc, firstAttach:(new Error()).stack?.split("\n").slice(2,6) };
+          r = { uuid:g.uuid, type:g.type, refs:0, disposed:false, keep:!!g.userData?.keep, rc:g.userData?.rc, firstAttach:(new Error()).stack?.split("\n").slice(2,12) };
           records.set(g.uuid,r);
         }
         r.refs++;
