@@ -1675,7 +1675,7 @@ function mkFreighter(){
  if(civilianArgoTemplate){
   const model=civilianArgoTemplate.clone(true);
   model.userData.trafficModel="nasa-argo";
-  if(civilianCargoTemplate){const cargo=civilianCargoTemplate.clone(true);cargo.scale.multiplyScalar(.65);cargo.position.set(0,0,12);cargo.userData.civilianCargoModule=true;model.add(cargo)}
+  if(civilianCargoTemplate){const cargo=civilianCargoTemplate.clone(true),parentScale=model.scale.x||1;cargo.scale.multiplyScalar(.65/parentScale);cargo.position.set(0,0,12/parentScale);cargo.userData.civilianCargoModule=true;model.add(cargo)}
   return model;
  }
  const g=new T.Group(),d=new T.MeshStandardMaterial({color:0x2d3644,metalness:.7,roughness:.5}),m=new T.MeshStandardMaterial({color:0x8c97a6,metalness:.6,roughness:.5}),cols=[0xd0502a,0x2a7ad0,0xd0b02a,0x3aa860],ad=(geo,mat,x,y,z)=>{const o=new T.Mesh(geo,mat);o.position.set(x,y,z);g.add(o);return o};
