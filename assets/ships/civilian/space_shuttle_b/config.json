@@ -22,7 +22,7 @@
   "production": {
     "glb": true,
     "uvMaps": true,
-    "bakedPbrTextures": true,
+    "bakedPbrTextures": false,
     "gameplayIntegrated": true
   }
 }
