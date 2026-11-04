@@ -44,7 +44,7 @@ const resultsPanel=node('section',{class:'panel'},side);node('h3',{text:'ПОИ�
 const results=node('div',{class:'results'},resultsPanel);
 const statusPanel=node('section',{class:'panel'},side);node('h3',{text:'КАТАЛОГ'},statusPanel);
 const status=node('div',{class:'status',text:'Ожидание каталога Spansh…'},statusPanel);
-node('div',{class:'hint',text:'Мышь / палец — вращение · колесо / pinch — масштаб\nКлик по звезде — сведения · поиск — переход · +/− масштаб'},root);
+node('div',{class:'hint',text:'Мышь / палец — вращение · колесо / ± — масштаб\nКлик по звезде — сведения · поиск — переход · +/− масштаб'},root);
 const bottom=node('div',{class:'bottom'},root);
 const allBtn=node('button',{text:'ВСЕ СИСТЕМЫ'},bottom),inhBtn=node('button',{text:'ОБЖИТЫЕ · НЕТ ДАННЫХ'},bottom),zoomInBtn=node('button',{text:'+'},bottom),zoomOutBtn=node('button',{text:'−'},bottom),resetBtn=node('button',{text:'СБРОС ВИДА'},bottom),closeBtn=node('button',{class:'close',text:'В ИГРУ'},bottom);
 const menuBtn=node('button',{id:'sf-galaxy-menu',text:'КАРТА ГАЛАКТИКИ · NAV'});
@@ -76,7 +76,7 @@ const localPoints=new T.Points(lg,new T.PointsMaterial({size:9,sizeAttenuation:f
 const ring=new T.Mesh(new T.TorusGeometry(13,.8,6,48),new T.MeshBasicMaterial({color:0x7ceaff,transparent:true,opacity:.95}));ring.visible=false;scene.add(ring);
 const routeMat=new T.LineBasicMaterial({color:0xffc46b,transparent:true,opacity:.9});
 let routeLine=null,records=[],filtered=[],selected=null,routeStart=null,routeEnd=null,points=null;let populationAvailable=false;
-let previousState='menu',previousHud='',opened=false,yaw=.18,pitch=.12,distance=3300,drag=null;
+let previousState='menu',previousHud='',opened=false,yaw=.18,pitch=.12,distance=3300,drag=null,target=new T.Vector3();
 const posOf=r=>new T.Vector3(r.x*.035,r.y*.035,r.z*.035);
 function disposePoints(){if(points){galaxy.remove(points);points.geometry.dispose();points.material.dispose();points=null;}}
 function buildPoints(list){
@@ -126,7 +126,7 @@ async function loadCatalog(){
   status.textContent+=' · SHA-256 подтверждён';
  }catch(e){status.textContent='Каталог Spansh недоступен ('+e.message+'). Доступны 5 локальных систем STARFALL.';console.warn('[STARFALL Galaxy Map]',e);}
 }
-function cameraUpdate(){const cp=Math.cos(pitch);camera.position.set(distance*Math.sin(yaw)*cp,distance*Math.sin(pitch),distance*Math.cos(yaw)*cp);camera.lookAt(0,0,0);}
+function cameraUpdate(){const cp=Math.cos(pitch);camera.position.set(target.x+distance*Math.sin(yaw)*cp,target.y+distance*Math.sin(pitch),target.z+distance*Math.cos(yaw)*cp);camera.lookAt(target);}
 function setSelected(r,isLocal){
  selected=r?{record:r,local:isLocal}:null;jumpBtn.disabled=!(selected&&isLocal&&previousState==='play'&&r.index!==sy);ring.visible=!!selected;
  if(!selected){info.textContent='Выберите звёздную систему на карте или через поиск.';return;}
@@ -134,7 +134,7 @@ function setSelected(r,isLocal){
  info.textContent=isLocal?r.name+' / '+r.title+' · сектор STARFALL\nТип: игровая система · гиперпрыжок поддерживается':
  r.name+'\nКоординаты: '+[r.x,r.y,r.z].map(v=>v.toFixed(2)).join(' / ')+' ly\nНаселение: '+(r.p?r.p.toLocaleString('ru-RU'):'нет данных')+'\nAllegiance: '+(r.a||'—')+' · Government: '+(r.g||'—')+'\nSecurity: '+(r.s||'—')+'\nEconomy: '+[r.e,r.e2].filter(Boolean).join(' / ')+'\nФракция: '+(r.f||'—')+' · Bodies: '+(r.bc||'—')+'\nSpansh reference · не подключено к симуляции STARFALL';
 }
-function focus(r,isLocal){const p=isLocal?new T.Vector3(r.x,r.y,r.z):posOf(r);yaw=Math.atan2(p.x,p.z);pitch=Math.max(-.8,Math.min(.8,Math.asin(p.y/Math.max(1,p.length()))));distance=Math.max(240,Math.min(3300,p.length()*2.8+260));cameraUpdate();setSelected(r,isLocal);}
+function focus(r,isLocal){const p=isLocal?new T.Vector3(r.x,r.y,r.z):posOf(r);target.copy(p);yaw=.18;pitch=.12;distance=Math.max(240,Math.min(3300,p.length()*.2+260));cameraUpdate();setSelected(r,isLocal);}
 function renderSearch(q){
  results.replaceChildren();q=q.trim().toLocaleLowerCase();if(!q)return;
  const found=[];local.forEach(r=>{if((r.name+' '+r.title).toLocaleLowerCase().includes(q))found.push({r,local:true});});
@@ -191,7 +191,7 @@ search.addEventListener('input',()=>renderSearch(search.value));jumpBtn.addEvent
 allBtn.addEventListener('click',()=>{filtered=records;allBtn.disabled=true;inhBtn.disabled=!(populationAvailable&&records.some(r=>r.p>0));});
 inhBtn.addEventListener('click',()=>{if(inhBtn.disabled)return;filtered=records.filter(r=>r.p>0);inhBtn.disabled=true;allBtn.disabled=false;});
 zoomInBtn.addEventListener('click',()=>{distance=Math.max(180,distance*.78);cameraUpdate();});zoomOutBtn.addEventListener('click',()=>{distance=Math.min(9000,distance/ .78);cameraUpdate();});
-resetBtn.addEventListener('click',()=>{yaw=.18;pitch=.12;distance=3300;cameraUpdate();if(routeLine){scene.remove(routeLine);routeLine.geometry.dispose();routeLine=null;}routeStart=routeEnd=null;routeBtn.textContent='НАЧАТЬ МАРШРУТ';});
+resetBtn.addEventListener('click',()=>{yaw=.18;pitch=.12;distance=3300;target.set(0,0,0);cameraUpdate();if(routeLine){scene.remove(routeLine);routeLine.geometry.dispose();routeLine=null;}routeStart=routeEnd=null;routeBtn.textContent='НАЧАТЬ МАРШРУТ';});
 addEventListener('keydown',e=>{const target=e.target;if(target&&(target.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)))return;if(e.code==='KeyN'&&!e.repeat&&(opened||state==='menu'||state==='play'||state==='jumpmenu')){e.preventDefault();opened?close():open();}if(e.code==='Escape'&&opened){e.preventDefault();close();}});
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();});
 function render(){if(!opened)return;R.render(scene,camera);}
