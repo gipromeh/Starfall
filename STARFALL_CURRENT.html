@@ -1499,6 +1499,7 @@ function attachNasaBaseStation(target){
  module.scale.multiplyScalar(.9);
  module.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=false}});
  target.add(module);
+ target.userData.nasaBaseStationPending=false;
  target.userData.nasaBaseStationAttached=true;
 }
 if(T.GLTFLoader&&location.protocol!=="file:"){
