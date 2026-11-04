@@ -1,4 +1,5 @@
 import * as B from '@babylonjs/core';
+import { attachGame } from './game.js';
 
 (() => {
 'use strict';
@@ -84,7 +85,7 @@ pads.forEach((p,i)=>{
  cylinder('towerPadBase'+i,p[0],p[1],p[2],2.55,0.28,M.edge,12);
  cylinder('towerPad'+i,p[0],p[1]+0.28,p[2],2.28,0.12,M.pad,12);
  const ring=B.MeshBuilder.CreateTorus('padRing'+i,{diameter:2.05,thickness:0.055,tessellation:32},scene);
- ring.position.set(p[0],p[1]+0.48,p[2]);ring.material=M.glow;
+ ring.position.set(p[0],p[1]+0.48,p[2]);ring.material=M.glow;ring.metadata={tdefPadIndex:i};
  const marker=B.MeshBuilder.CreateCylinder('padMarker'+i,{diameter:0.55,height:0.035,tessellation:4},scene);
  marker.position.set(p[0],p[1]+0.49,p[2]);marker.rotation.y=Math.PI/4;marker.material=M.gold;
 });
@@ -176,5 +177,6 @@ scene.onBeforeRenderObservable.add(()=>{
 });
 engine.runRenderLoop(()=>scene.render());
 window.addEventListener('resize',()=>{engine.resize();resizeCamera();});
+attachGame({B,scene,engine,curve,pads});
 window.__TDEF_SCENE_STARTED=true;
 })();
