@@ -3014,6 +3014,37 @@ if(T.GLTFLoader&&location.protocol!=="file:"){
   }catch(e){console.warn("GLB",d.url,e);pirateAssetDone()}
  },undefined,e=>{console.warn("GLB не загружен:",d.url,e);pirateAssetDone()}));
 }else pirateAssetsReady=true;
+/* Civilian traffic: low-poly Space Shuttle B. Procedural freighter remains fallback. */
+if(T.GLTFLoader&&location.protocol!=="file:"){
+ const CIV_=new T.GLTFLoader();
+ CIV_.load("assets/ships/civilian/space_shuttle_b/model.glb",gltf=>{
+  try{
+   const root=new T.Group();root.name="STARFALL_CIVILIAN_SHUTTLE_B";
+   root.add(gltf.scene);
+   root.updateMatrixWorld(true);
+   let bounds=new T.Box3().setFromObject(root),size=bounds.getSize(new T.Vector3());
+   const axes=[size.x,size.y,size.z],longest=axes.indexOf(Math.max(...axes));
+   const forward=new T.Vector3(longest===0?1:0,longest===1?1:0,longest===2?1:0);
+   root.quaternion.setFromUnitVectors(forward,new T.Vector3(0,0,-1));
+   root.updateMatrixWorld(true);
+   bounds.setFromObject(root);size=bounds.getSize(new T.Vector3());
+   const length=Math.max(size.x,size.y,size.z)||1;
+   root.scale.setScalar(70/length);
+   root.updateMatrixWorld(true);
+   bounds.setFromObject(root);
+   root.position.sub(bounds.getCenter(new T.Vector3()));
+   root.userData.sc=1.6;
+   root.traverse(o=>{
+    if(!o.isMesh)return;
+    o.castShadow=false;o.receiveShadow=false;
+    if(o.geometry)o.geometry.userData.keep=1;
+    if(o.material){const mats=Array.isArray(o.material)?o.material:[o.material];mats.forEach(m=>{m.roughness=Math.max(m.roughness||0,.55);m.needsUpdate=true})}
+   });
+   MC["f0"]=root;
+   console.info("[STARFALL] Civilian Shuttle B loaded: 2,476 triangles");
+  }catch(error){console.warn("[STARFALL] Civilian Shuttle B rejected; procedural freighter retained",error)}
+ },undefined,error=>console.warn("[STARFALL] Civilian Shuttle B unavailable; procedural freighter retained",error));
+}
 mkBoss=function(){return cached("boss",()=>applyPirateLivery(SKIT.mkBoss(gtex)))};
 mkStation=function(){return SKIT.mkStation(gtex)};
 mkFreighter=function(){const k=Math.random()<.6?0:1,g=cached("f"+k,()=>{const f=SKIT.mkFreighter(k,gtex);f.userData.sc=1.6;return f});return g};
