@@ -141,7 +141,7 @@ jobs:
       - name: Install test dependencies
         run: npm install --no-save --no-package-lock playwright@1.56.1 three@0.128.0 tsparticles@2.12.0
       - name: Install Chromium fallback (cache unavailable)
-        if: steps.chromium-cache.outputs.cache-hit != 'true' && matrix.test != 'iphone-webkit'
+        if: steps.chromium-cache.outputs.cache-hit != 'true' && matrix.test != 'iphone-webkit' && matrix.test != 'galaxy-map-webkit'
         run: npx playwright install chromium
       - name: Install WebKit fallback (cache unavailable)
         if: steps.chromium-cache.outputs.cache-hit != 'true' && (matrix.test == 'iphone-webkit' || matrix.test == 'galaxy-map-webkit')
