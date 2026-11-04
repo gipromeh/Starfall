@@ -21,7 +21,7 @@ const checks = [
  ['Jackal has the slowest E/E2 initial speed', html.includes('multiplyScalar([18,10,12,16][ty]||18)')],
  ['Golovoroz original turn coefficient restored', html.includes('tr=[.8,1.1,.65,.75][e.ty]')],
  ['Jackal has reduced pirate-fleet spawn speed', html.includes('multiplyScalar([46,34.5,46,46][e.ty]||46)')],
- ['Jackal has reduced pirate-fleet cruise speed', html.includes('const targetSpeed=46*[1,.75,1,1][e.ty]')],
+ ['pirate-fleet flight controller respects each ship configured cruise speed', html.includes('const targetSpeed=(e.ocsTargetSpeed||e.speed||0)*throttle;')],
  ['player collision includes pirate fleet', html.includes('fleet:true')&&html.includes('if(h.fleet)pirateFleetDamage')],
  ['NPC collision solver exists', html.includes('function resolvePirateShipCollisions()')],
  ['NPC collision solver separates overlapping ships', html.includes('penetration=minimum-distance+.05')],
