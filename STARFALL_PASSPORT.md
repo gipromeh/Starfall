@@ -177,10 +177,10 @@
 date: 2026-10-31
 topic: STARFALL: паспорт проекта (архитектура, технологии, механика, сохранения, качество)
 tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура]
-game_version: "v92.2"
+game_version: "v92.8"
 last_update: 2026-11-04
 main_file: starfall.html
-main_file_sha256: "31ff74a9039d3311f757692f463185936479884c9c4d4cd3df700526c5b60c40"
+main_file_sha256: "4f92a4abcc3c66a2b699c4c1076fb6db5a1a5cfd17938a0b7b505dea3681adc3"
 save_format_version: 3
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"
@@ -908,3 +908,11 @@ PV (конец скрипта): ангар-превью, обёртка hgrView;
 - Публикация вручную через Actions workflow `.github/workflows/update-elite-lite.yml`; workflow коммитит сгенерированный файл в `data/elite-dangerous-lite/`.
 - Lite содержит координаты и системные метаданные, но не полные записи планет/звёзд/станций. Выборка не является полной галактикой.
 - Статус: код и workflow добавлены; сборка/публикация dataset ещё не запускались. Игровой HTML не менялся.
+
+
+## v92.8 — интеграция Galaxy Map
+- Добавлен отдельный режим 3D-карты галактики на существующем Three.js r128 renderer; второй WebGL-контекст не создаётся.
+- Локальные пять систем STARFALL отображаются в отдельном условном кластере; выбор локальной системы из полёта запускает существующий гиперпрыжок.
+- Подключён загрузчик Spansh Lite gzip JSONL с потоковой распаковкой, поиском, фильтром обитаемых систем, карточкой системных метаданных и справочными маршрутами.
+- Внешний каталог не подменяет игровые SYS/GAL, не меняет SAVE и не активирует симуляцию экономики/миссий для внешних систем.
+- Добавлены source-contract проверки и документация `docs/GALAXY_MAP.md`. Автоматический CI запускается на push; физический iPhone Safari playtest ещё не выполнен.
