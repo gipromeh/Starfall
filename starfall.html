@@ -1506,7 +1506,7 @@ function crashKill(msg){if(state!=="play")return;shield=0;hull=0;used=1;say(msg,
 /* ===== ТУРИСТЫ + ПЕРСИСТЕНТНЫЙ МИР ===== */
 const TMC={};
 const TK=[{n:"Круизный лайнер",ch:40,cr:10,hp:320,sp:30},{n:"Яхта",ch:17,cr:5,hp:140,sp:60},{n:"Экскурсионный шаттл",ch:13,cr:7,hp:200,sp:44}];
-function mkTourist(k){const g=SKIT.mkTourist(k,gtex);g.userData.sc=1;return g}
+function mkTourist(k){const g=SKIT.mkTourist(k,gtex);g.userData.sc=1;g.traverse(o=>{if(o.geometry)o.geometry.userData.keep=true});return g}
 function spawnTour(near){if(!stn||!stn.visible)return;const k=Math.floor(Math.random()*3),g=(TMC[k]||(TMC[k]=mkTourist(k))).clone(true),d=rd();d.y*=.25;d.normalize();g.position.copy(stn.position).addScaledVector(d,near?400+Math.random()*120:2000+Math.random()*400);S.add(g);const dest=rd();dest.y*=.25;dest.normalize();
  nv.push({g,v:new T.Vector3(),hp:TK[k].hp,hit:0,tur:{k,st:near?"orb":"in",r:360+Math.random()*200,a:Math.random()*6.283,dr:Math.random()<.5?1:-1,t:0,tOrb:18+Math.random()*24,dest,yo:(Math.random()-.5)*160,spd:TK[k].sp},ch:TK[k].ch,cr:TK[k].cr})}
 function tourUpd(n,dt){const u=n.tur,g=n.g,c=stn&&stn.visible?stn.position:null;let want;
