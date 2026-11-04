@@ -141,7 +141,7 @@ jobs:
         if: steps.chromium-cache.outputs.cache-hit != 'true' && matrix.test != 'iphone-webkit'
         run: npx playwright install chromium
       - name: Install WebKit fallback (cache unavailable)
-        if: steps.chromium-cache.outputs.cache-hit != 'true' && matrix.test == 'iphone-webkit'
+        if: steps.chromium-cache.outputs.cache-hit != 'true' && (matrix.test == 'iphone-webkit' || matrix.test == 'galaxy-map-webkit')
         run: npx playwright install webkit
       - name: Install WebKit system dependencies
         if: matrix.test == 'iphone-webkit' && runner.os == 'Linux'
