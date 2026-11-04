@@ -2,8 +2,11 @@ const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
 const html = fs.readFileSync(path.join(__dirname, '..', 'starfall.html'), 'utf8');
+const passport = fs.readFileSync(path.join(__dirname, '..', 'STARFALL_PASSPORT.md'), 'utf8');
+const gameVersion = html.match(/starfall-version\" content=\"(v[0-9.]+)\"/)?.[1];
+const passportVersion = passport.match(/^game_version:\\s*\"(v[0-9.]+)\"/m)?.[1];
 const checks = [
- ['HTML build version is v92.2', html.includes('<meta name="starfall-version" content="v92.2">')],
+ ['HTML build version matches project passport', !!gameVersion && gameVersion === passportVersion],
  ['laser projectiles explicitly tagged', html.includes('arr.push({m,v,dmg,life,kind:"laser"})')],
  ['ballistic projectiles explicitly tagged', html.includes('arr.push({m,v,dmg,life,kind:"projectile"})')],
  ['hostile homing missiles explicitly tagged', html.includes('q.hm=1;q.kind="hostile-missile"')],
