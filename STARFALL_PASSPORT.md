@@ -917,3 +917,4 @@ PV (конец скрипта): ангар-превью, обёртка hgrView;
 - Подключён загрузчик Spansh Lite gzip JSONL с проверкой manifest/SHA-256, потоковой распаковкой, поиском, карточкой метаданных и справочными маршрутами. Фильтр обитаемых систем включается только при наличии population-поля; в текущем snapshot `population_field_records: 0`, поэтому он отключён.
 - Внешний каталог не подменяет игровые SYS/GAL, не меняет SAVE и не активирует симуляцию экономики/миссий для внешних систем.
 - Добавлены source-contract проверки и Playwright browser regressions для Chromium и WebKit; `tests/lib.js` обслуживает локальные map/data assets и использует localhost для Web Crypto. Физический iPhone Safari playtest ещё не выполнен.
+- Для мобильного управления отключается системный touch-scroll только на canvas карты; исходный `touch-action` восстанавливается при закрытии. Gzip URL версионируется SHA-256 из manifest, чтобы CDN/browser cache не смешивал разные публикации.
