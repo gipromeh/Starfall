@@ -2002,6 +2002,9 @@ function pirateStrategicFindNpc(id){return id?nv.find(n=>n&&n._sfStrategicNpcId=
 function pirateStrategicAttachEnemy(en,preferred){
  if(!en||!en.g)return null;const data=pirateStrategicSystem(sy,true);
  let g=preferred||data.groups.find(x=>x.id===en._sfStrategicGroupId)||data.groups.find(x=>x._enemyRef===en);
+ if(!g&&en._sfStrategicGroupId){
+  for(const oldSystem of PIRATE_STRATEGIC.systems){if(!oldSystem||oldSystem===data)continue;const index=oldSystem.groups.findIndex(x=>x.id===en._sfStrategicGroupId);if(index>=0){g=oldSystem.groups.splice(index,1)[0];data.groups.push(g);break}}
+ }
  if(!g)g=pirateStrategicCreateGroup(sy,"encounter",en.g.position,PIRATE_STRATEGIC_ROLES[en.ty%3],1);
  g._enemyRef=en;g.state="intercept";g.position=pirateStrategicArray(en.g.position);g.hull=pirateStrategicClamp(en.hp/Math.max(1,en.mx||en.hp),0,1);en._sfStrategicGroupId=g.id;
  const target=pirateStrategicFindNpc(g.targetNpcId)||pirateStrategicPickTarget(g,3200);
