@@ -46,7 +46,7 @@ const statusPanel=node('section',{class:'panel'},side);node('h3',{text:'КАТА
 const status=node('div',{class:'status',text:'Ожидание каталога Spansh…'},statusPanel);
 node('div',{class:'hint',text:'Мышь / палец — вращение · колесо / pinch — масштаб\nКлик по звезде — сведения · поиск — переход'},root);
 const bottom=node('div',{class:'bottom'},root);
-const allBtn=node('button',{text:'ВСЕ СИСТЕМЫ'},bottom),inhBtn=node('button',{text:'ОБЖИТЫЕ'},bottom),resetBtn=node('button',{text:'СБРОС ВИДА'},bottom),closeBtn=node('button',{class:'close',text:'В ИГРУ'},bottom);
+const allBtn=node('button',{text:'ВСЕ СИСТЕМЫ'},bottom),inhBtn=node('button',{text:'ОБЖИТЫЕ'},bottom),zoomInBtn=node('button',{text:'+'},bottom),zoomOutBtn=node('button',{text:'−'},bottom),resetBtn=node('button',{text:'СБРОС ВИДА'},bottom),closeBtn=node('button',{class:'close',text:'В ИГРУ'},bottom);
 const menuBtn=node('button',{id:'sf-galaxy-menu',text:'КАРТА ГАЛАКТИКИ · NAV'});
 $('mnmain')?.appendChild(menuBtn);
 const hudBtn=node('button',{id:'sf-galaxy-hud',text:'КАРТА [N]'},$('hud'));
@@ -164,6 +164,7 @@ search.addEventListener('input',()=>renderSearch(search.value));jumpBtn.addEvent
 [closeTop,closeBtn].forEach(b=>b.addEventListener('click',close));menuBtn.addEventListener('click',open);hudBtn.addEventListener('click',open);
 allBtn.addEventListener('click',()=>{filtered=records;allBtn.disabled=true;inhBtn.disabled=false;});
 inhBtn.addEventListener('click',()=>{filtered=records.filter(r=>r.p>0);inhBtn.disabled=true;allBtn.disabled=false;});
+zoomInBtn.addEventListener('click',()=>{distance=Math.max(180,distance*.78);cameraUpdate();});zoomOutBtn.addEventListener('click',()=>{distance=Math.min(9000,distance/ .78);cameraUpdate();});
 resetBtn.addEventListener('click',()=>{yaw=.18;pitch=.12;distance=3300;cameraUpdate();if(routeLine){scene.remove(routeLine);routeLine.geometry.dispose();routeLine=null;}routeStart=routeEnd=null;routeBtn.textContent='НАЧАТЬ МАРШРУТ';});
 addEventListener('keydown',e=>{if(e.code==='KeyN'&&!e.repeat){e.preventDefault();opened?close():open();}if(e.code==='Escape'&&opened){e.preventDefault();close();}});
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();});
