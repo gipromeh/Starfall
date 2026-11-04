@@ -61,6 +61,8 @@ jobs:
           print(f"Extracted {len(parser.scripts)} inline JavaScript blocks")
           PY
           for script in /tmp/starfall-inline-*.js; do node --check "$script"; done
+          node --check tools/galaxy-map.js
+          node tests/t20_galaxy_map.js
       - name: AI Lab architecture regression (static)
         run: node tests/t12_ai_lab.js
       - name: Radar and collision regression (static)
