@@ -1,0 +1,21 @@
+import assert from 'node:assert/strict';
+import { createPirateStrategicAI } from '../src/ai/PirateStrategicAI.mjs';
+
+const ai=createPirateStrategicAI({seed:0x1234,maxGroups:4,decisionInterval:1});
+const group=ai.addGroup({id:'corsairs-a',faction:'corsairs',position:{x:0,y:0,z:0},ships:3,aggression:.9});
+assert.equal(group.state,'patrol');
+assert.throws(()=>ai.addGroup({id:'corsairs-b',ships:7}),/capacity|Duplicate/);
+const contacts=[{id:'hauler-1',faction:'trade-union',position:{x:0,y:0,z:10000},value:1,vulnerability:.9,tradeRouteRisk:1}];
+ai.update(1,{contacts});
+assert.equal(ai.getGroup('corsairs-a').state,'intercept');
+assert.equal(ai.getGroup('corsairs-a').targetId,'hauler-1');
+const p0=ai.getGroup('corsairs-a').position;
+ai.update(2,{contacts});
+assert.ok(ai.getGroup('corsairs-a').position.z>p0.z);
+const saved=ai.snapshot(),restored=createPirateStrategicAI({seed:1,maxGroups:4});restored.restore(saved);
+assert.deepEqual(restored.snapshot(),saved);
+restored.update(1,{contacts,threatByGroup:{'corsairs-a':99}});
+assert.equal(restored.getGroup('corsairs-a').state,'retreat');
+const home=restored.getGroup('corsairs-a');
+assert.equal(home.state,'retreat');
+console.log('Pirate strategic AI: group lifecycle, contact selection, movement, retreat and save/restore passed');
