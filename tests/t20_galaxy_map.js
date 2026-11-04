@@ -2,6 +2,9 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const html = fs.readFileSync('starfall.html', 'utf8');
+const passport = fs.readFileSync('STARFALL_PASSPORT.md', 'utf8');
+const gameVersion = html.match(/starfall-version\" content=\"(v[0-9.]+)\"/)?.[1];
+const passportVersion = passport.match(/^game_version:\s*\"(v[0-9.]+)\"/m)?.[1];
 const map = fs.readFileSync('tools/galaxy-map.js', 'utf8');
 assert.match(html, /starfall-version" content="v95"/);
 assert.match(html, /\.\/tools\/galaxy-map\.js/);
