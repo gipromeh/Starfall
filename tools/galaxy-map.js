@@ -157,7 +157,7 @@ function exploreExternal(){
  externalRoot=window.SF_EXTERNAL_SYSTEMS.build(externalRecord,T,matchMedia('(pointer:coarse)').matches);scene.add(externalRoot);
  target.set(0,0,0);yaw=.5;pitch=.22;distance=330;cameraUpdate();
  const d=externalRoot.userData.externalSystem.data;
- info.textContent=externalRecord.name+'\\nПРОЦЕДУРНАЯ СИСТЕМА · ID '+d.id+'\\nЗвезда: '+d.star.class+' · '+d.star.name+'\\nТемпература: '+d.star.temp+'\\nПланеты: '+d.planets.length+' · Пояс астероидов: '+(d.belt?'есть':'нет')+'\\nСтанция: '+(d.station?d.station.type:'не обнаружена')+'\\nОрбитальный обзор · экономика STARFALL не затрагивается';
+ info.textContent=externalRecord.name+'\nПРОЦЕДУРНАЯ СИСТЕМА · ID '+d.id+'\nЗвезда: '+d.star.class+' · '+d.star.name+'\nТемпература: '+d.star.temp+'\nПланеты: '+d.planets.length+' · Пояс астероидов: '+(d.belt?'есть':'нет')+'\nСтанция: '+(d.station?d.station.type:'не обнаружена')+'\nОрбитальный обзор · экономика STARFALL не затрагивается';
  exploreBtn.style.display='none';returnBtn.style.display='';jumpBtn.style.display='none';routeBtn.style.display='none';
  status.textContent='РЕЖИМ ИССЛЕДОВАНИЯ · вращайте систему, масштабируйте колесом или кнопками. Повторная генерация по ID воспроизводима.';
 }
