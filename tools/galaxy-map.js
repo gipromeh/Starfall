@@ -10,7 +10,7 @@ const node = (tag, attrs, parent) => {
   if(parent)parent.appendChild(n);return n;
 };
 const css = [
-'#sf-galaxy{position:fixed;inset:0;z-index:80;display:none;pointer-events:none;color:#d7f2ff;background:radial-gradient(ellipse at 50% 45%,#09203b,#020711 68%,#010309);font:13px "Exo 2",sans-serif;letter-spacing:.04em}',
+'#sf-galaxy{position:fixed;inset:0;z-index:80;display:none;pointer-events:none;color:#d7f2ff;background:transparent;font:13px "Exo 2",sans-serif;letter-spacing:.04em}',
 '#sf-galaxy .top{pointer-events:auto;position:absolute;z-index:3;left:0;right:0;top:0;display:flex;align-items:center;gap:9px;padding:max(10px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) 10px max(14px,env(safe-area-inset-left));background:linear-gradient(#020813ee,#02081399,transparent)}',
 '#sf-galaxy .title{font:19px "Russo One",sans-serif;letter-spacing:.14em;color:#72dfff;text-shadow:0 0 16px #28bfff}',
 '#sf-galaxy .spacer{flex:1}#sf-galaxy button{min-width:0;padding:8px 12px;border:1px solid #4fd0ff99;background:#06203aee;color:#d7f2ff;font:700 11px "Exo 2",sans-serif;letter-spacing:.06em;cursor:pointer}',
@@ -167,6 +167,7 @@ function routeAction(){
  if(!selected){status.textContent='Сначала выберите систему.';return;}
  if(!routeStart){routeStart=selected;routeBtn.textContent='ВЫБРАТЬ ФИНИШ';status.textContent='Старт: '+selected.record.name+'. Выберите систему назначения.';return;}
  routeEnd=selected;routeBtn.textContent='СБРОСИТЬ МАРШРУТ';
+ if(routeStart.local!==routeEnd.local){status.textContent='Маршрут между STARFALL и Spansh не строится: координаты локального сектора условные, координаты каталога заданы в ly. Выберите две системы одного слоя.';routeStart=routeEnd=null;routeBtn.textContent='НАЧАТЬ МАРШРУТ';return;}
  const a=routeStart.local?new T.Vector3(routeStart.record.x,routeStart.record.y,routeStart.record.z):posOf(routeStart.record);
  const b=routeEnd.local?new T.Vector3(routeEnd.record.x,routeEnd.record.y,routeEnd.record.z):posOf(routeEnd.record);
  if(routeLine){scene.remove(routeLine);routeLine.geometry.dispose();}
