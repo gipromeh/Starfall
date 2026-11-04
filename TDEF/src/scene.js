@@ -176,6 +176,7 @@ function resizeCamera(){
 }
 engine.onResizeObservable.add(resizeCamera);resizeCamera();
 scene.onBeforeRenderObservable.add(()=>{
+ resizeCamera();
  const t=performance.now()*0.0005;
  water1.position.y=-0.04+Math.sin(t)*0.018;water2.position.y=-0.04+Math.sin(t+1)*0.018;
 });
