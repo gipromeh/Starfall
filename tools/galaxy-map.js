@@ -149,7 +149,7 @@ function renderSearch(q){
  found.slice(0,14).forEach(v=>{const b=node('button',{},results);node('span',{text:v.r.name},b);node('small',{text:v.local?'STARFALL':'SPANSH'},b);b.addEventListener('click',()=>focus(v.r,v.local));});
  if(!found.length)node('div',{class:'meta',text:'Совпадений нет.'},results);
 }
-function leaveExternal(){if(!externalRoot)return;scene.remove(externalRoot);window.SF_EXTERNAL_SYSTEMS.dispose(externalRoot);externalRoot=null;externalRecord=null;galaxy.visible=true;localGroup.visible=true;if(points)points.visible=true;ring.visible=!!selected;exploreBtn.style.display='';returnBtn.style.display='none';jumpBtn.style.display='';routeBtn.style.display='';}
+function leaveExternal(){if(!externalRoot)return;scene.remove(externalRoot);window.SF_EXTERNAL_SYSTEMS.dispose(externalRoot);externalRoot=null;externalRecord=null;galaxy.visible=true;localGroup.visible=true;if(points)points.visible=true;ring.visible=!!selected;exploreBtn.style.display='';returnBtn.style.display='none';jumpBtn.style.display='';routeBtn.style.display='';search.disabled=false;}
 function exploreExternal(){
  if(!selected||selected.local||!window.SF_EXTERNAL_SYSTEMS)return;
  if(externalRoot)leaveExternal();
@@ -158,7 +158,7 @@ function exploreExternal(){
  target.set(0,0,0);yaw=.5;pitch=.22;distance=330;cameraUpdate();
  const d=externalRoot.userData.externalSystem.data;
  info.textContent=externalRecord.name+'\nПРОЦЕДУРНАЯ СИСТЕМА · ID '+d.id+'\nЗвезда: '+d.star.class+' · '+d.star.name+'\nТемпература: '+d.star.temp+'\nПланеты: '+d.planets.length+' · Пояс астероидов: '+(d.belt?'есть':'нет')+'\nСтанция: '+(d.station?d.station.type:'не обнаружена')+'\nОрбитальный обзор · экономика STARFALL не затрагивается';
- exploreBtn.style.display='none';returnBtn.style.display='';jumpBtn.style.display='none';routeBtn.style.display='none';
+ exploreBtn.style.display='none';returnBtn.style.display='';jumpBtn.style.display='none';routeBtn.style.display='none';search.disabled=true;
  status.textContent='РЕЖИМ ИССЛЕДОВАНИЯ · вращайте систему, масштабируйте колесом или кнопками. Повторная генерация по ID воспроизводима.';
 }
 function close(){
