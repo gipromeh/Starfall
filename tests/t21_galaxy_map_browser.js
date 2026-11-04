@@ -24,7 +24,7 @@ const zlib = require('node:zlib');
       sharedRenderer: !!R && !!R.domElement,
       version: document.querySelector('meta[name="starfall-version"]')?.content
     }));
-    L.check('Galaxy Map: загрузчик подключён к игре', boot.mapButton && boot.sharedRenderer && boot.version === 'v93', boot);
+    L.check('Galaxy Map: загрузчик подключён к игре', boot.mapButton && boot.sharedRenderer && boot.version === 'v94', boot);
 
     await page.evaluate(() => window.SF_GALAXY_MAP.open());
     await page.waitForFunction(() => state === 'galaxy', null, { timeout: 10000 });
@@ -61,6 +61,9 @@ const zlib = require('node:zlib');
     L.check('Galaxy Map: внешний режим изолирован от экономики', explorationStatus.includes('РЕЖИМ ИССЛЕДОВАНИЯ'), explorationStatus);
     const bodyButtons = page.locator('#sf-galaxy .results button');
     L.check('Galaxy Map: доступны фокусировка на телах системы', await bodyButtons.count() >= exploration.planets + 1, await bodyButtons.count());
+    await bodyButtons.first().click();
+    const starFocusStatus = await page.locator('#sf-galaxy .status').textContent();
+    L.check('Galaxy Map: камера фокусируется на звезде', starFocusStatus.includes('ОБЗОР ОБЪЕКТА'), starFocusStatus);
     await bodyButtons.nth(1).click();
     const bodyFocusStatus = await page.locator('#sf-galaxy .status').textContent();
     L.check('Galaxy Map: камера фокусируется на выбранной планете', bodyFocusStatus.includes('ОБЗОР ОБЪЕКТА'), bodyFocusStatus);
