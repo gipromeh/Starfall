@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="claude:viewport-fit-sides" content="cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#02030a"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>STARFALL</title>
-<meta name="starfall-version" content="v95">
+<meta name="starfall-version" content="v96">
 <meta name="starfall-telemetry-endpoint" content="">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 <style>
@@ -3081,6 +3081,16 @@ function loadExtraPirateAssets(){
  },undefined,e=>{console.warn("GLB extra pirate unavailable; procedural fallback active:",d.url,e);pirateExtraAssetDone()}));
 }
 function pirateAssetDone(){if(++pirateAssetsDone>=GLB_PIR.length)loadExtraPirateAssets()}
+// v96: Pirate3 is the fourth fighter archetype; Pirate4 is reserved for pirate transport traffic.
+const mkPirateProcedural=mkPirate;
+mkPirate=function(ty,...args){
+ if(ty===2&&MC.p2)return MC.p2.clone(true);
+ return mkPirateProcedural(ty,...args);
+};
+function mkPirateTransport(){
+ if(!MC.p3)return null;
+ const g=MC.p3.clone(true);g.userData={...g.userData,sc:2.2,pirateTransport:true};return g;
+}
 if(T.GLTFLoader&&location.protocol!=="file:"){
  const GL_=new T.GLTFLoader();
  GLB_PIR.forEach(d=>GL_.load(d.url,gl=>{
@@ -3101,7 +3111,7 @@ if(T.GLTFLoader&&location.protocol!=="file:"){
 }else pirateAssetsReady=true;
 mkBoss=function(){return cached("boss",()=>applyPirateLivery(SKIT.mkBoss(gtex)))};
 mkStation=function(){return SKIT.mkStation(gtex)};
-mkFreighter=function(){const k=Math.random()<.6?0:1,g=cached("f"+k,()=>{const f=SKIT.mkFreighter(k,gtex);f.userData.sc=1.6;return f});return g};
+mkFreighter=function(){if(MC.p3&&Math.random()<.14)return cached("pirate-transport",()=>mkPirateTransport());const k=Math.random()<.6?0:1,g=cached("f"+k,()=>{const f=SKIT.mkFreighter(k,gtex);f.userData.sc=1.6;return f});return g};
 // ангар: шкалы под новые корабли
 {const _h=hgrView;hgrView=function(box,s,n){_h(box,s,n);const b=box.querySelectorAll(".hg-s b"),q=SHIPS[shp];if(b.length>=4){b[0].style.width=Math.min(100,q.hull/4.5)+"%";b[1].style.width=Math.min(100,q.spd*80)+"%";b[3].style.width=Math.min(100,q.cargo*3.4)+"%"}}}
 applyShip();
