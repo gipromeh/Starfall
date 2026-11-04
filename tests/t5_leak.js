@@ -83,6 +83,13 @@ const ff = (page, sec) => page.evaluate(s => { const n = Math.round(s / .05); fo
     for (const instance of window.__sfTouristWarmup || []) S.remove(instance);
     window.__sfTouristWarmup = [];
   });
+  await page.evaluate(() => spawnPlanetFreighter(2));
+  await L.sleep(300);
+  const freighterBeforeRemoval = await mem(page);
+  await page.evaluate(() => removeNvAt(nv.length - 1));
+  await L.sleep(300);
+  const freighterAfterRemoval = await mem(page);
+  L.check('геометрия планетарного грузовоза освобождается при удалении', freighterAfterRemoval.g < freighterBeforeRemoval.g, { before:freighterBeforeRemoval.g, after:freighterAfterRemoval.g });
   const b0 = await mem(page);
   const geomBaseline = await page.evaluate(() => [...window.__sfGeomDiag.records.keys()]);
   for (let r = 0; r < 8; r++) { await page.evaluate(() => { if (!E) spawnE(); if(E){E.fire=1e9;E.burstLeft=0;E.burstGap=1e9;} }); await ff(page, 5); await page.evaluate(() => { firing = true; }); await ff(page, 2); await page.evaluate(() => { firing = false; if (E) hurtEn(E, 1e6, false); spawnT=1e9; }); await ff(page, 3); }
