@@ -6,14 +6,26 @@
 <meta name="theme-color" content="#17221c">
 <title>TDEF — Babylon.js Scene</title>
 <style>
-*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#17221c;font-family:Arial,sans-serif}
+*{box-sizing:border-box}
+html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#17221c;font-family:Arial,sans-serif}
 #renderCanvas{width:100%;height:100%;display:block;touch-action:none;outline:none}
-#gameHud{position:fixed;z-index:6;left:max(10px,env(safe-area-inset-left));top:max(10px,env(safe-area-inset-top));max-width:min(310px,calc(100vw - 20px));color:#f3ead5;background:#18251de8;border:1px solid #d4b77966;border-radius:9px;font-size:12px;box-shadow:0 3px 14px #0005}#gameHud summary{display:flex;align-items:center;gap:10px;min-height:38px;padding:7px 10px;cursor:pointer;list-style:none;font-weight:600}#gameHud summary::-webkit-details-marker{display:none}#gameHud summary .stats{display:flex;gap:10px;flex-wrap:wrap}#gameHud .controls{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:0 9px 9px}#gameHud button,#gameHud select{min-height:34px;border:1px solid #b99a68;border-radius:6px;background:#354638;color:#fff4dc;padding:6px 8px;font-weight:600;font-size:12px}#gameHud button.active{background:#8b5b2b}#gameHud button:disabled{opacity:.45}#gameMessage{grid-column:1/-1;min-height:18px;line-height:1.3;color:#f4d99a}#gameHud label{align-self:center}
 #loading,#error{position:fixed;z-index:20;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;color:#f3ead5;background:#17221c}
-#error{display:none;background:#241b18}.message{max-width:620px;line-height:1.55}.message strong{display:block;font-size:20px;margin-bottom:12px}
-#gameHud{position:fixed;z-index:6;right:max(12px,env(safe-area-inset-right));top:max(10px,env(safe-area-inset-top));display:flex;flex-direction:column;gap:8px;width:min(270px,42vw);padding:12px;color:#f3ead5;background:#18251de8;border:1px solid #d4b77966;border-radius:10px;font-size:13px;pointer-events:auto}#gameHud .stats{display:grid;grid-template-columns:1fr 1fr;gap:5px}#gameHud button,#gameHud select{min-height:38px;border:1px solid #b99a68;border-radius:7px;background:#354638;color:#fff4dc;padding:7px 9px;font-weight:600}#gameHud button.active{background:#8b5b2b}#gameHud button:disabled{opacity:.45}#gameMessage{min-height:32px;line-height:1.35;color:#f4d99a}#rotate{display:none;position:fixed;z-index:10;inset:0;align-items:center;justify-content:center;text-align:center;padding:28px;color:#fff4dc;background:#101a17ef}
-@media(orientation:portrait){#rotate{display:flex}#gameHud{width:min(220px,46vw);font-size:11px;padding:8px;gap:5px}#gameHud button,#gameHud select{min-height:32px;padding:5px}#hint{max-width:calc(100vw - 24px);font-size:11px}}
-@media(orientation:landscape) and (max-height:480px){#gameHud summary{min-height:32px;padding:5px 8px}#gameHud .controls{gap:4px;padding:0 7px 7px}}}
+#error{display:none;background:#241b18}
+.message{max-width:620px;line-height:1.55}
+.message strong{display:block;font-size:20px;margin-bottom:12px}
+#rotate{display:none;position:fixed;z-index:10;inset:0;align-items:center;justify-content:center;text-align:center;padding:28px;color:#fff4dc;background:#101a17ef}
+#gameHud{position:fixed;z-index:6;left:max(10px,env(safe-area-inset-left));top:max(10px,env(safe-area-inset-top));max-width:min(330px,calc(100vw - 20px));color:#f3ead5;background:#18251de8;border:1px solid #d4b77966;border-radius:9px;font-size:12px;box-shadow:0 3px 14px #0005}
+#gameHud summary{display:flex;align-items:center;min-height:36px;padding:6px 9px;cursor:pointer;list-style:none;font-weight:600}
+#gameHud summary::-webkit-details-marker{display:none}
+#gameHud summary .stats{display:flex;gap:10px;flex-wrap:wrap}
+#gameHud .controls{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:0 9px 9px}
+#gameHud button,#gameHud select{min-height:34px;border:1px solid #b99a68;border-radius:6px;background:#354638;color:#fff4dc;padding:6px 8px;font-weight:600;font-size:12px}
+#gameHud button.active{background:#8b5b2b}
+#gameHud button:disabled{opacity:.45}
+#gameHud label{align-self:center}
+#gameMessage{grid-column:1/-1;min-height:18px;line-height:1.3;color:#f4d99a}
+@media(orientation:portrait){#rotate{display:flex}#gameHud{max-width:calc(100vw - 20px)}}
+@media(orientation:landscape) and (max-height:480px){#gameHud summary{min-height:31px;padding:4px 8px}#gameHud .controls{gap:4px;padding:0 7px 7px}}
 </style>
 </head>
 <body>
