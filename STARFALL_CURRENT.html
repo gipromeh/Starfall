@@ -3014,7 +3014,7 @@ if(T.GLTFLoader&&location.protocol!=="file:"){
   }catch(e){console.warn("GLB",d.url,e);pirateAssetDone()}
  },undefined,e=>{console.warn("GLB не загружен:",d.url,e);pirateAssetDone()}));
 }else pirateAssetsReady=true;
-/* Civilian traffic: low-poly Space Shuttle B. Procedural freighter remains fallback. */
+/* v92.2 runtime asset integration: low-poly Shuttle B; procedural freighter remains fallback. */
 if(T.GLTFLoader&&location.protocol!=="file:"){
  const CIV_=new T.GLTFLoader();
  CIV_.load("assets/ships/civilian/space_shuttle_b/model.glb",gltf=>{
