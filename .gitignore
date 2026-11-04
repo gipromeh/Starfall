@@ -1,0 +1,6 @@
+# Large external Elite Dangerous source dumps and generated databases
+/data/elite-dangerous/
+/data/elite-dangerous-*/
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
