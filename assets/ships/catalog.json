@@ -21,6 +21,16 @@
       "config": "config.json",
       "status": "integrated",
       "model": "model.glb"
+    },
+    {
+      "id": "civilian_shuttle_b",
+      "name": "Civilian Shuttle B",
+      "faction": "trader",
+      "category": "freighter",
+      "path": "assets/ships/civilian/space_shuttle_b/",
+      "config": "config.json",
+      "status": "integrated",
+      "model": "model.glb"
     }
   ]
 }
