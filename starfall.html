@@ -1955,7 +1955,7 @@ const _updWithPirateFleet=upd;
 upd=function(dt){_updWithPirateFleet(dt);pirateFleetUpdate(dt);resolvePirateShipCollisions();pirateEnemyFxUpdate(dt);for(const pe of pirateFleet)if(pe.g&&pe.hp>0)pirateDamageFxUpdate(pe,dt);pirateStrategicUpdate(dt)};
 // ===== END STARFALL v77 PIRATE FLEET =====
 // ===== PIRATE STRATEGIC AI — PRODUCTION WORLD ADAPTER =====
-const PIRATE_STRATEGIC={version:1,nextGroupId:1,systems:Array.from({length:SYS.length},()=>null)};
+const PIRATE_STRATEGIC={version:1,enabled:true,nextGroupId:1,systems:Array.from({length:SYS.length},()=>null)};
 const PIRATE_STRATEGIC_STATES=["patrol","intercept","raid","retreat","engage","destroyed"];
 const PIRATE_STRATEGIC_ROLES=["raider","interceptor","ambusher"];
 const pirateStrategicClamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -2043,7 +2043,7 @@ function pirateStrategicFleetClear(e){
  const data=pirateStrategicSystem(sy,false),g=data&&data.groups.find(x=>x.id===e._sfStrategicGroupId);if(g&&g.state!=="destroyed"){g._fleetRef=null;g.state="patrol";g.targetNpcId=null}
 }
 function pirateStrategicUpdate(dt){
- if(state!=="play"&&state!=="dock")return;const data=pirateStrategicSystem(sy,true);if(!data)return;
+ if(!PIRATE_STRATEGIC.enabled||(state!=="play"&&state!=="dock"))return;const data=pirateStrategicSystem(sy,true);if(!data)return;
  const step=pirateStrategicClamp(Number(dt)||0,0,.1);for(const n of nv)pirateStrategicTagNpc(n);data.clock+=step;
  for(const g of data.groups){
   if(g.state==="destroyed")continue;
@@ -2111,7 +2111,7 @@ function pirateStrategicValidate(input){
  return out;
 }
 function pirateStrategicRestore(input){const clean=pirateStrategicValidate(input);PIRATE_STRATEGIC.nextGroupId=clean.nextGroupId;PIRATE_STRATEGIC.systems=clean.systems}
-window.SF_PIRATE_STRATEGIC={snapshot:pirateStrategicSnapshot,validate:pirateStrategicValidate,stats:()=>{const d=pirateStrategicSystem(sy,false);return d?{groups:d.groups.length,raids:d.ledger.raids,cargo:d.ledger.cargo,losses:d.ledger.losses}:null}};
+window.SF_PIRATE_STRATEGIC={snapshot:pirateStrategicSnapshot,validate:pirateStrategicValidate,setEnabled:value=>{PIRATE_STRATEGIC.enabled=value!==false;return PIRATE_STRATEGIC.enabled},stats:()=>{const d=pirateStrategicSystem(sy,false);return d?{groups:d.groups.length,raids:d.ledger.raids,cargo:d.ledger.cargo,losses:d.ledger.losses}:null}};
 // ===== END PIRATE STRATEGIC AI =====
 
 
