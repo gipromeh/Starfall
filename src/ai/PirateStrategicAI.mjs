@@ -17,19 +17,18 @@ export function createPirateStrategicAI({seed=0x51fa11,maxGroups=48,maxShips=6,d
   const makeId=()=> 'pirate-'+(nextId++).toString(36);
   function normalizeGroup(input={}) {
     const id=typeof input.id==='string'&&input.id?input.id:makeId();
-    const requestedShips=Math.trunc(input.ships??2);
-    if(!Number.isFinite(requestedShips)||requestedShips<1||requestedShips>maxShips)throw new RangeError('ships must be between 1 and '+maxShips);
-    const ships=requestedShips;
+    const requestedShips=Number(input.ships??2);
+    if(!Number.isInteger(requestedShips)||requestedShips<1||requestedShips>maxShips)throw new RangeError('ships must be an integer between 1 and '+maxShips);
+    const position=copyPosition(input.position),velocity=copyPosition(input.velocity);
+    const finite=(value,fallback,min,max)=>clamp(Number.isFinite(Number(value))?Number(value):fallback,min,max);
     const state=states.has(input.state)?input.state:'patrol';
     const role=roles.includes(input.role)?input.role:'raider';
-    const position=copyPosition(input.position);
-    const velocity=copyPosition(input.velocity);
-    return {id,faction:String(input.faction||'freebooters'),role,state,ships,
-      position,velocity,targetId:input.targetId||null,homeId:input.homeId||null,
-      aggression:clamp(Number(input.aggression??.65),0,1),morale:clamp(Number(input.morale??.8),0,1),
-      hull:clamp(Number(input.hull??1),0,1),cargo:Math.max(0,Number(input.cargo)||0),
-      cooldown:Math.max(0,Number(input.cooldown)||0),seed:(input.seed>>>0)||Math.floor(rand()*0xffffffff),
-      lastDecision:Math.max(0,Number(input.lastDecision)||0),kills:Math.max(0,Math.trunc(input.kills)||0)};
+    return {id,faction:String(input.faction||'freebooters'),role,state,ships:requestedShips,
+      position,velocity,targetId:input.targetId==null?null:String(input.targetId),homeId:input.homeId==null?null:String(input.homeId),
+      aggression:finite(input.aggression,.65,0,1),morale:finite(input.morale,.8,0,1),
+      hull:finite(input.hull,1,0,1),cargo:finite(input.cargo,0,0,1e9),
+      cooldown:finite(input.cooldown,0,0,1e6),seed:(input.seed>>>0)||Math.floor(rand()*0xffffffff),
+      lastDecision:finite(input.lastDecision,0,0,1e12),kills:Math.trunc(finite(input.kills,0,0,1e9))};
   }
   function addGroup(input) {
     if(groups.size>=maxGroups)throw new Error('Pirate strategic group capacity reached');
