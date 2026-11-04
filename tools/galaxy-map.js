@@ -132,7 +132,7 @@ function cameraUpdate(){const cp=Math.cos(pitch);camera.position.set(target.x+di
 function setSelected(r,isLocal){
  selected=r?{record:r,local:isLocal}:null;jumpBtn.disabled=!(selected&&isLocal&&previousState==='play'&&r.index!==sy);ring.visible=!!selected;
  if(!selected){info.textContent='Выберите звёздную систему на карте или через поиск.';return;}
- const p=isLocal?new T.Vector3(r.x,r.y,r.z):posOf(r);ring.position.copy(p);ring.rotation.x=Math.PI/2;
+ const p=isLocal?new T.Vector3(r.x,r.y,r.z):posOf(r);ring.position.copy(p);ring.scale.setScalar(isLocal?1:.02);ring.rotation.x=Math.PI/2;
  info.textContent=isLocal?r.name+' / '+r.title+' · сектор STARFALL\nТип: игровая система · гиперпрыжок поддерживается':
  r.name+'\nКоординаты: '+[r.x,r.y,r.z].map(v=>v.toFixed(2)).join(' / ')+' ly\nНаселение: '+(r.p?r.p.toLocaleString('ru-RU'):'нет данных')+'\nAllegiance: '+(r.a||'—')+' · Government: '+(r.g||'—')+'\nSecurity: '+(r.s||'—')+'\nEconomy: '+[r.e,r.e2].filter(Boolean).join(' / ')+'\nФракция: '+(r.f||'—')+' · Bodies: '+(r.bc||'—')+'\nSpansh reference · не подключено к симуляции STARFALL';
 }
