@@ -39,7 +39,8 @@ def main() -> int:
     parser.add_argument("--output", type=Path, default=Path("data/elite-dangerous-lite/systems.jsonl.gz"))
     parser.add_argument("--max-systems", type=int, default=50000)
     parser.add_argument("--max-mb", type=float, default=35.0)
-    parser.add_argument("--inhabited-only", action="store_true")
+    parser.add_argument("--inhabited-only", action="store_true",
+                        help="Requires population data in the source; fails if the field is absent")
     parser.add_argument("--seed", type=int, default=20261104)
     args = parser.parse_args()
     if args.max_systems < 1 or args.max_mb <= 0:
@@ -48,12 +49,15 @@ def main() -> int:
     temp = args.output.with_suffix(args.output.suffix + ".part")
     rng = random.Random(args.seed)
     sample: list[dict[str, Any]] = []
-    eligible = skipped = 0
+    source_records = population_field_records = eligible = skipped = 0
     digest = hashlib.sha256()
     try:
         # Reservoir sampling gives broad coverage across the source instead of taking
         # an alphabetically biased prefix. Memory is bounded by --max-systems.
         for item in records(args.source):
+            source_records += 1
+            if "population" in item:
+                population_field_records += 1
             row = compact(item)
             if row is None:
                 skipped += 1
@@ -67,6 +71,13 @@ def main() -> int:
                 index = rng.randrange(eligible)
                 if index < args.max_systems:
                     sample[index] = row
+
+        if source_records == 0:
+            raise RuntimeError("Source contains no JSON records; refusing to publish an empty dataset")
+        if args.inhabited_only and population_field_records == 0:
+            raise RuntimeError("--inhabited-only requested, but the source has no population field; use an all-systems snapshot")
+        if eligible == 0 or not sample:
+            raise RuntimeError(f"No eligible systems from {source_records:,} source records; refusing to publish an empty dataset")
 
         sample.sort(key=lambda row: (row["n"].casefold(), row["id"]))
         with gzip.open(temp, "wt", encoding="utf-8", compresslevel=9, newline="\n") as out:
@@ -82,6 +93,7 @@ def main() -> int:
                 digest.update(chunk)
         manifest = {
             "format": "starfall-systems-jsonl-v1", "source": args.source.name,
+            "source_records": source_records, "population_field_records": population_field_records,
             "eligible_records": eligible, "records": len(sample), "invalid_records_skipped": skipped,
             "compressed_bytes": size, "sha256": digest.hexdigest(), "sample_seed": args.seed,
             "selection": "deterministic reservoir sample" + ("; inhabited only" if args.inhabited_only else ""),
