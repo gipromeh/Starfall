@@ -1,6 +1,4 @@
 import assert from 'node:assert/strict';
-import { createEAI } from '../tools/combat-ai-lab/elite-eai.mjs';
-
 const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
 const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y,a.z-b.z);
 const copyPosition=p=>({x:Number(p?.x)||0,y:Number(p?.y)||0,z:Number(p?.z)||0});
@@ -10,7 +8,6 @@ const copyPosition=p=>({x:Number(p?.x)||0,y:Number(p?.y)||0,z:Number(p?.z)||0});
  * It stores abstract world positions and never creates Three.js objects.
  */
 export function createPirateStrategicAI({seed=0x51fa11,maxGroups=48,maxShips=6,decisionInterval=2}={}) {
-  const eai=createEAI(seed);
   const groups=new Map();
   let rngState=seed>>>0||0x51fa11;
   let clock=0,nextId=1,worldTime=0;
@@ -59,7 +56,6 @@ export function createPirateStrategicAI({seed=0x51fa11,maxGroups=48,maxShips=6,d
     const threat=Number(context.threatByGroup?.[g.id]||0);
     const damage=1-g.hull;
     if(damage>.72||g.morale<.18||threat>g.ships*1.35){transition(g,'retreat','loss-risk');return;}
-    if(g.state==='disabled')return;
     if(g.state==='retreat'||g.state==='return'){
       if(g.homeId&&context.homePositions?.[g.homeId]){
         const home=copyPosition(context.homePositions[g.homeId]);
@@ -116,13 +112,12 @@ export function createPirateStrategicAI({seed=0x51fa11,maxGroups=48,maxShips=6,d
     return {groups:groups.size,decisions,worldTime};
   }
   function snapshot(){return {version:1,seed:seed>>>0,rngState,nextId,worldTime,clock,groups:[...groups.values()].map(snapshotGroup)};}
-  const idSafe=id=>id;
   function restore(data){
     if(!data||data.version!==1||!Array.isArray(data.groups)||data.groups.length>maxGroups)throw new TypeError('Invalid pirate strategic save');
     const next=new Map();
     for(const row of data.groups){
       if(!row||typeof row.id!=='string'||!row.id||!states.has(row.state)||!roles.includes(row.role)||!Number.isInteger(row.ships)||row.ships<1||row.ships>maxShips)throw new TypeError('Invalid saved pirate group');
-      const g=normalizeGroup(row);if(next.has(g.id))throw new Error('Duplicate saved pirate group: '+g.id);next.set(idSafe(g.id),g);
+      const g=normalizeGroup(row);if(next.has(g.id))throw new Error('Duplicate saved pirate group: '+g.id);next.set(g.id,g);
     }
     groups.clear();for(const [id,g] of next)groups.set(id,g);
     rngState=(data.rngState>>>0)||((data.seed>>>0)||0x51fa11);nextId=Math.max(1,Math.trunc(data.nextId)||1);worldTime=Math.max(0,Number(data.worldTime)||0);clock=clamp(Number(data.clock)||0,0,clamp(decisionInterval,.25,10));
