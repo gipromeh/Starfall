@@ -43,7 +43,7 @@ const routeBtn=node('button',{text:'НАЧАТЬ МАРШРУТ'},actions);
 const exploreBtn=node('button',{text:'ИССЛЕДОВАТЬ СИСТЕМУ',disabled:'true'},actions);
 const returnBtn=node('button',{text:'← К КАРТЕ'},actions);returnBtn.style.display='none';
 let externalRoot=null,externalRecord=null,externalCameraState=null;
-const resultsPanel=node('section',{class:'panel'},side);node('h3',{text:'ПОИСК'},resultsPanel);
+const resultsPanel=node('section',{class:'panel'},side);const resultsHeading=node('h3',{text:'ПОИСК'},resultsPanel);
 const results=node('div',{class:'results'},resultsPanel);
 const statusPanel=node('section',{class:'panel'},side);node('h3',{text:'КАТАЛОГ'},statusPanel);
 const status=node('div',{class:'status',text:'Ожидание каталога Spansh…'},statusPanel);
@@ -149,12 +149,27 @@ function renderSearch(q){
  found.slice(0,14).forEach(v=>{const b=node('button',{},results);node('span',{text:v.r.name},b);node('small',{text:v.local?'STARFALL':'SPANSH'},b);b.addEventListener('click',()=>focus(v.r,v.local));});
  if(!found.length)node('div',{class:'meta',text:'Совпадений нет.'},results);
 }
-function leaveExternal(){if(!externalRoot)return;scene.remove(externalRoot);window.SF_EXTERNAL_SYSTEMS.dispose(externalRoot);externalRoot=null;externalRecord=null;galaxy.visible=true;localGroup.visible=true;if(points)points.visible=true;if(externalCameraState){yaw=externalCameraState.yaw;pitch=externalCameraState.pitch;distance=externalCameraState.distance;target.copy(externalCameraState.target);externalCameraState=null;cameraUpdate()}ring.visible=!!selected;if(routeLine)routeLine.visible=true;exploreBtn.style.display='';returnBtn.style.display='none';jumpBtn.style.display='';routeBtn.style.display='';search.disabled=false;if(selected)setSelected(selected.record,selected.local);}
+function leaveExternal(){if(!externalRoot)return;scene.remove(externalRoot);window.SF_EXTERNAL_SYSTEMS.dispose(externalRoot);externalRoot=null;externalRecord=null;galaxy.visible=true;localGroup.visible=true;if(points)points.visible=true;if(externalCameraState){yaw=externalCameraState.yaw;pitch=externalCameraState.pitch;distance=externalCameraState.distance;target.copy(externalCameraState.target);externalCameraState=null;cameraUpdate()}ring.visible=!!selected;if(routeLine)routeLine.visible=true;exploreBtn.style.display='';returnBtn.style.display='none';jumpBtn.style.display='';routeBtn.style.display='';search.disabled=false;resultsHeading.textContent='ПОИСК';renderSearch(search.value);if(selected)setSelected(selected.record,selected.local);}
+function focusExternalObject(object,radius,label){
+ if(!externalRoot||!object)return;externalRoot.updateMatrixWorld(true);
+ const p=object.getWorldPosition(new T.Vector3());target.copy(p);
+ distance=Math.max(24,Math.min(1200,radius*7));cameraUpdate();
+ status.textContent='ОБЗОР ОБЪЕКТА · '+label+' · масштаб '+Math.round(distance)+' усл. ед.';
+}
+function showExternalObjects(){
+ resultsHeading.textContent='ОБЪЕКТЫ СИСТЕМЫ';results.replaceChildren();
+ const d=externalRoot.userData.externalSystem.data;
+ const add=(label,object,radius)=>{const b=node('button',{},results);node('span',{text:label},b);node('small',{text:'ОБЗОР'},b);b.addEventListener('click',()=>focusExternalObject(object,radius,label))};
+ add('ЗВЕЗДА · '+d.star.class,d.star.mesh,d.star.radius);
+ d.planets.forEach(p=>add('ПЛАНЕТА '+p.index+' · '+p.type,p.mesh,p.radius));
+ if(d.station)add('СТАНЦИЯ · '+d.station.type,d.station.mesh,12);
+ if(d.belt)add('ПОЯС АСТЕРОИДОВ',externalRoot.userData.externalSystem.beltGroup,d.belt.width);
+}
 function exploreExternal(){
  if(!selected||selected.local||!window.SF_EXTERNAL_SYSTEMS)return;
  if(externalRoot)leaveExternal();
  externalRecord=selected.record;externalCameraState={yaw,pitch,distance,target:target.clone()};if(routeLine)routeLine.visible=false;galaxy.visible=false;localGroup.visible=false;if(points)points.visible=false;ring.visible=false;
- externalRoot=window.SF_EXTERNAL_SYSTEMS.build(externalRecord,T,matchMedia('(pointer:coarse)').matches);scene.add(externalRoot);
+ externalRoot=window.SF_EXTERNAL_SYSTEMS.build(externalRecord,T,matchMedia('(pointer:coarse)').matches);scene.add(externalRoot);showExternalObjects();
  target.set(0,0,0);yaw=.5;pitch=.22;distance=330;cameraUpdate();
  const d=externalRoot.userData.externalSystem.data;
  info.textContent=externalRecord.name+'\nПРОЦЕДУРНАЯ СИСТЕМА · ID '+d.id+'\nЗвезда: '+d.star.class+' · '+d.star.name+'\nТемпература: '+d.star.temp+'\nПланеты: '+d.planets.length+' · Пояс астероидов: '+(d.belt?'есть':'нет')+'\nСтанция: '+(d.station?d.station.type:'не обнаружена')+'\nОрбитальный обзор · экономика STARFALL не затрагивается';
