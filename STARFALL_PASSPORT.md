@@ -4,6 +4,7 @@
 - Вблизи игрока стратегическая группа передаёт цель штатным боевым кораблям `E/E2`; полёт, оружие, снаряды и коллизии остаются существующими.
 - При стыковке скрытые боевые сущности отсоединяются от активного боя, стратегическая симуляция продолжает рейды; при взлёте группы повторно связываются с боевыми кораблями. Идентификаторы групп сохраняются при переходах между системами.
 - SaveSystem v3 получил необязательное поле `ps` с состоянием групп и системными журналами рейдов. Старые v3/v2/legacy сохранения без поля загружаются с пустым стратегическим состоянием.
+- Для изолированных диагностических прогонов добавлен `SF_PIRATE_STRATEGIC.setEnabled(false)`; в обычной игре стратегическая симуляция включена.
 - Добавлен браузерный тест `tests/t22_pirate_strategic_integration.js`; также обязательны `tests/t11_pirate_fleet.js` и `tests/t1_saves.js`. CI и ручной iPhone Safari playtest должны быть подтверждены отдельно.
 
 ## v92.2 — единое имя основной сборки
@@ -188,7 +189,7 @@ tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура
 game_version: "v95"
 last_update: 2026-11-04
 main_file: starfall.html
-main_file_sha256: "1f8d289963bfa8b0f4a0d4355c64917841339c4e5eb79abf92ec064aae10ce56"
+main_file_sha256: "ae1b74718851fb128e40bf49999dffd39e5c3133490c61d672d402e50115e646"
 save_format_version: 3
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"
