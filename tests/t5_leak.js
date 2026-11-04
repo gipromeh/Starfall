@@ -67,6 +67,22 @@ const ff = (page, sec) => page.evaluate(s => { const n = Math.round(s / .05); fo
     for (let ty = 0; ty < 4; ty++) mkPirate(ty);
     mkBoss();
   });
+  // Прогреваем ленивые шаблоны туристов: TMC хранит их shared geometry
+  // для повторного использования клонами в течение игровой сессии.
+  await page.evaluate(() => {
+    window.__sfTouristWarmup = [];
+    for (let k = 0; k < 3; k++) {
+      const template = TMC[k] || (TMC[k] = mkTourist(k));
+      const instance = template.clone(true);
+      S.add(instance);
+      window.__sfTouristWarmup.push(instance);
+    }
+  });
+  await L.sleep(500);
+  await page.evaluate(() => {
+    for (const instance of window.__sfTouristWarmup || []) S.remove(instance);
+    window.__sfTouristWarmup = [];
+  });
   const b0 = await mem(page);
   const geomBaseline = await page.evaluate(() => [...window.__sfGeomDiag.records.keys()]);
   for (let r = 0; r < 8; r++) { await page.evaluate(() => { if (!E) spawnE(); if(E){E.fire=1e9;E.burstLeft=0;E.burstGap=1e9;} }); await ff(page, 5); await page.evaluate(() => { firing = true; }); await ff(page, 2); await page.evaluate(() => { firing = false; if (E) hurtEn(E, 1e6, false); spawnT=1e9; }); await ff(page, 3); }
