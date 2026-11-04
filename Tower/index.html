@@ -9,6 +9,27 @@
 .hud{position:fixed;z-index:2;inset:env(safe-area-inset-top) 10px auto;display:flex;justify-content:space-between;align-items:center;gap:8px;pointer-events:none}.brand,.stats,.panel,.bottom,.modal{background:linear-gradient(145deg,#101a22f2,#080e14f2);border:1px solid #b68a4d88;box-shadow:0 8px 30px #0009,inset 0 1px #ffffff12;backdrop-filter:blur(12px);border-radius:12px}.brand{padding:9px 12px;font-weight:900;letter-spacing:1px;font-size:13px}.brand small{display:block;color:#c9aa6d;font-size:9px;letter-spacing:2px}.stats{display:flex;gap:12px;padding:10px 12px;font-weight:800;font-size:13px}.stats span{white-space:nowrap}.stats em{font-style:normal;color:#e4c27c}.panel{position:fixed;z-index:2;left:10px;top:88px;width:min(220px,48vw);padding:10px}.heading{font-size:10px;letter-spacing:1.5px;color:#e6cb91;margin:0 0 7px}.tower{width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;margin:5px 0;padding:10px 8px;border-radius:9px;border:1px solid #ffffff22;background:#253a39;color:#fff;font-weight:700;font-size:11px}.tower small{display:block;color:#a7b7a7;font-weight:400;font-size:9px}.tower.active{border-color:#e5bc6d;background:#46503d}.info{font-size:10px;line-height:1.5;color:#c0c9bc;min-height:40px;padding-top:6px}.bottom{position:fixed;z-index:2;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));padding:9px;display:flex;align-items:center;justify-content:space-between;gap:8px}.btn{border:0;border-radius:9px;padding:12px 13px;background:#c9974d;color:#1b211b;font-weight:900;font-size:11px;white-space:nowrap}.btn.secondary{background:#344b48;color:#f4e4bf;border:1px solid #ffffff25}.btn:disabled{opacity:.4}.bottom .group{display:flex;gap:6px}.toast{position:fixed;z-index:4;top:75px;left:50%;transform:translateX(-50%);background:#172b2b;border:1px solid #d5ad65;border-radius:9px;padding:9px 13px;font-size:12px;opacity:0;transition:opacity .2s;pointer-events:none}.toast.show{opacity:1}.modal{position:fixed;z-index:5;inset:0;margin:auto;width:min(88vw,360px);height:max-content;text-align:center;padding:26px}.modal h1{color:#e6c17b}.modal p{font-size:13px;color:#c5d0c5}.hidden{display:none!important}.help{position:fixed;right:12px;top:90px;color:#d7dfd0a8;font-size:9px;text-align:right;pointer-events:none}
 @media(min-width:800px){.panel{width:245px;top:90px}.bottom{left:270px;right:270px}.help{top:auto;bottom:90px}}
 @media(orientation:portrait) and (max-width:600px){.hud{left:6px;right:6px;gap:5px}.brand{font-size:9px;letter-spacing:.5px;padding:7px 8px}.brand small{font-size:7px;letter-spacing:1px}.stats{gap:6px;padding:8px 7px;font-size:10px}.panel{left:6px;right:6px;top:58px;width:auto;padding:6px 7px;display:flex;align-items:center;gap:5px;overflow-x:auto;white-space:nowrap}.panel .heading{display:none}.tower{flex:0 0 auto;width:auto;min-width:82px;display:block;margin:0;padding:7px 8px;font-size:9px}.tower b{float:right}.tower small{display:none}.panel .info{display:none}#upgrade,#sell{flex:0 0 auto;padding:8px 9px;font-size:9px}.bottom{left:6px;right:6px;bottom:calc(6px + env(safe-area-inset-bottom));padding:6px;gap:5px}.bottom .group{flex:0 0 auto;gap:4px}.bottom .btn{padding:10px 8px;font-size:9px}.bottom #start{flex:1}.bottom [data-speed]{padding:9px 8px}.help{display:none}}
+@media(orientation:landscape) and (max-height:600px) and (max-width:950px){
+  html,body,#game{height:100%;height:100dvh;}
+  .hud{left:8px;right:8px;top:calc(5px + env(safe-area-inset-top));gap:8px;}
+  .brand{padding:6px 9px;font-size:10px;letter-spacing:.6px;}
+  .brand small{font-size:7px;letter-spacing:1px;}
+  .stats{gap:9px;padding:7px 9px;font-size:11px;}
+  .panel{left:8px;right:auto;top:58px;bottom:calc(58px + env(safe-area-inset-bottom));width:145px;max-height:none;padding:7px;display:flex;flex-direction:column;align-items:stretch;gap:5px;overflow-y:auto;overflow-x:hidden;}
+  .panel .heading{font-size:8px;letter-spacing:.7px;margin:0 0 2px;white-space:normal;}
+  .tower{width:100%;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;margin:0;padding:7px;font-size:10px;}
+  .tower b{font-size:9px;}
+  .tower small{display:block;font-size:8px;}
+  .panel .info{display:none;}
+  #upgrade,#sell{width:100%;margin:0;padding:8px 5px;font-size:9px;}
+  .bottom{left:162px;right:8px;bottom:calc(7px + env(safe-area-inset-bottom));padding:6px;gap:6px;}
+  .bottom #start{flex:1;padding:10px 8px;font-size:10px;}
+  .bottom .group{gap:4px;}
+  .bottom .btn{padding:9px 8px;font-size:9px;}
+  .help{display:none;}
+  .toast{top:54px;font-size:10px;padding:7px 10px;}
+  .modal{max-height:calc(100dvh - 24px);overflow:auto;padding:16px;}
+}
 </style>
 </head>
 <body><div id="game"></div>
@@ -225,5 +246,5 @@ for(const fog of fogBanks){fog.mesh.position.x+=Math.sin(now*.00017+fog.phase)*a
 if(Math.random()<.32){const t=torches[Math.floor(Math.random()*torches.length)];emitParticles(new THREE.Vector3(t.light.position.x, t.light.position.y+1,t.light.position.z),0xff8a35,1,.55);}
 updateParticles(ambienceDt);updateImpactRings(ambienceDt);
 for(const flag of flags){const a=flag.geo.attributes.position;for(let i=0;i<a.count;i++){const u=(flag.base[i*3]+.875*flag.size)/(1.75*flag.size);a.setZ(i,flag.base[i*3+2]+Math.sin(now*.0022+u*5+flag.base[i*3+1]*2+flag.phase)*.19*flag.size*u)}a.needsUpdate=true;flag.geo.computeVertexNormals()}composer.render()}requestAnimationFrame(tick);
-function resize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);composer.setSize(innerWidth,innerHeight);bloom.setSize(innerWidth,innerHeight)}window.addEventListener('resize',resize);resize();ui();
+function resize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);composer.setSize(innerWidth,innerHeight);bloom.setSize(innerWidth,innerHeight)}window.addEventListener('resize',resize);window.addEventListener('orientationchange',()=>setTimeout(resize,120));resize();ui();
 </script></body></html>
