@@ -59,7 +59,7 @@ const zlib = require('node:zlib');
     L.check('Galaxy Map: внешняя система процедурно сгенерирована', !!exploration && exploration.planets >= 2 && exploration.planets <= 8 && !!exploration.star, exploration);
     const explorationStatus = await page.locator('#sf-galaxy .status').textContent();
     L.check('Galaxy Map: внешний режим изолирован от экономики', explorationStatus.includes('РЕЖИМ ИССЛЕДОВАНИЯ'), explorationStatus);
-    await page.evaluate(() => { const c=R.domElement,r=c.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2; c.dispatchEvent(new PointerEvent('pointerdown',{pointerId:77,pointerType:'mouse',clientX:x,clientY:y,bubbles:true})); c.dispatchEvent(new PointerEvent('pointerup',{pointerId:77,pointerType:'mouse',clientX:x,clientY:y,bubbles:true})); });
+    await page.evaluate(() => { const c=R.domElement,p=window.SF_GALAXY_MAP.stats.external.starScreen;if(!p?.visible)throw new Error('Звезда вне области камеры');const ev=(type)=>c.dispatchEvent(new PointerEvent(type,{pointerId:77,pointerType:'mouse',clientX:p.x,clientY:p.y,bubbles:true}));ev('pointerdown');ev('pointerup'); });
     const canvasPickStatus = await page.locator('#sf-galaxy .status').textContent();
     L.check('Galaxy Map: выбор звезды прямым нажатием на 3D-сцену', canvasPickStatus.includes('ОБЗОР ОБЪЕКТА · ЗВЕЗДА'), canvasPickStatus);
     const bodyButtons = page.locator('#sf-galaxy .results button');
@@ -76,7 +76,7 @@ const zlib = require('node:zlib');
     await page.locator('#sf-galaxy .actions button').filter({ hasText: 'НАЧАТЬ МАРШРУТ' }).click();
     await search.fill('ЛАВЕ');
     await page.locator('#sf-galaxy .results button').first().click();
-    await page.locator('#sf-galaxy .actions button').filter({ hasText: 'НАЧАТЬ МАРШРУТ' }).click();
+    await page.locator('#sf-galaxy .actions button').filter({ hasText: 'ВЫБРАТЬ ФИНИШ' }).click();
     const mixedRoute = await page.locator('#sf-galaxy .status').textContent();
     L.check('Galaxy Map: смешение координат Spansh и STARFALL блокируется', mixedRoute.includes('координаты локального сектора условные'), mixedRoute);
 
