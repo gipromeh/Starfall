@@ -65,6 +65,7 @@ jobs:
           node tests/t20_galaxy_map.js
           node --check tests/lib.js
           node --check tests/t21_galaxy_map_browser.js
+          python3 tools/check_passport.py
       - name: AI Lab architecture regression (static)
         run: node tests/t12_ai_lab.js
       - name: Radar and collision regression (static)
