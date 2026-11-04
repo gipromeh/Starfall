@@ -29,3 +29,8 @@ assert.match(map, /previousState==='dock'/);
 assert.ok(map.includes('background:transparent'));
 assert.ok(map.includes('routeStart.local!==routeEnd.local'));
 console.log('Galaxy Map source contracts: PASS');
+
+assert.match(map, /SF_EXTERNAL_SYSTEMS\.build/);
+assert.match(map, /РЕЖИМ ИССЛЕДОВАНИЯ/);
+assert.match(map, /function leaveExternal/);
+assert.match(html, /\.\/tools\/external-systems\.js/);
