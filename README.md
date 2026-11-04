@@ -81,3 +81,7 @@
 - Каждый запуск публикует статистику длительности и ошибок в Job Summary и сохраняет `ci-metrics.json` как artifact на 90 дней.
 - Полный набор запускается на каждом PR в `main` и push в `main`. Для фактического запрета слияния при красных проверках нужно включить перечисленные required status checks в GitHub Ruleset / branch protection.
 - WebKit CI — автоматическая проверка браузерного движка в тестовом окружении, а не физический тест на iPhone. Реальные замеры Safari на iPhone, FPS, нагрева и сенсорного управления остаются отдельным ручным этапом.
+
+## Полная галактика Elite Dangerous
+
+Потоковая загрузка и локальное хранилище полного Spansh Galaxy Dump: [`docs/ELITE_GALAXY_DATA_PIPELINE.md`](docs/ELITE_GALAXY_DATA_PIPELINE.md). Архивы и базы исключены из Git; импортёр: `tools/elite_galaxy.py`.
