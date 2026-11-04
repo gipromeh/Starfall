@@ -2077,7 +2077,11 @@ function pirateStrategicEnterSystem(index=sy){pirateStrategicSystem(index,true)}
 function pirateStrategicReset(){PIRATE_STRATEGIC.nextGroupId=1;PIRATE_STRATEGIC.systems=Array.from({length:SYS.length},()=>null)}
 function pirateStrategicSnapshot(){
  const data=pirateStrategicValidate(PIRATE_STRATEGIC);
- for(const system of data.systems)if(system)for(const g of system.groups){g.targetNpcId=null;g.raidProgress=0;if(g.state!=="destroyed")g.state="patrol"}return data;
+ for(const system of data.systems)if(system){
+  system.groups=system.groups.filter(g=>g.source!=="fleet");
+  for(const g of system.groups){g.targetNpcId=null;g.raidProgress=0;if(g.state!=="destroyed")g.state="patrol"}
+ }
+ return data;
 }
 function pirateStrategicValidate(input){
  const out={version:1,nextGroupId:1,systems:Array.from({length:SYS.length},()=>null)};
