@@ -1986,7 +1986,7 @@ function pirateStrategicCreateGroup(index,source,position,role,ships){
 function pirateStrategicTagNpc(n){if(!n)return null;if(!n._sfStrategicNpcId){const data=pirateStrategicSystem(sy,true);n._sfStrategicNpcId="npc"+sy+"-"+(data.npcSerial++)}return n._sfStrategicNpcId}
 function pirateStrategicNpcRisk(n){
  const r=n.route||{},cargo=Number(r.cargo)||0,passengers=Number(r.passengers)||0;
- return 1+cargo*.035+passengers*.012+(n.passengerTransport?2:0)+(n.tur&&n.tur.k!=null?.65:0)+(n.hp<((n.mx||n.hp)||1)?0.5:0);
+ return 1+cargo*.035+passengers*.012+(n.passengerTransport?2:0)+(n.tur&&n.tur.k!=null?0.65:0)+(n.hp<((n.mx||n.hp)||1)?0.5:0);
 }
 function pirateStrategicPickTarget(g,maxDistance=90000){
  const data=pirateStrategicSystem(sy,false);if(!data)return null;let best=null,bestScore=-Infinity;
