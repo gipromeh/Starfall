@@ -1,12 +1,14 @@
 {
   "format": "starfall-systems-jsonl-v1",
   "source": "systems_1month.json.gz",
-  "eligible_records": 0,
-  "records": 0,
+  "source_records": 2658680,
+  "population_field_records": 0,
+  "eligible_records": 2658680,
+  "records": 50000,
   "invalid_records_skipped": 0,
-  "compressed_bytes": 47,
-  "sha256": "9df3b3e337cd38461aed93757e126816962913a51fe3c7442137e3b675690af8",
+  "compressed_bytes": 1408395,
+  "sha256": "716535714a706293f0949f5854db9161ab29c074e2aa1a408c2676dafead1353",
   "sample_seed": 20261104,
-  "selection": "deterministic reservoir sample; inhabited only",
+  "selection": "deterministic reservoir sample",
   "complete_galaxy": false
 }
