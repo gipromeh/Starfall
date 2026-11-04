@@ -213,9 +213,10 @@ const L = require('./lib');
     return { state, slots: pirateFleet.length, ready: pirateFleetReady, taggedShots: eb.filter(b => b.pirateFleet).length };
   });
   L.check('стыковка очищает флот и его снаряды', docked.state === 'dock' && docked.slots === 0 && !docked.ready && docked.taggedShots === 0, docked);
-  await page.evaluate(() => { lift(); QL.setMode('low'); pirateFleetInit(); });
-  await page.waitForFunction(() => pirateFleet.length === 2, null, { timeout: 15000 });
-  const relaunched = await page.evaluate(() => pirateFleet.length === 2 && [0,1].every(ty => pirateFleet.filter(e => e.ty === ty).length === 1));
+  await page.evaluate(() => { lift(); QL.setMode('low'); pirateFleetInit(); state='pause'; });
+  await page.waitForFunction(() => pirateFleet.length === 2 && pirateFleet.every(e=>!!e.g), null, { timeout: 15000 });
+  const relaunched = await page.evaluate(() => pirateFleet.length === 2 && pirateFleet[0].ty===pirateFleet[1].ty && pirateFleet.every(e=>!!e.g&&e.hp>0));
+  await page.evaluate(() => { state='play'; });
   L.check('после dock → lift снова создаётся стартовый состав из двух типов', relaunched);
 
   const jackalAggro = await page.evaluate(() => {
