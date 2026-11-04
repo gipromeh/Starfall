@@ -98,6 +98,7 @@ const L = require('./lib');
     const validated = pirateStrategicValidate(before);
     const valid = validated.version === 1 && validated.systems[sy] &&
       validated.systems[sy].groups.length === before.systems[sy].groups.length;
+    const noTransientFleet = before.systems[sy].groups.every(g => g.source !== 'fleet');
     const saved = SV.save('pirate-strategic-regression');
     const loaded = SV.load();
     const persisted = loaded.ok && loaded.d.ps && loaded.d.ps.version === 1 &&
@@ -109,11 +110,11 @@ const L = require('./lib');
     const previousCount = SF_PIRATE_STRATEGIC.stats()?.groups || 0;
     pirateStrategicRestore(loaded.d.ps);
     const restoredCount = SF_PIRATE_STRATEGIC.stats()?.groups || 0;
-    return { valid, saved, loaded: loaded.ok, persisted, legacyCompatible, previousCount, restoredCount,
+    return { valid, noTransientFleet, saved, loaded: loaded.ok, persisted, legacyCompatible, previousCount, restoredCount,
       raidLedger: SF_PIRATE_STRATEGIC.stats()?.raids || 0 };
   });
   L.check('система сохранений SV валидирует, записывает и восстанавливает стратегические группы',
-    persistence.valid && persistence.saved && persistence.loaded && persistence.persisted &&
+    persistence.valid && persistence.noTransientFleet && persistence.saved && persistence.loaded && persistence.persisted &&
     persistence.legacyCompatible && persistence.restoredCount > 0, persistence);
 
   L.check('нет ошибок JavaScript', page.errors.length === 0, page.errors);
