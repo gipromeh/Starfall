@@ -1405,7 +1405,7 @@ $("hi").textContent="РЕКОРД: "+hi;
 const bm={},lm={},bg=new T.BoxGeometry(.18,.18,3.2),laserGeometry=new T.BufferGeometry().setFromPoints([new T.Vector3(0,0,0),new T.Vector3(0,0,1)]),laserForward=new T.Vector3(0,0,1),laserBg=new T.BoxGeometry(.22,.22,1);
 function shoot(arr,p,v,col,dmg,life){const m=new T.Mesh(bg,bm[col]||(bm[col]=new T.MeshBasicMaterial({color:col})));m.position.copy(p);m.lookAt(p.clone().add(v));S.add(m);arr.push({m,v,dmg,life,kind:"projectile"})}
 const laserBeamGeo=[new T.CylinderGeometry(.34,.20,1,8,1,true),new T.CylinderGeometry(.15,.11,1,8,1,true),new T.CylinderGeometry(.052,.042,1,8,1,true)];
-laserBeamGeo.forEach(g=>g.rotateX(Math.PI/2));
+laserBeamGeo.forEach(g=>{g.rotateX(Math.PI/2);g.userData.keep=true});
 const laserBeamMats=new Map();
 function laserMaterials(col){
  let m=laserBeamMats.get(col);if(m)return m;
