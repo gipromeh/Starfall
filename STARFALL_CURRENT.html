@@ -3085,7 +3085,6 @@ if(T.GLTFLoader&&location.protocol!=="file:"){
    root.updateMatrixWorld(true);
    bounds.setFromObject(root);
    root.position.sub(bounds.getCenter(new T.Vector3()));
-   root.userData.sc=1.6;
    root.traverse(o=>{
     if(!o.isMesh)return;
     o.castShadow=false;o.receiveShadow=false;
@@ -3107,7 +3106,7 @@ mkFreighter=function(){
   return model;
  }
  if(MC["f0"]&&roll<.75){
-  const model=cached("f0",()=>MC["f0"]);
+  const model=MC["f0"].clone(true);
   model.userData.trafficModel="nasa-shuttle-b";
   return model;
  }
