@@ -1,6 +1,12 @@
 name: Update Elite Dangerous lite dataset
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "tools/export_elite_lite.py"
+      - ".github/workflows/update-elite-lite.yml"
+      - "requirements-data.txt"
   workflow_dispatch:
     inputs:
       max_systems:
@@ -40,7 +46,7 @@ jobs:
           python tools/export_elite_lite.py \
             --source data/tmp/systems_1month.json.gz \
             --output data/elite-dangerous-lite/systems.jsonl.gz \
-            --max-systems "${{ inputs.max_systems }}" \
+            --max-systems "${{ inputs.max_systems || '50000' }}" \
             --max-mb 35
       - name: Commit dataset
         run: |
