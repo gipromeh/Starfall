@@ -3394,7 +3394,7 @@ const DEEP_SPACE=(function(){
 window.SF_DS=DEEP_SPACE;
 {const _r=reset;reset=function(){_r.apply(this,arguments);DEEP_SPACE.reset()}}
 {const _l=lift;lift=function(){const r=_l.apply(this,arguments);DEEP_SPACE.enter(sy);return r}}
-{const _a=arrive;arrive=function(){const r=_a.apply(this,arguments);DS.enter(sy);return r}}
+{const _a=arrive;arrive=function(){const r=_a.apply(this,arguments);DEEP_SPACE.enter(sy);return r}}
 {const _u=upd;upd=function(dt){_u.apply(this,arguments);DEEP_SPACE.update(dt)}}
 /* ===== END v90 DEEP SPACE SIMULATION ===== */
 const SV=(function(){
