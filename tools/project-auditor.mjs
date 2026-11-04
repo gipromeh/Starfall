@@ -136,19 +136,19 @@ for (const item of large) issue("INFO", "LARGE_ASSET", item.file, "Asset size is
 const count = severity => findings.filter(item => item.severity === severity).length;
 const errors = count("ERROR"), warnings = count("WARNING"), info = count("INFO");
 const report = {
-  auditor: "STARFALL Project Auditor", mode: "hybrid", schema_version: 1,
+  auditor: "STARFALL Project Auditor", mode: "strict", schema_version: 1,
   generated_at: new Date().toISOString(),
   repository: process.env.GITHUB_REPOSITORY || null,
   commit: process.env.GITHUB_SHA || null,
   ref: process.env.GITHUB_REF || null,
-  status: errors ? "FAIL" : warnings ? "PASS_WITH_WARNINGS" : "PASS",
+  status: errors || warnings ? "FAIL" : "PASS",
   summary: { checks: checks.length, files_read: filesRead, errors, warnings, info },
   checks, findings
 };
 fs.mkdirSync(output, { recursive: true });
 fs.writeFileSync(path.join(output, "audit-report.json"), JSON.stringify(report, null, 2) + "\n");
 const lines = [
-  "# STARFALL Project Audit", "", "**Mode:** HYBRID", "**Status:** " + report.status, "",
+  "# STARFALL Project Audit", "", "**Mode:** STRICT", "**Status:** " + report.status, "",
   "| Metric | Result |", "|---|---:|", "| Checks | " + checks.length + " |",
   "| Files read | " + filesRead + " |", "| Errors | " + errors + " |",
   "| Warnings | " + warnings + " |", "| Informational | " + info + " |", "",
@@ -161,4 +161,4 @@ for (const item of findings) lines.push("### [" + item.severity + "] " + item.id
 lines.push("## Scope", "", "Static repository audit only. It does not claim real-device iPhone, physical GPU, thermal, battery, or manual gameplay validation.", "");
 fs.writeFileSync(path.join(output, "audit-report.md"), lines.join("\n"));
 console.log(lines.join("\n"));
-if (errors) process.exitCode = 1;
+if (errors || warnings) process.exitCode = 1;
