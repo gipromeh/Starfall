@@ -1490,7 +1490,33 @@ const PR=700,PT=[["#1d4f91","#3f8f4a","#ffffff"],["#1c6fb0","#7fd0e8","#ffffff"]
 let plt=null,stn=null;
 const EARTH="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/P8PkP8PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHD///7///8fAAAAAAAIAAAAHAAAAAAAAAAAAAAAAAAA8P8P/v///wcAAD8BAAAAAAB8AAAAAAAAAAAAAAAAAAMN+PH/////AwAAngEAAAAAAIAAAAAAAAAAAAAAAAAeBHj/wP////8BAAAAAAAAgAEAAG8AAAAAAAAAAAAAAPAf238AwP///wMAAAAAAAAPAID//wEAfgMAAAAAAAAAHwDwAAAA////AQAAAAAAwAEA9P//AAAAAAAAAAAAAID3nxd/AwD+/78AAAAAAABgAC7+////D/gBAAABAAMAAPE/OP4fAPj//wAAAAAaAMCA///////f/48AgADw/w+94v92GP4A9v9/AAAA4H8AABj//////////xs+A/z///9/OOw58AD8/wcAAAD4/4+x/+7///////////8/8P///////x/wD/z/AAAAAPz/H/3/5////////////xj+////////C/gE+A8APwAAf/zx////////////////AMD///////948AP4BwAPAIB//////////////////38A+P//////PzDAAPADAAAA8J///////////////////wD8//////8fAB4A4AMAAADwj///////////////f/QHAOA38P///x8AfgAAAAAAAPAf8P////////////8/DAAAAAfA////PwD+BwAAAAAwMA/+////////////DwAGAACABQD+////APwPAAAAADBAjv////////////8HgA8AADAAAPz///8H/h8AAAAAYECD/////////////wGABwAAAAAA+P///x//fwAAAADOwPv/////////////KYADAAAAAADw////P///AAAAAOb5//////////////8/gAEAAAAAAOD//////38AAAAA4P3//////////////y+AAAAAAAAA4P//////gQEAAAAA/v//////////////LwAAAAAAAACA/v///3/DAwAAAOD///////////////8vAAAAAAAAAAD//////wMBAAAAwP////f//////////ycAAAAAAAAAAP//////HwAAAACA//8f+cP/////////AwAAAAAAAAAA//////8CAAAAAID/+Q/48f////////8hAAAAAAAAAID/////PwAAAAAA/gPzD+Dj////////fzAAAAAAAAAAAP////8fAAAAAAD8Q8aP4+f///////8PAAAAAAAAAAAA/////wcAAAAAAPxAyPj/5///////nwcQAAAAAAAAAAD/////BwAAAAAA/gCI+f/H//////8PBhgAAAAAAAAAAP7///8DAAAAAAB8AIT4/8///////38MDAAAAAAAAAAA/P///wMAAAAAAAD/AAD8////////HwwOAAAAAAAAAAD8////AQAAAAAA+H8AAPz///////8fYAEAAAAAAAAAAOD///8AAAAAAAD8/wAA/v///////z9wAAAAAAAAAAAAoP//PwAAAAAAAP7/xwP+////////fwAAAAAAAAAAAAAA//84AAAAAAAA/v////////////8/AAAAAAAAAAAAAAD/D2AAAAAAAAD///////P//////38AAAAAAAAAAAAAwP4HYAAAAAAAgP/////+5///////PwAAAAAAAAAAAAAA/QdAAAAAAADA//////wf/v////8fAAAAAAAAAAAAAAD5BwABAAAAAOD/////+Z8A/////08AAAAAAAAAAAAAAPADAAAAAAAA8P/////x/wP+////JwAAAAAAAAAAAAAA4AeAAQAAAADw//////P/A/5//v8AAAAAAAAAAAAAAADgBwMGAAAAAPD/////8/8B8D/8TwAAAAAAAAAAAAAAAMCPA3AAAAAA8P/////n/wHwD/hnAAAAAAAAAAAAAAAAAP8BAAAAAADw/////8d/APAH+A9AAAAAAAAAAAAAAAAA7AEAAAAAAPD/////zx8A8APoH0AAAAAAAAAAAAAAAADAHwAAAAAA8P////+fBwDgAcA/AAAAAAAAAAAAAAAAAAAeAAAAAADw/////78BAOABQD8AAAAAAAAAAAAAAAAAAAwAAAAAAPD/////fwAAwAFAPgAAAAAAAAAAAAAAAAAAGPwdAAAAwP////9/DwDAAUAMgAAAAAAAAAAAAAAAAACw/R8AAADA//////8PAMACQACAAgAAAAAAAAAAAAAAAED/PwAAAID//////wcAAAIAAIADAAAAAAAAAAAAAAAAAP5/AAAAAP//////BwAAAoABCAEAAAAAAAAAAAAAAAAA/v8HAAAATPD///8DAAAAsAEMAAAAAAAAAAAAAAAAAAD+/w8AAAAAgP///wMAAABgAw4AAAAAAAAAAAAAAAAAAP//DwAAAACA////AAAAAMCCDwAAAAAAAAAAAAAAAACA//8PAAAAAID//38AAAAAwMHvAQAAAAAAAAAAAAAAAID//x8AAAAAwP//PwAAAACAw49AAAAAAAAAAAAAAAAAwP///wAAAACA//8fAAAAAADDZ8AGAAAAAAAAAAAAAACA////DwAAAAD//w8AAAAAAAZmwD8AAAAAAAAAAAAAAMD///8/AAAAAP//DwAAAAAABKAA/gAAAAAAAAAAAAAAwP///38AAAAA/v8PAAAAAAAYAID8QQAAAAAAAAAAAACA////fwAAAAD+/w8AAAAAAMABAPwBAAAAAAAAAAAAAAD///9/AAAAAP7/DwAAAAAAAAABIAMEAAAAAAAAAAAAAP7//z8AAAAA/P8fAAAAAAAAAAAAAAAAAAAAAAAAAAAA/v//HwAAAAD8/x8AAAAAAAAAQCAAAAAAAAAAAAAAAAD8//8PAAAAAP7/HwgAAAAAAADgIQAAAAAAAAAAAAAAAPz//w8AAAAA/v8fDAAAAAAAAPZgAEAAAAAAAAAAAAAA8P//DwAAAAD//w8HAAAAAAAA/3MAAAAAAAAAAAAAAADg//8PAAAAAP//hwcAAAAAAID/9wAAQAAAAAAAAAAAAMD//w8AAAAA/v+BBwAAAAAAwP//AAAAAAAAAAAAAAAAwP//BwAAAAD+/4EHAAAAAADw//8DAAAAAAAAAAAAAADA//8HAAAAAPz/gQMAAAAAAPz//wNAAAAAAAAAAAAAAMD//wEAAAAA/P+BAwAAAAAA/v//BwAAAAAAAAAAAAAAwP8/AAAAAAD8/4EDAAAAAAD+//8PAAAAAAAAAAAAAADA/x8AAAAAAPh/AAAAAAAAAP7//x8AAAAAAAAAAAAAAMD/HwAAAAAA+H8AAAAAAAAA/v//HwAAAAAAAAAAAAAA4P8fAAAAAADwfwAAAAAAAAD8//8fAAAAAAAAAAAAAADg/w8AAAAAAPA/AAAAAAAAAPz//x8AAAAAAAAAAAAAAOD/BwAAAAAA4B8AAAAAAAAA/M//HwAAAAAAAAAAAAAA4P8HAAAAAADgDwAAAAAAAAD8AP8PAAAAAAAAAAAAAADgvwMAAAAAAEAAAAAAAAAAABwA/QcAAAAAAAAAAAAAAPB/AAAAAAAAAAAAAAAAAAAAAAD4BwAIAAAAAAAAAAAA8H8AAAAAAAAAAAAAAAAAAAAAAPAHABAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAPAPAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAA+AMAAAAAAAAAAAAAAAAAAAAAAIABAAwAAAAAAAAAAAD4AwAAAAAAAAAAAAAAAAAAAAAAAAEABgAAAAAAAAAAAPgDAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAAAAAAAAAA+AAAAAAAAAAAAAAAAAAAAAAAAAAAwAEAAAAAAAAAAAD4AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPwBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB4YAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAAAAAAAAADwAQBAAMeH/wEAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAP//Af7//////wEAAAAAAAAAAAAAAOAHAAAAAAAAAID3//+B/////////wEAAAAAAAAAAAAAYA8AAAAACPz///////H//////////wAAAAAAAAAADwAgHwAAAID/////////////////////AQAAAACABoD///sfAAAA8P///////////////////38AAAAA+P///////wMAAAD4////////////////////HwAAAID///////83AAAA8P////////////////////8PAAAA/////////wcA4ID//////////////////////x8AAGDA////////AQDwgfj/////////////////////BwAAAID///////8/HBwA//////////////////////8DAAAA+P////////8f/P///////////////////////w8AAAD4/////////////////////////////////////wD/HwD8/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////w==";
 function earthTex(){const c=document.createElement("canvas");c.width=256;c.height=128;const x=c.getContext("2d"),d=x.createImageData(256,128),s=atob(EARTH);for(let i=0;i<32768;i++){const l=(s.charCodeAt(i>>3)>>(i&7))&1;d.data[i*4]=l?70:20;d.data[i*4+1]=l?130:70;d.data[i*4+2]=l?60:150;d.data[i*4+3]=255}x.putImageData(d,0,0);return new T.CanvasTexture(c)}
-function makePlanet(){if(plt)S.remove(plt);const t=SYS[sy].t,c=SYS[sy].c;plt=new T.Mesh(new T.SphereGeometry(PR,48,32),new T.MeshStandardMaterial({map:t===0?earthTex():ptex(PT[t][0],PT[t][1]),roughness:.9}));plt.add(lights(PR));plt.add(new T.Mesh(new T.SphereGeometry(PR*1.06,48,32),new T.MeshBasicMaterial({color:new T.Color(c[1]),transparent:true,opacity:.22,side:T.BackSide,blending:T.AdditiveBlending,depthWrite:false})));plt.position.copy(P).addScaledVector(new T.Vector3(0,0,-1).applyQuaternion(Q),2600).add(new T.Vector3(0,-300,0));S.add(plt);if(stn)S.remove(stn);stn=mkStation();stn.position.copy(P).addScaledVector(new T.Vector3(0,0,-1).applyQuaternion(Q),1850).add(new T.Vector3(260,90,0));S.add(stn);for(let i=nv.filter(n=>!n.tur).length;i<2;i++)spawnNv()}
+let nasaBaseStationTemplate=null;
+function attachNasaBaseStation(target){
+ if(!target||target.userData.nasaBaseStationAttached)return;
+ if(!nasaBaseStationTemplate){target.userData.nasaBaseStationPending=true;return}
+ const module=nasaBaseStationTemplate.clone(true);
+ module.position.set(108,0,0);
+ module.scale.multiplyScalar(.9);
+ module.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=false}});
+ target.add(module);
+ target.userData.nasaBaseStationAttached=true;
+}
+if(T.GLTFLoader&&location.protocol!=="file:"){
+ const stationLoader=new T.GLTFLoader();
+ stationLoader.load("assets/stations/base_station_nasa/model.glb",gltf=>{
+  try{
+   const model=gltf.scene;
+   const bounds=new T.Box3().setFromObject(model),size=bounds.getSize(new T.Vector3());
+   const maxDimension=Math.max(size.x,size.y,size.z)||1;
+   model.scale.setScalar(34/maxDimension);
+   model.updateMatrixWorld(true);
+   model.position.sub(new T.Box3().setFromObject(model).getCenter(new T.Vector3()));
+   nasaBaseStationTemplate=model;
+   if(stn&&stn.userData.nasaBaseStationPending)attachNasaBaseStation(stn);
+  }catch(error){console.warn("[STARFALL] NASA base station initialization failed:",error)}
+ },undefined,error=>console.warn("[STARFALL] NASA base station GLB unavailable:",error));
+}
+function makePlanet(){if(plt)S.remove(plt);const t=SYS[sy].t,c=SYS[sy].c;plt=new T.Mesh(new T.SphereGeometry(PR,48,32),new T.MeshStandardMaterial({map:t===0?earthTex():ptex(PT[t][0],PT[t][1]),roughness:.9}));plt.add(lights(PR));plt.add(new T.Mesh(new T.SphereGeometry(PR*1.06,48,32),new T.MeshBasicMaterial({color:new T.Color(c[1]),transparent:true,opacity:.22,side:T.BackSide,blending:T.AdditiveBlending,depthWrite:false})));plt.position.copy(P).addScaledVector(new T.Vector3(0,0,-1).applyQuaternion(Q),2600).add(new T.Vector3(0,-300,0));S.add(plt);if(stn)S.remove(stn);stn=mkStation();attachNasaBaseStation(stn);stn.position.copy(P).addScaledVector(new T.Vector3(0,0,-1).applyQuaternion(Q),1850).add(new T.Vector3(260,90,0));S.add(stn);for(let i=nv.filter(n=>!n.tur).length;i<2;i++)spawnNv()}
 function exitWorld(){if(stn)stn.visible=false;sky.visible=true;rocks.forEach(m=>{m.visible=true;m.userData.hp=m.userData.mx;m.userData.kn=0;m.userData.sc=0;m.material.emissive.set(0)});dp.visible=true;if(plt)plt.visible=false;S.fog=null;if(S.background&&S.background.isColor)S.background.set(0x02030a)}
 function arrive(){exitWorld();clr(nv);tun.visible=false;pirateFleetClear();P.set(0,0,0);vel.set(0,0,-30);C.fov=70;C.updateProjectionMatrix();C.position.set(0,3.4,10.5).applyQuaternion(Q).add(P);$("hud").style.display="block";state="play";spawnT=7;makePlanet();say("ВЫХОД ИЗ ПРЫЖКА: "+SYS[sy].n+". Станция впереди — стыкуйся для торговли",5)}
 
@@ -1577,11 +1603,36 @@ SH=[{n:"Лёгкий щит",rg:1,p:0,t:1},{n:"Усиленный щит",rg:1.8
 function applyShip(){const q=SHIPS[shp];ship.scale.setScalar(q.sc);ship.traverse(o=>{if(o.isMesh&&o.material&&o.material.roughness===.35)o.material.color.set(q.col)})}
 const nv=[];
 function breakRock(m){m.visible=false;const p=m.position.clone(),r=m.userData.r,n=Math.min(12,1+Math.floor(r/4));boom(p,40,Math.max(4,r*.5),0xb09070,25+r,1.5);shk=Math.max(shk,.2);for(let i=0;i<n;i++)drop(p.clone().add(rd().multiplyScalar(r*.6)),[3,4,5][m.userData.ty]);setTimeout(()=>{m.userData.hp=m.userData.mx;m.visible=true},60000)}
-function mkFreighter(){const g=new T.Group(),d=new T.MeshStandardMaterial({color:0x2d3644,metalness:.7,roughness:.5}),m=new T.MeshStandardMaterial({color:0x8c97a6,metalness:.6,roughness:.5}),cols=[0xd0502a,0x2a7ad0,0xd0b02a,0x3aa860],ad=(geo,mat,x,y,z)=>{const o=new T.Mesh(geo,mat);o.position.set(x,y,z);g.add(o);return o};
-ad(new T.BoxGeometry(10,8,70),d,0,0,0);ad(new T.BoxGeometry(14,10,16),m,0,2,-38);ad(new T.BoxGeometry(8,4,6),new T.MeshStandardMaterial({color:0x66ddff,emissive:0x113a55}),0,8,-42);
-for(let i=0;i<8;i++)ad(new T.BoxGeometry(12,7,7),new T.MeshStandardMaterial({color:cols[i%4],roughness:.6}),(i%2?1:-1)*7,7,-22+Math.floor(i/2)*11);
-for(const s of[-1,1])ad(new T.CylinderGeometry(3,4,10,10),d,s*5,0,38).rotation.x=Math.PI/2;
-const f=new T.Sprite(new T.SpriteMaterial({map:gtex("rgba(255,160,80,1)"),blending:T.AdditiveBlending,transparent:true,depthWrite:false}));f.position.z=46;f.scale.set(22,22,1);g.add(f);g.scale.setScalar(1.4);return g}
+let civilianArgoTemplate=null;
+if(T.GLTFLoader&&location.protocol!=="file:"){
+ const civilianLoader=new T.GLTFLoader();
+ civilianLoader.load("assets/ships/civilian/argo/model.glb",gltf=>{
+  try{
+   const model=gltf.scene;
+   model.rotation.x=-Math.PI/2;
+   model.updateMatrixWorld(true);
+   const bounds=new T.Box3().setFromObject(model),size=bounds.getSize(new T.Vector3());
+   const longitudinal=Math.max(size.x,size.y,size.z)||1;
+   model.scale.setScalar(98/longitudinal);
+   model.updateMatrixWorld(true);
+   model.position.sub(new T.Box3().setFromObject(model).getCenter(new T.Vector3()));
+   model.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=false}});
+   civilianArgoTemplate=model;
+  }catch(error){console.warn("[STARFALL] Argo GLB initialization failed:",error)}
+ },undefined,error=>console.warn("[STARFALL] Argo GLB unavailable; procedural traffic ship retained:",error));
+}
+function mkFreighter(){
+ if(civilianArgoTemplate){
+  const model=civilianArgoTemplate.clone(true);
+  model.userData.trafficModel="nasa-argo";
+  return model;
+ }
+ const g=new T.Group(),d=new T.MeshStandardMaterial({color:0x2d3644,metalness:.7,roughness:.5}),m=new T.MeshStandardMaterial({color:0x8c97a6,metalness:.6,roughness:.5}),cols=[0xd0502a,0x2a7ad0,0xd0b02a,0x3aa860],ad=(geo,mat,x,y,z)=>{const o=new T.Mesh(geo,mat);o.position.set(x,y,z);g.add(o);return o};
+ ad(new T.BoxGeometry(10,8,70),d,0,0,0);ad(new T.BoxGeometry(14,10,16),m,0,2,-38);ad(new T.BoxGeometry(8,4,6),new T.MeshStandardMaterial({color:0x66ddff,emissive:0x113a55}),0,8,-42);
+ for(let i=0;i<8;i++)ad(new T.BoxGeometry(12,7,7),new T.MeshStandardMaterial({color:cols[i%4],roughness:.6}),(i%2?1:-1)*7,7,-22+Math.floor(i/2)*11);
+ for(const side of[-1,1])ad(new T.CylinderGeometry(3,4,10,10),d,side*5,0,38).rotation.x=Math.PI/2;
+ const f=new T.Sprite(new T.SpriteMaterial({map:gtex("rgba(255,160,80,1)"),blending:T.AdditiveBlending,transparent:true,depthWrite:false}));f.position.z=46;f.scale.set(22,22,1);g.add(f);g.scale.setScalar(1.4);return g
+}
 function spawnNv(){const g=mkFreighter(),d=rd();d.y*=.2;const o=P.clone().addScaledVector(d.normalize(),1600+Math.random()*600),v=P.clone().add(rd().multiplyScalar(500)).sub(o).normalize().multiplyScalar(22+Math.random()*18);g.position.copy(o);g.lookAt(o.clone().sub(v));S.add(g);nv.push({g,v,hp:260,hit:0})}
 let planetTrafficT=18;
 function spawnPlanetFreighter(){const worlds=worldPlanets.filter(w=>w.kind==="planet"),a=worlds[Math.floor(Math.random()*worlds.length)];let b=worlds[Math.floor(Math.random()*worlds.length)];if(a===b)b=worlds[(worlds.indexOf(a)+1)%worlds.length];const start=a.mesh.position.clone().add(new T.Vector3(0,a.radius+520,0)),destination=b.mesh.position.clone().add(new T.Vector3(0,b.radius+520,0)),g=mkFreighter(),v=destination.clone().sub(start).normalize().multiplyScalar(52+Math.random()*20);g.position.copy(start);g.lookAt(g.position.clone().sub(v));S.add(g);nv.push({g,v,hp:260,hit:0,route:{destination,speed:v.length(),from:a.name,to:b.name}})}
