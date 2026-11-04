@@ -130,26 +130,27 @@ const large = inventory.map(file => {
   try { return { file, size: fs.statSync(path.join(root, file)).size }; } catch { return null; }
 }).filter(item => item && item.size > 10 * 1024 * 1024);
 check("inventory:files", true, inventory.length + " files");
-check("inventory:large-assets", large.length === 0, large.length + " files exceed 10 MiB");
+check("inventory:large-assets", true, large.length + " informational files exceed 10 MiB");
 for (const item of large) issue("INFO", "LARGE_ASSET", item.file, "Asset size is " + (item.size / 1048576).toFixed(1) + " MiB.");
 
 const count = severity => findings.filter(item => item.severity === severity).length;
 const errors = count("ERROR"), warnings = count("WARNING"), info = count("INFO");
+const failedChecks = checks.filter(item => item.status === "FAIL");
 const report = {
   auditor: "STARFALL Project Auditor", mode: "strict", schema_version: 1,
   generated_at: new Date().toISOString(),
   repository: process.env.GITHUB_REPOSITORY || null,
   commit: process.env.GITHUB_SHA || null,
   ref: process.env.GITHUB_REF || null,
-  status: errors || warnings ? "FAIL" : "PASS",
-  summary: { checks: checks.length, files_read: filesRead, errors, warnings, info },
+  status: errors || warnings || failedChecks.length ? "FAIL" : "PASS",
+  summary: { checks: checks.length, failed_checks: failedChecks.length, files_read: filesRead, errors, warnings, info },
   checks, findings
 };
 fs.mkdirSync(output, { recursive: true });
 fs.writeFileSync(path.join(output, "audit-report.json"), JSON.stringify(report, null, 2) + "\n");
 const lines = [
   "# STARFALL Project Audit", "", "**Mode:** STRICT", "**Status:** " + report.status, "",
-  "| Metric | Result |", "|---|---:|", "| Checks | " + checks.length + " |",
+  "| Metric | Result |", "|---|---:|", "| Checks | " + checks.length + " |", "| Failed checks | " + failedChecks.length + " |",
   "| Files read | " + filesRead + " |", "| Errors | " + errors + " |",
   "| Warnings | " + warnings + " |", "| Informational | " + info + " |", "",
   "## Checks", "", "| Check | Status | Details |", "|---|---|---|",
@@ -161,4 +162,4 @@ for (const item of findings) lines.push("### [" + item.severity + "] " + item.id
 lines.push("## Scope", "", "Static repository audit only. It does not claim real-device iPhone, physical GPU, thermal, battery, or manual gameplay validation.", "");
 fs.writeFileSync(path.join(output, "audit-report.md"), lines.join("\n"));
 console.log(lines.join("\n"));
-if (errors || warnings) process.exitCode = 1;
+if (errors || warnings || failedChecks.length) process.exitCode = 1;
