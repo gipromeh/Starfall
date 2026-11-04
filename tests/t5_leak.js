@@ -84,7 +84,12 @@ const ff = (page, sec) => page.evaluate(s => { const n = Math.round(s / .05); fo
       const k=r.type||"unknown";
       (retainedByType[k]||(retainedByType[k]=[])).push({uuid:r.uuid,refs:r.refs,rc:r.rc,stack:r.firstAttach});
     }
-    return {trackedNew:fresh.length,disposed:fresh.filter(r=>r.disposed).length,stillAttached:fresh.filter(r=>attached.has(r.uuid)).length,detachedUndisposed:leaked.length,detachedRetained:retained.length,byType:grouped,retainedByType};
+    const attachedByType = {};
+    for(const r of fresh.filter(r => attached.has(r.uuid))) {
+      const k=r.type||"unknown";
+      (attachedByType[k]||(attachedByType[k]=[])).push({uuid:r.uuid,refs:r.refs,keep:r.keep,rc:r.rc,stack:r.firstAttach});
+    }
+    return {trackedNew:fresh.length,disposed:fresh.filter(r=>r.disposed).length,stillAttached:fresh.filter(r=>attached.has(r.uuid)).length,detachedUndisposed:leaked.length,detachedRetained:retained.length,byType:grouped,retainedByType,attachedByType};
   },geomBaseline);
   console.log('  диагностика геометрий:',JSON.stringify(geomLeaks));
   L.check('нет отсоединённых геометрий без владельца', geomLeaks.detachedUndisposed === 0, geomLeaks);
