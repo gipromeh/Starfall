@@ -15,7 +15,7 @@ const css = [
 '#sf-galaxy .title{font:19px "Russo One",sans-serif;letter-spacing:.14em;color:#72dfff;text-shadow:0 0 16px #28bfff}',
 '#sf-galaxy .spacer{flex:1}#sf-galaxy button{min-width:0;padding:8px 12px;border:1px solid #4fd0ff99;background:#06203aee;color:#d7f2ff;font:700 11px "Exo 2",sans-serif;letter-spacing:.06em;cursor:pointer}',
 '#sf-galaxy button:disabled{opacity:.35}#sf-galaxy input{width:min(270px,42vw);padding:9px 11px;border:1px solid #4fd0ff88;background:#031426ee;color:#e8f8ff;outline:none;font:13px "Exo 2",sans-serif}',
-'#sf-galaxy .side{pointer-events:none;position:absolute;z-index:3;left:max(12px,env(safe-area-inset-left));top:68px;bottom:max(12px,env(safe-area-inset-bottom));width:min(320px,36vw);display:flex;flex-direction:column;gap:8px;pointer-events:none}',
+'#sf-galaxy .side{position:absolute;z-index:3;left:max(12px,env(safe-area-inset-left));top:68px;bottom:max(12px,env(safe-area-inset-bottom));width:min(320px,36vw);display:flex;flex-direction:column;gap:8px;pointer-events:none}',
 '#sf-galaxy .panel{pointer-events:auto;border:1px solid #4fd0ff55;background:linear-gradient(135deg,#061a2def,#020916ef);box-shadow:0 0 22px #001a33aa;padding:10px;backdrop-filter:blur(8px)}',
 '#sf-galaxy h3{margin:0 0 8px;color:#76dfff;font:13px "Russo One",sans-serif;letter-spacing:.12em}',
 '#sf-galaxy .meta{font-size:11px;line-height:1.6;color:#9fc8df;overflow-wrap:anywhere;white-space:pre-line}',
@@ -44,7 +44,7 @@ const resultsPanel=node('section',{class:'panel'},side);node('h3',{text:'ПОИ�
 const results=node('div',{class:'results'},resultsPanel);
 const statusPanel=node('section',{class:'panel'},side);node('h3',{text:'КАТАЛОГ'},statusPanel);
 const status=node('div',{class:'status',text:'Ожидание каталога Spansh…'},statusPanel);
-node('div',{class:'hint',text:'Мышь / палец — вращение · колесо / pinch — масштаб\nКлик по звезде — сведения · поиск — переход'},root);
+node('div',{class:'hint',text:'Мышь / палец — вращение · колесо / pinch — масштаб\nКлик по звезде — сведения · поиск — переход · +/− масштаб'},root);
 const bottom=node('div',{class:'bottom'},root);
 const allBtn=node('button',{text:'ВСЕ СИСТЕМЫ'},bottom),inhBtn=node('button',{text:'ОБЖИТЫЕ'},bottom),zoomInBtn=node('button',{text:'+'},bottom),zoomOutBtn=node('button',{text:'−'},bottom),resetBtn=node('button',{text:'СБРОС ВИДА'},bottom),closeBtn=node('button',{class:'close',text:'В ИГРУ'},bottom);
 const menuBtn=node('button',{id:'sf-galaxy-menu',text:'КАРТА ГАЛАКТИКИ · NAV'});
@@ -62,11 +62,11 @@ for(let i=0;i<nbg;i++){const r=4200+rnd()*4200,a=rnd()*Math.PI*2,z=rnd()*2-1,q=M
 const bggeo=new T.BufferGeometry();bggeo.setAttribute('position',new T.BufferAttribute(bgpos,3));
 scene.add(new T.Points(bggeo,new T.PointsMaterial({color:0x789dbb,size:1.3,sizeAttenuation:false,transparent:true,opacity:.55})));
 const local=[
-{name:'ЛАВЕ',title:'Лаве-Прайм',index:0,x:-260,y:30,z:-80},
-{name:'ДИСО',title:'Диса',index:1,x:150,y:-110,z:130},
-{name:'ЗААОНС',title:'Зааонс-4',index:2,x:70,y:190,z:-210},
-{name:'ТИБЕДИ',title:'Тибеди',index:3,x:320,y:80,z:220},
-{name:'РЕОРЕ',title:'Реоре-Ост',index:4,x:-180,y:-170,z:300}
+{name:SYS[0].n,title:SYS[0].p,index:0,x:-260,y:30,z:-80},
+{name:SYS[1].n,title:SYS[1].p,index:1,x:150,y:-110,z:130},
+{name:SYS[2].n,title:SYS[2].p,index:2,x:70,y:190,z:-210},
+{name:SYS[3].n,title:SYS[3].p,index:3,x:320,y:80,z:220},
+{name:SYS[4].n,title:SYS[4].p,index:4,x:-180,y:-170,z:300}
 ];
 const localColors=[0x63dfff,0xffb36a,0xc99aff,0x80e7b1,0xff8294];
 const lp=[],lc=[];
@@ -96,7 +96,7 @@ async function loadCatalog(){
   let pending='';const list=[];
   while(true){const part=await reader.read();if(part.done)break;pending+=decoder.decode(part.value,{stream:true});let cut;
    while((cut=pending.indexOf('\n'))>=0){const line=pending.slice(0,cut);pending=pending.slice(cut+1);if(!line)continue;const v=JSON.parse(line);
-    if(v.n&&Number.isFinite(+v.x)&&Number.isFinite(+v.y)&&Number.isFinite(+v.z))list.push({id:String(v.id||''),name:String(v.n),x:+v.x,y:+v.y,z:+v.z,p:+v.p||0,a:v.a||'',g:v.g||'',s:v.s||'',e:v.e||'',e2:v.e2||'',f:v.f||'',bc:+v.bc||0});
+    if(v.n&&Number.isFinite(+v.x)&&Number.isFinite(+v.y)&&Number.isFinite(+v.z))list.push({id:String(v.id||''),name:String(v.n),searchName:String(v.n).toLocaleLowerCase(),x:+v.x,y:+v.y,z:+v.z,p:+v.p||0,a:v.a||'',g:v.g||'',s:v.s||'',e:v.e||'',e2:v.e2||'',f:v.f||'',bc:+v.bc||0});
    }
   }
   pending+=decoder.decode();if(pending.trim()){const v=JSON.parse(pending);if(v.n&&Number.isFinite(+v.x)&&Number.isFinite(+v.y)&&Number.isFinite(+v.z))list.push({id:String(v.id||''),name:String(v.n),x:+v.x,y:+v.y,z:+v.z,p:+v.p||0,a:v.a||'',g:v.g||'',s:v.s||'',e:v.e||'',e2:v.e2||'',f:v.f||'',bc:+v.bc||0});}
@@ -115,7 +115,7 @@ function focus(r,isLocal){const p=isLocal?new T.Vector3(r.x,r.y,r.z):posOf(r);ya
 function renderSearch(q){
  results.replaceChildren();q=q.trim().toLocaleLowerCase();if(!q)return;
  const found=[];local.forEach(r=>{if((r.name+' '+r.title).toLocaleLowerCase().includes(q))found.push({r,local:true});});
- for(const r of records){if(r.name.toLocaleLowerCase().includes(q))found.push({r,local:false});if(found.length>=14)break;}
+ for(const r of records){if((r.searchName||r.name.toLocaleLowerCase()).includes(q))found.push({r,local:false});if(found.length>=14)break;}
  found.slice(0,14).forEach(v=>{const b=node('button',{},results);node('span',{text:v.r.name},b);node('small',{text:v.local?'STARFALL':'SPANSH'},b);b.addEventListener('click',()=>focus(v.r,v.local));});
  if(!found.length)node('div',{class:'meta',text:'Совпадений нет.'},results);
 }
@@ -124,6 +124,7 @@ function close(){
  if($('hud'))$('hud').style.display=previousHud;
  if(previousState==='menu')$('menu')?.classList.remove('hide');
  if(previousState==='jumpmenu')$('jmp')?.classList.remove('hide');
+ if(previousState==='dock')$('mkt')?.classList.remove('hide');
  hudBtn.style.display=state==='play'?'block':'none';
 }
 async function open(){
@@ -150,9 +151,10 @@ function routeAction(){
  const d=routeStart.local||routeEnd.local?a.distanceTo(b):Math.hypot(routeStart.record.x-routeEnd.record.x,routeStart.record.y-routeEnd.record.y,routeStart.record.z-routeEnd.record.z);
  status.textContent='Маршрут: '+routeStart.record.name+' → '+routeEnd.record.name+' · '+d.toFixed(2)+(routeStart.local||routeEnd.local?' усл. ед.':' ly')+'. Внешний маршрут справочный.';
 }
+const projectedPoint=new T.Vector3();
 function nearest(x,y){
  const rect=R.domElement.getBoundingClientRect(),nx=(x-rect.left)/rect.width*2-1,ny=-((y-rect.top)/rect.height*2-1);let best=null,bd=324;
- const test=(arr,isLocal)=>{for(const r of arr){const p=isLocal?new T.Vector3(r.x,r.y,r.z):posOf(r);p.project(camera);if(p.z< -1||p.z>1)continue;const dx=(p.x-nx)*rect.width*.5,dy=(p.y-ny)*rect.height*.5,d=dx*dx+dy*dy;if(d<bd){bd=d;best={record:r,local:isLocal};}}};
+ const test=(arr,isLocal)=>{for(const r of arr){const p=projectedPoint.set(isLocal?r.x:r.x*.035,isLocal?r.y:r.y*.035,isLocal?r.z:r.z*.035);p.project(camera);if(p.z< -1||p.z>1)continue;const dx=(p.x-nx)*rect.width*.5,dy=(p.y-ny)*rect.height*.5,d=dx*dx+dy*dy;if(d<bd){bd=d;best={record:r,local:isLocal};}}};
  test(local,true);test(filtered,false);return best;
 }
 function down(e){if(!opened||e.target.closest('#sf-galaxy .top,#sf-galaxy .side,#sf-galaxy .bottom'))return;drag={x:e.clientX,y:e.clientY,id:e.pointerId,moved:false};try{R.domElement.setPointerCapture(e.pointerId);}catch(_){}}
@@ -168,7 +170,7 @@ zoomInBtn.addEventListener('click',()=>{distance=Math.max(180,distance*.78);came
 resetBtn.addEventListener('click',()=>{yaw=.18;pitch=.12;distance=3300;cameraUpdate();if(routeLine){scene.remove(routeLine);routeLine.geometry.dispose();routeLine=null;}routeStart=routeEnd=null;routeBtn.textContent='НАЧАТЬ МАРШРУТ';});
 addEventListener('keydown',e=>{if(e.code==='KeyN'&&!e.repeat&&(opened||state==='menu'||state==='play'||state==='jumpmenu')){e.preventDefault();opened?close():open();}if(e.code==='Escape'&&opened){e.preventDefault();close();}});
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();});
-function render(dt){if(!opened)return;galaxy.rotation.y+=Math.min(.02,dt*.012);R.render(scene,camera);}
+function render(){if(!opened)return;R.render(scene,camera);}
 window.SF_GALAXY_MAP={open,close,render,get stats(){return{catalog:records.length,visible:filtered.length,selected:selected?.record?.name||null};}};
 try{const oldLift=lift;lift=function(){oldLift();hudBtn.style.display='block';};const oldArrive=arrive;arrive=function(){oldArrive();hudBtn.style.display='block';};}catch(e){console.warn('[STARFALL Galaxy Map] HUD hook',e);}
 if(typeof state!=='undefined'&&state==='play')hudBtn.style.display='block';
