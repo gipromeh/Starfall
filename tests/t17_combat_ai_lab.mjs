@@ -20,3 +20,14 @@ for(let i=0;i<8;i++)elitePilot.chooseVector(far,[0,0,-900],true,{nearX:260,nearY
 assert.equal(far.aiIntent,"ATTACK");
 const repeat=createEAI(0x51a7),repeatPilot={hd:[0,0,-1],aiIntent:"ATTACK",aiSideSign:1};
 assert.deepEqual(repeat.chooseVector(repeatPilot,[0,0,-100],true),evade);
+
+const closeRange=createEAI(0x51a7),closePilot={hd:[0,0,-1],aiIntent:"ATTACK",aiSideSign:1};
+const firstEvade=closeRange.chooseVector(closePilot,[0,0,-100],true,{nearX:260,nearY:220,nearZ:340});
+assert.equal(closePilot.aiIntent,"EVADE");
+assert.ok(firstEvade[2]>.8);
+for(let i=0;i<8;i++)closeRange.chooseVector(closePilot,[0,0,-900],true,{nearX:260,nearY:220,nearZ:340,reengageDistance:720,minEvadeTicks:8});
+assert.equal(closePilot.aiIntent,"ATTACK");
+const remainsAttack=closeRange.chooseVector(closePilot,[0,0,-100],true,{nearX:260,nearY:220,nearZ:340});
+assert.equal(closePilot.aiIntent,"ATTACK");
+assert.ok(remainsAttack[2]<-.8);
+console.log('Production close-range anti-oscillation assertions passed');
