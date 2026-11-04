@@ -15,41 +15,42 @@ const L = require('./lib');
     const data = pirateStrategicSystem(sy, true);
     const group = data.groups.find(g => g.source === 'patrol');
     if (!group) throw new Error('No persistent patrol group was initialized');
-    const mesh = new THREE.Group();
-    mesh.position.copy(P).add(new THREE.Vector3(4500, 0, 0));
-    S.add(mesh);
-    const npc = {
-      g: mesh, v: new THREE.Vector3(), hp: 18, mx: 18, hit: 0, pk: 0,
-      route: {
-        destination: mesh.position.clone().add(new THREE.Vector3(2500, 0, 0)),
-        direction: new THREE.Vector3(1, 0, 0), speed: 0,
-        from: 'TEST-A', to: 'TEST-B', kind: 0, cargo: 80, passengers: 0
-      }
-    };
-    nv.push(npc);
-    pirateStrategicTagNpc(npc);
-    group.position = pirateStrategicArray(mesh.position);
+    const before = nv.length;
+    spawnPlanetFreighter(2);
+    if (nv.length !== before + 1) throw new Error('Production route freighter did not spawn');
+    const npc = nv[nv.length - 1];
+    if (!npc.route || !npc.passengerTransport) throw new Error('Production passenger freighter has no route metadata');
+    npc.g.position.copy(P).add(new THREE.Vector3(4500, 0, 0));
+    npc.route.destination.copy(npc.g.position).add(new THREE.Vector3(2500, 0, 0));
+    npc.route.direction.copy(npc.route.destination).sub(npc.g.position).normalize();
+    npc.route.speed = 0;
+    npc.hp = 18;
+    npc.mx = 18;
+    const expectedCargo = npc.route.cargo;
+    group.position = pirateStrategicArray(npc.g.position);
     group.velocity = [0, 0, 0];
-    group.targetNpcId = npc._sfStrategicNpcId;
+    group.targetNpcId = pirateStrategicTagNpc(npc);
     group.cooldown = 0;
     group.state = 'intercept';
-    for (let i = 0; i < 30 && nv.includes(npc); i++) pirateStrategicUpdate(.1);
+    for (let i = 0; i < 60 && nv.includes(npc); i++) pirateStrategicUpdate(.1);
     const result = {
       removed: !nv.includes(npc),
       pirateOwned: npc.pk === 1,
       raids: data.ledger.raids,
       cargoLedger: data.ledger.cargo,
-      routeId: npc._sfStrategicNpcId,
+      expectedCargo,
       routeFrom: npc.route.from,
-      routeTo: npc.route.to
+      routeTo: npc.route.to,
+      passengerTransport: npc.passengerTransport
     };
-    if (nv.includes(npc)) nv.splice(nv.indexOf(npc), 1);
-    if (mesh.parent) S.remove(mesh);
+    const index = nv.indexOf(npc);
+    if (index >= 0) nv.splice(index, 1);
+    if (npc.g.parent) S.remove(npc.g);
     return result;
   });
-  L.check('стратегическая группа атакует реальный NPC торгового маршрута и фиксирует захват груза',
-    raid.removed && raid.pirateOwned && raid.raids >= 1 && raid.cargoLedger >= 80 &&
-    raid.routeFrom === 'TEST-A' && raid.routeTo === 'TEST-B', raid);
+  L.check('стратегическая группа атакует NPC, созданный штатным генератором торговых маршрутов',
+    raid.removed && raid.pirateOwned && raid.raids >= 1 && raid.cargoLedger >= raid.expectedCargo &&
+    raid.passengerTransport && !!raid.routeFrom && !!raid.routeTo && raid.routeFrom !== raid.routeTo, raid);
 
   const combat = await page.evaluate(() => {
     const oldE = E, oldE2 = E2;
