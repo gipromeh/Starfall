@@ -1,9 +1,11 @@
 name: combat-ai-lab
 on:
   push:
-    branches: [lab/elite-combat-ai]
+    branches: [lab/elite-combat-ai, feature/pirate-ai-strategic-layer]
     paths:
       - 'tools/combat-ai-lab/**'
+      - 'src/ai/PirateStrategicAI.mjs'
+      - 'tests/t21_pirate_strategic_ai.mjs'
       - 'tests/t17_combat_ai_lab.mjs'
       - 'tests/t18_eai_parity.js'
       - 'tests/t19_production_combat_batch.js'
@@ -29,6 +31,7 @@ jobs:
         with:
           node-version: 22
       - run: node tests/t17_combat_ai_lab.mjs
+      - run: node tests/t21_pirate_strategic_ai.mjs
   production-kernel-parity:
     needs: kernel-regression
     runs-on: ubuntu-latest
