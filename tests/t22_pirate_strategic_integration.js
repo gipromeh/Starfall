@@ -93,6 +93,23 @@ const L = require('./lib');
   L.check('стратегическая группа разворачивает реальный боевой корабль и назначает NPC целью',
     combat.spawned && combat.boundToRealNpc && combat.hasStableGroupId, combat);
 
+  const dockHandoff = await page.evaluate(() => {
+    const oldE = E, oldE2 = E2;
+    const mesh = new THREE.Group();
+    mesh.position.copy(P).add(new THREE.Vector3(0, 0, -500));
+    S.add(mesh);
+    const fakeEnemy = { g: mesh, hp: 80, mx: 100, ty: 0, tn: null, warp: 0, aiIntent: 'ATTACK' };
+    const group = pirateStrategicAttachEnemy(fakeEnemy, null);
+    E = fakeEnemy; E2 = null;
+    pirateStrategicSuspendCombat();
+    const detached = group._enemyRef === null && fakeEnemy.tn === null && group.state === 'patrol';
+    group.state = 'destroyed';
+    E = oldE; E2 = oldE2;
+    if (mesh.parent) S.remove(mesh);
+    return detached;
+  });
+  L.check('при стыковке активный бой передаётся стратегическому симулятору без потери группы', dockHandoff);
+
   const persistence = await page.evaluate(() => {
     const before = pirateStrategicSnapshot();
     const validated = pirateStrategicValidate(before);
