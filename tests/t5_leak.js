@@ -61,6 +61,12 @@ const ff = (page, sec) => page.evaluate(s => { const n = Math.round(s / .05); fo
   await page.evaluate(() => { const old=Math.random;let n=0;Math.random=()=>[.1,.99,.99,.99,.99][n++]??.99;wave=6;spawnE();Math.random=old;if(E){E.fire=1e9;E.burstLeft=0;E.burstGap=1e9;} });
   await ff(page, 4); await page.evaluate(() => { if(E)hurtEn(E,1e6,false);spawnT=1e9; }); await ff(page, 3);
   await ff(page, 40);
+  // Все lazy-кэши пиратских моделей должны быть построены до baseline:
+  // их shared geometry намеренно живёт в MC и повторно используется клонами.
+  await page.evaluate(() => {
+    for (let ty = 0; ty < 4; ty++) mkPirate(ty);
+    mkBoss();
+  });
   const b0 = await mem(page);
   const geomBaseline = await page.evaluate(() => [...window.__sfGeomDiag.records.keys()]);
   for (let r = 0; r < 8; r++) { await page.evaluate(() => { if (!E) spawnE(); if(E){E.fire=1e9;E.burstLeft=0;E.burstGap=1e9;} }); await ff(page, 5); await page.evaluate(() => { firing = true; }); await ff(page, 2); await page.evaluate(() => { firing = false; if (E) hurtEn(E, 1e6, false); spawnT=1e9; }); await ff(page, 3); }
