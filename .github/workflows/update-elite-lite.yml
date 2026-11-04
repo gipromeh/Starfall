@@ -7,11 +7,6 @@ on:
         description: Maximum number of systems to publish
         required: true
         default: "50000"
-      inhabited_only:
-        description: Keep only systems with a non-zero population
-        type: boolean
-        required: true
-        default: false
 
 permissions:
   contents: write
@@ -42,14 +37,15 @@ jobs:
       - name: Build compact GitHub-sized dataset
         shell: bash
         run: |
-          args=(--source data/tmp/systems_1month.json.gz --output data/elite-dangerous-lite/systems.jsonl.gz --max-systems "${{ inputs.max_systems }}" --max-mb 35)
-          if [[ "${{ inputs.inhabited_only }}" == "true" ]]; then args+=(--inhabited-only); fi
-          python tools/export_elite_lite.py "${args[@]}"
+          python tools/export_elite_lite.py \
+            --source data/tmp/systems_1month.json.gz \
+            --output data/elite-dangerous-lite/systems.jsonl.gz \
+            --max-systems "${{ inputs.max_systems }}" \
+            --max-mb 35
       - name: Commit dataset
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # This path is intentionally ignored by the broad external-data rule.
           git add -f data/elite-dangerous-lite/systems.jsonl.gz data/elite-dangerous-lite/systems.jsonl.gz.manifest.json
           if git diff --cached --quiet; then
             echo "Dataset unchanged; no commit needed."
