@@ -214,16 +214,25 @@ export function attachGame({B:Babylon,scene,engine,curve,pads}) {
       if(!shot.target||shot.target.dead){shot.mesh.dispose();projectiles.splice(projectiles.indexOf(shot),1);continue;}
       shot.elapsed+=delta;
       const destination=shot.target.mesh.position.add(new B.Vector3(0,.12,0));
-      const diff=destination.subtract(shot.mesh.position),step=shot.speed*delta;
-      if(diff.length()<=step){
-        if(shot.type==='mortar'){
-          const impact=destination.clone();const nearby=enemies.filter(e=>!e.dead&&B.Vector3.Distance(e.mesh.position,impact)<=TOWERS.mortar.splash);
+      if(shot.type==='mortar'){
+        const distance=B.Vector3.Distance(shot.origin,destination);
+        const duration=Math.max(.55,distance/shot.speed);
+        const t=Math.min(1,shot.elapsed/duration);
+        const pos=B.Vector3.Lerp(shot.origin,destination,t);
+        pos.y+=Math.sin(Math.PI*t)*Math.min(2.8,distance*.24);
+        shot.mesh.position.copyFrom(pos);
+        if(t>=1){
+          const impact=destination.clone();
+          const nearby=enemies.filter(e=>!e.dead&&B.Vector3.Distance(e.mesh.position,impact)<=TOWERS.mortar.splash);
           nearby.forEach(e=>{e.hp-=shot.damage;if(e.hp<=0)removeEnemy(e);});
-        }else{shot.target.hp-=shot.damage;if(shot.target.hp<=0)removeEnemy(shot.target);}
-        shot.mesh.dispose();projectiles.splice(projectiles.indexOf(shot),1);
+          shot.mesh.dispose();projectiles.splice(projectiles.indexOf(shot),1);
+        }
       }else{
-        shot.mesh.position.addInPlace(diff.normalize().scale(step));
-        if(shot.type==='mortar')shot.mesh.position.y+=Math.sin(Math.min(1,shot.elapsed/1.1)*Math.PI)*.035;
+        const diff=destination.subtract(shot.mesh.position),step=shot.speed*delta;
+        if(diff.length()<=step){
+          shot.target.hp-=shot.damage;if(shot.target.hp<=0)removeEnemy(shot.target);
+          shot.mesh.dispose();projectiles.splice(projectiles.indexOf(shot),1);
+        }else shot.mesh.position.addInPlace(diff.normalize().scale(step));
       }
     }
     for(const effect of [...effects]){effect.life-=delta;if(effect.life<=0){effect.mesh.dispose();effects.splice(effects.indexOf(effect),1);}}
