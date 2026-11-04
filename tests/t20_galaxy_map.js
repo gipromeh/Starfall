@@ -14,4 +14,6 @@ assert.match(map, /Каталог Spansh недоступен/);
 assert.match(map, /jd=target;jt=2\.2;state='jump'/);
 assert.doesNotMatch(map, /new T\.WebGLRenderer\(/);
 assert.doesNotMatch(map, /SYS\s*=/);
+assert.match(map, /target\\.isContentEditable/);
+assert.match(map, /previousState==='dock'/);
 console.log('Galaxy Map source contracts: PASS');
