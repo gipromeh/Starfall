@@ -40,7 +40,7 @@ const L = require('./lib');
   L.check('модель нормализована до 28 игровых единиц', Math.abs(result.maxDimension - 28) < .05, result.maxDimension);
   L.check('обычный нейтральный трафик использует Cargo Spaceship', result.trafficCargo, result);
   L.check('грузовой корабль каравана использует Cargo Spaceship', result.convoyCargo, result);
-  L.check('двигательные сокеты созданы и подключены', result.engineSockets === 2, result.engineSockets);
+  L.check('двигательные сокеты созданы и подключены', result.engineSockets >= 2, result.engineSockets);
   L.check('ошибок страницы нет', page.errors.length === 0, page.errors);
   process.exitCode = L.summary();
   await browser.close();

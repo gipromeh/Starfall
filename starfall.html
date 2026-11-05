@@ -3682,11 +3682,6 @@ function fitCargoTransportAsset(src,targetSize=28){
 function mkCargoTransport(){
  if(!MC.cargoTransport)return null;
  const g=MC.cargoTransport.clone(true);g.userData={sc:1,cargoTransport:true};
- const box=new T.Box3().setFromObject(g),size=box.getSize(new T.Vector3());
- for(const side of [-1,1]){
-  const node=new T.Object3D();node.name="ENG_"+(side<0?0:1);
-  node.position.set(side*size.x*.2,0,size.z*.38);g.add(node);
- }
  const sockets=pirateFleetResolveSockets(g,3),fx={g,ty:3,engineNodes:sockets.engines,flames:[],flameCores:[]};
  pirateFleetAttachFX(fx);
  g.starfallEngineNodes=sockets.engines;g.starfallEngineFlames=fx.flames;g.starfallEngineFlameCores=fx.flameCores;
