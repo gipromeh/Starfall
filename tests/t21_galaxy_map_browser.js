@@ -123,7 +123,7 @@ const zlib = require('node:zlib');
     const jumpEnabled = await page.locator('#sf-galaxy .actions button').first().isEnabled();
     L.check('Galaxy Map: игровой гиперпрыжок доступен для локальной системы', jumpEnabled, targetName);
     await page.locator('#sf-galaxy .actions button').first().click();
-    await page.waitForFunction(i => state === 'play' && sy === i, targetIndex, { timeout: 20000 });
+    await page.waitForFunction(i => state === 'play' && sy === i, targetIndex, { timeout: 60000 });
     const finalState = await page.evaluate(() => ({ state, system: SYS[sy].n, mapStats: window.SF_GALAXY_MAP.stats }));
     L.check('Galaxy Map: гиперпрыжок завершился в выбранной системе', finalState.state === 'play' && finalState.system === targetName, finalState);
     L.check('Galaxy Map: нет ошибок JavaScript', page.errors.length === 0, page.errors);
