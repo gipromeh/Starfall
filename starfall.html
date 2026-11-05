@@ -2091,6 +2091,377 @@ const _updWithPirateFleet=upd;
 upd=function(dt){_updWithPirateFleet(dt);pirateFleetUpdate(dt);resolvePirateShipCollisions();pirateEnemyFxUpdate(dt);pirateTrafficEngineFxUpdate(dt);for(const pe of pirateFleet)if(pe.g&&pe.hp>0)pirateDamageFxUpdate(pe,dt)};
 // ===== END STARFALL v77 PIRATE FLEET =====
 
+/* ===== PIRATE CONVOYS v97.3 (шаги 1-2: круиз + агрессия при уроне) ===== */
+const pirateConvoys=[];
+let pirateConvoyReady=false;
+const PC_CRUISE=52,
+ PC_GRUDGE=60,
+ PC_FAR=9000,
+ PC_LOSE=3500,
+ PC_SLOTS=[[-40,5,35],[40,5,35],[-75,-4,70],[75,-4,70]],
+ PC_TYPES=[0,1,0,1],
+ PC_BREAK_D=[140,150,210],PC_RESET_D=[400,380,460],PC_BREAK_T=[1.6,1.4,2.0];
+const _pcV=new T.Vector3(),_pcV2=new T.Vector3(),_pcQ=new T.Quaternion(),_pcQ2=new T.Quaternion(),_pcM=new T.Matrix4(),_pcZero=new T.Vector3(),_pcZ=new T.Vector3(0,0,1);
+
+function pcInWorld(){return typeof worldBodies==="undefined"||worldBodies.visible!==false}
+function pcMembers(c){return c.cargo?[c.cargo].concat(c.escorts):c.escorts}
+function pcPlanets(){return worldPlanets.filter(w=>w.kind==="planet")}
+function pcOrient(g,hd,dt,k,bank){
+ _pcM.lookAt(_pcZero,hd,pirateFleetUp);_pcQ.setFromRotationMatrix(_pcM);
+ if(bank)_pcQ.multiply(_pcQ2.setFromAxisAngle(_pcZ,bank));
+ g.quaternion.slerp(_pcQ,1-Math.exp(-dt*k));
+}
+function pcSlotPos(c,idx,out){const s=PC_SLOTS[idx];return out.set(s[0],s[1],s[2]).applyQuaternion(c.q).add(c.p)}
+
+function pcCargoModel(){
+ try{
+  if(MC&&MC.pirateTransport){
+   const g=cached("pirate-transport",()=>mkPirateTransport());
+   if(g){g.userData={...g.userData,pirateTransport:true};return g}
+  }
+ }catch(err){}
+ return mkFreighter();
+}
+
+function pcShip(c,role,ty,idx){
+ const cargo=role==="cargo";
+ const e={pc:c,role,ty:cargo?4:ty,slot:idx,dead:false,respawn:Infinity,flames:[],flameCores:[],warp:0,hits:0,smoke:null,fireFx:null,
+  fire:.5+EAI.rand(),burst:0,burstGap:0,vel:new T.Vector3(),hd:c.hd.clone(),speed:0,mode:"FORM",blend:1,
+  ph:"ATTACK",phT:0,jinkT:0,jinkCd:0,jinkSide:1,aimS:null,flank:1,aiClock:EAI.STEP*((idx+1)%4)/4,aiTicks:0,trailT:.1};
+ pirateFleetPrepare();
+ const g=cargo?pcCargoModel():pirateFleetTemplates[ty].clone(true);
+ g.visible=true;
+ if(cargo)g.position.copy(c.p);else pcSlotPos(c,idx,g.position);
+ g.quaternion.copy(c.q);S.add(g);e.g=g;
+ Object.assign(e,pirateHitBounds(g));
+ if(cargo){
+  e.r=14;e.muzzleNodes=[];e.engineNodes=[];
+  if(g.userData&&g.userData.pirateTransport){
+   const sk=pirateFleetResolveSockets(g,3),fx={g,ty:3,engineNodes:sk.engines,flames:[],flameCores:[]};
+   pirateFleetAttachFX(fx);e.engineNodes=sk.engines;e.flames=fx.flames;e.flameCores=fx.flameCores;
+  }
+ }else{
+  const sk=pirateFleetResolveSockets(g,ty);
+  e.muzzleNodes=sk.guns;e.engineNodes=sk.engines;e.r=ty===0?8.5:7.2;pirateFleetAttachFX(e);
+ }
+ const base=Math.max(160,SHIPS[shp].hull*1.65*DF[dif].hp*[1,.78,1.35,.9][cargo?3:ty]);
+ e.hp=e.mx=cargo?base*3:base;
+ return e;
+}
+
+function pcPopulate(c){
+ c.cargo=pcShip(c,"cargo",0,0);
+ c.escorts=[];
+ const n=3+(c.id%2);
+ for(let i=0;i<n;i++)c.escorts.push(pcShip(c,"escort",PC_TYPES[i],i));
+}
+
+function pcCreate(k){
+ const pl=pcPlanets(),n=pl.length,from=Math.floor(k*n/2)%n,to=(from+2)%n;
+ const c={id:k,planets:pl,from,to,p:new T.Vector3(),hd:new T.Vector3(0,0,-1),q:new T.Quaternion(),sp:PC_CRUISE*.6,
+  hold:0,fast:false,state:"CRUISE",hostileT:0,cargo:null,escorts:[],t:0,dead:false,respawnT:0};
+ const A=pl[from];
+ _pcV.set(Math.cos(k*2.1),.15,Math.sin(k*2.1)).normalize();
+ c.p.copy(A.mesh.position).addScaledVector(_pcV,A.radius+650);
+ c.hd.copy(pl[to].mesh.position).sub(c.p).normalize();
+ _pcM.lookAt(_pcZero,c.hd,pirateFleetUp);c.q.setFromRotationMatrix(_pcM);
+ pirateConvoys.push(c);pcPopulate(c);
+}
+
+/* Маршрут: ведущая точка каравана c.p (грузовик привязан к ней). */
+function pcNextLeg(c){
+ const n=c.planets.length;c.from=c.to;
+ let t=Math.floor(Math.random()*n);if(t===c.from)t=(t+1)%n;c.to=t;
+}
+function pcGuide(c,dt){
+ const pl=c.planets[c.to],cp=pl.mesh.position,r=pl.radius;
+ _pcV.copy(c.p).sub(cp);if(_pcV.lengthSq()<1)_pcV.set(0,1,0);_pcV.normalize();
+ const tgt=cp.clone().addScaledVector(_pcV,r+650),to=tgt.clone().sub(c.p),dl=to.length();
+ if(c.hold>0){
+  c.hold-=dt;c.sp+=(0-c.sp)*(1-Math.exp(-dt*1.2));c.p.lerp(tgt,1-Math.exp(-dt*.6));
+  if(c.hold<=0)pcNextLeg(c);
+ }else if(dl<160){
+  c.hold=8+Math.random()*6;
+ }else{
+  const dir=to.divideScalar(dl);
+  for(const w of c.planets){
+   if(w===pl)continue;
+   _pcV.copy(w.mesh.position).sub(c.p);
+   const pr=_pcV.dot(dir);if(pr<0||pr>dl+200)continue;
+   const perp=_pcV2.copy(_pcV).addScaledVector(dir,-pr),pd=perp.length(),safe=w.radius+700;
+   if(pd<safe){
+    if(pd<1e-3)perp.crossVectors(dir,pirateFleetUp);
+    dir.addScaledVector(perp.normalize(),-(1-Math.min(1,pd/safe))*2.5);
+   }
+  }
+  dir.normalize();
+  const want=Math.min(PC_CRUISE*(c.fast?1.6:1),15+dl*.1);
+  c.sp+=(want-c.sp)*(1-Math.exp(-dt*.8));
+  c.hd.lerp(dir,1-Math.exp(-dt*.9)).normalize();
+  c.p.addScaledVector(c.hd,c.sp*dt);
+ }
+ _pcM.lookAt(_pcZero,c.hd,pirateFleetUp);_pcQ.setFromRotationMatrix(_pcM);
+ c.q.slerp(_pcQ,1-Math.exp(-dt*2));
+}
+
+/* Агрессия: вызывается при любом уроне от игрока. */
+function pirateConvoyAggro(c){
+ if(c.state!=="HOSTILE"){
+  c.state="HOSTILE";
+  for(const e of c.escorts)if(e.g&&!e.dead){
+   e.mode="FIGHT";e.ph="ATTACK";e.phT=0;e.jinkT=0;e.jinkCd=0;e.aimS=null;
+   e.flank=EAI.rand()<.5?-1:1;e.hd.copy(c.hd);e.vel.copy(c.hd).multiplyScalar(c.sp);e.speed=c.sp;
+   e.fire=.6+EAI.rand()*.6;e.burst=0;
+  }
+  say("КАРАВАН ПОД ОГНЁМ — ЭСКОРТ АТАКУЕТ",3);
+ }
+ c.hostileT=PC_GRUDGE;
+}
+function pirateConvoyDamage(e,d,missile){
+ if(!e||e.dead||!e.g)return;
+ const c=e.pc,p=e.g.position.clone();
+ pirateFleetDamage(e,d,missile);
+ pirateConvoyAggro(c);
+ if(e.dead&&e.role==="cargo"){
+  for(let j=0;j<6;j++)drop(p.clone().add(rd().multiplyScalar(16)),[3,4,5,3,4,5][j]);
+  cr+=250;say("ГРУЗОВОЙ КОРАБЛЬ КОНТРАБАНДИСТОВ УНИЧТОЖЕН · ДОБЫЧА",3);
+ }
+}
+
+/* Фазы боя эскорта: ATTACK -> BREAK -> RESET -> ATTACK. */
+function pcPhase(e,toP,dist,incoming,aiThink,dt){
+ const up=pirateFleetUp,hd=e.hd.clone().normalize();
+ const right=new T.Vector3().crossVectors(hd,up);
+ if(right.lengthSq()<1e-8)right.set(1,0,0);else right.normalize();
+ const toDir=toP.clone().divideScalar(Math.max(dist,1)),lz=toDir.dot(hd);
+ e.phT=(e.phT||0)+dt;e.jinkCd=Math.max(0,(e.jinkCd||0)-dt);e.jinkT=Math.max(0,(e.jinkT||0)-dt);
+ if(aiThink){
+  const ty=e.ty;
+  if(e.ph==="ATTACK"){
+   if(dist<PC_BREAK_D[ty]||(e.phT>1.2&&lz<-.2&&dist<420)||e.phT>7){
+    const s=EAI.rand()<.5?-1:1;
+    e.brk=hd.clone().addScaledVector(right,s*.8).addScaledVector(up,(EAI.rand()<.5?-1:1)*.35).normalize();
+    e.ph="BREAK";e.phT=0;
+   }else if(incoming&&e.jinkCd<=0&&EAI.rand()<.6){
+    e.jinkT=.45;e.jinkSide=EAI.rand()<.5?-1:1;e.jinkCd=2.2;
+   }
+  }else if(e.ph==="BREAK"){
+   if(e.phT>=PC_BREAK_T[ty]){e.ph="RESET";e.phT=0}
+  }else if((e.phT>=.8&&dist>PC_RESET_D[ty])||e.phT>6){
+   e.ph="ATTACK";e.phT=0;e.flank=EAI.rand()<.5?-1:1;
+  }
+ }
+ let aim;
+ if(e.ph==="ATTACK"){
+  aim=toDir.clone();
+  if(e.jinkT>0)aim.addScaledVector(right,e.jinkSide*.9).addScaledVector(up,.25).normalize();
+ }else{
+  aim=(e.brk||hd).clone();
+  if(e.ph==="RESET")aim.lerp(toDir,Math.min(.45,e.phT*.12)).normalize();
+ }
+ return aim;
+}
+
+function pcFire(e,dist,aiThink,dt){
+ const g=e.g,shotSpeed=200,leadTime=Math.min(6.2,dist/shotSpeed);
+ const tp=P.clone().addScaledVector(vel,leadTime),aimAt=tp.clone().sub(g.position).normalize();
+ const proj=EAI.project(aimAt,e.hd),ang=Math.acos(Math.max(-1,Math.min(1,proj.forward)));
+ const range=[390,330,520][e.ty],cone=[.82,.72,.62][e.ty];
+ const can=e.ph==="ATTACK"&&dist<range&&(ang<cone||(dist<260&&ang<1.3));
+ e.fire-=dt;e.burstGap=Math.max(0,(e.burstGap||0)-dt);
+ const ocs=EAI.projectOCS(tp.clone().sub(g.position),e.hd);
+ if(aiThink&&can&&e.fire<=0&&e.burst<=0&&EAI.fireGate(ocs,dist,range,EAI.fireChance(proj,dist,range),score>=500))e.burst=[3,2,2][e.ty];
+ if(can&&e.burst>0&&e.burstGap<=0){
+  const guns=e.muzzleNodes&&e.muzzleNodes.length?e.muzzleNodes:[null];
+  for(const gun of guns){
+   const muzzle=gun?gun.getWorldPosition(new T.Vector3()):g.localToWorld(new T.Vector3(0,-.25,-3.8));
+   const dir=gun?gun.getWorldDirection(new T.Vector3()).normalize().lerp(tp.clone().sub(muzzle).normalize(),.12).normalize():tp.clone().sub(muzzle).normalize();
+   shootLaser(eb,muzzle,dir.multiplyScalar(shotSpeed),0xffc34a,[5.0,3.8,6.2][e.ty]*DF[dif].dm*(2/Math.max(1,guns.length)),7.0);
+   eb[eb.length-1].pirateFleet=true;eb[eb.length-1].pirateFleetSlot=e.slot;
+  }
+  e.burst--;e.burstGap=.18;
+  if(e.burst<=0)e.fire=([.8,1.1,1.35][e.ty]+EAI.rand()*[.25,.35,.55][e.ty])*DF[dif].fr;
+  sfx("l2");
+ }
+}
+
+function pcFight(e,c,dt){
+ const g=e.g,toP=P.clone().sub(g.position),dist=toP.length(),aiThink=EAI.think(e,dt);
+ if(dist<1)return;
+ let incoming=false;
+ if(aiThink)for(let bi=bul.length-1;bi>=0;bi--){const b=bul[bi],dl=g.position.clone().sub(b.m.position);if(dl.length()<135&&b.v.dot(dl)>0){incoming=true;break}}
+ const aim=pcPhase(e,toP,dist,incoming,aiThink,dt).clone();
+ const right=new T.Vector3().crossVectors(toP.clone().normalize(),pirateFleetUp).normalize();
+ let spd=[49,56,34][e.ty],turn=[2.05,2.35,1.25][e.ty],acc=[68,76,38][e.ty];
+ if(e.ph==="ATTACK"){
+  aim.addScaledVector(right,(e.slot%2?1:-1)*.22).normalize();
+  if(e.ty===0){aim.lerp(toP.clone().normalize(),.38).normalize();spd=dist>260?54:43}
+  else if(e.ty===1){
+   const k=Math.max(0,Math.min(1,(dist-200)/300));
+   aim.addScaledVector(right,e.flank*(.2+.62*k)).addScaledVector(pirateFleetUp,Math.sin((e.aiTicks||0)*.19+e.slot*1.7)*.16).normalize();
+   spd=dist>330?61:48;turn=2.5;
+  }else{
+   aim.copy(toP).normalize().addScaledVector(right,Math.sin((e.aiTicks||0)*.08+e.slot)*.22).normalize();
+   spd=dist>470?40:dist>270?30:26;turn=1.2;acc=36;
+  }
+ }else spd=[50,59,39][e.ty];
+ spd*=DF[dif].sp;acc*=DF[dif].ac;
+ if(aiThink){
+  e.aimS=e.aimS?e.aimS.lerp(aim,.4).normalize():aim.clone();
+  EAI.command(e,e.aimS,dist,{speed:spd,acceleration:acc,turnRate:turn});
+ }
+ EAI.integrate(e,dt,g,pirateFleetUp);
+ pcOrient(g,e.hd,dt,12,Math.max(-.2,Math.min(.2,(e.ocsYaw||0)*-.008)));
+ pcFire(e,dist,aiThink,dt);
+}
+
+function pcReturn(e,c,dt){
+ const g=e.g,tgt=pcSlotPos(c,e.slot,new T.Vector3()),to=tgt.clone().sub(g.position),dl=to.length(),aiThink=EAI.think(e,dt);
+ if(dl<30){e.mode="FORM";e.blend=0;return}
+ const spd=Math.min(95,c.sp+Math.min(60,dl*.35));
+ if(aiThink)EAI.command(e,to.clone().normalize(),dl,{speed:spd,acceleration:70*DF[dif].ac,turnRate:2.4});
+ EAI.integrate(e,dt,g,pirateFleetUp);
+ pcOrient(g,e.hd,dt,10,0);
+}
+
+function pcForm(e,c,dt){
+ const g=e.g;
+ pcSlotPos(c,e.slot,_pcV);_pcV.y+=Math.sin(c.t*.5+e.slot*1.9)*2.2;
+ if(e.blend<1){
+  e.blend=Math.min(1,e.blend+dt/1.5);
+  const s=e.blend*e.blend*(3-2*e.blend);
+  g.position.addScaledVector(e.vel,dt);g.position.lerp(_pcV,s);
+  g.quaternion.slerp(c.q,1-Math.exp(-dt*3));
+ }else{g.position.copy(_pcV);g.quaternion.copy(c.q)}
+ e.vel.copy(c.hd).multiplyScalar(c.sp);e.hd.copy(c.hd);e.speed=c.sp;
+}
+
+function pcFx(e,dt,interval){
+ pirateFleetUpdateFlames(e,dt);pirateEngineTrailUpdate(e,dt,interval);
+ if(e.hits)pirateDamageFxUpdate(e,dt);
+}
+
+function pcUpdate(c,dt){
+ c.t+=dt;
+ pcGuide(c,dt);
+ const live=pcMembers(c).filter(e=>e.g&&!e.dead);
+ if(!live.length){
+  if(!c.dead){c.dead=true;c.respawnT=90}
+  c.respawnT-=dt;
+  if(c.respawnT<=0&&P.distanceTo(c.p)>PC_FAR){
+   c.dead=false;c.state="CRUISE";c.hostileT=0;c.fast=false;c.sp=PC_CRUISE*.6;pcPopulate(c);
+  }
+  return;
+ }
+ const inW=pcInWorld(),far=P.distanceTo(c.p)>PC_FAR;
+ if(c.state==="HOSTILE"){
+  c.fast=!!(c.cargo&&c.cargo.g&&!c.cargo.dead);
+  c.hostileT-=dt;
+  let nearest=1e9;
+  for(const e of c.escorts)if(e.g&&!e.dead)nearest=Math.min(nearest,e.g.position.distanceTo(P));
+  if(nearest<500)c.hostileT=Math.max(c.hostileT,20);
+  if(nearest>PC_LOSE)c.hostileT=0;
+  if(c.hostileT<=0){
+   c.state="CRUISE";c.fast=false;
+   for(const e of c.escorts)if(e.g&&!e.dead&&e.mode==="FIGHT")e.mode=far?"FORM":"RETURN";
+  }
+ }
+ const cg=c.cargo;
+ if(cg&&cg.g&&!cg.dead){
+  cg.g.position.copy(c.p);cg.g.quaternion.copy(c.q);
+  cg.vel.copy(c.hd).multiplyScalar(c.sp);cg.hd.copy(c.hd);cg.speed=c.sp;
+  const d=cg.g.position.distanceTo(P);
+  cg.g.visible=inW&&!far&&d<12000;
+  if(cg.g.visible&&d<3000)pcFx(cg,dt,.5);
+ }
+ for(const e of c.escorts){
+  if(!e.g||e.dead)continue;
+  const dP=e.g.position.distanceTo(P),vis=inW&&!far&&dP<12000;
+  e.g.visible=vis;
+  if(far){e.mode="FORM";e.blend=1;pcForm(e,c,dt);continue}
+  if(!vis&&e.mode!=="FORM"){e.mode="FORM";e.blend=1}
+  if(e.mode==="FIGHT")pcFight(e,c,dt);
+  else if(e.mode==="RETURN")pcReturn(e,c,dt);
+  else pcForm(e,c,dt);
+  if(vis&&dP<3000)pcFx(e,dt,.45);
+ }
+}
+
+function pirateConvoyUpdate(dt){
+ if(state!=="play")return;
+ if(!pirateConvoyReady){
+  if(!pirateAssetsReady||typeof worldPlanets==="undefined"||pcPlanets().length<2)return;
+  pirateConvoyReady=true;pirateFleetPrepare();pcCreate(0);pcCreate(1);return;
+ }
+ dt=Math.min(dt,.1);
+ for(const c of pirateConvoys)pcUpdate(c,dt);
+}
+
+/* Попадания игрока: после основного upd (пули и ракеты уже сдвинуты). */
+function pirateConvoyHits(dt){
+ if(!pirateConvoys.length)return;
+ for(let i=bul.length-1;i>=0;i--){
+  const b=bul[i],now=b.m.position,pv=now.clone().addScaledVector(b.v,-dt);
+  let hit=false;
+  for(const c of pirateConvoys){
+   if(hit)break;
+   for(const e of pcMembers(c)){
+    if(e.g&&e.hp>0&&e.g.visible&&pirateSegmentHit(pv,now,e)){
+     hit=true;boom(now,8,3,0x88ffee,25,.3);hmv=1;pirateConvoyDamage(e,b.dmg,false);break;
+    }
+   }
+  }
+  if(hit){S.remove(b.m);bul.splice(i,1)}
+ }
+ for(let i=mis.length-1;i>=0;i--){
+  const m=mis[i],now=m.m.position,pv=now.clone().addScaledVector(m.dir,-m.spd*dt);
+  let hit=false;
+  for(const c of pirateConvoys){
+   if(hit)break;
+   for(const e of pcMembers(c)){
+    if(e.g&&e.hp>0&&e.g.visible&&pirateSegmentHit(pv,now,e,1)){
+     hit=true;boom(now,20,6,0xffcc66,30,.6);hmv=1;pirateConvoyDamage(e,MS[mt].d,true);break;
+    }
+   }
+  }
+  if(hit){S.remove(m.m);mis.splice(i,1)}
+ }
+}
+
+function pirateConvoyClear(){
+ for(const c of pirateConvoys)for(const e of pcMembers(c)){
+  pirateDamageFxClear(e);if(e.g)S.remove(e.g);e.g=null;
+  if(e.muzzleNodes)e.muzzleNodes.length=0;if(e.engineNodes)e.engineNodes.length=0;
+ }
+ pirateConvoys.length=0;pirateConvoyReady=false;
+}
+
+/* Подключение (оборачиваем существующие функции, их тела не меняем). */
+{const _u=upd;upd=function(dt){_u(dt);pirateConvoyUpdate(dt);pirateConvoyHits(dt)}}
+{const _pfc=pirateFleetClear;pirateFleetClear=function(){_pfc();pirateConvoyClear()}}
+{const _det=det;det=function(){
+ const p=nk?nk.m.position.clone():null;_det();
+ if(p)for(const c of pirateConvoys)for(const e of pcMembers(c))if(e.g&&e.hp>0&&e.g.position.distanceTo(p)<140)pirateConvoyDamage(e,9999,false);
+}}
+{const _crc=collectRadarContacts;collectRadarContacts=function(){
+ const arr=_crc();
+ for(const c of pirateConvoys)for(const e of pcMembers(c)){
+  if(!e.g||e.dead||!e.g.visible)continue;
+  const hs=c.state==="HOSTILE"&&e.role!=="cargo";
+  arr.push({position:e.g.position,kind:hs?"enemy":"neutral",color:hs?"#ff6578":"#ffe066",radius:e.role==="cargo"?4:3,
+   label:e.role==="cargo"?"К":"Э",entity:e,velocity:e.vel,ty:e.role==="cargo"?-1:e.ty,hostile:hs,selected:false});
+ }
+ return arr;
+}}
+
+/* Отладка из консоли браузера: SF_PC.near(0), SF_PC.aggro(0) */
+window.SF_PC={
+ list:()=>pirateConvoys,
+ near(k=0){const c=pirateConvoys[k];if(!c)return"нет каравана";c.p.copy(P).addScaledVector(new T.Vector3(0,0,-1).applyQuaternion(Q),900).y+=40;c.hold=0;return"ok"},
+ aggro(k=0){const c=pirateConvoys[k];if(!c)return"нет каравана";pirateConvoyAggro(c);return"ok"}
+};
+/* ===== END PIRATE CONVOYS ===== */
+
 
 // ===== STARFALL v92 FLIGHT RECORDER =====
 // Event-driven tactical telemetry. No player identifiers or credentials are collected.
