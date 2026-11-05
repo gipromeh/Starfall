@@ -28,7 +28,7 @@ const L = require('./lib');
   L.check('звёздное поле и планетная система сохранены', scene.stars >= 2 && scene.planets >= 6, scene);
   L.check('атмосферы планет согласованы с направлением реального солнца', scene.atmosphereVectors >= 6 && scene.atmosphereAligned, scene);
   await page.evaluate(() => { lift(); QL.setMode('low'); pirateFleetInit(); });
-  await page.waitForFunction(() => pirateFleet.length === 2, null, { timeout: 15000 });
+  await page.waitForFunction(() => pirateFleet.length === 3, null, { timeout: 15000 });
   await page.waitForFunction(() => pirateAssetsReady === true, null, { timeout: 60000 });
   const pirateModels = await page.evaluate(() => {
     const fighter = mkPirate(2);
