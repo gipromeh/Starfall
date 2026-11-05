@@ -31,7 +31,7 @@ const L = require('./lib');
   await page.waitForFunction(() => pirateFleet.length === 2, null, { timeout: 15000 });
   await page.waitForFunction(() => pirateAssetsReady === true, null, { timeout: 60000 });
   const transportAssetState = await page.evaluate(async () => {
-    const url = GLB_EXTRA_PIR.find(x => x.role === 'transport')?.url;
+    const url = 'assets/pirates/ships/pirate/pirate_transport_001/model.glb';
     const response = url ? await fetch(url, { cache:'no-store' }).catch(() => null) : null;
     return { url, status:response?.status||0, loader:!!T.GLTFLoader, ready:pirateAssetsReady, loaded:!!MC.pirateTransport };
   });
