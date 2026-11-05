@@ -1447,15 +1447,15 @@ function asteroidMaterialForRock(ty){
 function spawnMineableAsteroids(){
  if(!asteroidGLBReady||rocks.length)return;
  for(let i=0;i<180;i++){
-  const rr=3+Math.random()*(Math.random()<.2?40:12),ty=(q=>q<.1?2:q<.35?1:0)(Math.random());
+  const rr=3+Math.random()*(Math.random()<.2?40:12),ty=(q=>q<.1?2:q<.35?1:0)(Math.random()),R0=1500+Math.random()*800;
   const m=new T.Mesh(asteroidBaseGeometry,asteroidMaterialForRock(ty));
-  m.scale.setScalar(rr*2.1);m.userData.b={R:1500+Math.random()*800,a:Math.random()*6.283,y:(Math.random()-.5)*(Math.random()<.15?360:110),w:18*(.85+Math.random()*.3)/(1500+Math.random()*800)};
+  m.scale.setScalar(rr*2.1);m.userData.b={R:R0,a:Math.random()*6.283,y:(Math.random()-.5)*(Math.random()<.15?360:110),w:18*(.85+Math.random()*.3)/R0};
   m.userData.w=rd().multiplyScalar(.3);m.userData.r=rr*1.05;m.userData.hp=m.userData.mx=rr*9;m.userData.ty=ty;S.add(m);rocks.push(m);
  }
 }
 function buildAsteroidRingInstances(){
  for(const sys of saturnRingSystems){
-  const inst=new T.InstancedMesh(asteroidBaseGeometry,asteroidBaseMaterial,sys.orbitData.length);
+  const ringGeometry=asteroidBaseGeometry.clone().scale(8.4,8.4,8.4),inst=new T.InstancedMesh(ringGeometry,asteroidBaseMaterial,sys.orbitData.length);
   inst.instanceMatrix.setUsage(T.DynamicDrawUsage);inst.frustumCulled=false;inst.castShadow=false;inst.receiveShadow=false;
   for(let i=0;i<sys.orbitData.length;i++)inst.setColorAt(i,new T.Color().setHSL(.075+Math.random()*.055,.12,.43+Math.random()*.18));
   inst.instanceColor.needsUpdate=true;inst.instanceMatrix.needsUpdate=true;sys.instance=inst;sys.ringOrbit.add(inst);
