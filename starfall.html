@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="claude:viewport-fit-sides" content="cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#02030a"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>STARFALL</title>
-<meta name="starfall-version" content="v98">
+<meta name="starfall-version" content="v98.1">
 <meta name="starfall-telemetry-endpoint" content="">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 <style>
@@ -137,6 +137,62 @@ small{opacity:.75;max-width:600px;line-height:1.6}
 .mn-version{margin-top:10px;padding:4px 14px;border:1px solid #4fd0ff66;background:#03101dcc;color:#9bdfff;font:700 11px "Exo 2",sans-serif;letter-spacing:.28em;text-shadow:0 0 8px #4fd0ff88;clip-path:polygon(7px 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%,0 7px)}
 .hud-version{position:absolute;right:20px;top:43px;color:#8bc9e9;font:700 10px "Exo 2",sans-serif;letter-spacing:.2em;text-shadow:0 0 7px #4fd0ff88;opacity:.78}
 @media(max-width:600px){.hud-version{right:12px;top:39px;font-size:9px}}
+
+/* ===== HUD v98.1: компактные правки (override-блок) ===== */
+
+/* общий читаемый текст: тёмное гало + акцент */
+.t{text-shadow:0 0 3px #000,0 0 8px #4fd0ff77!important}
+
+/* 1) Верхний левый блок: две тонкие полосы без текстовых подписей */
+#hud::before{
+  width:176px!important;height:58px!important;
+  background:linear-gradient(90deg,#04182899,transparent)!important;
+  border-left:2px solid #4fd0ff88!important}
+#hull,#shield{
+  left:14px!important;width:132px!important;height:6px!important;
+  border:0!important;border-radius:3px;background:#0a1824cc!important;overflow:hidden}
+#hull{top:12px!important}
+#shield{top:22px!important}
+#hull::after,#shield::after{display:none!important}
+#hull i{background:linear-gradient(90deg,#ff5a3c,#ffb060)!important}
+#shield i{background:linear-gradient(90deg,#2aa8ff,#7fe6ff)!important}
+#miss{top:32px!important;left:14px!important;font-size:11px!important;letter-spacing:1px!important}
+#aux{top:46px!important;left:14px!important;font-size:10px!important;letter-spacing:1px!important;
+  opacity:.9;max-width:46vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* 2) Верхний правый угол: компактная строка кредитов и системы */
+#sc{top:12px!important;right:14px!important;font-size:11px!important;letter-spacing:1.5px!important}
+.hud-version{opacity:.4}
+
+/* 3) Центр экрана свободен: сообщения выше и мельче, инфо о цели вверху */
+#msg{top:14%!important;font-size:18px!important;padding:0 24px;
+  text-shadow:0 0 10px #000,0 0 6px #4fd0ff!important}
+#tinfo{top:48px!important;bottom:auto!important;font-size:11px!important;letter-spacing:1.5px!important}
+
+/* 4) Скорость и режим лазера: компактная плашка у нижнего края (было: поверх двигателя) */
+#spd{
+  left:50%!important;right:auto!important;bottom:10px!important;
+  transform:translateX(-50%);width:auto;white-space:nowrap;
+  padding:3px 12px;border:1px solid #4fd0ff44;border-radius:11px;
+  background:#03111cc4;font-size:11px!important;line-height:1.4!important}
+#spd:empty{display:none}
+#spd b{font-size:15px;color:#d6f1ff}
+#spd i{font-style:normal;font-size:10px;color:#7fe;margin-left:8px;letter-spacing:.12em}
+#spd .warn{display:block;color:#ffb070}
+
+/* 5) Масштаб радара: сегментный переключатель вместо трёх кнопок */
+#radar-controls{gap:0!important}
+#radar-controls button{
+  min-width:30px!important;padding:5px 6px!important;font-size:10px!important;
+  border-radius:0!important;clip-path:none!important}
+#radar-controls button+button{border-left-width:0!important}
+
+/* 6) Низкий корпус: красная пульсация по краям экрана */
+#hud.lowhull::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at center,transparent 55%,#ff2a1a55 100%);
+  animation:lowhull 1.1s ease-in-out infinite}
+@keyframes lowhull{0%,100%{opacity:.25}50%{opacity:1}}
 </style></head><body>
 <div id="hud"><span class="hud-version" data-version-label></span><div class="bar" id="hull"><i></i></div><div class="bar" id="shield"><i></i></div>
 <div class="t" id="miss" style="left:20px;top:62px"></div><div class="t" id="sc" style="right:20px;top:20px;text-align:right"></div>
@@ -3794,6 +3850,20 @@ const _updPirateV64=upd;upd=function(dt){_updPirateV64(dt);pirateV64Tick(dt)};
 // ===== END STARFALL v64 PIRATE SYSTEM =====
 requestAnimationFrame(loop);return}R.info.reset();QL.frame(now);const __pf=performance.now();_l(now);PF.record("frame",performance.now()-__pf);DG.upd(now)}}
 window.__STARFALL_DIAG__={state:()=>state,touch:()=>TCH,dpr:()=>R.getPixelRatio(),webgl:()=>!!R.getContext(),lift:()=>lift(),getSave:()=>SV,canvas:()=>({width:R.domElement.width,height:R.domElement.height}),initial:()=>({state:state,touch:TCH,dpr:R.getPixelRatio(),webgl:!!R.getContext(),viewport:{width:innerWidth,height:innerHeight,visualWidth:visualViewport&&visualViewport.width||0,visualHeight:visualViewport&&visualViewport.height||0}}),firePointer:()=>{const el=[...document.querySelectorAll('#hud button')].find(x=>x.textContent.trim()==='ОГОНЬ');if(!el)return null;const ev=t=>el.dispatchEvent(new PointerEvent(t,{bubbles:true,cancelable:true,pointerId:71,pointerType:'touch',isPrimary:true,clientX:20,clientY:20}));ev('pointerdown');const down=firing;ev('pointerup');return{down:down,up:firing}},aimPointer:()=>{const cv=R.domElement,p=(t,x)=>cv.dispatchEvent(new PointerEvent(t,{bubbles:true,cancelable:true,pointerId:72,pointerType:'touch',isPrimary:true,clientX:x,clientY:120}));p('pointerdown',100);p('pointermove',190);const moved=mouse.x;p('pointerup',190);return{moved:moved,reset:mouse.x}}};window.__STARFALL_READY__=true;
+/* HUD v98.1: компактная плашка скорости и индикатор низкого корпуса */
+{const _u=upd;upd=function(dt){
+ _u(dt);
+ const h=$("hud");
+ if(h)h.classList.toggle("lowhull",state==="play"&&hull<30);
+ const el=$("spd");
+ if(el&&state==="play"){
+  const sp0=Math.round(vel.length()),
+   near=stn&&stn.visible&&P.distanceTo(stn.position)<420&&sp0>=35;
+  el.innerHTML="<b>"+sp0+"</b> м/с<i>"+(mnm?"ГОРНЫЙ ЛАЗЕР":"БОЕВОЙ ЛАЗЕР")+"</i>"+
+   (near?"<span class='warn'>⚠ СНИЗЬТЕ ГАЗ ДЛЯ СТЫКОВКИ</span>":"");
+ }
+}}
+
 </script><script>
 (()=>{const v=document.querySelector('meta[name="starfall-version"]')?.content||"DEV";document.querySelectorAll("[data-version-label]").forEach(el=>{el.textContent=v;});})();
 </script>
