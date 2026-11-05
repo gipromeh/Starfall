@@ -38,6 +38,46 @@ const L = require('./lib');
   });
   L.check('Pirate3 GLB создаёт дополнительный боевой архетип', pirateModels.fighterMeshes > 0, pirateModels);
   L.check('Pirate4 GLB создаёт отдельный пиратский транспорт', pirateModels.transportMeshes > 0 && pirateModels.transportFlag, pirateModels);
+  const socketInventory = await page.evaluate(() => {
+    const inspect = (id, g, ty) => {
+      const sockets = pirateFleetResolveSockets(g, ty);
+      S.add(g); g.updateMatrixWorld(true);
+      const center = new THREE.Box3().setFromObject(g).getCenter(new THREE.Vector3());
+      const forward = new THREE.Vector3(0,0,-1).applyQuaternion(g.getWorldQuaternion(new THREE.Quaternion())).normalize();
+      const fx = { g, ty, engineNodes:sockets.engines, flames:[], engineTrailT:0, warp:0, hp:1, mx:1, sp2:42 };
+      pirateFleetAttachFX(fx);
+      const before = trs.length;
+      pirateEngineTrailUpdate(fx,.5,.4);
+      const emitted = trs.length-before;
+      trs.slice(before).forEach(t=>S.remove(t.m)); trs.splice(before);
+      const result = {
+        id, guns:sockets.guns.length, engines:sockets.engines.length,
+        gunSource:sockets.manifest.guns.source, engineSource:sockets.manifest.engines.source,
+        gunForward:sockets.guns.every(n=>n.getWorldDirection(new THREE.Vector3()).dot(forward)>.98),
+        gunsAhead:sockets.guns.every(n=>n.getWorldPosition(new THREE.Vector3()).sub(center).dot(forward)>0),
+        flames:fx.flames.length, flamesAtEngines:fx.flames.every((f,i)=>f.parent===sockets.engines[i]),
+        plasmaTrailCount:emitted
+      };
+      fx.flames.forEach(f=>f.parent?.remove(f)); S.remove(g);
+      return result;
+    };
+    return [
+      inspect('rust-skull',mkPirate(0),0),
+      inspect('jackal',mkPirate(1),1),
+      inspect('tie-raider',mkPirate(2),2),
+      inspect('pirate-transport',mkPirateTransport(),3)
+    ];
+  });
+  L.check('«Ржавый череп» использует четыре реальные GUN-маркера и два ENG-маркера GLB',
+    socketInventory[0].guns===4&&socketInventory[0].engines===2&&socketInventory[0].gunSource==='GLB'&&socketInventory[0].engineSource==='GLB',
+    socketInventory[0]);
+  L.check('у всех четырёх пиратских кораблей есть ориентированные оружейные и двигательные сокеты',
+    socketInventory.every(x=>x.guns>=2&&x.engines>=2&&x.gunForward&&x.gunsAhead),
+    socketInventory);
+  L.check('каждый двигатель получает видимое пламя и отдельный плазменный след',
+    socketInventory.every(x=>x.flames===x.engines&&x.flamesAtEngines&&x.plasmaTrailCount===x.engines),
+    socketInventory);
+
 
 
   const livery = await page.evaluate(() => {
@@ -79,7 +119,7 @@ const L = require('./lib');
     const guns = e.muzzleNodes.map(n => n.getWorldPosition(new THREE.Vector3()));
     return {ty:e.ty,count:guns.length,allForward:guns.every(p=>p.clone().sub(e.g.position).dot(forward)>0),frontOfCenter:guns.every(p=>p.clone().sub(center).dot(forward)>0),facingForward:e.muzzleNodes.every(n=>n.getWorldDirection(new THREE.Vector3()).dot(forward)>.98)};
   }));
-  L.check('каждый корабль имеет две точки выстрела в передней части корпуса/крыльев',locators.every(x=>x.count===2&&x.allForward&&x.frontOfCenter&&x.facingForward),locators);
+  L.check('каждый корабль имеет передние оружейные сокеты, направленные по оси стволов',locators.every(x=>x.count>=2&&x.allForward&&x.frontOfCenter&&x.facingForward),locators);
 
   const combat = await page.evaluate(() => {
     pirateFleet.forEach((e, i) => {
@@ -95,10 +135,10 @@ const L = require('./lib');
     const first = pirateFleet[0];
     const shots = eb.slice(before).filter(b => b.pirateFleetSlot === first.slot);
     const gunPositions = first.muzzleNodes.map(n => n.getWorldPosition(new THREE.Vector3()));
-    const muzzleMatch = shots.length === 2 && shots.every((b, i) => b.m.position.distanceTo(gunPositions[i]) < .001);
+    const muzzleMatch = shots.length === gunPositions.length && shots.every((b, i) => b.m.position.distanceTo(gunPositions[i]) < .001);
     const lineShots = shots.every(b => b.m.isGroup && b.m.children.filter(o => o.isMesh).length === 3 && b.m.children.some(o => o.isSprite));
-    const shotForward = shots.length === 2 && shots.every((b, i) => b.v.clone().normalize().dot(first.muzzleNodes[i].getWorldDirection(new THREE.Vector3())) > .98);
-    const socketsForward = gunPositions.length === 2 && gunPositions.every(p => p.clone().sub(first.g.position).dot(new THREE.Vector3(0,0,-1).applyQuaternion(first.g.quaternion)) > 0);
+    const shotForward = shots.length === gunPositions.length && shots.every((b, i) => b.v.clone().normalize().dot(first.muzzleNodes[i].getWorldDirection(new THREE.Vector3())) > .98);
+    const socketsForward = gunPositions.length >= 2 && gunPositions.every(p => p.clone().sub(first.g.position).dot(new THREE.Vector3(0,0,-1).applyQuaternion(first.g.quaternion)) > 0);
     const allPilotShots = pirateFleet.map(e => {
       const own = eb.slice(before).filter(b => b.pirateFleetSlot === e.slot);
       const muzzles = e.muzzleNodes.length
@@ -111,8 +151,8 @@ const L = require('./lib');
   });
   L.check('оба пилота участвуют в бою на ближней дистанции', combat.delta >= 2, combat);
   L.check('фактический нос каждой модели совпадает с направлением движения', combat.noseAlignment.every(x => x > .98), combat.noseAlignment);
-  L.check('четыре лазера выходят из дульных маркеров вдоль оси стволов', combat.firstShipShots === 2 && combat.muzzleMatch && combat.shotForward && combat.socketsForward && combat.lineShots, combat);
-  L.check('каждый пират стреляет из двух собственных передних сокетов', combat.allPilotShots.every(x => x.shots === x.guns && x.shots > 0 && x.originsMatch), combat.allPilotShots);
+  L.check('каждый маркер оружия создаёт отдельный лазер из своей дульной точки', combat.firstShipShots >= 2 && combat.muzzleMatch && combat.shotForward && combat.socketsForward && combat.lineShots, combat);
+  L.check('каждый пират стреляет из всех собственных передних сокетов', combat.allPilotShots.every(x => x.shots === x.guns && x.shots >= 2 && x.originsMatch), combat.allPilotShots);
 
   const eliteFlight = await page.evaluate(() => {
     const e=pirateFleet[0];

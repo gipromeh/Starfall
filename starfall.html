@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="claude:viewport-fit-sides" content="cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#02030a"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>STARFALL</title>
-<meta name="starfall-version" content="v96.1">
+<meta name="starfall-version" content="v97">
 <meta name="starfall-telemetry-endpoint" content="">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 <style>
@@ -1465,7 +1465,7 @@ function reset(){thl=.25;mnm=false;exitWorld();clearNv();[bul,eb,mis,fx,deb,ali,
 function toMenu(){clearNv();$("tsp").style.display="block";state="menu";["pause","over"].forEach(i=>$(i).classList.add("hide"));$("menu").classList.remove("hide");$("hud").style.display="none";$("hi").textContent="РЕКОРД: "+hi;[bul,eb,mis,fx,deb,ali,trs,pk].forEach(clr);if(nk)S.remove(nk.m);nk=null;if(E)S.remove(E.g);E=null;if(E2)S.remove(E2.g);E2=null;pirateFleetClear();rig.visible=true;P.set(0,0,0);rig.quaternion.identity()}
 function pause(on){if(on&&state==="play"){state="pause";firing=false;$("pause").classList.remove("hide")}else if(!on&&state==="pause"){state="play";$("pause").classList.add("hide")}}
 function dmg(n){if(state!=="play")return;n*=100/SHIPS[shp].hull;sinceHit=0;fv=1;shk=1.2;combo=0;sfx("h");const s=Math.min(shield,n);shield-=s;hull-=n-s;if(hull<=0&&!used){used=1;hull=50;shield=100;say("АВАРИЙНЫЙ РЕЗЕРВ: ВТОРОЙ ШАНС",2.5);return}if(hull<=0){hull=0;state="dying";dyT=1.8;boom(P,65,6,0x66ccff,50,1.5);sfx("e");xplode(P.clone(),vel,1.3);shatter(ship,P,vel,TCH?12:20,26);rig.visible=false;firing=false}}
-function spawnE(){const bs=wave%5===0,firstPair=!bs&&firstWaveSpawn<2,ty=bs?0:firstPair?(firstWaveSpawn++===0?0:1):wave>1&&Math.random()<.5?(Math.random()<[.7,.5,.25][SYS[sy].l]?1:2):0,g=bs?mkBoss():mkPirate(ty),d=rd();if(bs)applyPirateLivery(g);d.y*=.3;g.position.copy(P).addScaledVector(new T.Vector3(0,0,-1).applyQuaternion(Q),1100).addScaledVector(d.normalize(),400);g.visible=false;S.add(g);boom(g.position,40,40,0x88ccff,50,2);ring(g.position,0x88ccff,30,2.2);const hp0=bs?Math.max(500+80*wave,SHIPS[shp].hull*2):Math.max(200,SHIPS[shp].hull*2,(70+5*(wave-1))*[1,.6,2.2,.9][ty]*DF[dif].hp*[.85,1,1.2][SYS[sy].l]);const sockets=bs?{guns:[],engines:[]}:pirateFleetResolveSockets(g,ty),hit=pirateHitBounds(g);const NE={g,hitCenter:hit.hitCenter,hitRadius:hit.hitRadius,hitFxRadius:hit.hitFxRadius,ty,boss:bs,muzzleNodes:sockets.guns,engineNodes:sockets.engines,smoke:null,fireFx:null,hits:0,warp:1.8,r0:bs?11:5.5*[1,.75,1.5,.9][ty],r:0,hp:hp0,mx:hp0,tn:ty===1?null:((nv.length&&Math.random()<.5)?nv[Math.floor(Math.random()*nv.length)]:null),state:"APPROACH",st:0,ev:2+Math.random()*2,sd:Math.random()<.5?-1:1,dv:new T.Vector3(),vel:new T.Vector3(),fire:1.2,burstLeft:0,burstGap:0,aiClock:EAI.STEP*(E2?.5:0),aiTicks:0};NE.vel.copy(P.clone().sub(g.position).normalize().multiplyScalar([18,10,12,16][ty]||18));NE.hd=NE.vel.clone().normalize();NE.sp2=NE.vel.length();if(E)E2=NE;else E=NE;say(bs?"ВНИМАНИЕ: БОСС":E2?"ВТОРОЙ ПИРАТ НА РАДАРЕ":"ПИРАТ НА РАДАРЕ",3)}
+function spawnE(){const bs=wave%5===0,firstPair=!bs&&firstWaveSpawn<2,ty=bs?0:firstPair?(firstWaveSpawn++===0?0:1):wave>1&&Math.random()<.5?(Math.random()<[.7,.5,.25][SYS[sy].l]?1:2):0,g=bs?mkBoss():mkPirate(ty),d=rd();if(bs)applyPirateLivery(g);d.y*=.3;g.position.copy(P).addScaledVector(new T.Vector3(0,0,-1).applyQuaternion(Q),1100).addScaledVector(d.normalize(),400);g.visible=false;S.add(g);boom(g.position,40,40,0x88ccff,50,2);ring(g.position,0x88ccff,30,2.2);const hp0=bs?Math.max(500+80*wave,SHIPS[shp].hull*2):Math.max(200,SHIPS[shp].hull*2,(70+5*(wave-1))*[1,.6,2.2,.9][ty]*DF[dif].hp*[.85,1,1.2][SYS[sy].l]);const sockets=bs?{guns:[],engines:[]}:pirateFleetResolveSockets(g,ty),hit=pirateHitBounds(g);const NE={g,hitCenter:hit.hitCenter,hitRadius:hit.hitRadius,hitFxRadius:hit.hitFxRadius,ty,boss:bs,muzzleNodes:sockets.guns,engineNodes:sockets.engines,smoke:null,fireFx:null,hits:0,warp:1.8,r0:bs?11:5.5*[1,.75,1.5,.9][ty],r:0,hp:hp0,mx:hp0,tn:ty===1?null:((nv.length&&Math.random()<.5)?nv[Math.floor(Math.random()*nv.length)]:null),state:"APPROACH",st:0,ev:2+Math.random()*2,sd:Math.random()<.5?-1:1,dv:new T.Vector3(),vel:new T.Vector3(),fire:1.2,burstLeft:0,burstGap:0,aiClock:EAI.STEP*(E2?.5:0),aiTicks:0};NE.vel.copy(P.clone().sub(g.position).normalize().multiplyScalar([18,10,12,16][ty]||18));NE.hd=NE.vel.clone().normalize();NE.sp2=NE.vel.length();if(!bs){NE.flames=[];NE.engineTrailT=.12;pirateFleetAttachFX(NE)}if(E)E2=NE;else E=NE;say(bs?"ВНИМАНИЕ: БОСС":E2?"ВТОРОЙ ПИРАТ НА РАДАРЕ":"ПИРАТ НА РАДАРЕ",3)}
 function hitAli(a){boom(a.g.position,30,4,0x66ff99,22,.9);a.life=0;score+=50;sfx("e");say("ПИЛОТ СБИТ +50",1.5)}
 
 function ttex(){const k=document.createElement("canvas");k.width=k.height=256;const x=k.getContext("2d");x.fillStyle="#000";x.fillRect(0,0,256,256);for(let i=0;i<90;i++){x.fillStyle="rgba("+(150+Math.random()*105|0)+","+(190+Math.random()*65|0)+",255,"+(.3+Math.random()*.7)+")";x.fillRect(Math.random()*256,Math.random()*256,1+Math.random()*2,60+Math.random()*196)}const t=new T.CanvasTexture(k);t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(3,2);return t}
@@ -1826,32 +1826,109 @@ const EAI=(function(){
 const pirateFleetForward=new T.Vector3(0,0,-1),pirateFleetUp=new T.Vector3(0,1,0),pirateFleetHeading=new T.Vector3();
 const pirateFleetGunNames=["GUN_0","GUN_1","GUN_2","GUN_3"],pirateFleetEngineNames=["ENG_0","ENG_1"];
 const pirateFleetGunFallback=[[-2.74,-1.24,-3.565],[-2.46,-1.24,-3.565],[2.46,-1.24,-3.565],[2.74,-1.24,-3.565]],pirateFleetEngineFallback=[[-.62,-.9,6.535],[.62,-.9,6.535]];
+function pirateSocketIndex(name,kind){
+ const n=String(name||"").toUpperCase().replace(/[\s.-]+/g,"_");
+ const re=kind==="gun"?/^(?:GUN|MUZZLE|WEAPON|LASER|CANNON)(?:_?(\d+))?$/:/^(?:ENG|ENGINE|THRUSTER|EXHAUST|NOZZLE)(?:_?(\d+))?$/;
+ const m=n.match(re);return m?(m[1]===undefined?0:Number(m[1])):null;
+}
+function pirateSocketCollect(g,kind){
+ const prefix=kind==="gun"?"STARFALL_GUN_SOCKET_":"STARFALL_ENGINE_SOCKET_",actual=[],runtime=[];
+ g.traverse(o=>{
+  if(o===g||o.isMesh||o.isSkinnedMesh)return;
+  const index=pirateSocketIndex(o.name,kind);
+  if(index!==null)actual.push({node:o,index});
+  else if(o.name&&o.name.indexOf(prefix)===0){const n=Number(o.name.slice(prefix.length));if(Number.isFinite(n))runtime.push({node:o,index:n})}
+ });
+ const list=actual.concat(runtime);list.sort((a,b)=>a.index-b.index);
+ return{nodes:list.map(x=>x.node),source:actual.length&&runtime.length?"MIXED":actual.length?"GLB":runtime.length?"RUNTIME":""};
+}
+function pirateSocketFallbackPositions(kind,ty,box,size,center){
+ if(kind==="gun"&&ty===0)return pirateFleetGunFallback.map(p=>new T.Vector3(p[0],p[1],p[2]));
+ if(kind==="engine"&&ty===0)return pirateFleetEngineFallback.map(p=>new T.Vector3(p[0],p[1],p[2]));
+ const out=[];
+ if(kind==="gun"){
+  const z=box.min.z+Math.max(.12,size.z*.12),y=center.y+size.y*.035;
+  for(let i=0;i<2;i++){const side=i===0?-1:1;out.push(new T.Vector3(center.x+side*Math.max(size.x*.24,.18),y,z))}
+ }else{
+  const z=box.max.z-Math.max(.12,size.z*.08);
+  for(let i=0;i<2;i++){const side=i===0?-1:1;out.push(new T.Vector3(center.x+side*Math.max(size.x*.22,.16),center.y,z))}
+ }
+ return out;
+}
+function pirateSocketOrient(g,node,forwardZ){
+ g.updateMatrixWorld(true);
+ const direction=new T.Vector3(0,0,forwardZ).transformDirection(g.matrixWorld);
+ const parentQ=node.parent.getWorldQuaternion(new T.Quaternion()).invert();
+ direction.applyQuaternion(parentQ).normalize();
+ node.quaternion.setFromUnitVectors(new T.Vector3(0,0,1),direction);
+}
 function pirateFleetResolveSockets(g,ty){
- // Rebuild weapon sockets from each model's actual bounds; ignore legacy GUN markers.
+ if(!g)return{guns:[],engines:[]};
  g.updateMatrixWorld(true);
  const box=new T.Box3().setFromObject(g).applyMatrix4(g.matrixWorld.clone().invert());
  const size=box.getSize(new T.Vector3()),center=box.getCenter(new T.Vector3());
- const z=box.min.z+Math.max(.12,size.z*.12),y=center.y+size.y*.035,guns=[],engines=[];
- for(let i=0;i<2;i++){
-  const side=i===0?-1:1,gun=new T.Object3D(),engine=new T.Object3D();
-  gun.name="STARFALL_FRONT_GUN_"+i;gun.position.set(center.x+side*Math.max(size.x*.24,.18),y,z);gun.rotation.y=Math.PI;g.add(gun);guns.push(gun);
-  engine.name="STARFALL_REAR_ENGINE_"+i;engine.position.set(center.x+side*Math.max(size.x*.22,.16),center.y,box.max.z-Math.max(.12,size.z*.08));g.add(engine);engines.push(engine);
- }
- g.updateMatrixWorld(true);return{guns,engines};
+ const resolve=(kind,forwardZ,minCount)=>{
+  let found=pirateSocketCollect(g,kind);
+  if(found.nodes.length<minCount){
+   const positions=pirateSocketFallbackPositions(kind,ty,box,size,center);
+   for(let i=found.nodes.length;i<minCount;i++){
+    const node=new T.Object3D();node.name=(kind==="gun"?"STARFALL_GUN_SOCKET_":"STARFALL_ENGINE_SOCKET_")+i;
+    node.position.copy(positions[i]||positions[positions.length-1]);node.userData.starfallSocketKind=kind;node.userData.starfallSocketSource="RUNTIME";g.add(node);
+   }
+   found=pirateSocketCollect(g,kind);
+  }
+  found.nodes.forEach(node=>{node.userData.starfallSocketKind=kind;node.userData.starfallSocketSource=node.name.indexOf("STARFALL_")===0?"RUNTIME":"GLB";pirateSocketOrient(g,node,forwardZ)});
+  return found;
+ };
+ const guns=resolve("gun",-1,ty===0?4:2),engines=resolve("engine",1,2);
+ g.updateMatrixWorld(true);
+ const rootLocalPosition=node=>{const p=node.getWorldPosition(new T.Vector3());g.worldToLocal(p);return p.toArray().map(v=>Math.round(v*10000)/10000)};
+ g.userData=g.userData||{};g.userData.starfallSocketVersion=1;
+ g.userData.starfallSocketManifest={
+  guns:{source:guns.source,count:guns.nodes.length,nodes:guns.nodes.map((n,i)=>({name:n.name,index:i,position:rootLocalPosition(n)}))},
+  engines:{source:engines.source,count:engines.nodes.length,nodes:engines.nodes.map((n,i)=>({name:n.name,index:i,position:rootLocalPosition(n)}))}
+ };
+ return{guns:guns.nodes,engines:engines.nodes,manifest:g.userData.starfallSocketManifest};
 }
 function pirateFleetPrepare(){
  if(pirateFleetTemplates)return;
  pirateFleetTemplates=[mkPirate(0),mkPirate(1),mkPirate(2)];
  pirateFleetTemplates.forEach(g=>{g.visible=false;g.traverse(o=>{if(o.isMesh){o.frustumCulled=true;o.castShadow=false;o.receiveShadow=false}})});
- pirateFleetFlameMat=new T.SpriteMaterial({map:gtex("rgba(255,135,48,1)"),color:0xff8a38,transparent:true,opacity:.72,blending:T.AdditiveBlending,depthWrite:false});
+ pirateFleetEnsureFlameMaterial();
  pirateFleetSmokeTex=gtex("rgba(55,55,58,.92)");pirateFleetFireTex=gtex("rgba(255,75,18,1)");
 }
+function pirateFleetEnsureFlameMaterial(){
+ if(!pirateFleetFlameMat){pirateFleetFlameMat=new T.SpriteMaterial({map:gtex("rgba(255,135,48,1)"),color:0xff8a38,transparent:true,opacity:.76,blending:T.AdditiveBlending,depthWrite:false});pirateFleetFlameMat.userData.keep=true;if(pirateFleetFlameMat.map)pirateFleetFlameMat.map.userData.keep=true}
+}
 function pirateFleetAttachFX(e){
- const nodes=e.engineNodes&&e.engineNodes.length?e.engineNodes:null,count=nodes?nodes.length:(e.ty===0?2:1);
- for(let i=0;i<count;i++){
-  const f=new T.Sprite(pirateFleetFlameMat);f.scale.set(e.ty===0?1.25:1.45,4.1,1);
-  if(nodes)nodes[i].add(f);else{f.position.set(e.ty===0?(i===0?-.68:.68):0,-.03,e.ty===0?4.35:5.15);e.g.add(f)}
-  e.flames.push(f);
+ if(!e||!e.g)return;
+ if(!e.engineNodes||!e.engineNodes.length)e.engineNodes=pirateFleetResolveSockets(e.g,e.ty).engines;
+ e.flames=e.flames||[];pirateFleetEnsureFlameMaterial();
+ e.engineNodes.forEach((node,i)=>{
+  const name="STARFALL_ENGINE_FLAME_"+i;
+  let flame=node.getObjectByName(name);
+  if(!flame){flame=new T.Sprite(pirateFleetFlameMat);flame.name=name;flame.position.set(0,0,.12);flame.scale.set(e.ty===0?1.3:1.5,4.2,1);node.add(flame)}
+  if(!e.flames.includes(flame))e.flames.push(flame);
+ });
+}
+function pirateFleetUpdateFlames(e,dt){
+ if(!e||!e.flames||!e.flames.length)return;
+ const speed=e.speed||e.sp2||45,phase=performance.now()*.018+(e.slot||0)*1.7+(e.ty||0)*.9;
+ e.flames.forEach((f,i)=>{const pulse=.82+.18*Math.sin(phase+i*1.9);f.scale.set(e.ty===0?1.3:1.5,(2.9+Math.min(1,speed/55)*2.35)*pulse,1);f.position.z=.12+.08*Math.sin(phase+i*1.3)});
+}
+function pirateEngineTrailUpdate(e,dt,interval=.38){
+ if(!e||!e.g||!e.engineNodes||!e.engineNodes.length||e.warp>0)return;
+ e.engineTrailT=(e.engineTrailT===undefined?.12:e.engineTrailT)-dt;
+ if(e.engineTrailT>0)return;
+ e.engineTrailT=interval;e.g.updateMatrixWorld(true);
+ const ratio=e.hp>0&&e.mx>0?e.hp/e.mx:1,color=ratio<.42?"rgba(255,70,25,1)":"rgba(255,145,66,.96)";
+ for(const node of e.engineNodes)trail(node.getWorldPosition(new T.Vector3()),color,e.ty===0?2.4:2.1);
+}
+function pirateTrafficEngineFxUpdate(dt){
+ for(const n of nv){
+  const g=n.g;if(!g||!g.userData||!g.userData.pirateTransport)continue;
+  if(!n.engineNodes){n.engineNodes=g.starfallEngineNodes||pirateFleetResolveSockets(g,3).engines;n.flames=g.starfallEngineFlames||[];n.ty=3;n.engineTrailT=.12}
+  pirateFleetUpdateFlames(n,dt);pirateEngineTrailUpdate(n,dt,TCH?.48:.4);
  }
 }
 function pirateFleetSpawn(e,delay=0){
@@ -1876,7 +1953,7 @@ function pirateFleetInit(){
 function pirateDamageFxPrepare(){if(!pirateFleetSmokeTex)pirateFleetSmokeTex=gtex("rgba(55,55,58,.92)");if(!pirateFleetFireTex)pirateFleetFireTex=gtex("rgba(255,75,18,1)")}
 function pirateIgnite(e){if(!e||!e.g)return;pirateDamageFxPrepare();e.hits=(e.hits||0)+1;const c=e.hitCenter||new T.Vector3(),r=e.hitFxRadius||e.r||8;if(!e.fireFx){e.fireFx=new T.Sprite(new T.SpriteMaterial({map:pirateFleetFireTex,color:0xff6724,transparent:true,opacity:.96,blending:T.AdditiveBlending,depthWrite:false,depthTest:false}));e.fireFx.position.copy(c).add(new T.Vector3(0,r*.18,-r*.24));e.fireFx.scale.set(r*1.15,r*1.55,1);e.g.add(e.fireFx)}if(!e.damageFlames){e.damageFlames=[];for(let i=0;i<3;i++){const f=new T.Sprite(new T.SpriteMaterial({map:pirateFleetFireTex,color:[0xff4b18,0xff8a24,0xffc05a][i],transparent:true,opacity:.78,blending:T.AdditiveBlending,depthWrite:false,depthTest:false}));f.position.copy(c).add(new T.Vector3((i-1)*r*.42,r*(i===1?.12:-.08),r*(i===0?.35:-.28)));f.scale.set(r*(.62+i*.08),r*(.9+i*.12),1);e.g.add(f);e.damageFlames.push(f)}}if(!e.smoke){e.smoke=new T.Sprite(new T.SpriteMaterial({map:pirateFleetSmokeTex,transparent:true,opacity:.62,depthWrite:false,depthTest:false}));e.smoke.position.copy(c).add(new T.Vector3(0,r*.62,r*.04));e.smoke.scale.set(r*1.05,r*1.35,1);e.g.add(e.smoke)}e.fireTrailT=0}
 function pirateDamageFxUpdate(e,dt){if(!e||!e.g)return;const t=performance.now()*.018+(e.slot||0),r=e.hitFxRadius||e.r||8;if(e.fireFx){e.fireFx.material.opacity=.72+.25*(.5+.5*Math.sin(t));e.fireFx.scale.set(r*1.15,r*(1.45+.12*Math.sin(t*1.3)),1);e.fireFx.material.rotation+=dt*.22}if(e.damageFlames){for(let i=0;i<e.damageFlames.length;i++){const f=e.damageFlames[i],phase=t*1.7+i*2.1,pulse=.72+.28*Math.sin(phase);f.material.opacity=.58+.35*pulse;f.position.y=(e.hitCenter?.y||0)+r*(.12+.12*Math.sin(phase*.8));f.scale.set(r*(.58+i*.08)*pulse,r*(.95+i*.12)*(1+.12*Math.sin(phase*1.3)),1);f.material.rotation=.08*Math.sin(phase)}}if(e.smoke){e.smoke.material.opacity=.34+.24*(.5+.5*Math.sin(t*.17));e.smoke.scale.set(r*1.05,r*(1.3+.08*Math.sin(t*.3)),1)}if(e.fireFx||e.damageFlames){e.fireTrailT=(e.fireTrailT||0)-dt;if(e.fireTrailT<=0){e.fireTrailT=TCH?.22:.15;e.g.updateMatrixWorld(true);const i=(e.fireTrailIndex||0)%3;e.fireTrailIndex=i+1;const local=(e.damageFlames&&e.damageFlames[i]?e.damageFlames[i].position:new T.Vector3(0,0,0)).clone(),p=e.g.localToWorld(local);trail(p,"rgba(255,105,28,1)",Math.max(2.2,r*.42));if(Math.random()<.38)trail(p.clone().add(rd().multiplyScalar(r*.18)),"rgba(65,62,60,.9)",Math.max(2.5,r*.48))}}}
-function pirateEnemyFxUpdate(dt){pirateDamageFxUpdate(E,dt);if(E2)pirateDamageFxUpdate(E2,dt)}
+function pirateEnemyFxUpdate(dt){for(const e of [E,E2])if(e){pirateDamageFxUpdate(e,dt);if(!e.boss){pirateFleetUpdateFlames(e,dt);pirateEngineTrailUpdate(e,dt,TCH?.48:.36)}}}
 function pirateDamageFxClear(e){if(!e)return;if(e.smoke){e.smoke.material.dispose();e.smoke=null}if(e.fireFx){e.fireFx.material.dispose();e.fireFx=null}if(e.damageFlames){for(const f of e.damageFlames){if(f.parent)f.parent.remove(f);f.material.dispose()}e.damageFlames.length=0}}
 function pirateFleetDamage(e,d,missile){
  if(!e||e.dead||!e.g)return;e.hp=Math.max(0,e.hp-d);pirateIgnite(e);if(e.hp>0)return;
@@ -1926,7 +2003,7 @@ function pirateFleetUpdate(dt){
   EAI.integrate(e,dt,g,pirateFleetUp);
   pirateFleetHeading.copy(e.hd).normalize();g.quaternion.setFromUnitVectors(pirateFleetForward,pirateFleetHeading);
   g.rotateZ(Math.max(-.2,Math.min(.2,(e.ocsYaw||0)*-.008)));
-  e.flames.forEach((f,i)=>{const pulse=.88+.12*Math.sin(performance.now()*.018+e.slot+i);f.scale.set(1.18,(2.8+Math.min(1,e.speed/55)*2.2)*pulse,1)});
+  pirateFleetUpdateFlames(e,dt);
   e.trailT-=dt;if(e.trailT<=0){e.trailT=TCH?.48:.36;g.updateMatrixWorld(true);const exhausts=e.engineNodes&&e.engineNodes.length?e.engineNodes.map(n=>n.getWorldPosition(new T.Vector3())):[g.localToWorld(new T.Vector3(0,.05,e.ty===0?4.7:5.45))];for(const exhaust of exhausts){trail(exhaust,e.hp/e.mx<.42?"rgba(255,70,25,1)":"rgba(255,145,66,.9)",e.ty===0?2.2:2);if(e.hp/e.mx<.68&&Math.random()<.7)trail(exhaust,"rgba(55,55,60,.9)",2.8)}}
   if(e.smoke)e.smoke.material.opacity=.25+.18*(.5+.5*Math.sin(performance.now()*.003+e.slot));
   if(e.fireFx){const fr=e.hitFxRadius||e.r||8;e.fireFx.material.opacity=.62+.34*(.5+.5*Math.sin(performance.now()*.02+e.slot));e.fireFx.scale.set(fr*1.15,fr*(1.45+.12*Math.sin(performance.now()*.018+e.slot)),1)}
@@ -1963,7 +2040,7 @@ function resolvePirateShipCollisions(){
  }
 }
 const _updWithPirateFleet=upd;
-upd=function(dt){_updWithPirateFleet(dt);pirateFleetUpdate(dt);resolvePirateShipCollisions();pirateEnemyFxUpdate(dt);for(const pe of pirateFleet)if(pe.g&&pe.hp>0)pirateDamageFxUpdate(pe,dt)};
+upd=function(dt){_updWithPirateFleet(dt);pirateFleetUpdate(dt);resolvePirateShipCollisions();pirateEnemyFxUpdate(dt);pirateTrafficEngineFxUpdate(dt);for(const pe of pirateFleet)if(pe.g&&pe.hp>0)pirateDamageFxUpdate(pe,dt)};
 // ===== END STARFALL v77 PIRATE FLEET =====
 
 
@@ -3074,7 +3151,7 @@ function loadExtraPirateAssets(){
   try{
    const g=fitPirateAsset(gl.scene,d.size,d.yaw);
    applyPirateLivery(g);g.traverse(o=>{if(o.isMesh&&o.geometry){o.geometry.userData.keep=1;o.castShadow=false;o.receiveShadow=false}});
-   g.userData={sc:1};MC["p"+d.ty]=g;
+   g.userData={sc:1};MC["p"+d.ty]=g;pirateFleetResolveSockets(g,d.ty);
    console.info("STARFALL: pirate GLB ready",d.ty,d.url);
   }catch(e){console.warn("GLB extra pirate processing failed; procedural fallback active:",d.url,e)}
   finally{pirateExtraAssetDone()}
@@ -3084,12 +3161,15 @@ function pirateAssetDone(){if(++pirateAssetsDone>=GLB_PIR.length)loadExtraPirate
 // v96: Pirate3 is the fourth fighter archetype; Pirate4 is reserved for pirate transport traffic.
 const mkPirateProcedural=mkPirate;
 mkPirate=function(ty,...args){
- if(ty===2&&MC.p2)return MC.p2.clone(true);
- return mkPirateProcedural(ty,...args);
-};
-function mkPirateTransport(){
+  const g=ty===2&&MC.p2?MC.p2.clone(true):mkPirateProcedural(ty,...args);
+  if(g)pirateFleetResolveSockets(g,ty);
+  return g;
+ };
+ function mkPirateTransport(){
  if(!MC.p3)return null;
- const g=MC.p3.clone(true);g.userData={...g.userData,sc:2.2,pirateTransport:true};return g;
+ const g=MC.p3.clone(true);g.userData={...g.userData,sc:2.2,pirateTransport:true};
+ const sockets=pirateFleetResolveSockets(g,3),fx={g,ty:3,engineNodes:sockets.engines,flames:[]};pirateFleetAttachFX(fx);
+ g.starfallEngineNodes=sockets.engines;g.starfallEngineFlames=fx.flames;return g;
 }
 if(T.GLTFLoader&&location.protocol!=="file:"){
  const GL_=new T.GLTFLoader();
@@ -3105,13 +3185,13 @@ if(T.GLTFLoader&&location.protocol!=="file:"){
     g=assetRoot;
    }
    applyPirateLivery(g);g.traverse(o=>{if(o.isMesh&&o.geometry)o.geometry.userData.keep=1});
-   g.userData={sc:d.sc};MC["p"+d.ty]=g;pirateAssetDone();
+   g.userData={sc:d.sc};MC["p"+d.ty]=g;pirateFleetResolveSockets(g,d.ty);pirateAssetDone();
   }catch(e){console.warn("GLB",d.url,e);pirateAssetDone()}
  },undefined,e=>{console.warn("GLB не загружен:",d.url,e);pirateAssetDone()}));
 }else pirateAssetsReady=true;
 mkBoss=function(){return cached("boss",()=>applyPirateLivery(SKIT.mkBoss(gtex)))};
 mkStation=function(){return SKIT.mkStation(gtex)};
-mkFreighter=function(){if(MC.p3&&Math.random()<.14)return cached("pirate-transport",()=>mkPirateTransport());const k=Math.random()<.6?0:1,g=cached("f"+k,()=>{const f=SKIT.mkFreighter(k,gtex);f.userData.sc=1.6;return f});return g};
+mkFreighter=function(){if(MC.p3&&Math.random()<.14){const g=cached("pirate-transport",()=>mkPirateTransport());g.userData={...g.userData,pirateTransport:true};const sockets=pirateFleetResolveSockets(g,3),fx={g,ty:3,engineNodes:sockets.engines,flames:[]};pirateFleetAttachFX(fx);g.starfallEngineNodes=sockets.engines;g.starfallEngineFlames=fx.flames;return g}const k=Math.random()<.6?0:1,g=cached("f"+k,()=>{const f=SKIT.mkFreighter(k,gtex);f.userData.sc=1.6;return f});return g};
 // ангар: шкалы под новые корабли
 {const _h=hgrView;hgrView=function(box,s,n){_h(box,s,n);const b=box.querySelectorAll(".hg-s b"),q=SHIPS[shp];if(b.length>=4){b[0].style.width=Math.min(100,q.hull/4.5)+"%";b[1].style.width=Math.min(100,q.spd*80)+"%";b[3].style.width=Math.min(100,q.cargo*3.4)+"%"}}}
 applyShip();
