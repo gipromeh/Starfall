@@ -10,7 +10,7 @@ const L = require('./lib');
   await page.waitForFunction(() => state === 'dock', null, { timeout: 60000 });
   await page.waitForFunction(() => pirateAssetsReady === true, null, { timeout: 60000 });
   await page.evaluate(() => { lift(); QL.setMode('low'); });
-  await page.waitForFunction(() => state === 'play', null, { timeout: 15000 });
+  await page.waitForFunction(() => state === 'play' && worldPlanets.length > 0, null, { timeout: 30000 });
   const scene = await page.evaluate(() => {
     const vectors = worldPlanets.slice(0, 6).map(p => p.mesh.children.find(o => o.material?.uniforms?.c && o.material?.uniforms?.s)?.material.uniforms.s.value);
     const aligned = vectors.length === 6 && vectors.every((v,i) => v && v.clone().normalize().dot(SYSTEM_CENTER.clone().sub(worldPlanets[i].mesh.position).normalize()) > .999);
