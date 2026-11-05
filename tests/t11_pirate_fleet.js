@@ -62,6 +62,7 @@ const L = require('./lib');
         gunSource:sockets.manifest.guns.source, engineSource:sockets.manifest.engines.source,
         gunForward:sockets.guns.every(n=>n.getWorldDirection(new THREE.Vector3()).dot(forward)>.98),
         gunsAhead:sockets.guns.every(n=>n.getWorldPosition(new THREE.Vector3()).sub(center).dot(forward)>0),
+        enginesBehind:sockets.engines.every(n=>n.getWorldPosition(new THREE.Vector3()).sub(center).dot(forward)<0),
         flames:fx.flames.length, flamesAtEngines:fx.flames.every((f,i)=>f.parent===sockets.engines[i]),
         flameCores:fx.flameCores.length, coresAtEngines:fx.flameCores.every((f,i)=>f.parent===sockets.engines[i]),
         manifest:sockets.manifest, plasmaTrailCount:emitted
@@ -78,11 +79,11 @@ const L = require('./lib');
   });
   console.log("STARFALL_PIRATE_SOCKET_MANIFEST "+JSON.stringify(socketInventory.map(x=>({id:x.id,manifest:x.manifest}))));
   console.log("STARFALL_PIRATE_GLBNODES "+JSON.stringify(socketInventory[0].nodeNames));
-  L.check('«Ржавый череп» использует четыре реальные GUN-маркера и два ENG-маркера GLB',
-    socketInventory[0].guns===4&&socketInventory[0].engines===2&&socketInventory[0].gunSource==='GLB'&&socketInventory[0].engineSource==='GLB',
+  L.check('«Ржавый череп» без экспортированных маркеров получает четыре передних и два задних runtime-сокета по габаритам GLB',
+    socketInventory[0].assetLoadedGLB&&socketInventory[0].guns===4&&socketInventory[0].engines===2&&socketInventory[0].gunSource==='RUNTIME'&&socketInventory[0].engineSource==='RUNTIME'&&socketInventory[0].gunsAhead&&socketInventory[0].enginesBehind,
     socketInventory[0]);
   L.check('у всех четырёх пиратских кораблей есть ориентированные оружейные и двигательные сокеты',
-    socketInventory.every(x=>x.guns>=2&&x.engines>=2&&x.gunForward&&x.gunsAhead),
+    socketInventory.every(x=>x.guns>=2&&x.engines>=2&&x.gunForward&&x.gunsAhead&&x.enginesBehind),
     socketInventory);
   L.check('каждый двигатель получает видимое пламя и отдельный плазменный след',
     socketInventory.every(x=>x.flames===x.engines&&x.flamesAtEngines&&x.flameCores===x.engines&&x.coresAtEngines&&x.plasmaTrailCount===x.engines),
