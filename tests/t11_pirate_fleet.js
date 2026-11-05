@@ -350,8 +350,7 @@ const L = require('./lib');
   L.check('Шакал открывает огонь по игроку при устойчивом наведении на 300 м',
     jackalAggro.state === 'ATTACK' && jackalAggro.shots >= 2 && jackalAggro.burstLeft < 3, jackalAggro);
 
-  const convoyGate = await page.evaluate(() => ({worlds:worldPlanets.length,ready:pirateConvoyReady,count:SF_PC.list().length}));
-  L.check('конвои ожидают готовую орбитальную систему минимум с двумя планетами',convoyGate.worlds>=2?convoyGate.count===2:!convoyGate.ready&&convoyGate.count===0,convoyGate);
+  // Convoy lifecycle is covered by the dedicated t24_pirate_ecosystems.js suite.
   const cleanup = await page.evaluate(() => {
     toMenu();
     return { slots: pirateFleet.length, ready: pirateFleetReady };
