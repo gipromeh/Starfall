@@ -1825,10 +1825,21 @@ const EAI=(function(){
 })();
 const pirateFleetForward=new T.Vector3(0,0,-1),pirateFleetUp=new T.Vector3(0,1,0),pirateFleetHeading=new T.Vector3();
 const pirateFleetGunNames=["GUN_0","GUN_1","GUN_2","GUN_3"],pirateFleetEngineNames=["ENG_0","ENG_1"];
+const pirateFleetSocketConfigs={
+  0:{
+    source:"config.json",
+    guns:[
+      [2.46,4.6,-.34],[2.74,4.6,-.34],[-2.46,4.6,-.34],[-2.74,4.6,-.34]
+    ],
+    engines:[[.62,-5.5,0],[-.62,-5.5,0]],
+    coordinateSpace:"model-local-source",
+    authoredFrom:"assets/pirates/ships/pirate/pirate_fighter_002/build_blender.py"
+  }
+};
 const pirateFleetGunFallback=[[-2.74,-1.24,-3.565],[-2.46,-1.24,-3.565],[2.46,-1.24,-3.565],[2.74,-1.24,-3.565]],pirateFleetEngineFallback=[[-.62,-.9,6.535],[.62,-.9,6.535]];
 function pirateSocketIndex(name,kind){
- const n=String(name||"").toUpperCase().replace(/[\s.-]+/g,"_");
- const re=kind==="gun"?/^(?:GUN|MUZZLE|WEAPON|LASER|CANNON)(?:_?(\d+))?$/:/^(?:ENG|ENGINE|THRUSTER|EXHAUST|NOZZLE)(?:_?(\d+))?$/;
+ const n=String(name||"").toUpperCase().replace(/[\\s.-]+/g,"_");
+ const re=kind==="gun"?/^(?:GUN|MUZZLE|WEAPON|LASER|CANNON)(?:_?(\\d+))?$/:/^(?:ENG|ENGINE|THRUSTER|EXHAUST|NOZZLE)(?:_?(\\d+))?$/;
  const m=n.match(re);return m?(m[1]===undefined?0:Number(m[1])):null;
 }
 function pirateSocketCollect(g,kind){
@@ -1841,6 +1852,19 @@ function pirateSocketCollect(g,kind){
  });
  const list=actual.concat(runtime);list.sort((a,b)=>a.index-b.index);
  return{nodes:list.map(x=>x.node),source:actual.length&&runtime.length?"MIXED":actual.length?"GLB":runtime.length?"RUNTIME":""};
+}
+function pirateSocketNormalizeConfig(config){
+ if(!config)return null;
+ const out={guns:[],engines:[],coordinateSpace:config.coordinateSpace||"model-local"};
+ for(const [kind,key] of [["gun","guns"],["engine","engines"]]){
+  const values=Array.isArray(config[key])?config[key]:[];
+  out[key]=values.map((entry,index)=>{
+   const position=Array.isArray(entry)?entry:entry&&entry.position;
+   if(!Array.isArray(position)||position.length!==3||!position.every(Number.isFinite))return null;
+   return{name:entry&&entry.name||(kind==="gun"?"GUN_":"ENG_")+index,index,position:new T.Vector3(position[0],position[1],position[2])};
+  }).filter(Boolean);
+ }
+ return out;
 }
 function pirateSocketFallbackPositions(kind,ty,box,size,center){
  if(kind==="gun"&&ty===0)return pirateFleetGunFallback.map(p=>new T.Vector3(p[0],p[1],p[2]));
@@ -1855,6 +1879,18 @@ function pirateSocketFallbackPositions(kind,ty,box,size,center){
  }
  return out;
 }
+function pirateSocketAttachConfigured(g,kind,entries){
+ const prefix=kind==="gun"?"STARFALL_GUN_SOCKET_":"STARFALL_ENGINE_SOCKET_";
+ const nodes=[];
+ entries.forEach((entry,index)=>{
+  const existing=g.getObjectByName(entry.name);
+  if(existing&&!existing.isMesh&&!existing.isSkinnedMesh){nodes.push(existing);return}
+  const node=new T.Object3D();node.name=prefix+index;
+  node.position.copy(entry.position);node.userData.starfallSocketKind=kind;
+  node.userData.starfallSocketSource="CONFIG";g.add(node);nodes.push(node);
+ });
+ return nodes;
+}
 function pirateSocketOrient(g,node,forwardZ){
  g.updateMatrixWorld(true);
  const direction=new T.Vector3(0,0,forwardZ).transformDirection(g.matrixWorld);
@@ -1867,8 +1903,13 @@ function pirateFleetResolveSockets(g,ty){
  g.updateMatrixWorld(true);
  const box=new T.Box3().setFromObject(g).applyMatrix4(g.matrixWorld.clone().invert());
  const size=box.getSize(new T.Vector3()),center=box.getCenter(new T.Vector3());
+ const configured=pirateSocketNormalizeConfig(pirateFleetSocketConfigs[ty]);
  const resolve=(kind,forwardZ,minCount)=>{
-  let found=pirateSocketCollect(g,kind);
+  let found=pirateSocketCollect(g,kind),configEntries=configured&&configured[kind==="gun"?"guns":"engines"]||[];
+  if(found.nodes.length===0&&configEntries.length){
+   const nodes=pirateSocketAttachConfigured(g,kind,configEntries);
+   found={nodes,source:"CONFIG"};
+  }
   if(found.nodes.length<minCount){
    const positions=pirateSocketFallbackPositions(kind,ty,box,size,center);
    for(let i=found.nodes.length;i<minCount;i++){
@@ -1876,14 +1917,15 @@ function pirateFleetResolveSockets(g,ty){
     node.position.copy(positions[i]||positions[positions.length-1]);node.userData.starfallSocketKind=kind;node.userData.starfallSocketSource="RUNTIME";g.add(node);
    }
    found=pirateSocketCollect(g,kind);
+   if(configEntries.length&&found.nodes.length>=configEntries.length)found.source="MIXED";
   }
-  found.nodes.forEach(node=>{node.userData.starfallSocketKind=kind;node.userData.starfallSocketSource=node.name.indexOf("STARFALL_")===0?"RUNTIME":"GLB";pirateSocketOrient(g,node,forwardZ)});
+  found.nodes.forEach(node=>{node.userData.starfallSocketKind=kind;node.userData.starfallSocketSource=node.userData.starfallSocketSource|| (node.name.indexOf("STARFALL_")===0?"RUNTIME":"GLB");pirateSocketOrient(g,node,forwardZ)});
   return found;
  };
  const guns=resolve("gun",-1,ty===0?4:2),engines=resolve("engine",1,2);
  g.updateMatrixWorld(true);
  const rootLocalPosition=node=>{const p=node.getWorldPosition(new T.Vector3());g.worldToLocal(p);return p.toArray().map(v=>Math.round(v*10000)/10000)};
- g.userData=g.userData||{};g.userData.starfallSocketVersion=1;
+ g.userData=g.userData||{};g.userData.starfallSocketVersion=2;
  g.userData.starfallSocketManifest={
   guns:{source:guns.source,count:guns.nodes.length,nodes:guns.nodes.map((n,i)=>({name:n.name,index:i,position:rootLocalPosition(n)}))},
   engines:{source:engines.source,count:engines.nodes.length,nodes:engines.nodes.map((n,i)=>({name:n.name,index:i,position:rootLocalPosition(n)}))}
