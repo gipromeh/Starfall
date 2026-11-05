@@ -1,3 +1,7 @@
+## v97.2 — исправление совместимости плазменных материалов
+- Инициализация `userData` внешнего и внутреннего `SpriteMaterial` и их текстур теперь безопасна для Three.js r128.
+- Исправлена ошибка, из-за которой запуск `pirateFleetInit()` прерывался при создании плазменных факелов.
+
 ## v97.1 — единый плазменный выхлоп и баланс огня
 - Плазменный факел усилен горячим внутренним ядром; оба слоя закреплены на каждом маркере двигателя и пульсируют от скорости корабля.
 - Удалены дублирующие старые факелы и следы с жёстко заданных координат: обычные пираты используют только engine sockets.
@@ -209,10 +213,10 @@
 date: 2026-10-31
 topic: STARFALL: паспорт проекта (архитектура, технологии, механика, сохранения, качество)
 tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура]
-game_version: "v97.1"
+game_version: "v97.2"
 last_update: 2026-11-05
 main_file: starfall.html
-main_file_sha256: "3d361115e896bc42a4921a2c6a6326612a5a01f56ddc34a5f124ab33530dc406"
+main_file_sha256: "41d61d50853a1e5440cc575d5ea11287a393bcbffe222e4501c402588cd0f62d"
 save_format_version: 3
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"

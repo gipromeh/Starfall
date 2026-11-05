@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="claude:viewport-fit-sides" content="cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#02030a"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>STARFALL</title>
-<meta name="starfall-version" content="v97.1">
+<meta name="starfall-version" content="v97.2">
 <meta name="starfall-telemetry-endpoint" content="">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 <style>
@@ -1898,8 +1898,8 @@ function pirateFleetPrepare(){
  pirateFleetSmokeTex=gtex("rgba(55,55,58,.92)");pirateFleetFireTex=gtex("rgba(255,75,18,1)");
 }
 function pirateFleetEnsureFlameMaterial(){
- if(!pirateFleetFlameMat){pirateFleetFlameMat=new T.SpriteMaterial({map:gtex("rgba(255,135,48,1)"),color:0xff8a38,transparent:true,opacity:.82,blending:T.AdditiveBlending,depthWrite:false});pirateFleetFlameMat.userData.keep=true;if(pirateFleetFlameMat.map)pirateFleetFlameMat.map.userData.keep=true}
- if(!pirateFleetFlameCoreMat){pirateFleetFlameCoreMat=new T.SpriteMaterial({map:gtex("rgba(255,232,190,1)"),color:0xffdfaa,transparent:true,opacity:.9,blending:T.AdditiveBlending,depthWrite:false});pirateFleetFlameCoreMat.userData.keep=true;if(pirateFleetFlameCoreMat.map)pirateFleetFlameCoreMat.map.userData.keep=true}
+ if(!pirateFleetFlameMat){pirateFleetFlameMat=new T.SpriteMaterial({map:gtex("rgba(255,135,48,1)"),color:0xff8a38,transparent:true,opacity:.82,blending:T.AdditiveBlending,depthWrite:false});pirateFleetFlameMat.userData=pirateFleetFlameMat.userData||{};pirateFleetFlameMat.userData.keep=true;if(pirateFleetFlameMat.map){pirateFleetFlameMat.map.userData=pirateFleetFlameMat.map.userData||{};pirateFleetFlameMat.map.userData.keep=true}}
+ if(!pirateFleetFlameCoreMat){pirateFleetFlameCoreMat=new T.SpriteMaterial({map:gtex("rgba(255,232,190,1)"),color:0xffdfaa,transparent:true,opacity:.9,blending:T.AdditiveBlending,depthWrite:false});pirateFleetFlameCoreMat.userData=pirateFleetFlameCoreMat.userData||{};pirateFleetFlameCoreMat.userData.keep=true;if(pirateFleetFlameCoreMat.map){pirateFleetFlameCoreMat.map.userData=pirateFleetFlameCoreMat.map.userData||{};pirateFleetFlameCoreMat.map.userData.keep=true}}
 }
 function pirateFleetAttachFX(e){
  if(!e||!e.g)return;
