@@ -1925,9 +1925,9 @@ function pirateFleetResolveSockets(g,ty){
  const configured=pirateSocketNormalizeConfig(pirateFleetSocketConfigs[ty]);
  const resolve=(kind,forwardZ,minCount)=>{
   let found=pirateSocketCollect(g,kind),configEntries=configured&&configured[kind==="gun"?"guns":"engines"]||[];
-  if(found.nodes.length===0&&configEntries.length){
-   const nodes=pirateSocketAttachConfigured(g,kind,configEntries);
-   found={nodes,source:"CONFIG"};
+  const configuredNodes=configEntries.length?pirateSocketAttachConfigured(g,kind,configEntries):[];
+  if(found.nodes.length===0&&configuredNodes.length){
+   found={nodes:configuredNodes,source:"CONFIG"};
   }
   if(found.nodes.length<minCount){
    const positions=pirateSocketFallbackPositions(kind,ty,box,size,center);
