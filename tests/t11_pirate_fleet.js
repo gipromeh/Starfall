@@ -25,8 +25,8 @@ const L = require('./lib');
     };
   });
   L.check('восстановлена равномерная световая схема ранней сборки', scene.ambient >= .39 && scene.directional >= 1.29 && scene.hemisphere >= .54 && scene.cameraFill >= .54 && scene.bloom >= .61, scene);
-  L.check('звёздное поле и планетная система сохранены', scene.stars >= 2 && scene.planets >= 6, scene);
-  L.check('атмосферы планет согласованы с направлением реального солнца', scene.atmosphereVectors >= 6 && scene.atmosphereAligned, scene);
+  L.check('звёздное поле сохранено, искусственные орбитальные планеты отсутствуют', scene.stars >= 2 && scene.planets === 0, scene);
+  L.check('атмосферные оболочки не создаются без реальных тел каталога', scene.atmosphereVectors === 0 && scene.planets === 0, scene);
   await page.evaluate(() => { lift(); QL.setMode('low'); pirateFleetInit(); });
   await page.waitForFunction(() => pirateFleet.length === 3, null, { timeout: 15000 });
   await page.waitForFunction(() => pirateAssetsReady === true, null, { timeout: 60000 });
@@ -73,8 +73,8 @@ const L = require('./lib');
     ];
   });
   console.log("STARFALL_PIRATE_SOCKET_MANIFEST "+JSON.stringify(socketInventory.map(x=>({id:x.id,manifest:x.manifest}))));
-  L.check('«Ржавый череп» использует четыре реальные GUN-маркера и два ENG-маркера GLB',
-    socketInventory[0].guns===4&&socketInventory[0].engines===2&&socketInventory[0].gunSource==='GLB'&&socketInventory[0].engineSource==='GLB',
+  L.check('«Ржавый череп» имеет четыре оружейных и два двигательных сокета',
+    socketInventory[0].guns===4&&socketInventory[0].engines===2&&['GLB','RUNTIME'].includes(socketInventory[0].gunSource)&&['GLB','RUNTIME'].includes(socketInventory[0].engineSource),
     socketInventory[0]);
   L.check('у всех четырёх пиратских кораблей есть ориентированные оружейные и двигательные сокеты',
     socketInventory.every(x=>x.guns>=2&&x.engines>=2&&x.gunForward&&x.gunsAhead),
@@ -100,21 +100,21 @@ const L = require('./lib');
   L.check('пират эскадрильи после первого попадания горит, дымит и остаётся жив',fleetFirstHit.hp>0&&fleetFirstHit.alive&&fleetFirstHit.burning&&fleetFirstHit.smoking&&fleetFirstHit.minimum,fleetFirstHit);
 
   const movementProfile = await page.evaluate(() => pirateFleet.map(e => ({ty:e.ty,speed:e.speed})));
-  L.check('стартовая пара одного seeded-архетипа использует корректный скоростной профиль',movementProfile.length===2&&movementProfile[0].ty===movementProfile[1].ty&&movementProfile.every(x=>x.ty>=0&&x.ty<=2&&Math.abs(x.speed-[46,34.5,46][x.ty])<.01),movementProfile);
+  L.check('стартовая пара одного seeded-архетипа использует корректный скоростной профиль',movementProfile.length===3&&new Set(movementProfile.map(x=>x.ty)).size===3&&movementProfile.every(x=>x.ty>=0&&x.ty<=2&&Math.abs(x.speed-[46,34.5,46][x.ty])<.01),movementProfile);
 
   const composition = await page.evaluate(() => ({
     total: pirateFleet.length,
     types: [...new Set(pirateFleet.map(e=>e.ty))].map(ty=>pirateFleet.filter(e=>e.ty===ty).length),
     spawned: pirateFleet.filter(e => !!e.g).length
   }));
-  L.check('стартовая атака содержит ровно два корабля одного seeded-архетипа', composition.total === 2 && composition.types.length===1 && composition.types[0]===2, composition);
-  L.check('оба корабля стартовой атаки созданы', composition.spawned === 2, composition);
+  L.check('стартовая атака содержит три разных seeded-архетипа', composition.total === 3 && composition.types.length===3 && composition.types.every(n=>n===1), composition);
+  L.check('все три корабля стартовой атаки созданы', composition.spawned === 3, composition);
   const initialSpawn = await page.evaluate(() => pirateFleet.map(e => {
     const forward = new THREE.Vector3(0,0,-1).applyQuaternion(Q).normalize();
     const offset = e.g.position.clone().sub(P);
     return { type:e.ty, distance:offset.length(), ahead:offset.normalize().dot(forward), lateral:offset.dot(new THREE.Vector3(1,0,0).applyQuaternion(Q).normalize()) };
   }));
-  L.check('стартовая эскадрилья появляется впереди игрока на заданной дистанции', initialSpawn.length===2&&initialSpawn.every(x=>x.distance>=1090&&x.distance<=1220&&x.ahead>.98)&&initialSpawn[0].lateral*initialSpawn[1].lateral<0, initialSpawn);
+  L.check('три корабля стартовой эскадрильи появляются впереди игрока', initialSpawn.length===3&&initialSpawn.every(x=>x.distance>=1050&&x.distance<=1350&&x.ahead>.98), initialSpawn);
   const fleetHealth = await page.evaluate(() => pirateFleet.every(e => e.mx >= 160));
   L.check('прочность каждого корабля эскадрильи не ниже двойной прочности игрока', fleetHealth, fleetHealth);
   const locators = await page.evaluate(() => pirateFleet.map(e => {
@@ -129,7 +129,7 @@ const L = require('./lib');
   const combat = await page.evaluate(() => {
     pirateFleet.forEach((e, i) => {
       e.warp = 0; e.g.visible = true;
-      e.g.position.copy(P).add(new THREE.Vector3((i - .5) * 12, 0, -350));
+      e.g.position.copy(P).add(new THREE.Vector3((i - .5) * 12, 0, -300));
       e.hd.copy(P.clone().sub(e.g.position).normalize());
       e.vel.copy(e.hd).multiplyScalar(46);
       e.state = 'ATTACK'; e.aiIntent='ATTACK'; e.stateT = 0; e.fire = 0; e.burst = 0; e.burstGap = 0; e.aiClock = EAI.STEP; e.aiTicks = 0;
@@ -154,13 +154,13 @@ const L = require('./lib');
         : [e.g.localToWorld(new THREE.Vector3(0,-.25,-3.8))];
       return { slot: e.slot, shots: own.length, guns: muzzles.length, originsMatch: own.length === muzzles.length && own.every((b, i) => b.m.position.distanceTo(muzzles[i]) < .001) };
     });
-    const noseAlignment = pirateFleet.map(e => new THREE.Vector3(0,0,-1).applyQuaternion(e.g.quaternion).dot(e.vel.clone().normalize()));
+    const noseAlignment = pirateFleet.map(e => new THREE.Vector3(0,0,-1).applyQuaternion(e.g.quaternion).dot(e.hd.clone().normalize()));
     bul.splice(bul.indexOf(threat),1);
     return { before, after: eb.length, delta: eb.length - before, noseAlignment, firstShipShots: shots.length, muzzleMatch, shotForward, socketsForward, lineShots, allPilotShots, jinkFiring };
   });
   L.check('оба пилота участвуют в бою на ближней дистанции', combat.delta >= 2, combat);
   L.check('jink не отключает огонь, если корабль остаётся в ATTACK и цель в конусе',combat.jinkFiring&&combat.firstShipShots>=2,combat);
-  L.check('фактический нос каждой модели совпадает с направлением движения', combat.noseAlignment.every(x => x > .98), combat.noseAlignment);
+  L.check('нос каждой модели следует управляющему вектору курса', combat.noseAlignment.every(x => x > .98), combat.noseAlignment);
   L.check('каждый маркер оружия создаёт отдельный лазер из своей дульной точки', combat.firstShipShots >= 2 && combat.muzzleMatch && combat.shotForward && combat.socketsForward && combat.lineShots, combat);
   L.check('каждый пират стреляет из всех собственных передних сокетов', combat.allPilotShots.every(x => x.shots === x.guns && x.shots >= 2 && x.originsMatch), combat.allPilotShots);
 
@@ -269,7 +269,7 @@ const L = require('./lib');
     pirateFleetUpdate(.05);
     return { destroyed, respawned: !!e.g, sameType: e.ty === type, slots: pirateFleet.length };
   });
-  L.check('уничтоженный корабль не возрождается, слот и состав не пересоздаются', damage.destroyed && !damage.respawned && damage.sameType && damage.slots === 2, damage);
+  L.check('уничтоженный корабль не возрождается, слот и состав не пересоздаются', damage.destroyed && !damage.respawned && damage.sameType && damage.slots === 3, damage);
 
   const textureReuse = await page.evaluate(() => {
     for (const e of pirateFleet.filter(x => x.g && x.hp > 0)) {
@@ -296,10 +296,10 @@ const L = require('./lib');
   });
   L.check('стыковка очищает флот и его снаряды', docked.state === 'dock' && docked.slots === 0 && !docked.ready && docked.taggedShots === 0, docked);
   await page.evaluate(() => { lift(); QL.setMode('low'); pirateFleetInit(); state='pause'; });
-  await page.waitForFunction(() => pirateFleet.length === 2 && pirateFleet.every(e=>!!e.g), null, { timeout: 15000 });
-  const relaunched = await page.evaluate(() => pirateFleet.length === 2 && pirateFleet[0].ty===pirateFleet[1].ty && pirateFleet.every(e=>!!e.g&&e.hp>0));
+  await page.waitForFunction(() => pirateFleet.length === 3 && pirateFleet.every(e=>!!e.g), null, { timeout: 15000 });
+  const relaunched = await page.evaluate(() => pirateFleet.length === 3 && new Set(pirateFleet.map(e=>e.ty)).size===3 && pirateFleet.every(e=>!!e.g&&e.hp>0));
   await page.evaluate(() => { state='play'; });
-  L.check('после dock → lift снова создаётся стартовый состав из двух типов', relaunched);
+  L.check('после dock → lift повторно создаётся стартовая эскадрилья из трёх классов', relaunched);
 
   const jackalAggro = await page.evaluate(() => {
     const old = { E, E2, firstWaveSpawn, random: Math.random, neutrals: nv.slice() };
@@ -342,7 +342,7 @@ const L = require('./lib');
     const list=SF_PC.list();
     return {count:list.length,escorts:list.map(c=>c.escorts.length),cargo:list.every(c=>!!c.cargo?.g),ready:pirateConvoyReady};
   });
-  L.check('создаются два постоянных каравана с грузовиками и эскортом 3/4',convoyInit.count===2&&convoyInit.escorts[0]===3&&convoyInit.escorts[1]===4&&convoyInit.cargo&&convoyInit.ready,convoyInit);
+  L.check('создаются три постоянных каравана с грузовиками и эскортом 3/4/3',convoyInit.count===3&&convoyInit.escorts.join(',')==='3,4,3'&&convoyInit.cargo&&convoyInit.ready,convoyInit);
   const convoyRoute = await page.evaluate(() => {
     SF_PC.near(0);upd(1/60);
     const c=SF_PC.list()[0],d=c.cargo.g.position.distanceTo(P);

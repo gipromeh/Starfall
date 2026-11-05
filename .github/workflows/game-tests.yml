@@ -68,6 +68,7 @@ jobs:
           node --check tests/lib.js
           node --check tests/t21_galaxy_map_browser.js
           python3 tools/check_passport.py
+          python3 -m unittest discover -s tests -p 'test_*.py' -v
       - name: AI Lab architecture regression (static)
         run: node tests/t12_ai_lab.js
       - name: Radar and collision regression (static)
