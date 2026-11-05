@@ -102,9 +102,9 @@ def validate(path: Path, category="generic", config_path=None):
         dims=None
         if "bufferView" in image and image["bufferView"] < len(views) and binary is not None:
             view=views[image["bufferView"]]; start=view.get("byteOffset",0); payload=binary[start:start+view.get("byteLength",0)]
-            if mime=="image/png" and len(payload)>=24 and payload[:8]==b"\\x89PNG\\r\\n\\x1a\\n":
+            if mime=="image/png" and len(payload)>=24 and payload[:8]==b"\x89PNG\r\n\x1a\n":
                 dims=struct.unpack(">II",payload[16:24])
-            elif mime=="image/jpeg" and payload[:2]==b"\\xff\\xd8":
+            elif mime=="image/jpeg" and payload[:2]==b"\xff\xd8":
                 pos=2
                 while pos+9<len(payload):
                     if payload[pos]!=0xff: pos+=1; continue
@@ -138,7 +138,9 @@ def validate(path: Path, category="generic", config_path=None):
     for i,scene in enumerate(scenes):
         for node in scene.get("nodes",[]):
             if node>=len(nodes): errors.append(f"scene[{i}] node index out of range")
-    required=set(doc.get("extensionsRequired",[])); used=set(doc.get("extensionsUsed",[]))\n    if not required.issubset(used): errors.append("extensionsRequired contains entries missing from extensionsUsed")\n    extensions=doc.get("extensionsUsed",[])
+    required=set(doc.get("extensionsRequired",[])); used=set(doc.get("extensionsUsed",[]))
+    if not required.issubset(used): errors.append("extensionsRequired contains entries missing from extensionsUsed")
+    extensions=doc.get("extensionsUsed",[])
     unsupported=sorted(set(extensions)-{"KHR_materials_unlit"})
     if unsupported: warnings.append("extensions require runtime support review: "+", ".join(unsupported))
     if not binary and buffers: errors.append("missing embedded BIN data")
