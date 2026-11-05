@@ -2075,7 +2075,8 @@ function pirateFleetPhase(e,toPlayer,dist,incoming,aiThink,dt){
  e.state=e.aiIntent=(e.ph==="ATTACK")?"ATTACK":"EVADE";
  return aim;
 }
-function pirateFleetUpdate(dt){\n if(state==="play")ensureCargoShowcase();if(state==="play"&&!pirateFleetReady&&pirateAssetsReady)pirateFleetInit();if(!pirateFleetReady||state!=="play")return;
+function pirateFleetUpdate(dt){
+ if(state==="play")ensureCargoShowcase();if(state==="play"&&!pirateFleetReady&&pirateAssetsReady)pirateFleetInit();if(!pirateFleetReady||state!=="play")return;
  if(pirateFleet.every(e=>!e.g)){pirateFleetWaveTimer-=dt;if(pirateFleetWaveTimer<=0){pirateFleetNextType=(pirateFleetNextType+1)%3;pirateFleet.forEach((e,i)=>{e.ty=pirateFleetNextType;e.dead=false;pirateFleetSpawn(e,i*.24)});pirateFleetWaveTimer=3.5;say("НОВАЯ ПИРАТСКАЯ ПАРА: "+(["ГОЛОВОРЕЗЫ","ШАКАЛЫ","МАРОДЁРЫ"][pirateFleetNextType]),2.5)}}
  for(const e of pirateFleet){
   if(!e.g){e.respawn-=dt;if(e.respawn<=0)pirateFleetSpawn(e,0);continue}
@@ -3710,7 +3711,8 @@ function loadCargoTransportAsset(){
  });
 }
 
-loadCargoTransportAsset();\n let cargoShowcaseSpawned=false;function ensureCargoShowcase(){if(cargoShowcaseSpawned||state!=="play"||!MC.cargoTransport)return;const g=mkCargoTransport();if(!g)return;const forward=new T.Vector3(0,0,-1).applyQuaternion(Q).normalize(),right=new T.Vector3(1,0,0).applyQuaternion(Q).normalize();g.position.copy(P).addScaledVector(forward,820).addScaledVector(right,105);const v=right.multiplyScalar(22).addScaledVector(forward,-3);g.lookAt(g.position.clone().sub(v));S.add(g);nv.push({g,v,hp:900,hit:0,cargoShowcase:true});cargoShowcaseSpawned=true;say("ГРУЗОВОЙ КОРАБЛЬ: CARGO SPACESHIP ОБНАРУЖЕН",3)}\n mkFreighter=function(){
+loadCargoTransportAsset();
+ let cargoShowcaseSpawned=false;function ensureCargoShowcase(){if(cargoShowcaseSpawned||state!=="play"||!MC.cargoTransport)return;const g=mkCargoTransport();if(!g)return;const forward=new T.Vector3(0,0,-1).applyQuaternion(Q).normalize(),right=new T.Vector3(1,0,0).applyQuaternion(Q).normalize();g.position.copy(P).addScaledVector(forward,820).addScaledVector(right,105);const v=right.multiplyScalar(22).addScaledVector(forward,-3);g.lookAt(g.position.clone().sub(v));S.add(g);nv.push({g,v,hp:900,hit:0,cargoShowcase:true});cargoShowcaseSpawned=true;say("ГРУЗОВОЙ КОРАБЛЬ: CARGO SPACESHIP ОБНАРУЖЕН",3)}\n mkFreighter=function(){
  const roll=Math.random();
  if(MC.cargoTransport&&roll<.62)return mkCargoTransport();
  if(MC.pirateTransport&&roll<(MC.cargoTransport?.76:.14)){const g=cached("pirate-transport",()=>mkPirateTransport());g.userData={...g.userData,pirateTransport:true};const sockets=pirateFleetResolveSockets(g,3),fx={g,ty:3,engineNodes:sockets.engines,flames:[],flameCores:[]};pirateFleetAttachFX(fx);g.starfallEngineNodes=sockets.engines;g.starfallEngineFlames=fx.flames;g.starfallEngineFlameCores=fx.flameCores;return g}
