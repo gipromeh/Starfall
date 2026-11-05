@@ -1,4 +1,4 @@
-name: Update Elite Dangerous lite dataset
+name: Update Elite Dangerous systems catalogue
 
 on:
   push:
@@ -10,21 +10,25 @@ on:
   workflow_dispatch:
     inputs:
       max_systems:
-        description: Maximum number of systems to publish
+        description: "Diagnostic cap (0 = every eligible record in the Spansh snapshot)"
         required: true
-        default: "50000"
+        default: "0"
+      max_mb:
+        description: "Maximum compressed dataset size in MiB (GitHub single-file limit is 100 MB)"
+        required: true
+        default: "90"
 
 permissions:
   contents: write
 
 concurrency:
-  group: elite-lite-dataset
+  group: elite-systems-catalogue
   cancel-in-progress: false
 
 jobs:
-  build-lite:
+  build-catalogue:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
         with:
@@ -37,31 +41,25 @@ jobs:
       - name: Download Spansh systems snapshot
         run: |
           mkdir -p data/tmp
-          curl --fail --location --retry 4 --retry-all-errors \
-            https://downloads.spansh.co.uk/systems_1month.json.gz \
-            --output data/tmp/systems_1month.json.gz
-      - name: Build compact GitHub-sized dataset
+          curl --fail --location --retry 4 --retry-all-errors             --connect-timeout 30 --max-time 3600             https://downloads.spansh.co.uk/systems_1month.json.gz             --output data/tmp/systems_1month.json.gz
+      - name: Export every eligible system (streaming)
         shell: bash
         run: |
-          python tools/export_elite_lite.py \
-            --source data/tmp/systems_1month.json.gz \
-            --output data/elite-dangerous-lite/systems.jsonl.gz \
-            --max-systems "${{ inputs.max_systems || '50000' }}" \
-            --max-mb 35
-      - name: Commit dataset
+          python tools/export_elite_lite.py             --source data/tmp/systems_1month.json.gz             --output data/elite-dangerous-lite/systems.jsonl.gz             --max-systems "${{ inputs.max_systems || '0' }}"             --max-mb "${{ inputs.max_mb || '90' }}"
+      - name: Commit compact catalogue
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -f data/elite-dangerous-lite/systems.jsonl.gz data/elite-dangerous-lite/systems.jsonl.gz.manifest.json
           if git diff --cached --quiet; then
-            echo "Dataset unchanged; no commit needed."
+            echo "Catalogue unchanged; no commit needed."
           else
-            git commit -m "data: update Elite galaxy lite dataset"
+            git commit -m "data: publish complete Spansh systems snapshot"
             git push origin main
           fi
-      - name: Upload build source as artifact
+      - name: Upload source archive for diagnostics
         uses: actions/upload-artifact@v4
         with:
-          name: elite-dangerous-lite-source
+          name: spansh-systems-source
           path: data/tmp/systems_1month.json.gz
           retention-days: 1
