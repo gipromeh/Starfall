@@ -10,6 +10,7 @@ const L = require('./lib');
   await page.waitForFunction(() => pirateAssetsReady && cargoTransportReady && MC.cargoTransport && SF_ASTEROIDS.status().ready, null, { timeout: 60000 });
   await page.evaluate(() => lift());
   await page.waitForFunction(() => state === 'play' && pirateFleet.length === 3 && roamingPirates.length >= 2, null, { timeout: 30000 });
+  await page.waitForFunction(() => pirateFleet.every(e => e.g && e.g.visible && e.warp <= 0), null, { timeout: 15000 });
   await page.waitForFunction(() => pirateConvoyReady && pirateConvoys.length === 3, null, { timeout: 30000 });
   const result = await page.evaluate(() => ({
     opening: pirateFleet.map(e => ({ type:e.ty, visible:!!e.g?.visible, hp:e.hp })),
