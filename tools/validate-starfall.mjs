@@ -29,4 +29,4 @@ if (!html.includes('const asset=MC["p"+ty]')) throw new Error("Loaded pirate GLB
 if (!html.includes("window.StarfallPirateDiagnostics")) throw new Error("Pirate runtime diagnostics API is missing.");
 if (!html.includes("STARFALL_SOCKET_ANCHOR_")) throw new Error("Non-destructive socket anchors are missing.");
 
-console.log(\`Validated \${parsed} inline JavaScript blocks and pirate-flight regression guards.\`);
+console.log("Validated " + parsed + " inline JavaScript blocks and pirate-flight regression guards.");
