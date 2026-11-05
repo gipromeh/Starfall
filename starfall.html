@@ -1863,15 +1863,19 @@ function pirateSocketIndex(name,kind){
  const m=n.match(re);return m?(m[1]===undefined?0:Number(m[1])):null;
 }
 function pirateSocketCollect(g,kind){
- const prefix=kind==="gun"?"STARFALL_GUN_SOCKET_":"STARFALL_ENGINE_SOCKET_",actual=[],runtime=[];
+ const prefix=kind==="gun"?"STARFALL_GUN_SOCKET_":"STARFALL_ENGINE_SOCKET_",actual=[],configured=[],runtime=[];
  g.traverse(o=>{
   if(o===g||o.isMesh||o.isSkinnedMesh)return;
   const index=pirateSocketIndex(o.name,kind);
   if(index!==null)actual.push({node:o,index});
-  else if(o.name&&o.name.indexOf(prefix)===0){const n=Number(o.name.slice(prefix.length));if(Number.isFinite(n))runtime.push({node:o,index:n})}
+  else if(o.name&&o.name.indexOf(prefix)===0){
+   const n=Number(o.name.slice(prefix.length));if(!Number.isFinite(n))return;
+   (o.userData&&o.userData.starfallSocketSource==="CONFIG"?configured:runtime).push({node:o,index:n});
+  }
  });
- const list=actual.concat(runtime);list.sort((a,b)=>a.index-b.index);
- return{nodes:list.map(x=>x.node),source:actual.length&&runtime.length?"MIXED":actual.length?"GLB":runtime.length?"RUNTIME":""};
+ const list=actual.length?actual:configured.length?configured:runtime;list.sort((a,b)=>a.index-b.index);
+ const sources=[actual.length?"GLB":"",configured.length?"CONFIG":"",runtime.length?"RUNTIME":""].filter(Boolean);
+ return{nodes:list.map(x=>x.node),source:sources.length>1?"MIXED":sources[0]||""};
 }
 function pirateSocketNormalizeConfig(config){
  if(!config)return null;
@@ -1926,8 +1930,8 @@ function pirateFleetResolveSockets(g,ty){
  const configured=pirateSocketNormalizeConfig(pirateFleetSocketConfigs[ty]);
  const resolve=(kind,forwardZ,minCount)=>{
   let found=pirateSocketCollect(g,kind),configEntries=configured&&configured[kind==="gun"?"guns":"engines"]||[];
-  const configuredNodes=configEntries.length?pirateSocketAttachConfigured(g,kind,configEntries):[];
-  if(found.nodes.length===0&&configuredNodes.length){
+  if(found.nodes.length===0&&configEntries.length){
+   const configuredNodes=pirateSocketAttachConfigured(g,kind,configEntries);
    found={nodes:configuredNodes,source:"CONFIG"};
   }
   if(found.nodes.length<minCount){
