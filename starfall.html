@@ -3725,6 +3725,7 @@ mkPirate=function(ty,...args){
    if(g)g.userData={...g.userData,starfallAssetSource:"PROCEDURAL",starfallType:ty,starfallForwardAxis:"-Z",starfallUpAxis:"+Y"};
   }
   if(g)pirateFleetResolveSockets(g,ty);
+  if(asset&&ty===0)applyBrawlerNeon(g);
   return g;
  };
  function mkPirateTransport(){
