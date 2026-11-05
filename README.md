@@ -69,7 +69,7 @@
 - Онлайн (ПК и iPhone): https://gipromeh.github.io/Starfall/ (GitHub Pages, ветка `main`, обновляется примерно за минуту после коммита).
 - Локально: открыть `starfall.html` в браузере.
 
-Нужен интернет: Three.js, tsParticles, Babylon.js и шрифты грузятся с CDN (версии закреплены, см. паспорт). `index.html` только перенаправляет на `starfall.html`.
+Нужен интернет: Three.js, tsParticles, Babylon.js (только для 3D-бара станции) и шрифты грузятся с CDN; версии закреплены в паспорте. `index.html` только перенаправляет на `starfall.html`.
 
 ## Управление
 
