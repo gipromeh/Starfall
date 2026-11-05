@@ -3742,7 +3742,7 @@ if(T.GLTFLoader&&location.protocol!=="file:"){
 mkBoss=function(){return cached("boss",()=>applyPirateLivery(SKIT.mkBoss(gtex)))};
 mkStation=function(){return SKIT.mkStation(gtex)};
 
-let cargoTransportReady=false,cargoTransportLoadError="";
+var cargoTransportReady=false,cargoTransportLoadError="";
 function fitCargoTransportAsset(src,targetSize=28){
  src.updateMatrixWorld(true);
  const box=new T.Box3().setFromObject(src),size=box.getSize(new T.Vector3()),center=box.getCenter(new T.Vector3());
