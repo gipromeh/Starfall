@@ -1943,7 +1943,10 @@ function pirateSocketCollect(g,kind){
   if(o===g)return;
   if(o.name&&o.name.indexOf(prefix)===0){
    const index=Number(o.name.slice(prefix.length));
-   if(Number.isFinite(index))runtime.push({node:o,index,sourceName:o.name});
+   if(Number.isFinite(index)){
+    const entry={node:o,index,sourceName:o.name,source:o.userData&&o.userData.starfallSocketSource==="RUNTIME"?"RUNTIME":"GLB"};
+    (entry.source==="RUNTIME"?runtime:actual).push(entry);
+   }
    return;
   }
   if(o.name&&o.name.indexOf("STARFALL_SOCKET_ANCHOR_")===0)return;
@@ -1953,7 +1956,7 @@ function pirateSocketCollect(g,kind){
   const anchorName="STARFALL_SOCKET_ANCHOR_"+(kind==="gun"?"GUN_":"ENGINE_")+index;
   let anchor=o.getObjectByName(anchorName);
   if(!anchor){anchor=new T.Object3D();anchor.name=anchorName;o.add(anchor)}
-  actual.push({node:anchor,index,sourceName:o.name});
+  actual.push({node:anchor,index,sourceName:o.name,source:"GLB"});
  });
  const list=actual.concat(runtime);
  list.sort((a,b)=>a.index-b.index||String(a.sourceName).localeCompare(String(b.sourceName)));
@@ -1995,7 +1998,7 @@ function pirateFleetResolveSockets(g,ty){
    }
    found=pirateSocketCollect(g,kind);
   }
-  found.entries.forEach(entry=>{const node=entry.node;node.userData.starfallSocketKind=kind;node.userData.starfallSocketSource=entry.sourceName&&entry.sourceName.indexOf(prefix)!==0?"GLB":"RUNTIME";pirateSocketOrient(g,node,forwardZ)});
+  found.entries.forEach(entry=>{const node=entry.node;node.userData.starfallSocketKind=kind;node.userData.starfallSocketSource=entry.source;pirateSocketOrient(g,node,forwardZ)});
   return found;
  };
  const guns=resolve("gun",-1,ty===0?4:2),engines=resolve("engine",1,2);
