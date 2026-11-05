@@ -8,6 +8,8 @@
 !/data/elite-dangerous-lite/systems.jsonl.gz
 !/data/elite-dangerous-lite/systems.jsonl.gz.manifest.json
 
+/.local/
+
 *.sqlite3
 *.sqlite3-wal
 *.sqlite3-shm
