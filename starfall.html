@@ -1973,6 +1973,7 @@ function pirateFleetResolveSockets(g,ty){
  const box=new T.Box3().setFromObject(g).applyMatrix4(g.matrixWorld.clone().invert());
  const size=box.getSize(new T.Vector3()),center=box.getCenter(new T.Vector3());
  const resolve=(kind,forwardZ,minCount)=>{
+  const prefix=kind==="gun"?"STARFALL_GUN_SOCKET_":"STARFALL_ENGINE_SOCKET_";
   let found=pirateSocketCollect(g,kind);
   if(found.nodes.length<minCount){
    const positions=pirateSocketFallbackPositions(kind,ty,box,size,center);
