@@ -73,7 +73,8 @@ const L = require('./lib');
     ];
   });
 
-  const socketCoordinateRegression = await page.evaluate(() => {
+  const socketCoordinateRegression = await page.evaluate(async () => {
+    await pirateFleetSocketConfigsReady;
     // Isolate the config path from the real GLB marker path, which is tested below.
     const g = new THREE.Group();
     const sockets = pirateFleetResolveSockets(g, 0);
