@@ -2026,7 +2026,16 @@ window.StarfallPirateDiagnostics=Object.freeze({
  validate:function(){
   const models=(pirateFleetTemplates||[]).map((g,ty)=>pirateFleetDiagnosticSnapshot(g,ty));
   const issues=models.flatMap(m=>m.issues.map(issue=>"type "+m.type+": "+issue));
-  return{ok:issues.length===0,issues,models};
+  const warnings=[];
+  if(models.length!==3)issues.push("pirate templates are not initialized");
+  for(const m of models){
+   if(m.source!=="GLB")warnings.push("type "+m.type+": procedural fallback is active");
+   for(const kind of ["guns","engines"]){
+    const socket=m.sockets&&m.sockets[kind];
+    if(socket&&socket.source!=="GLB")warnings.push("type "+m.type+": "+kind+" use bounds-based runtime sockets");
+   }
+  }
+  return{ok:issues.length===0,issues,warnings,models};
  }
 });
 
