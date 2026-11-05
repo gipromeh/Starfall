@@ -261,7 +261,7 @@ tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура
 game_version: "v102"
 last_update: 2026-11-05
 main_file: starfall.html
-main_file_sha256: "f75893a9d0e1019c187dfbaeb9367aabc10749ce1d1e5906d7855f1d7b4b1ab5"
+main_file_sha256: "b7819a32b7bba64dff2e708abe67b8546ae610ec2ea84ca348d54708718db6e1"
 save_format_version: 3
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"
