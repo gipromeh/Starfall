@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="claude:viewport-fit-sides" content="cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#02030a"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>STARFALL</title>
-<meta name="starfall-version" content="v97.2">
+<meta name="starfall-version" content="v98">
 <meta name="starfall-telemetry-endpoint" content="">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 <style>
@@ -1823,7 +1823,7 @@ const EAI=(function(){
  api={STEP,seed,rand,think,project,projectOCS,command,integrate,fireChance,fireGate,chooseVector};
  return api;
 })();
-const pirateFleetForward=new T.Vector3(0,0,-1),pirateFleetUp=new T.Vector3(0,1,0),pirateFleetHeading=new T.Vector3();
+const pirateFleetForward=new T.Vector3(0,0,-1),pirateFleetUp=new T.Vector3(0,1,0),pirateFleetHeading=new T.Vector3(),pirateFleetLookOrigin=new T.Vector3(),pirateFleetLookMatrix=new T.Matrix4(),pirateFleetLookQuat=new T.Quaternion();
 const pirateFleetGunNames=["GUN_0","GUN_1","GUN_2","GUN_3"],pirateFleetEngineNames=["ENG_0","ENG_1"];
 const pirateFleetGunFallback=[[-2.74,-1.24,-3.565],[-2.46,-1.24,-3.565],[2.46,-1.24,-3.565],[2.74,-1.24,-3.565]],pirateFleetEngineFallback=[[-.62,-.9,6.535],[.62,-.9,6.535]];
 function pirateSocketIndex(name,kind){
@@ -1941,8 +1941,8 @@ function pirateTrafficEngineFxUpdate(dt){
 function pirateFleetSpawn(e,delay=0){
  pirateFleetPrepare();
  const g=pirateFleetTemplates[e.ty].clone(true),fw=new T.Vector3(0,0,-1).applyQuaternion(Q).normalize(),right=new T.Vector3(1,0,0).applyQuaternion(Q).normalize();
- g.position.copy(P).addScaledVector(fw,(760+e.slot*90)).addScaledVector(right,(e.slot-.5)*150).add(new T.Vector3(0,(e.slot-.5)*42,0));
- g.visible=false;S.add(g);e.g=g;const hit=pirateHitBounds(g);Object.assign(e,hit);const sockets=pirateFleetResolveSockets(g,e.ty);e.muzzleNodes=sockets.guns;e.engineNodes=sockets.engines;const fleetWaveScale=1+Math.min(.2,Math.max(0,wave-1)*.015);e.hp=e.mx=Math.max(160,SHIPS[shp].hull*1.65*DF[dif].hp*[1,.78,1.35,.9][e.ty]*fleetWaveScale);e.r=e.ty===0?8.5:7.2;e.warp=.55+delay;e.state="ATTACK";e.aiIntent="ATTACK";e.stateT=0;e.side=e.slot-1.5;e.aiSideSign=e.side<0?-1:1;
+ g.position.copy(P).addScaledVector(fw,(1100+e.slot*90)).addScaledVector(right,(e.slot-.5)*150).add(new T.Vector3(0,(e.slot-.5)*42,0));
+ g.visible=false;S.add(g);e.g=g;const hit=pirateHitBounds(g);Object.assign(e,hit);const sockets=pirateFleetResolveSockets(g,e.ty);e.muzzleNodes=sockets.guns;e.engineNodes=sockets.engines;const fleetWaveScale=1+Math.min(.2,Math.max(0,wave-1)*.015);e.hp=e.mx=Math.max(160,SHIPS[shp].hull*1.65*DF[dif].hp*[1,.78,1.35,.9][e.ty]*fleetWaveScale);e.r=e.ty===0?8.5:7.2;e.warp=.55+delay;e.state="ATTACK";e.aiIntent="ATTACK";e.ph="ATTACK";e.phT=0;e.jinkT=0;e.jinkCd=0;e.brk=null;e.aimS=null;e.flank=EAI.rand()<.5?-1:1;e.stateT=0;e.side=e.slot-1.5;e.aiSideSign=e.side<0?-1:1;
  e.aiClock=EAI.STEP*((e.slot+1)%4)/4;e.aiTicks=0;e.fire=.2+EAI.rand()*.22;e.burst=0;e.burstGap=0;e.trailT=.1;e.hits=0;e.vel=P.clone().sub(g.position).normalize().multiplyScalar([46,34.5,46,46][e.ty]||46);e.hd=e.vel.clone().normalize();e.speed=e.vel.length();e.runDir=null;e.dead=false;e.smoke=null;e.fireFx=null;e.flames=[];pirateFleetAttachFX(e);
 }
 function pirateFleetClear(){
@@ -1968,17 +1968,56 @@ function pirateFleetDamage(e,d,missile){
  shk=Math.max(shk,.48);sfx("e");pirateDamageFxClear(e);S.remove(e.g);e.g=null;e.respawn=Infinity;e.hits=0;e.flames.length=0;if(e.muzzleNodes)e.muzzleNodes.length=0;if(e.engineNodes)e.engineNodes.length=0;
  combo++;score+=Math.round(100+(missile?160:0));cr+=80+wave*5;if(nuke<3&&++kills>=10){nuke++;kills=0}if(Math.random()<.18)drop(p);say((["ГОЛОВОРЕЗ","ШАКАЛ","МАРОДЁР","ГАРПИЯ"][e.ty]||"ПИРАТ")+" УНИЧТОЖЕН · +100",1.5);
 }
+const PF_BREAK_D=[140,150,210,160];
+const PF_RESET_D=[400,380,460,420];
+const PF_BREAK_T=[1.6,1.4,2.0,1.6];
+function pirateFleetPhase(e,toPlayer,dist,incoming,aiThink,dt){
+ const up=pirateFleetUp,hd=e.hd.clone().normalize();
+ let right=new T.Vector3().crossVectors(hd,up);
+ if(right.lengthSq()<1e-8)right.set(1,0,0);else right.normalize();
+ const toDir=toPlayer.clone().divideScalar(Math.max(dist,1)),lz=toDir.dot(hd);
+ e.phT=(e.phT||0)+dt;
+ e.jinkCd=Math.max(0,(e.jinkCd||0)-dt);
+ e.jinkT=Math.max(0,(e.jinkT||0)-dt);
+ if(!e.ph){e.ph="ATTACK";e.phT=0}
+ if(aiThink){
+  const ty=e.ty;
+  if(e.ph==="ATTACK"){
+   if(dist<PF_BREAK_D[ty]||(e.phT>1.2&&lz<-.2&&dist<420)||e.phT>7){
+    const side=EAI.rand()<.5?-1:1;
+    e.brk=hd.clone().addScaledVector(right,side*.8)
+      .addScaledVector(up,(EAI.rand()<.5?-1:1)*.35).normalize();
+    e.ph="BREAK";e.phT=0;
+   }else if(incoming&&e.jinkCd<=0&&EAI.rand()<.6){
+    e.jinkT=.45;e.jinkSide=EAI.rand()<.5?-1:1;e.jinkCd=2.2;
+   }
+  }else if(e.ph==="BREAK"){
+   if(e.phT>=PF_BREAK_T[ty]){e.ph="RESET";e.phT=0}
+  }else if((e.phT>=.8&&dist>PF_RESET_D[ty])||e.phT>6){
+   e.ph="ATTACK";e.phT=0;e.flank=EAI.rand()<.5?-1:1;
+  }
+ }
+ let aim;
+ if(e.ph==="ATTACK"){
+  aim=toDir.clone();
+  if(e.jinkT>0)aim.addScaledVector(right,e.jinkSide*.9).addScaledVector(up,.25).normalize();
+ }else{
+  aim=(e.brk||hd).clone();
+  if(e.ph==="RESET")aim.lerp(toDir,Math.min(.45,e.phT*.12)).normalize();
+ }
+ e.state=e.aiIntent=(e.ph==="ATTACK")?"ATTACK":"EVADE";
+ return aim;
+}
 function pirateFleetUpdate(dt){
  if(state==="play"&&!pirateFleetReady&&pirateAssetsReady)pirateFleetInit();if(!pirateFleetReady||state!=="play")return;
- if(pirateFleet.every(e=>!e.g)){pirateFleetWaveTimer-=dt;if(pirateFleetWaveTimer<=0){pirateFleetNextType=(pirateFleetNextType+1)%3;pirateFleet.forEach((e,i)=>{e.ty=pirateFleetNextType;e.dead=false;pirateFleetSpawn(e,i*.24)});pirateFleetWaveTimer=7;say("НОВАЯ ПИРАТСКАЯ ПАРА: "+(["ГОЛОВОРЕЗЫ","ШАКАЛЫ","МАРОДЁРЫ"][pirateFleetNextType]),2.5)}}
+ if(pirateFleet.every(e=>!e.g)){pirateFleetWaveTimer-=dt;if(pirateFleetWaveTimer<=0){pirateFleetNextType=(pirateFleetNextType+1)%3;pirateFleet.forEach((e,i)=>{e.ty=pirateFleetNextType;e.dead=false;pirateFleetSpawn(e,i*.24)});pirateFleetWaveTimer=3.5;say("НОВАЯ ПИРАТСКАЯ ПАРА: "+(["ГОЛОВОРЕЗЫ","ШАКАЛЫ","МАРОДЁРЫ"][pirateFleetNextType]),2.5)}}
  for(const e of pirateFleet){
   if(!e.g){e.respawn-=dt;if(e.respawn<=0)pirateFleetSpawn(e,0);continue}
   if(e.warp>0){e.warp-=dt;if(e.warp<=0){e.g.visible=true;boom(e.g.position,22,8,0x88ccff,32,.7);ring(e.g.position,0x88ccff,5,2.4);sfx("e")}continue}
   const g=e.g,toPlayer=P.clone().sub(g.position),dist=toPlayer.length(),aiThink=EAI.think(e,dt);if(dist<1)continue;
   let incoming=false;
   if(aiThink)for(let bi=bul.length-1;bi>=0;bi--){const b=bul[bi],delta=g.position.clone().sub(b.m.position);if(delta.length()<135&&b.v.dot(delta)>0){incoming=true;break}}
-  const baseAim=EAI.chooseVector(e,toPlayer,aiThink,{up:pirateFleetUp,nearX:[150,210,260,190][e.ty],nearY:[125,170,190,230][e.ty],nearZ:[170,230,300,220][e.ty],reengageDistance:720,minEvadeTicks:[7,10,12,9][e.ty],incoming});
-  e.state=e.aiIntent;
+  const baseAim=pirateFleetPhase(e,toPlayer,dist,incoming,aiThink,dt);
   const right=new T.Vector3().crossVectors(toPlayer.clone().normalize(),pirateFleetUp).normalize();
   const profilePhase=(e.aiTicks||0)*.19+e.slot*1.7;
   let aim=baseAim.clone(),targetSpeed=[49,56,34,47][e.ty],turnRate=[2.05,2.35,1.25,1.75][e.ty],acceleration=[68,76,38,58][e.ty];
@@ -1987,16 +2026,15 @@ function pirateFleetUpdate(dt){
     // Головорез: прямой агрессивный перехват, минимальный боковой уход.
     aim.lerp(toPlayer.clone().normalize(),.38).normalize();targetSpeed=dist>260?54:43;
    }else if(e.ty===1){
-    // Шакал: быстрый фланговый заход с периодической сменой борта.
-    const flank=Math.sin(profilePhase*.72)>=0?1:-1;
-    aim.addScaledVector(right,flank*(dist>260?.82:.48)).addScaledVector(pirateFleetUp,Math.sin(profilePhase)*.16).normalize();
+    // Шакал: сохраняет выбранный борт на протяжении захода, ослабляя фланг вблизи.
+    const flank=e.flank||1,k=Math.max(0,Math.min(1,(dist-200)/300));
+    aim.addScaledVector(right,flank*(.2+.62*k))
+       .addScaledVector(pirateFleetUp,Math.sin(profilePhase)*.16).normalize();
     targetSpeed=dist>330?61:48;turnRate=2.5;
    }else if(e.ty===2){
-    // Мародёр: удерживает дальнюю дистанцию и не входит в ближнюю свалку.
-    const rangeError=dist-360;
-    aim.copy(toPlayer).normalize().multiplyScalar(Math.max(-.65,Math.min(.8,rangeError/180)));
-    aim.addScaledVector(right,Math.sin(profilePhase*.42)*.22).normalize();
-    targetSpeed=dist<270?43:dist>470?38:27;turnRate=1.2;acceleration=36;
+    // Мародёр: сохраняет прямой вектор перехвата с небольшим боковым дрейфом.
+    aim.copy(toPlayer).normalize().addScaledVector(right,Math.sin(profilePhase*.42)*.22).normalize();
+    targetSpeed=dist>470?40:dist>270?30:26;turnRate=1.2;acceleration=36;
    }else{
     // Гарпия: широкая орбита с вертикальными сменами высоты.
     aim.addScaledVector(right,Math.sin(profilePhase*.55)*.9).addScaledVector(pirateFleetUp,Math.sin(profilePhase*.8)*.42).normalize();
@@ -2006,9 +2044,12 @@ function pirateFleetUpdate(dt){
    targetSpeed=[50,59,39,51][e.ty];
   }
   targetSpeed*=DF[dif].sp;acceleration*=DF[dif].ac;
-  if(aiThink)EAI.command(e,aim,dist,{speed:targetSpeed,acceleration,turnRate});
+  if(aiThink){
+   e.aimS=e.aimS?e.aimS.lerp(aim,.4).normalize():aim.clone();
+   EAI.command(e,e.aimS,dist,{speed:targetSpeed,acceleration,turnRate});
+  }
   EAI.integrate(e,dt,g,pirateFleetUp);
-  pirateFleetHeading.copy(e.hd).normalize();g.quaternion.setFromUnitVectors(pirateFleetForward,pirateFleetHeading);
+  pirateFleetHeading.copy(e.hd).normalize();pirateFleetLookMatrix.lookAt(pirateFleetLookOrigin,pirateFleetHeading,pirateFleetUp);pirateFleetLookQuat.setFromRotationMatrix(pirateFleetLookMatrix);g.quaternion.slerp(pirateFleetLookQuat,1-Math.exp(-dt*12));
   g.rotateZ(Math.max(-.2,Math.min(.2,(e.ocsYaw||0)*-.008)));
   pirateFleetUpdateFlames(e,dt);
   e.trailT-=dt;if(e.trailT<=0){e.trailT=TCH?.48:.36;g.updateMatrixWorld(true);const exhausts=e.engineNodes&&e.engineNodes.length?e.engineNodes.map(n=>n.getWorldPosition(new T.Vector3())):[g.localToWorld(new T.Vector3(0,.05,e.ty===0?4.7:5.45))];for(const exhaust of exhausts){trail(exhaust,e.hp/e.mx<.42?"rgba(255,70,25,1)":"rgba(255,145,66,.9)",e.ty===0?2.2:2);if(e.hp/e.mx<.68&&Math.random()<.7)trail(exhaust,"rgba(55,55,60,.9)",2.8)}}
