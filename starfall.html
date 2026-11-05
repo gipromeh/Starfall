@@ -3136,7 +3136,7 @@ function pirateLiveryTexture(){
  const tex=new T.CanvasTexture(c);tex.wrapS=tex.wrapT=T.RepeatWrapping;tex.repeat.set(1.35,1.35);tex.anisotropy=4;if(T.sRGBEncoding!==undefined)tex.encoding=T.sRGBEncoding;tex.needsUpdate=true;pirateLiveryTex=tex;window.pirateLiveryTex=tex;return tex;
 }
 function applyPirateLivery(root){const tex=pirateLiveryTexture();root.traverse(o=>{if(!o.isMesh||!o.material)return;const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>{if(!m||!m.isMeshStandardMaterial||m.transparent||m.opacity<.99)return;const em=m.emissive&&m.emissive.getHex()!==0;if(em&&(m.emissiveIntensity||0)>.75)return;m.map=tex;m.color.setHex(0xffffff);m.emissive.setHex(0);m.emissiveMap=null;m.roughness=Math.max(m.roughness||0,.56);m.metalness=Math.max(m.metalness||0,.28);m.needsUpdate=true})});return root}
-const MC={};
+const MC={};window.MC=MC;
 function cached(key,build){const b=MC[key]||(MC[key]=(()=>{const g=build();g.userData={sc:g.userData.sc||1};g.traverse(o=>{if(o.geometry)o.geometry.userData.keep=true});return g})());const c=b.clone(true);c.userData={};c.scale.setScalar(b.userData.sc);return c}
 const lightenP=g=>{g.traverse(o=>{if(!o.isMesh||!o.material)return;(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{if(!m.isMeshStandardMaterial||m.userData.lit)return;m.userData.lit=1;if(m.map&&m.emissiveIntensity<=1&&m.emissive.getHex()===0){m.metalness=Math.min(m.metalness,.22);m.roughness=Math.max(m.roughness,.62);m.emissive.setHex(0xffffff);m.emissiveMap=m.map;m.emissiveIntensity=.34}})});return g};
 
