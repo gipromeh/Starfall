@@ -1916,8 +1916,8 @@ function pirateSocketIndex(name,kind){
   .replace(/([A-Z])(\d)/g,"$1_$2")
   .replace(/[^A-Z0-9]+/g,"_").replace(/_+/g,"_").replace(/^_|_$/g,"");
  const token=kind==="gun"
-  ?/(?:^|_)(?:GUN(?:_?POINT)?|MUZZLE(?:_?FLASH)?|WEAPON|LASER|CANNON|BARREL)(?:_|$)/
-  :/(?:^|_)(?:ENG(?:INE)?(?:_?POINT)?|THRUSTER|EXHAUST|NOZZLE)(?:_|$)/;
+  ?/^(?:(?:GUN(?:_?POINT)?|MUZZLE(?:_?FLASH)?|WEAPON|LASER|CANNON|BARREL)|(?:LEFT|RIGHT|L|R)_(?:GUN(?:_?POINT)?|MUZZLE(?:_?FLASH)?|WEAPON|LASER|CANNON|BARREL))(?:_|$)/
+  :/^(?:(?:ENG(?:INE)?(?:_?POINT)?|THRUSTER|EXHAUST|NOZZLE)|(?:LEFT|RIGHT|L|R)_(?:ENG(?:INE)?(?:_?POINT)?|THRUSTER|EXHAUST|NOZZLE))(?:_|$)/;
  if(!token.test(n))return null;
  const numbered=n.match(/(?:^|_)(\d{1,3})(?:_(?:LEFT|RIGHT|L|R))?$/);
  if(numbered)return Number(numbered[1]);
