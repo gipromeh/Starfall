@@ -117,6 +117,7 @@ jobs:
           - nuclear-performance
           - graphics-probe
           - pirate-fleet
+          - cargo-transport
           - saves-regression
           - performance-leak
           - iphone-chromium
@@ -167,6 +168,9 @@ jobs:
               ;;
             pirate-fleet)
               node tests/t11_pirate_fleet.js
+              ;;
+            cargo-transport)
+              node tests/t23_cargo_transport.js
               ;;
             saves-regression)
               node tests/t1_saves.js

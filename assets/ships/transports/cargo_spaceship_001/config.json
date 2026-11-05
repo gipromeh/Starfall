@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 2,
+  "id": "cargo_spaceship_001",
+  "name": "Cargo Spaceship",
+  "displayName": "STARFALL — Cargo Spaceship",
+  "faction": "civilian",
+  "category": "transport",
+  "status": "integrated",
+  "model": "model.glb",
+  "role": "freighter",
+  "scale": 1,
+  "budget": { "triangles": 9000 },
+  "production": {
+    "glb": true,
+    "gameplayIntegrated": true,
+    "runtimeNormalization": "longest dimension = 28 STARFALL units",
+    "forwardAxis": "-Z",
+    "engineSockets": "runtime fallback derived from model bounds"
+  }
+}

@@ -43,6 +43,17 @@
       "status": "integrated",
       "model": "model.glb",
       "role": "transport"
+    },
+    {
+      "id": "cargo_spaceship_001",
+      "name": "Cargo Spaceship",
+      "faction": "civilian",
+      "category": "transport",
+      "path": "transports/cargo_spaceship_001/",
+      "config": "config.json",
+      "status": "integrated",
+      "model": "model.glb",
+      "role": "freighter"
     }
   ]
 }

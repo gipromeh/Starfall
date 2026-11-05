@@ -19,6 +19,9 @@ assets/ships/
   catalog.json                      реестр: id → папка, статус
   viewer.html                       общий просмотрщик GLB
   _template/config.json             шаблон паспорта
+  transports/cargo_spaceship_001/
+    model.glb                       Cargo Spaceship
+    config.json                     паспорт гражданского транспорта
   <фракция>/<id>/
     model.glb                       модель (главный файл)
     config.json                     паспорт (по шаблону)
@@ -52,3 +55,9 @@ assets/ships/
 - `assets/pirates/ships/pirate/pirate_fighter_002/` — «Ржавый череп» (тип 0).
 - `assets/pirates/ships/pirate/pirate_fighter_003/` — TIE Raider (тип 2).
 - `assets/pirates/ships/pirate/pirate_transport_001/` — Millennium Falcon (нейтральный трафик).
+
+
+## Гражданский транспорт
+
+- `assets/ships/transports/cargo_spaceship_001/model.glb` — Cargo Spaceship. Зарегистрирован в `catalog.json`, загружается в обычный нейтральный грузовой трафик и используется как грузовой корабль караванов.
+- `assets/pirates/ships/pirate/pirate_transport_001/` — отдельный пиратский Millennium Falcon.
