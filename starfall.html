@@ -2546,6 +2546,7 @@ window.SF_ROAMING_PIRATES={list:()=>roamingPirates,init:roamingPiratesInit,clear
   arr.push({position:e.g.position,kind:hs?"enemy":"neutral",color:hs?"#ff6578":"#ffe066",radius:e.role==="cargo"?4:3,
    label:e.role==="cargo"?"К":"Э",entity:e,velocity:e.vel,ty:e.role==="cargo"?-1:e.ty,hostile:hs,selected:false});
  }
+ for(const e of roamingPirates)if(e.g&&e.hp>0)arr.push({position:e.g.position,kind:"enemy",color:"#ff8b4a",radius:3.2,label:"R"+(e.slot+1),entity:e,velocity:e.vel,ty:e.ty,hostile:true,selected:false});
  return arr;
 }}
 
