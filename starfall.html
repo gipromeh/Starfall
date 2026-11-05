@@ -1390,7 +1390,6 @@ return {
 const T=THREE,$=id=>document.getElementById(id);
 let state="menu",score=0,wave=1,hi=0,track=0;try{hi=+localStorage.getItem("sf_hi")||0}catch(e){}
 const TCH=matchMedia("(pointer:coarse)").matches||(("ontouchstart" in window)&&!matchMedia("(any-pointer:fine)").matches);
-const TCH=matchMedia("(pointer:coarse)").matches||(("ontouchstart" in window)&&!matchMedia("(any-pointer:fine)").matches);
 const R=new T.WebGLRenderer({antialias:true});R.setPixelRatio(Math.min(devicePixelRatio,1.5));document.body.prepend(R.domElement);
 const S=new T.Scene();S.background=new T.Color(0x02030a);const C=new T.PerspectiveCamera(70,1,2,90000);
 function rs(){R.setSize(innerWidth,innerHeight);if(CP)CP.setSize(innerWidth,innerHeight);C.aspect=innerWidth/innerHeight;C.updateProjectionMatrix()}let CP;addEventListener("resize",rs);rs();try{CP=new T.EffectComposer(R);CP.addPass(new T.RenderPass(S,C));CP.addPass(new T.UnrealBloomPass(new T.Vector2(innerWidth,innerHeight),.7,.6,.85))}catch(e){CP={render:()=>R.render(S,C),setSize:()=>{}}}
