@@ -53,8 +53,11 @@ const L = require('./lib');
       pirateEngineTrailUpdate(fx,.5,.4);
       const emitted = trs.length-before;
       trs.slice(before).forEach(t=>S.remove(t.m)); trs.splice(before);
+      const nodeNames=[];
+      if(id==="rust-skull")g.traverse(o=>{if(o.name)nodeNames.push({name:o.name,type:o.type,mesh:!!o.isMesh,position:o.position.toArray().map(v=>Math.round(v*1000)/1000)})});
       const result = {
-        id, guns:sockets.guns.length, engines:sockets.engines.length,
+        id, assetLoadedGLB:!!(g.userData&&g.userData.starfallLoadedGLB), nodeNames,
+        guns:sockets.guns.length, engines:sockets.engines.length,
         gunSource:sockets.manifest.guns.source, engineSource:sockets.manifest.engines.source,
         gunForward:sockets.guns.every(n=>n.getWorldDirection(new THREE.Vector3()).dot(forward)>.98),
         gunsAhead:sockets.guns.every(n=>n.getWorldPosition(new THREE.Vector3()).sub(center).dot(forward)>0),
