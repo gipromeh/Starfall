@@ -7,9 +7,14 @@
   "category": "fighter",
   "status": "integrated",
   "model": "model.glb",
-  "replaces": { "kind": "pirate", "index": 0 },
+  "replaces": {
+    "kind": "pirate",
+    "index": 0
+  },
   "scale": 0.75,
-  "budget": { "triangles": 9000 },
+  "budget": {
+    "triangles": 9000
+  },
   "design": {
     "silhouette": "hex_wings_nose_ram",
     "notes": "Заказной образец: корпус-лофт, шестиугольные крылья, 4 пушки (по 2 на крыло), череп и «ARRR» на крыльях, «VOID 13» и 10 засечек на борту, ржавчина, сколы, царапины."
@@ -20,5 +25,111 @@
     "bakedPbrTextures": true,
     "gameplayIntegrated": true
   },
-  "stats": { "triangles": 854, "meshes": 3, "materials": 3, "textures": "цвет 2048 JPEG, ORM и нормали 1024 PNG", "fileMB": 3.06 }
+  "stats": {
+    "triangles": 854,
+    "meshes": 3,
+    "materials": 3,
+    "textures": "цвет 2048 JPEG, ORM и нормали 1024 PNG",
+    "fileMB": 3.06
+  },
+  "socketSchemaVersion": 1,
+  "sockets": {
+    "coordinateSpace": "model-local",
+    "forwardAxis": "-Z",
+    "engines": [
+      {
+        "name": "ENG_0",
+        "position": [
+          0.62,
+          -5.5,
+          0
+        ],
+        "forward": [
+          0,
+          0,
+          1
+        ],
+        "source": "build_blender.py",
+        "status": "authored-source"
+      },
+      {
+        "name": "ENG_1",
+        "position": [
+          -0.62,
+          -5.5,
+          0
+        ],
+        "forward": [
+          0,
+          0,
+          1
+        ],
+        "source": "build_blender.py",
+        "status": "authored-source"
+      }
+    ],
+    "guns": [
+      {
+        "name": "GUN_0",
+        "position": [
+          2.46,
+          4.6,
+          -0.34
+        ],
+        "forward": [
+          0,
+          0,
+          -1
+        ],
+        "source": "build_blender.py",
+        "status": "authored-source"
+      },
+      {
+        "name": "GUN_1",
+        "position": [
+          2.74,
+          4.6,
+          -0.34
+        ],
+        "forward": [
+          0,
+          0,
+          -1
+        ],
+        "source": "build_blender.py",
+        "status": "authored-source"
+      },
+      {
+        "name": "GUN_2",
+        "position": [
+          -2.46,
+          4.6,
+          -0.34
+        ],
+        "forward": [
+          0,
+          0,
+          -1
+        ],
+        "source": "build_blender.py",
+        "status": "authored-source"
+      },
+      {
+        "name": "GUN_3",
+        "position": [
+          -2.74,
+          4.6,
+          -0.34
+        ],
+        "forward": [
+          0,
+          0,
+          -1
+        ],
+        "source": "build_blender.py",
+        "status": "authored-source"
+      }
+    ],
+    "note": "Source-space coordinates from the procedural Blender scene. GLB-space node transforms are validated separately at runtime."
+  }
 }
