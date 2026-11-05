@@ -3705,8 +3705,9 @@ function loadCargoTransportAsset(){
 
 loadCargoTransportAsset();
 mkFreighter=function(){
- if(MC.cargoTransport&&Math.random()<.62)return mkCargoTransport();
- if(MC.pirateTransport&&Math.random()<.14){const g=cached("pirate-transport",()=>mkPirateTransport());g.userData={...g.userData,pirateTransport:true};const sockets=pirateFleetResolveSockets(g,3),fx={g,ty:3,engineNodes:sockets.engines,flames:[],flameCores:[]};pirateFleetAttachFX(fx);g.starfallEngineNodes=sockets.engines;g.starfallEngineFlames=fx.flames;g.starfallEngineFlameCores=fx.flameCores;return g}
+ const roll=Math.random();
+ if(MC.cargoTransport&&roll<.62)return mkCargoTransport();
+ if(MC.pirateTransport&&roll<(MC.cargoTransport?.76:.14)){const g=cached("pirate-transport",()=>mkPirateTransport());g.userData={...g.userData,pirateTransport:true};const sockets=pirateFleetResolveSockets(g,3),fx={g,ty:3,engineNodes:sockets.engines,flames:[],flameCores:[]};pirateFleetAttachFX(fx);g.starfallEngineNodes=sockets.engines;g.starfallEngineFlames=fx.flames;g.starfallEngineFlameCores=fx.flameCores;return g}
  const k=Math.random()<.6?0:1,g=cached("f"+k,()=>{const f=SKIT.mkFreighter(k,gtex);f.userData.sc=1.6;return f});return g;
 };
 // ангар: шкалы под новые корабли
