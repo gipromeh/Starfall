@@ -1,4 +1,4 @@
-# STARFALL — МАСТЕР-ИНСТРУКЦИЯ v2.6 (2026-11-02)
+# STARFALL — МАСТЕР-ИНСТРУКЦИЯ v2.7 (2026-11-05)
 # Единственная актуальная инструкция. Лежит в репозитории gipromeh/Starfall, ветка main.
 # Claude читает её ПЕРВОЙ в каждом чате, перед любой правкой, без напоминаний.
 # Все прежние версии инструкции (в проекте Claude, в старых чатах) — архив.
@@ -88,7 +88,7 @@ sanity_check:
 # ПРОЦЕСС РАБОТЫ С GITHUB (единственный источник правды)
 process:
   repo: https://github.com/gipromeh/Starfall   # ветка main
-  current_version: v102
+  current_version: v100
   files:
     game: starfall.html        # единственная актуальная версия игры
     passport: STARFALL_PASSPORT.md     # архитектура, переменные, таблицы, правила правок
