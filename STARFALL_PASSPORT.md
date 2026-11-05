@@ -1,3 +1,10 @@
+## v97.3 — индивидуальные конфигурации сокетов пиратских моделей
+- Для «Ржавого черепа» в config.json сохранены координаты четырёх орудийных и двух двигательных маркеров из исходного Blender-сборщика.
+- Для «Шакала», Pirate Fighter 003 и транспорта добавлены конфигурационные контракты со статусом `unverified`; неизвестные координаты не подменяются выдуманными.
+- Runtime resolver поддерживает конфиги кораблей, GLB-маркеры и существующий резервный fallback.
+- Браузерный тест дополнен проверкой конфигурационных координат «Ржавого черепа».
+- Экспортные GLB transforms и полный браузерный прогон требуют подтверждения CI.
+
 ## v97.2 — исправление совместимости плазменных материалов
 - Инициализация `userData` внешнего и внутреннего `SpriteMaterial` и их текстур теперь безопасна для Three.js r128.
 - Исправлена ошибка, из-за которой запуск `pirateFleetInit()` прерывался при создании плазменных факелов.
@@ -214,10 +221,10 @@
 date: 2026-10-31
 topic: STARFALL: паспорт проекта (архитектура, технологии, механика, сохранения, качество)
 tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура]
-game_version: "v97.2"
+game_version: "v97.3"
 last_update: 2026-11-05
 main_file: starfall.html
-main_file_sha256: "8971f53eb5b5b553947c2e84886accdfb43e9089d6c90342c64a46c114b45906"
+main_file_sha256: "6aad59874c3c803fd615e6cf10ef4652392c6012ef056f67df2317c12a79dcb6"
 save_format_version: 3
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"

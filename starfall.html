@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="claude:viewport-fit-sides" content="cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#02030a"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>STARFALL</title>
-<meta name="starfall-version" content="v97.2">
+<meta name="starfall-version" content="v97.3">
 <meta name="starfall-telemetry-endpoint" content="">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 <style>
@@ -1825,22 +1825,60 @@ const EAI=(function(){
 })();
 const pirateFleetForward=new T.Vector3(0,0,-1),pirateFleetUp=new T.Vector3(0,1,0),pirateFleetHeading=new T.Vector3();
 const pirateFleetGunNames=["GUN_0","GUN_1","GUN_2","GUN_3"],pirateFleetEngineNames=["ENG_0","ENG_1"];
+const pirateFleetSocketConfigs={};
+const pirateFleetSocketConfigPromises=new Map();
+const pirateFleetSocketConfigURLs={
+  0:"assets/pirates/ships/pirate/pirate_fighter_002/config.json",
+  1:"assets/pirates/ships/pirate/pirate_fighter_001/config.json",
+  2:"assets/pirates/ships/pirate/pirate_fighter_003/config.json",
+  3:"assets/pirates/ships/pirate/pirate_transport_001/config.json"
+};
+function pirateFleetSocketConfigLoad(ty){
+ if(pirateFleetSocketConfigs[ty])return Promise.resolve(pirateFleetSocketConfigs[ty]);
+ if(pirateFleetSocketConfigPromises.has(ty))return pirateFleetSocketConfigPromises.get(ty);
+ const url=pirateFleetSocketConfigURLs[ty];
+ if(!url||typeof fetch!=="function")return Promise.resolve(null);
+ const promise=fetch(url).then(response=>{if(!response.ok)throw new Error("socket config HTTP "+response.status);return response.json()})
+  .then(data=>{const sockets=data&&data.sockets;if(!sockets)return null;
+   const config={source:"config.json",guns:sockets.guns||[],engines:sockets.engines||[],coordinateSpace:sockets.coordinateSpace||"model-local"};
+   pirateFleetSocketConfigs[ty]=config;return config;
+  }).catch(error=>{console.warn("STARFALL: pirate socket config unavailable",ty,error);return null});
+ pirateFleetSocketConfigPromises.set(ty,promise);return promise;
+}
+const pirateFleetSocketConfigsReady=Promise.all([0,1,2,3].map(pirateFleetSocketConfigLoad));
 const pirateFleetGunFallback=[[-2.74,-1.24,-3.565],[-2.46,-1.24,-3.565],[2.46,-1.24,-3.565],[2.74,-1.24,-3.565]],pirateFleetEngineFallback=[[-.62,-.9,6.535],[.62,-.9,6.535]];
 function pirateSocketIndex(name,kind){
- const n=String(name||"").toUpperCase().replace(/[\s.-]+/g,"_");
- const re=kind==="gun"?/^(?:GUN|MUZZLE|WEAPON|LASER|CANNON)(?:_?(\d+))?$/:/^(?:ENG|ENGINE|THRUSTER|EXHAUST|NOZZLE)(?:_?(\d+))?$/;
+ const n=String(name||"").toUpperCase().replace(/[\\s.-]+/g,"_");
+ const re=kind==="gun"?/^(?:GUN|MUZZLE|WEAPON|LASER|CANNON)(?:_?(\\d+))?$/:/^(?:ENG|ENGINE|THRUSTER|EXHAUST|NOZZLE)(?:_?(\\d+))?$/;
  const m=n.match(re);return m?(m[1]===undefined?0:Number(m[1])):null;
 }
 function pirateSocketCollect(g,kind){
- const prefix=kind==="gun"?"STARFALL_GUN_SOCKET_":"STARFALL_ENGINE_SOCKET_",actual=[],runtime=[];
+ const prefix=kind==="gun"?"STARFALL_GUN_SOCKET_":"STARFALL_ENGINE_SOCKET_",actual=[],configured=[],runtime=[];
  g.traverse(o=>{
   if(o===g||o.isMesh||o.isSkinnedMesh)return;
   const index=pirateSocketIndex(o.name,kind);
   if(index!==null)actual.push({node:o,index});
-  else if(o.name&&o.name.indexOf(prefix)===0){const n=Number(o.name.slice(prefix.length));if(Number.isFinite(n))runtime.push({node:o,index:n})}
+  else if(o.name&&o.name.indexOf(prefix)===0){
+   const n=Number(o.name.slice(prefix.length));if(!Number.isFinite(n))return;
+   (o.userData&&o.userData.starfallSocketSource==="CONFIG"?configured:runtime).push({node:o,index:n});
+  }
  });
- const list=actual.concat(runtime);list.sort((a,b)=>a.index-b.index);
- return{nodes:list.map(x=>x.node),source:actual.length&&runtime.length?"MIXED":actual.length?"GLB":runtime.length?"RUNTIME":""};
+ const list=actual.length?actual:configured.length?configured:runtime;list.sort((a,b)=>a.index-b.index);
+ const sources=[actual.length?"GLB":"",configured.length?"CONFIG":"",runtime.length?"RUNTIME":""].filter(Boolean);
+ return{nodes:list.map(x=>x.node),source:sources.length>1?"MIXED":sources[0]||""};
+}
+function pirateSocketNormalizeConfig(config){
+ if(!config)return null;
+ const out={guns:[],engines:[],coordinateSpace:config.coordinateSpace||"model-local"};
+ for(const [kind,key] of [["gun","guns"],["engine","engines"]]){
+  const values=Array.isArray(config[key])?config[key]:[];
+  out[key]=values.map((entry,index)=>{
+   const position=Array.isArray(entry)?entry:entry&&entry.position;
+   if(!Array.isArray(position)||position.length!==3||!position.every(Number.isFinite))return null;
+   return{name:entry&&entry.name||(kind==="gun"?"GUN_":"ENG_")+index,index,position:new T.Vector3(position[0],position[1],position[2])};
+  }).filter(Boolean);
+ }
+ return out;
 }
 function pirateSocketFallbackPositions(kind,ty,box,size,center){
  if(kind==="gun"&&ty===0)return pirateFleetGunFallback.map(p=>new T.Vector3(p[0],p[1],p[2]));
@@ -1855,6 +1893,18 @@ function pirateSocketFallbackPositions(kind,ty,box,size,center){
  }
  return out;
 }
+function pirateSocketAttachConfigured(g,kind,entries){
+ const prefix=kind==="gun"?"STARFALL_GUN_SOCKET_":"STARFALL_ENGINE_SOCKET_";
+ const nodes=[];
+ entries.forEach((entry,index)=>{
+  const existing=g.getObjectByName(entry.name);
+  if(existing&&!existing.isMesh&&!existing.isSkinnedMesh){nodes.push(existing);return}
+  const node=new T.Object3D();node.name=prefix+index;
+  node.position.copy(entry.position);node.userData.starfallSocketKind=kind;
+  node.userData.starfallSocketSource="CONFIG";g.add(node);nodes.push(node);
+ });
+ return nodes;
+}
 function pirateSocketOrient(g,node,forwardZ){
  g.updateMatrixWorld(true);
  const direction=new T.Vector3(0,0,forwardZ).transformDirection(g.matrixWorld);
@@ -1867,8 +1917,13 @@ function pirateFleetResolveSockets(g,ty){
  g.updateMatrixWorld(true);
  const box=new T.Box3().setFromObject(g).applyMatrix4(g.matrixWorld.clone().invert());
  const size=box.getSize(new T.Vector3()),center=box.getCenter(new T.Vector3());
+ const configured=pirateSocketNormalizeConfig(pirateFleetSocketConfigs[ty]);
  const resolve=(kind,forwardZ,minCount)=>{
-  let found=pirateSocketCollect(g,kind);
+  let found=pirateSocketCollect(g,kind),configEntries=configured&&configured[kind==="gun"?"guns":"engines"]||[];
+  if(found.nodes.length===0&&configEntries.length){
+   const configuredNodes=pirateSocketAttachConfigured(g,kind,configEntries);
+   found={nodes:configuredNodes,source:"CONFIG"};
+  }
   if(found.nodes.length<minCount){
    const positions=pirateSocketFallbackPositions(kind,ty,box,size,center);
    for(let i=found.nodes.length;i<minCount;i++){
@@ -1876,14 +1931,15 @@ function pirateFleetResolveSockets(g,ty){
     node.position.copy(positions[i]||positions[positions.length-1]);node.userData.starfallSocketKind=kind;node.userData.starfallSocketSource="RUNTIME";g.add(node);
    }
    found=pirateSocketCollect(g,kind);
+   if(configEntries.length&&found.nodes.length>=configEntries.length)found.source="MIXED";
   }
-  found.nodes.forEach(node=>{node.userData.starfallSocketKind=kind;node.userData.starfallSocketSource=node.name.indexOf("STARFALL_")===0?"RUNTIME":"GLB";pirateSocketOrient(g,node,forwardZ)});
+  found.nodes.forEach(node=>{node.userData.starfallSocketKind=kind;node.userData.starfallSocketSource=node.userData.starfallSocketSource|| (node.name.indexOf("STARFALL_")===0?"RUNTIME":"GLB");pirateSocketOrient(g,node,forwardZ)});
   return found;
  };
  const guns=resolve("gun",-1,ty===0?4:2),engines=resolve("engine",1,2);
  g.updateMatrixWorld(true);
  const rootLocalPosition=node=>{const p=node.getWorldPosition(new T.Vector3());g.worldToLocal(p);return p.toArray().map(v=>Math.round(v*10000)/10000)};
- g.userData=g.userData||{};g.userData.starfallSocketVersion=1;
+ g.userData=g.userData||{};g.userData.starfallSocketVersion=2;
  g.userData.starfallSocketManifest={
   guns:{source:guns.source,count:guns.nodes.length,nodes:guns.nodes.map((n,i)=>({name:n.name,index:i,position:rootLocalPosition(n)}))},
   engines:{source:engines.source,count:engines.nodes.length,nodes:engines.nodes.map((n,i)=>({name:n.name,index:i,position:rootLocalPosition(n)}))}
@@ -3158,10 +3214,10 @@ function loadExtraPirateAssets(){
   try{
    const g=fitPirateAsset(gl.scene,d.size,d.yaw);
    applyPirateLivery(g);g.traverse(o=>{if(o.isMesh&&o.geometry){o.geometry.userData.keep=1;o.castShadow=false;o.receiveShadow=false}});
-   g.userData={sc:1};if(d.role==="transport")MC.pirateTransport=g;else MC["p"+d.ty]=g;pirateFleetResolveSockets(g,d.ty);
+   g.userData={sc:1};if(d.role==="transport")MC.pirateTransport=g;else MC["p"+d.ty]=g;
+   pirateFleetSocketConfigLoad(d.ty).then(()=>pirateFleetResolveSockets(g,d.ty)).finally(pirateExtraAssetDone);
    console.info("STARFALL: pirate GLB ready",d.ty,d.url);
-  }catch(e){console.warn("GLB extra pirate processing failed; procedural fallback active:",d.url,e)}
-  finally{pirateExtraAssetDone()}
+  }catch(e){console.warn("GLB extra pirate processing failed; procedural fallback active:",d.url,e);pirateExtraAssetDone()}
  },undefined,e=>{console.warn("GLB extra pirate unavailable; procedural fallback active:",d.url,e);pirateExtraAssetDone()}));
 }
 function pirateAssetDone(){if(++pirateAssetsDone>=GLB_PIR.length)loadExtraPirateAssets()}
@@ -3192,7 +3248,8 @@ if(T.GLTFLoader&&location.protocol!=="file:"){
     g=assetRoot;
    }
    applyPirateLivery(g);g.traverse(o=>{if(o.isMesh&&o.geometry)o.geometry.userData.keep=1});
-   g.userData={sc:d.sc};MC["p"+d.ty]=g;pirateFleetResolveSockets(g,d.ty);pirateAssetDone();
+   g.userData={sc:d.sc};MC["p"+d.ty]=g;
+   pirateFleetSocketConfigLoad(d.ty).then(()=>pirateFleetResolveSockets(g,d.ty)).finally(pirateAssetDone);
   }catch(e){console.warn("GLB",d.url,e);pirateAssetDone()}
  },undefined,e=>{console.warn("GLB не загружен:",d.url,e);pirateAssetDone()}));
 }else pirateAssetsReady=true;

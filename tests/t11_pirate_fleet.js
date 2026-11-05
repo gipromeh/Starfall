@@ -72,9 +72,31 @@ const L = require('./lib');
       inspect('pirate-transport',mkPirateTransport(),3)
     ];
   });
+
+  const socketCoordinateRegression = await page.evaluate(async () => {
+    await pirateFleetSocketConfigsReady;
+    // Isolate the config path from the real GLB marker path, which is tested below.
+    const g = new THREE.Group();
+    const sockets = pirateFleetResolveSockets(g, 0);
+    const manifest = sockets.manifest;
+    return {
+      source: { guns: manifest.guns.source, engines: manifest.engines.source },
+      guns: manifest.guns.nodes.map(n => n.position),
+      engines: manifest.engines.nodes.map(n => n.position),
+      gunCount: sockets.guns.length,
+      engineCount: sockets.engines.length
+    };
+  });
+  const expectedGun = [[-2.46,-1.24,-3.565],[-2.74,-1.24,-3.565],[2.46,-1.24,-3.565],[2.74,-1.24,-3.565]];
+  const expectedEngine = [[-.62,-.9,6.535],[.62,-.9,6.535]];
+  const near = (a,b) => Array.isArray(a) && a.length===3 && a.every((v,i)=>Math.abs(v-b[i])<.002);
+  L.check('Rust Skull sockets are resolved from the authored per-ship config', socketCoordinateRegression.source.guns==='CONFIG'&&socketCoordinateRegression.source.engines==='CONFIG'&&socketCoordinateRegression.gunCount===4&&socketCoordinateRegression.engineCount===2, socketCoordinateRegression);
+  L.check('Rust Skull gun socket coordinates match the Blender source contract', socketCoordinateRegression.guns.length===4&&socketCoordinateRegression.guns.every((p,i)=>near(p,expectedGun[i])), socketCoordinateRegression.guns);
+  L.check('Rust Skull engine socket coordinates match the Blender source contract', socketCoordinateRegression.engines.length===2&&socketCoordinateRegression.engines.every((p,i)=>near(p,expectedEngine[i])), socketCoordinateRegression.engines);
+
   console.log("STARFALL_PIRATE_SOCKET_MANIFEST "+JSON.stringify(socketInventory.map(x=>({id:x.id,manifest:x.manifest}))));
-  L.check('«Ржавый череп» использует четыре реальные GUN-маркера и два ENG-маркера GLB',
-    socketInventory[0].guns===4&&socketInventory[0].engines===2&&socketInventory[0].gunSource==='GLB'&&socketInventory[0].engineSource==='GLB',
+  L.check('«Ржавый череп» использует четыре авторские GUN-точки и два ENG-точки из конфигурации модели',
+    socketInventory[0].guns===4&&socketInventory[0].engines===2&&socketInventory[0].gunSource==='CONFIG'&&socketInventory[0].engineSource==='CONFIG',
     socketInventory[0]);
   L.check('у всех четырёх пиратских кораблей есть ориентированные оружейные и двигательные сокеты',
     socketInventory.every(x=>x.guns>=2&&x.engines>=2&&x.gunForward&&x.gunsAhead),

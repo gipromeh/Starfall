@@ -7,9 +7,14 @@
   "category": "fighter",
   "status": "integrated",
   "model": "model.glb",
-  "replaces": { "kind": "pirate", "index": 0 },
+  "replaces": {
+    "kind": "pirate",
+    "index": 0
+  },
   "scale": 0.75,
-  "budget": { "triangles": 9000 },
+  "budget": {
+    "triangles": 9000
+  },
   "design": {
     "silhouette": "hex_wings_nose_ram",
     "notes": "Заказной образец: корпус-лофт, шестиугольные крылья, 4 пушки (по 2 на крыло), череп и «ARRR» на крыльях, «VOID 13» и 10 засечек на борту, ржавчина, сколы, царапины."
@@ -20,5 +25,111 @@
     "bakedPbrTextures": true,
     "gameplayIntegrated": true
   },
-  "stats": { "triangles": 854, "meshes": 3, "materials": 3, "textures": "цвет 2048 JPEG, ORM и нормали 1024 PNG", "fileMB": 3.06 }
+  "stats": {
+    "triangles": 854,
+    "meshes": 3,
+    "materials": 3,
+    "textures": "цвет 2048 JPEG, ORM и нормали 1024 PNG",
+    "fileMB": 3.06
+  },
+  "socketSchemaVersion": 1,
+  "sockets": {
+    "coordinateSpace": "model-local",
+    "forwardAxis": "-Z",
+    "engines": [
+      {
+        "name": "ENG_0",
+        "position": [
+          -0.62,
+          -0.9,
+          6.535
+        ],
+        "forward": [
+          0,
+          0,
+          1
+        ],
+        "source": "build_blender.py",
+        "status": "authored-transformed"
+      },
+      {
+        "name": "ENG_1",
+        "position": [
+          0.62,
+          -0.9,
+          6.535
+        ],
+        "forward": [
+          0,
+          0,
+          1
+        ],
+        "source": "build_blender.py",
+        "status": "authored-transformed"
+      }
+    ],
+    "guns": [
+      {
+        "name": "GUN_0",
+        "position": [
+          -2.46,
+          -1.24,
+          -3.565
+        ],
+        "forward": [
+          0,
+          0,
+          -1
+        ],
+        "source": "build_blender.py",
+        "status": "authored-transformed"
+      },
+      {
+        "name": "GUN_1",
+        "position": [
+          -2.74,
+          -1.24,
+          -3.565
+        ],
+        "forward": [
+          0,
+          0,
+          -1
+        ],
+        "source": "build_blender.py",
+        "status": "authored-transformed"
+      },
+      {
+        "name": "GUN_2",
+        "position": [
+          2.46,
+          -1.24,
+          -3.565
+        ],
+        "forward": [
+          0,
+          0,
+          -1
+        ],
+        "source": "build_blender.py",
+        "status": "authored-transformed"
+      },
+      {
+        "name": "GUN_3",
+        "position": [
+          2.74,
+          -1.24,
+          -3.565
+        ],
+        "forward": [
+          0,
+          0,
+          -1
+        ],
+        "source": "build_blender.py",
+        "status": "authored-transformed"
+      }
+    ],
+    "note": "Coordinates transformed from Blender source empties: subtract the script's geometry center, apply glTF Y-up conversion, then the runtime Y=180 degree forward-axis pivot. The model-local values match the game's authored fallback coordinates."
+  }
 }
