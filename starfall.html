@@ -1982,7 +1982,7 @@ function pirateFleetResolveSockets(g,ty){
    }
    found=pirateSocketCollect(g,kind);
   }
-  found.nodes.forEach(node=>{node.userData.starfallSocketKind=kind;node.userData.starfallSocketSource=node.name.indexOf("STARFALL_")===0?"RUNTIME":"GLB";pirateSocketOrient(g,node,forwardZ)});
+  found.entries.forEach(entry=>{const node=entry.node;node.userData.starfallSocketKind=kind;node.userData.starfallSocketSource=entry.sourceName&&entry.sourceName.indexOf(prefix)!==0?"GLB":"RUNTIME";pirateSocketOrient(g,node,forwardZ)});
   return found;
  };
  const guns=resolve("gun",-1,ty===0?4:2),engines=resolve("engine",1,2);
