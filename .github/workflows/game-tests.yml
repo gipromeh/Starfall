@@ -7,6 +7,7 @@ on:
     branches: [main, lab/elite-combat-ai]
   workflow_dispatch:
 
+# Новые коммиты отменяют устаревшие запуски той же ветки.
 concurrency:
   group: starfall-ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -158,20 +159,49 @@ jobs:
           SF_NM: ${{ github.workspace }}/node_modules
         run: |
           case "${{ matrix.test }}" in
-            ai-lab-browser) node tests/t13_ai_lab_browser.js ;;
-            nuclear-performance) node tests/t8_nuke.js ;;
-            graphics-probe) node tests/t6_probe.js ;;
-            pirate-fleet) node tests/t11_pirate_fleet.js ;;
-            cargo-transport) node tests/t23_cargo_transport.js ;;
-            pirate-ecosystems) node tests/t24_pirate_ecosystems.js ;;
-            saves-regression) node tests/t1_saves.js ;;
-            performance-leak) node tests/t5_leak.js ;;
-            iphone-chromium) node tests/t7_iphone.js ;;
-            iphone-webkit) node tests/t15_iphone_webkit.js ;;
-            deep-space) node tests/t16_deep_space.js ;;
-            galaxy-map) node tests/t21_galaxy_map_browser.js ;;
-            galaxy-map-webkit) SF_WEBKIT=1 node tests/t21_galaxy_map_browser.js ;;
-            *) echo "::error::Unknown test: ${{ matrix.test }}"; exit 2 ;;
+            ai-lab-browser)
+              node tests/t13_ai_lab_browser.js
+              ;;
+            nuclear-performance)
+              node tests/t8_nuke.js
+              ;;
+            graphics-probe)
+              node tests/t6_probe.js
+              ;;
+            pirate-fleet)
+              node tests/t11_pirate_fleet.js
+              ;;
+            cargo-transport)
+              node tests/t23_cargo_transport.js
+              ;;
+            pirate-ecosystems)
+              node tests/t24_pirate_ecosystems.js
+              ;;
+            saves-regression)
+              node tests/t1_saves.js
+              ;;
+            performance-leak)
+              node tests/t5_leak.js
+              ;;
+            iphone-chromium)
+              node tests/t7_iphone.js
+              ;;
+            iphone-webkit)
+              node tests/t15_iphone_webkit.js
+              ;;
+            deep-space)
+              node tests/t16_deep_space.js
+              ;;
+            galaxy-map)
+              node tests/t21_galaxy_map_browser.js
+              ;;
+            galaxy-map-webkit)
+              SF_WEBKIT=1 node tests/t21_galaxy_map_browser.js
+              ;;
+            *)
+              echo "::error::Unknown test: ${{ matrix.test }}"
+              exit 2
+              ;;
           esac
 
   ci-metrics:
@@ -199,36 +229,55 @@ jobs:
               if (!start || !end) return null;
               return Math.max(0, Math.round((Date.parse(end) - Date.parse(start)) / 1000));
             };
-            const jobs = data.jobs.filter(job => job.name !== 'ci-metrics').map(job => ({
-              name: job.name, status: job.conclusion || job.status,
-              duration_seconds: duration(job.started_at, job.completed_at),
-              failed_steps: (job.steps || []).filter(step => step.conclusion === 'failure').map(step => step.name),
-              steps: (job.steps || []).map(step => ({
-                name: step.name, status: step.conclusion || step.status,
-                duration_seconds: duration(step.started_at, step.completed_at)
-              }))
-            }));
+            const jobs = data.jobs
+              .filter(job => job.name !== 'ci-metrics')
+              .map(job => ({
+                name: job.name,
+                status: job.conclusion || job.status,
+                duration_seconds: duration(job.started_at, job.completed_at),
+                failed_steps: (job.steps || [])
+                  .filter(step => step.conclusion === 'failure')
+                  .map(step => step.name),
+                steps: (job.steps || []).map(step => ({
+                  name: step.name,
+                  status: step.conclusion || step.status,
+                  duration_seconds: duration(step.started_at, step.completed_at)
+                }))
+              }));
             const metrics = {
               repository: context.repo.owner + '/' + context.repo.repo,
-              run_id: context.runId, run_number: context.runNumber,
-              commit: context.sha, branch: context.ref,
-              recorded_at: new Date().toISOString(), jobs
+              run_id: context.runId,
+              run_number: context.runNumber,
+              commit: context.sha,
+              branch: context.ref,
+              recorded_at: new Date().toISOString(),
+              jobs
             };
             fs.writeFileSync('ci-metrics.json', JSON.stringify(metrics, null, 2));
-            const summary = core.summary.addHeading('STARFALL CI — duration and failure report')
+            const summary = core.summary
+              .addHeading('STARFALL CI — duration and failure report')
               .addRaw('Run #' + context.runNumber + ' · commit ' + context.sha.slice(0, 12))
               .addTable([
                 [{data:'Job',header:true},{data:'Result',header:true},{data:'Duration',header:true},{data:'Failed steps',header:true}],
-                ...jobs.map(job => [job.name, job.status,
+                ...jobs.map(job => [
+                  job.name,
+                  job.status,
                   job.duration_seconds == null ? 'in progress' : job.duration_seconds + ' s',
-                  job.failed_steps.length ? job.failed_steps.join(', ') : '—'])
+                  job.failed_steps.length ? job.failed_steps.join(', ') : '—'
+                ])
               ]);
-            for (const job of jobs) if (job.steps.length) {
-              summary.addHeading(job.name + ' — step timings', 3).addTable([
-                [{data:'Step',header:true},{data:'Result',header:true},{data:'Duration',header:true}],
-                ...job.steps.map(step => [step.name, step.status,
-                  step.duration_seconds == null ? '—' : step.duration_seconds + ' s'])
-              ]);
+            for (const job of jobs) {
+              if (job.steps.length) {
+                summary.addHeading(job.name + ' — step timings', 3)
+                  .addTable([
+                    [{data:'Step',header:true},{data:'Result',header:true},{data:'Duration',header:true}],
+                    ...job.steps.map(step => [
+                      step.name,
+                      step.status,
+                      step.duration_seconds == null ? '—' : step.duration_seconds + ' s'
+                    ])
+                  ]);
+              }
             }
             await summary.write();
       - name: Store machine-readable CI metrics
