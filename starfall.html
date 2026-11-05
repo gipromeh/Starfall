@@ -1921,7 +1921,7 @@ function pirateSocketIndex(name,kind){
  if(!token.test(n))return null;
  const numbered=n.match(/(?:^|_)(\d{1,3})(?:_(?:LEFT|RIGHT|L|R))?$/);
  if(numbered)return Number(numbered[1]);
- const side=n.match(/(?:^|_)(LEFT|RIGHT|L|R)$/);
+ const side=n.match(/(?:^|_)(LEFT|RIGHT|L|R)$/)||n.match(/^(LEFT|RIGHT|L|R)_/);
  if(side)return side[1]==="LEFT"||side[1]==="L"?0:1;
  return 0;
 }
