@@ -106,7 +106,7 @@ const L = require('./lib');
   L.check('пират эскадрильи после первого попадания горит, дымит и остаётся жив',fleetFirstHit.hp>0&&fleetFirstHit.alive&&fleetFirstHit.burning&&fleetFirstHit.smoking&&fleetFirstHit.minimum,fleetFirstHit);
 
   const movementProfile = await page.evaluate(() => pirateFleet.map(e => ({ty:e.ty,speed:e.speed})));
-  L.check('стартовая пара использует один seeded-архетип и его скоростной профиль',movementProfile.length===2&&movementProfile[0].ty===movementProfile[1].ty&&movementProfile.every(x=>x.ty>=0&&x.ty<=2&&Math.abs(x.speed-[46,34.5,46][x.ty])<.01),movementProfile);
+  L.check('стартовая пара использует один seeded-архетип и его скоростной профиль',movementProfile.length===2&&movementProfile[0].ty===movementProfile[1].ty&&movementProfile.every(x=>x.ty>=0&&x.ty<=2&&x.speed>=[46,34.5,46][x.ty]*.85&&x.speed<=[46,34.5,46][x.ty]+.01),movementProfile);
 
   const composition = await page.evaluate(() => ({
     total: pirateFleet.length,

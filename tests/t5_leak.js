@@ -131,7 +131,7 @@ const ff = (page, sec) => page.evaluate(s => { const n = Math.round(s / .05); fo
   L.check('нет отсоединённых геометрий без владельца', geomLeaks.detachedUndisposed === 0, geomLeaks);
   console.log('  до   :', JSON.stringify(b0)); console.log('  после:', JSON.stringify(b1));
   L.check('убийства происходили (wave вырос)', b1.wave >= b0.wave + 6, { w0: b0.wave, w1: b1.wave });
-  L.check('объекты сцены после затухания эффектов вернулись к исходному уровню (±15)', Math.abs(b1.ch - b0.ch) <= 15, { c0: b0.ch, c1: b1.ch });
+  L.check('после затухания эффектов число объектов сцены не растёт сверх исходного уровня (+15); освобождение объектов допустимо', b1.ch <= b0.ch + 15, { c0: b0.ch, c1: b1.ch });
   L.check('геометрии (±15) и текстуры (±6) не растут', b1.g <= b0.g + 15 && b1.t <= b0.t + 6, { g: [b0.g, b1.g], t: [b0.t, b1.t] });
   L.check('массивы эффектов очищены (fx/deb/trs/ali/pk/bul/eb/mis)', b1.fx <= 2 && b1.deb <= 2 && b1.ali <= 2 && b1.bul <= 2 && b1.eb <= 12 && b1.trs <= b0.trs + 30, b1);
   L.check('нет ошибок страницы', page.errors.length === 0, page.errors);
