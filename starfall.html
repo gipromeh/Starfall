@@ -2116,10 +2116,16 @@ function pirateFleetClear(){
  pirateFleet.length=0;pirateFleetReady=false;
 }
 function pirateFleetInit(){
- if(pirateFleetReady||state!=="play"||!pirateAssetsReady)return;
+ if(state!=="play"||!pirateAssetsReady)return;
+ const lowProfile=QL&&QL.mode==="low";
+ if(pirateFleetReady){
+  const needsLowRebuild=lowProfile&&pirateFleet.length===3&&pirateFleet.every(e=>e.openingAttack&&!e.dead&&e.g);
+  if(!needsLowRebuild)return;
+  pirateFleetClear();
+ }
  pirateFleetPrepare();pirateFleetReady=true;EAI.seed((((sy+1)*0x9e3779b1)^((wave+1)*0x85ebca6b)^((score+1)*0xc2b2ae35))>>>0);
  pirateFleetNextType=EAI.rand()*3|0;pirateFleetWaveTimer=0;
- const lowProfile=QL&&QL.mode==="low",fleetSize=lowProfile?2:3;
+ const fleetSize=lowProfile?2:3;
  for(let slot=0;slot<fleetSize;slot++){const e={slot,ty:lowProfile?pirateFleetNextType:slot,g:null,hp:0,mx:0,respawn:Infinity,dead:false,flames:[],openingAttack:true};pirateFleet.push(e);pirateFleetSpawn(e,slot*.06)}
  say(lowProfile?"ПИРАТСКАЯ ПАРА: "+(["ГОЛОВОРЕЗЫ","ШАКАЛЫ","МАРОДЁРЫ"][pirateFleetNextType]):"ПИРАТСКАЯ ЭСКАДРИЛЬЯ: ГОЛОВОРЕЗ · ШАКАЛ · МАРОДЁР",3);
 }
