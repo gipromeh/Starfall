@@ -2191,8 +2191,9 @@ function pirateFleetUpdate(dt){
    }else if(e.ty===1){
     // Шакал: сохраняет выбранный борт на протяжении захода, ослабляя фланг вблизи.
     const flank=e.flank||1,k=Math.max(0,Math.min(1,(dist-200)/300));
-    aim.addScaledVector(right,flank*(.2+.62*k))
-       .addScaledVector(pirateFleetUp,Math.sin(profilePhase)*.16).normalize();
+    aim.copy(toPlayer).normalize()
+       .addScaledVector(right,flank*(.08+.32*k))
+       .addScaledVector(pirateFleetUp,Math.sin(profilePhase)*.08).normalize();
     targetSpeed=dist>330?61:48;turnRate=2.5;
    }else if(e.ty===2){
     // Мародёр: сохраняет прямой вектор перехвата с небольшим боковым дрейфом.
