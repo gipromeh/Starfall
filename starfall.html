@@ -2290,7 +2290,25 @@ const _pcV=new T.Vector3(),_pcV2=new T.Vector3(),_pcQ=new T.Quaternion(),_pcQ2=n
 
 function pcInWorld(){return typeof worldBodies==="undefined"||worldBodies.visible!==false}
 function pcMembers(c){return c.cargo?[c.cargo].concat(c.escorts):c.escorts}
-function pcPlanets(){return worldPlanets.filter(w=>w.kind==="planet")}
+let pcNavigationWaypoints=null;
+function pcPlanets(){
+ const planets=worldPlanets.filter(w=>w.kind==="planet");
+ if(planets.length>=2)return planets;
+ // The current star-system catalogue provides coordinates but does not instantiate
+ // planetary meshes. Keep convoys alive on explicit navigation beacons instead of
+ // inventing planets or silently disabling the convoy simulation.
+ if(!pcNavigationWaypoints){
+  const forward=new T.Vector3(0,0,-1).applyQuaternion(Q).normalize();
+  const right=new T.Vector3(1,0,0).applyQuaternion(Q).normalize();
+  const up=new T.Vector3(0,1,0);
+  pcNavigationWaypoints=[
+   {kind:"waypoint",radius:180,mesh:{position:P.clone().addScaledVector(forward,7600).addScaledVector(right,-4200)}},
+   {kind:"waypoint",radius:180,mesh:{position:P.clone().addScaledVector(forward,10400).addScaledVector(right,4600).addScaledVector(up,900)}},
+   {kind:"waypoint",radius:180,mesh:{position:P.clone().addScaledVector(forward,4800).addScaledVector(right,1800).addScaledVector(up,-700)}}
+  ];
+ }
+ return pcNavigationWaypoints;
+}
 function pcOrient(g,hd,dt,k,bank){
  _pcM.lookAt(_pcZero,hd,pirateFleetUp);_pcQ.setFromRotationMatrix(_pcM);
  if(bank)_pcQ.multiply(_pcQ2.setFromAxisAngle(_pcZ,bank));
@@ -2341,7 +2359,7 @@ function pcPopulate(c){
 
 function pcCreate(k){
  const pl=pcPlanets(),n=pl.length,from=Math.floor(k*n/2)%n,to=(from+2)%n;
- const c={id:k,planets:pl,from,to,p:new T.Vector3(),hd:new T.Vector3(0,0,-1),q:new T.Quaternion(),sp:PC_CRUISE*.6,
+ const c={id:k,planets:pl,routeSource:pl[0]&&pl[0].kind==="planet"?"PLANET":"NAV_WAYPOINT",from,to,p:new T.Vector3(),hd:new T.Vector3(0,0,-1),q:new T.Quaternion(),sp:PC_CRUISE*.6,
   hold:0,fast:false,state:"CRUISE",hostileT:0,cargo:null,escorts:[],t:0,dead:false,respawnT:0};
  const A=pl[from];
  _pcV.set(Math.cos(k*2.1),.15,Math.sin(k*2.1)).normalize();
@@ -2619,7 +2637,7 @@ function pirateConvoyClear(){
   pirateDamageFxClear(e);if(e.g)S.remove(e.g);e.g=null;
   if(e.muzzleNodes)e.muzzleNodes.length=0;if(e.engineNodes)e.engineNodes.length=0;
  }
- pirateConvoys.length=0;pirateConvoyReady=false;
+ pirateConvoys.length=0;pirateConvoyReady=false;pcNavigationWaypoints=null;
 }
 
 /* ===== STARFALL v102: INDEPENDENT ROAMING PIRATES ===== */
