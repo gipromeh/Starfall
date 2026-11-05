@@ -92,13 +92,33 @@ def validate(path: Path, category="generic", config_path=None):
     if len(meshes)>profile["max_meshes"]: errors.append(f"meshes {len(meshes)} > budget {profile['max_meshes']}")
     if len(materials)>profile["max_materials"]: errors.append(f"materials {len(materials)} > budget {profile['max_materials']}")
     if triangles>profile["max_triangles"]: errors.append(f"triangles {triangles} > budget {profile['max_triangles']}")
-    max_texture=0
+    texture_dimensions=[]
     for i, tex in enumerate(doc.get("textures",[])):
         src=tex.get("source")
         if src is not None and src>=len(doc.get("images",[])): errors.append(f"texture[{i}] source out of range")
     for i, image in enumerate(doc.get("images",[])):
-        # Dimensions are only available if the PNG/JPEG payload is decoded; report as unknown here.
-        if image.get("mimeType") not in ("image/png","image/jpeg","image/webp"): warnings.append(f"image[{i}] has unusual/unspecified MIME type")
+        mime=image.get("mimeType")
+        if mime not in ("image/png","image/jpeg","image/webp"): warnings.append(f"image[{i}] has unusual/unspecified MIME type")
+        dims=None
+        if "bufferView" in image and image["bufferView"] < len(views) and binary is not None:
+            view=views[image["bufferView"]]; start=view.get("byteOffset",0); payload=binary[start:start+view.get("byteLength",0)]
+            if mime=="image/png" and len(payload)>=24 and payload[:8]==b"\\x89PNG\\r\\n\\x1a\\n":
+                dims=struct.unpack(">II",payload[16:24])
+            elif mime=="image/jpeg" and payload[:2]==b"\\xff\\xd8":
+                pos=2
+                while pos+9<len(payload):
+                    if payload[pos]!=0xff: pos+=1; continue
+                    marker=payload[pos+1]; pos+=2
+                    if marker in (0xd8,0xd9) or 0xd0<=marker<=0xd7: continue
+                    if pos+2>len(payload): break
+                    length=int.from_bytes(payload[pos:pos+2],"big")
+                    if length<2 or pos+length>len(payload): break
+                    if marker in (0xc0,0xc1,0xc2,0xc3,0xc5,0xc6,0xc7,0xc9,0xca,0xcb,0xcd,0xce,0xcf):
+                        dims=(int.from_bytes(payload[pos+5:pos+7],"big"),int.from_bytes(payload[pos+3:pos+5],"big")); break
+                    pos+=length
+        texture_dimensions.append({"image":i,"width":dims[0],"height":dims[1]} if dims else {"image":i,"width":None,"height":None})
+        if dims and max(dims)>profile["max_texture"]: errors.append(f"image[{i}] dimensions {dims[0]}x{dims[1]} exceed {profile['max_texture']} px")
+        if dims is None: warnings.append(f"image[{i}] dimensions could not be inspected (format/header unsupported)")
     nodes=doc.get("nodes",[]); names={}; markers=[]
     for i,node in enumerate(nodes):
         name=node.get("name","")
@@ -118,14 +138,14 @@ def validate(path: Path, category="generic", config_path=None):
     for i,scene in enumerate(scenes):
         for node in scene.get("nodes",[]):
             if node>=len(nodes): errors.append(f"scene[{i}] node index out of range")
-    extensions=doc.get("extensionsUsed",[])
+    required=set(doc.get("extensionsRequired",[])); used=set(doc.get("extensionsUsed",[]))\n    if not required.issubset(used): errors.append("extensionsRequired contains entries missing from extensionsUsed")\n    extensions=doc.get("extensionsUsed",[])
     unsupported=sorted(set(extensions)-{"KHR_materials_unlit"})
     if unsupported: warnings.append("extensions require runtime support review: "+", ".join(unsupported))
     if not binary and buffers: errors.append("missing embedded BIN data")
     report={
       "file":str(path),"category":category,"bytes":len(raw),"sha256":hashlib.sha256(raw).hexdigest(),
       "triangles":triangles,"meshes":len(meshes),"primitives":primitives,"materials":len(materials),
-      "textures":len(doc.get("textures",[])),"nodes":len(nodes),"markers":markers,
+      "textures":len(doc.get("textures",[])),"texture_dimensions":texture_dimensions,"nodes":len(nodes),"markers":markers,
       "animations":len(doc.get("animations",[])),"skins":len(doc.get("skins",[])),
       "extensions":extensions,"errors":errors,"warnings":warnings,
       "result":"FAIL" if errors else ("PASS_WITH_WARNINGS" if warnings else "PASS")
