@@ -1934,6 +1934,7 @@ function pirateSocketCollect(g,kind){
    if(Number.isFinite(index))runtime.push({node:o,index,sourceName:o.name});
    return;
   }
+  if(o.name&&o.name.indexOf("STARFALL_SOCKET_ANCHOR_")===0)return;
   const index=pirateSocketIndex(o.name,kind);
   if(index===null)return;
   // Keep the GLB node's transform intact. The child anchor owns the firing/exhaust axis.
