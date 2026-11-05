@@ -34,9 +34,9 @@ const L = require('./lib');
     const url = 'assets/pirates/ships/pirate/pirate_transport_001/model.glb';
     const response = url ? await fetch(url, { cache:'no-store' }).catch(() => null) : null;
     const transport = mkPirateTransport(); let meshes = 0; transport?.traverse(o => { if (o.isMesh) meshes++; });
-    return { url, status:response?.status||0, loader:!!T.GLTFLoader, ready:pirateAssetsReady, loaded:!!transport, meshes };
+    return { url, status:response?.status||0, ready:pirateAssetsReady, loaded:!!transport, meshes };
   });
-  L.check('Pirate transport GLB asset loads into its dedicated cache slot', transportAssetState.loader && transportAssetState.status===200 && transportAssetState.loaded, transportAssetState);
+  L.check('Pirate transport GLB asset loads into its dedicated cache slot', transportAssetState.status===200 && transportAssetState.loaded && transportAssetState.meshes>0, transportAssetState);
   const pirateModels = await page.evaluate(() => {
     const fighter = mkPirate(2);
     const transport = mkPirateTransport();
