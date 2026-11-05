@@ -19,7 +19,8 @@ const L = require('./lib');
       cargo:!!c.cargo?.g?.userData?.cargoTransport,
       escorts:c.escorts.length,
       types:[...new Set(c.escorts.map(e=>e.ty))],
-      route:c.planets.length>=2
+      route:c.planets.length>=2,
+      routeSource:c.routeSource
     })),
     radarRoamers:collectRadarContacts().filter(c=>String(c.label||'').startsWith('R')).length,
     asteroids:SF_ASTEROIDS.status(),
@@ -30,6 +31,7 @@ const L = require('./lib');
   L.check('вольные пираты существуют отдельно и патрулируют', result.roamers.length>=2 && result.roamers.every(x=>x.alive && ['PATROL','ATTACK','EVADE'].includes(x.state)), result.roamers);
   L.check('одновременно существуют три независимых каравана', result.convoys.length===3, result.convoys);
   L.check('каждый караван содержит Cargo GLB и 3–4 истребителя', result.convoys.every(c=>c.cargo && [3,4].includes(c.escorts) && c.route), result.convoys);
+  L.check('маршрут каравана использует планеты или явные навигационные маяки', result.convoys.every(c=>['PLANET','NAV_WAYPOINT'].includes(c.routeSource)), result.convoys);
   L.check('каждый эскорт содержит три разных класса', result.convoys.every(c=>c.types.length>=3), result.convoys);
   L.check('вольные пираты отображаются на радаре', result.radarRoamers>=2, result.radarRoamers);
   L.check('игровое поле и кольца используют asteroid.glb', result.asteroids.ready && result.asteroids.mineable>=24 && result.asteroids.mineable<=48 && result.asteroids.rings>=1, result.asteroids);
