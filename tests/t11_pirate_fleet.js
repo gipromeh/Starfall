@@ -305,8 +305,14 @@ const L = require('./lib');
   await page.evaluate(() => { lift(); QL.setMode('low'); pirateFleetInit(); state='pause'; });
   await page.waitForFunction(() => pirateFleet.length === 2 && pirateFleet.every(e=>!!e.g), null, { timeout: 15000 });
   const relaunched = await page.evaluate(() => pirateFleet.length === 2 && pirateFleet[0].ty===pirateFleet[1].ty && pirateFleet.every(e=>!!e.g&&e.hp>0));
+  const qualityPromotion = await page.evaluate(() => {
+    state='play';QL.setMode('high');pirateFleetInit();state='pause';
+    return {count:pirateFleet.length,types:pirateFleet.map(e=>e.ty),alive:pirateFleet.every(e=>!!e.g&&e.hp>0)};
+  });
+  L.check('переключение LOW → HIGH до начала боя восстанавливает три разных архетипа',
+    relaunched&&qualityPromotion.count===3&&qualityPromotion.types.join(',')==='0,1,2'&&qualityPromotion.alive,
+    {relaunched,qualityPromotion});
   await page.evaluate(() => { state='play'; });
-  L.check('после dock → lift снова создаётся стартовая пара одного архетипа', relaunched);
 
   const jackalAggro = await page.evaluate(() => {
     const old = { E, E2, firstWaveSpawn, random: Math.random, neutrals: nv.slice() };
