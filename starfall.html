@@ -3757,7 +3757,7 @@ if(T.GLTFLoader&&location.protocol!=="file:"){
     g=assetRoot;
    }
    applyPirateLivery(g);g.traverse(o=>{if(o.isMesh&&o.geometry)o.geometry.userData.keep=1});
-   g.userData={sc:d.sc,starfallLoadedGLB:true};MC["p"+d.ty]=g;pirateFleetResolveSockets(g,d.ty);pirateAssetDone();
+   g.userData={sc:d.sc,starfallLoadedGLB:true};MC["p"+d.ty]=g;pirateFleetResolveSockets(g,d.ty);console.info("STARFALL: pirate GLB ready",d.ty,d.url,g.userData.starfallSocketManifest);pirateAssetDone();
   }catch(e){console.warn("GLB",d.url,e);pirateAssetDone()}
  },undefined,e=>{console.warn("GLB не загружен:",d.url,e);pirateAssetDone()}));
 }else pirateAssetsReady=true;
