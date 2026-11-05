@@ -1,4 +1,5 @@
-import json, struct, tempfile, unittest
+import json, struct, tempfile, unittest, sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from pathlib import Path
 from tools.validate_glb import validate, read_glb, ValidationError
 
