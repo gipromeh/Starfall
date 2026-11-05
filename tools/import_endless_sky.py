@@ -16,7 +16,7 @@ FIELDS = {
 NUMERIC = set(FIELDS.values()) - {"category"}
 
 def tokenize(line):
-    return [next((part for part in match if part is not None), "")
+    return [next((part for part in match.groups() if part is not None), "")
             for match in TOKEN_RE.finditer(line)]
 
 def parse_nodes(path):
@@ -48,7 +48,7 @@ def number_or_text(value):
     except (TypeError, ValueError):
         return value
 
-def read_attributes(nodes, index):
+def read_attributes(nodes, index, base_attributes=None):
     result = {}
     for child in children(nodes, index):
         tokens = nodes[child][1]
@@ -63,7 +63,7 @@ def read_attributes(nodes, index):
             field = FIELDS[key]
             value = number_or_text(item[1])
             if additive and field in NUMERIC and isinstance(value, (int, float)):
-                result[field] = result.get(field, 0) + value
+                result[field] = (base_attributes or {}).get(field, 0) + result.get(field, 0) + value
             else:
                 result[field] = value
     return result
@@ -74,7 +74,8 @@ def read_details(nodes, index):
     for child in children(nodes, index):
         key = nodes[child][1][0]
         if key in ("gun", "turret", "engine", "bay"):
-            target = {"gun":"guns", "turret":"turrets", "engine":"engines", "bay":"fighter_bays"}[key]
+            target = {"gun": "guns", "turret": "turrets",
+                      "engine": "engines", "bay": "fighter_bays"}[key]
             hardpoints[target] += 1
         elif key == "outfits":
             for outfit_index in children(nodes, child):
@@ -90,8 +91,10 @@ def slug(value):
 
 def revision(source):
     try:
-        return subprocess.check_output(["git", "-C", str(source), "rev-parse", "HEAD"],
-                                        text=True, stderr=subprocess.DEVNULL).strip()
+        return subprocess.check_output(
+            ["git", "-C", str(source), "rev-parse", "HEAD"],
+            text=True, stderr=subprocess.DEVNULL
+        ).strip()
     except (OSError, subprocess.CalledProcessError):
         return None
 
@@ -102,18 +105,19 @@ def import_ships(source):
         raise SystemExit(f"No *ships.txt files found under {data}")
     ships, bases = [], {}
     for path in files:
-        relative, faction = path.relative_to(data).as_posix(), path.parent.name
+        relative = path.relative_to(data).as_posix()
+        faction = path.parent.name
         nodes = parse_nodes(path)
         for i, node in enumerate(nodes):
             indent, parts, line = node
             if indent or parts[0] != "ship" or len(parts) < 2:
                 continue
-            model, variant = parts[1], parts[2] if len(parts) > 2 else None
+            model = parts[1]
+            variant = parts[2] if len(parts) > 2 else None
             key = (relative, model)
             base = bases.get(key, {})
             attrs = dict(base.get("attributes", {})) if variant else {}
-            delta = read_attributes(nodes, i)
-            attrs.update(delta)
+            attrs.update(read_attributes(nodes, i, attrs))
             hardpoints, loadout = read_details(nodes, i)
             if variant:
                 for field, count in hardpoints.items():
@@ -129,22 +133,29 @@ def import_ships(source):
                 "faction": faction, "category": attrs.get("category"),
                 "attributes": attrs, "hardpoints": hardpoints,
                 "default_loadout": loadout,
-                "source": {"project":"Endless Sky",
-                           "repository":"https://github.com/endless-sky/endless-sky",
-                           "file":relative, "line":line,
-                           "license":"GPL-3.0-or-later"}
+                "source": {
+                    "project": "Endless Sky",
+                    "repository": "https://github.com/endless-sky/endless-sky",
+                    "file": relative, "line": line,
+                    "license": "GPL-3.0-or-later"
+                }
             }
             ships.append(entry)
             if not variant:
                 bases[key] = entry
     ships.sort(key=lambda x: (x["faction"], x["model_name"], x["variant"] or ""))
-    return {"schemaVersion":1,
-            "source":{"name":"Endless Sky",
-                      "repository":"https://github.com/endless-sky/endless-sky",
-                      "license":"GPL-3.0-or-later", "revision":revision(source),
-                      "data_files":len(files),
-                      "notice":"Local research import; no artwork or executable code included."},
-            "shipCount":len(ships), "ships":ships}
+    return {
+        "schemaVersion": 1,
+        "source": {
+            "name": "Endless Sky",
+            "repository": "https://github.com/endless-sky/endless-sky",
+            "license": "GPL-3.0-or-later",
+            "revision": revision(source),
+            "data_files": len(files),
+            "notice": "Local research import; no artwork or executable code included."
+        },
+        "shipCount": len(ships), "ships": ships
+    }
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
