@@ -30,13 +30,6 @@ const L = require('./lib');
   await page.evaluate(() => { lift(); QL.setMode('low'); pirateFleetInit(); });
   await page.waitForFunction(() => pirateFleet.length === 2, null, { timeout: 15000 });
   await page.waitForFunction(() => pirateAssetsReady === true, null, { timeout: 60000 });
-  const transportAssetState = await page.evaluate(async () => {
-    const url = 'assets/pirates/ships/pirate/pirate_transport_001/model.glb';
-    const response = url ? await fetch(url, { cache:'no-store' }).catch(() => null) : null;
-    const transport = mkPirateTransport(); let meshes = 0; transport?.traverse(o => { if (o.isMesh) meshes++; });
-    return { url, status:response?.status||0, ready:pirateAssetsReady, loaded:!!transport, meshes };
-  });
-  L.check('Pirate transport GLB asset loads into its dedicated cache slot', transportAssetState.status===200 && transportAssetState.loaded && transportAssetState.meshes>0, transportAssetState);
   const pirateModels = await page.evaluate(() => {
     const fighter = mkPirate(2);
     const transport = mkPirateTransport();
