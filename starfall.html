@@ -1444,17 +1444,26 @@ function buildAsteroidRingInstances(){
   inst.instanceColor.needsUpdate=true;inst.instanceMatrix.needsUpdate=true;sys.instance=inst;sys.ringOrbit.add(inst);
  }
 }
+function activateAsteroidFallback(reason){
+ asteroidGLBError=String(reason||"GLB unavailable");
+ if(asteroidGLBReady)return;
+ asteroidBaseGeometry=new T.DodecahedronGeometry(1,1);
+ asteroidBaseGeometry.rotateX(.31);asteroidBaseGeometry.rotateY(.67);
+ asteroidBaseMaterial=new T.MeshStandardMaterial({color:0x77736d,roughness:.96,metalness:.02,flatShading:true});
+ asteroidGLBMeshCount=0;buildAsteroidRingInstances();asteroidGLBReady=true;spawnMineableAsteroids();
+ console.warn("STARFALL: asteroid GLB unavailable; using lightweight procedural fallback",asteroidGLBError);
+}
 function loadAsteroidGLB(){
- if(!T.GLTFLoader||location.protocol==="file:"){asteroidGLBError="GLTFLoader unavailable";console.error("STARFALL asteroid.glb unavailable; procedural fallback disabled");return}
+ if(!T.GLTFLoader||location.protocol==="file:"){activateAsteroidFallback("GLTFLoader unavailable");return}
  new T.GLTFLoader().load("assets/space/asteroids/asteroid.glb",gl=>{
   const meshes=[];gl.scene.updateMatrixWorld(true);gl.scene.traverse(o=>{if(o.isMesh&&o.geometry)meshes.push(o)});
-  if(!meshes.length){asteroidGLBError="No mesh primitives";console.error("STARFALL asteroid.glb has no meshes");return}
+  if(!meshes.length){activateAsteroidFallback("No mesh primitives");return}
   asteroidGLBMeshCount=meshes.length;const src=meshes[0],box=new T.Box3().setFromObject(src),size=box.getSize(new T.Vector3()),center=box.getCenter(new T.Vector3()),max=Math.max(size.x,size.y,size.z,1e-5);
   asteroidBaseGeometry=src.geometry.clone().applyMatrix4(src.matrixWorld);asteroidBaseGeometry.translate(-center.x,-center.y,-center.z);asteroidBaseGeometry.scale(1/max,1/max,1/max);
   asteroidBaseMaterial=Array.isArray(src.material)?src.material[0].clone():src.material.clone();asteroidBaseMaterial.roughness=.94;asteroidBaseMaterial.metalness=.025;
   buildAsteroidRingInstances();asteroidGLBReady=true;spawnMineableAsteroids();
   console.info("STARFALL: asteroid.glb ready",asteroidGLBMeshCount,"mesh primitives; rings and mineable field use shared geometry");
- },undefined,err=>{asteroidGLBError=String(err);console.error("STARFALL asteroid.glb load failed; no procedural fallback",err)});
+ },undefined,err=>activateAsteroidFallback(err));
 }
 window.SF_ASTEROIDS={status:()=>({ready:asteroidGLBReady,meshes:asteroidGLBMeshCount,error:asteroidGLBError,mineable:rocks.length,rings:saturnRingSystems.filter(x=>!!x.instance).length})};
 loadAsteroidGLB();
