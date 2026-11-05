@@ -1851,13 +1851,11 @@ function pirateFleetSocketConfigLoad(ty){
  const promise=fetch(url).then(response=>{if(!response.ok)throw new Error("socket config HTTP "+response.status);return response.json()})
   .then(data=>{const sockets=data&&data.sockets;if(!sockets)return null;
    const config={source:"config.json",guns:sockets.guns||[],engines:sockets.engines||[],coordinateSpace:sockets.coordinateSpace||"model-local"};
-   pirateFleetSocketConfigs[ty]=config;
-   if(MC["p"+ty])pirateFleetResolveSockets(MC["p"+ty],ty);
-   if(ty===3&&MC.pirateTransport)pirateFleetResolveSockets(MC.pirateTransport,3);
-   return config;
+   pirateFleetSocketConfigs[ty]=config;return config;
   }).catch(error=>{console.warn("STARFALL: pirate socket config unavailable",ty,error);return null});
  pirateFleetSocketConfigPromises.set(ty,promise);return promise;
 }
+const pirateFleetSocketConfigsReady=Promise.all([0,1,2,3].map(pirateFleetSocketConfigLoad));
 const pirateFleetGunFallback=[[-2.74,-1.24,-3.565],[-2.46,-1.24,-3.565],[2.46,-1.24,-3.565],[2.74,-1.24,-3.565]],pirateFleetEngineFallback=[[-.62,-.9,6.535],[.62,-.9,6.535]];
 function pirateSocketIndex(name,kind){
  const n=String(name||"").toUpperCase().replace(/[\\s.-]+/g,"_");
@@ -3222,7 +3220,8 @@ function loadExtraPirateAssets(){
   try{
    const g=fitPirateAsset(gl.scene,d.size,d.yaw);
    applyPirateLivery(g);g.traverse(o=>{if(o.isMesh&&o.geometry){o.geometry.userData.keep=1;o.castShadow=false;o.receiveShadow=false}});
-   g.userData={sc:1};if(d.role==="transport")MC.pirateTransport=g;else MC["p"+d.ty]=g;pirateFleetResolveSockets(g,d.ty);
+   g.userData={sc:1};if(d.role==="transport")MC.pirateTransport=g;else MC["p"+d.ty]=g;
+   pirateFleetSocketConfigLoad(d.ty).then(()=>pirateFleetResolveSockets(g,d.ty));
    console.info("STARFALL: pirate GLB ready",d.ty,d.url);
   }catch(e){console.warn("GLB extra pirate processing failed; procedural fallback active:",d.url,e)}
   finally{pirateExtraAssetDone()}
@@ -3256,7 +3255,8 @@ if(T.GLTFLoader&&location.protocol!=="file:"){
     g=assetRoot;
    }
    applyPirateLivery(g);g.traverse(o=>{if(o.isMesh&&o.geometry)o.geometry.userData.keep=1});
-   g.userData={sc:d.sc};MC["p"+d.ty]=g;pirateFleetResolveSockets(g,d.ty);pirateAssetDone();
+   g.userData={sc:d.sc};MC["p"+d.ty]=g;
+   pirateFleetSocketConfigLoad(d.ty).then(()=>pirateFleetResolveSockets(g,d.ty)).finally(pirateAssetDone);
   }catch(e){console.warn("GLB",d.url,e);pirateAssetDone()}
  },undefined,e=>{console.warn("GLB не загружен:",d.url,e);pirateAssetDone()}));
 }else pirateAssetsReady=true;
