@@ -76,6 +76,7 @@ const L = require('./lib');
     ];
   });
   console.log("STARFALL_PIRATE_SOCKET_MANIFEST "+JSON.stringify(socketInventory.map(x=>({id:x.id,manifest:x.manifest}))));
+  console.log("STARFALL_PIRATE_GLBNODES "+JSON.stringify(socketInventory[0].nodeNames));
   L.check('«Ржавый череп» использует четыре реальные GUN-маркера и два ENG-маркера GLB',
     socketInventory[0].guns===4&&socketInventory[0].engines===2&&socketInventory[0].gunSource==='GLB'&&socketInventory[0].engineSource==='GLB',
     socketInventory[0]);
