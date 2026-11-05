@@ -29,7 +29,7 @@ const css = [
 '#sf-galaxy .flight-controls{position:absolute;z-index:4;left:max(12px,env(safe-area-inset-left));bottom:max(14px,env(safe-area-inset-bottom));display:none;grid-template-columns:repeat(3,48px);gap:5px;pointer-events:auto}',
 '#sf-galaxy .flight-controls button{height:44px;padding:4px;font-size:14px;background:#06203add;touch-action:none;user-select:none;-webkit-user-select:none}',
 '@media(max-width:700px){#sf-galaxy .flight-controls{grid-template-columns:repeat(3,54px)}#sf-galaxy .flight-controls button{height:50px}}',
-'#sf-galaxy-hud{position:absolute;z-index:12;left:max(14px,env(safe-area-inset-left));bottom:max(18px,env(safe-area-inset-bottom));display:none;min-width:0;padding:8px 13px;font-size:11px;pointer-events:auto}',
+'#sf-galaxy-hud{position:absolute;z-index:12;left:max(12px,env(safe-area-inset-left));top:112px;bottom:auto;display:none;width:46px;height:25px;min-width:0;padding:2px 4px;font-size:8px;line-height:1;letter-spacing:.04em;pointer-events:auto;opacity:.68}',
 '@media(max-width:700px){#sf-galaxy .title{font-size:12px;white-space:nowrap}#sf-galaxy .top{gap:6px}#sf-galaxy .side{top:60px;width:min(270px,68vw);bottom:90px}#sf-galaxy .hint{display:none}#sf-galaxy .panel{padding:8px}#sf-galaxy .results{max-height:22vh}#sf-galaxy .bottom{left:12px;right:12px;bottom:max(10px,env(safe-area-inset-bottom));flex-wrap:wrap}#sf-galaxy .bottom button{flex:1 1 28%}#sf-galaxy input{width:min(36vw,190px)}}'
 ].join('\n');
 const style=node('style',{},document.head);style.textContent=css;
