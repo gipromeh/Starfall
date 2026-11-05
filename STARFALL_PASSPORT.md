@@ -253,7 +253,7 @@
 date: 2026-10-31
 topic: STARFALL: паспорт проекта (архитектура, технологии, механика, сохранения, качество)
 tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура]
-game_version: "v102"
+game_version: "v102.1"
 last_update: 2026-11-05
 main_file: starfall.html
 main_file_sha256: "aabf821533c7a71d9ed314a6a276abe3631eb08c0130bff3db07c690511a3204"
