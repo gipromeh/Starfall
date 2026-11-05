@@ -1,3 +1,7 @@
+## CI stability follow-up — 2026-11-05
+
+- Pirate fleet speed regression allows the normal transient deceleration after spawn while still enforcing each archetype's configured speed envelope.
+- Scene-object leak regression now rejects growth beyond the baseline but allows a lower object count when cleanup disposes temporary objects.
 ## Browser regression alignment — 2026-11-05
 
 - Deep Space now validates the Galaxy Map catalogue against the checked-in manifest record count instead of a stale hard-coded 50,000.
