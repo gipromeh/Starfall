@@ -4,7 +4,6 @@ const fs = require('node:fs');
 const html = fs.readFileSync('starfall.html', 'utf8');
 const map = fs.readFileSync('tools/galaxy-map.js', 'utf8');
 const exporter = fs.readFileSync('tools/export_elite_lite.py', 'utf8');
-const exporter = fs.readFileSync('tools/export_elite_lite.py', 'utf8');
 assert.match(html, /starfall-version" content="v\d+(?:\.\d+)?"/);
 assert.match(html, /\.\/tools\/galaxy-map\.js/);
 assert.match(html, /state==="galaxy"&&window\.SF_GALAXY_MAP\)SF_GALAXY_MAP\.render\(dt\)/);
