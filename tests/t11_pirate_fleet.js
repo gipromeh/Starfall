@@ -106,15 +106,15 @@ const L = require('./lib');
   L.check('пират эскадрильи после первого попадания горит, дымит и остаётся жив',fleetFirstHit.hp>0&&fleetFirstHit.alive&&fleetFirstHit.burning&&fleetFirstHit.smoking&&fleetFirstHit.minimum,fleetFirstHit);
 
   const movementProfile = await page.evaluate(() => pirateFleet.map(e => ({ty:e.ty,speed:e.speed})));
-  L.check('стартовая пара одного seeded-архетипа использует корректный скоростной профиль',movementProfile.length===3&&[0,1,2].every(ty=>movementProfile.some(x=>x.ty===ty&&Math.abs(x.speed-[46,34.5,46][ty])<.01)),movementProfile);
+  L.check('стартовая эскадрилья использует три скоростных профиля архетипов',movementProfile.length===3&&[0,1,2].every(ty=>movementProfile.some(x=>x.ty===ty&&Math.abs(x.speed-[46,34.5,46][ty])<.01)),movementProfile);
 
   const composition = await page.evaluate(() => ({
     total: pirateFleet.length,
     types: [...new Set(pirateFleet.map(e=>e.ty))].map(ty=>pirateFleet.filter(e=>e.ty===ty).length),
     spawned: pirateFleet.filter(e => !!e.g).length
   }));
-  L.check('стартовая атака содержит ровно два корабля одного seeded-архетипа', composition.total === 3 && composition.types.length===3 && [0,1,2].every(ty=>composition.types.includes(1)), composition);
-  L.check('оба корабля стартовой атаки созданы', composition.spawned === 3, composition);
+  L.check('стартовая атака содержит по одному кораблю каждого архетипа', composition.total === 3 && composition.types.length===3 && composition.types.every(count=>count===1), composition);
+  L.check('все три корабля стартовой атаки созданы', composition.spawned === 3, composition);
   const initialSpawn = await page.evaluate(() => pirateFleet.map(e => {
     const forward = new THREE.Vector3(0,0,-1).applyQuaternion(Q).normalize();
     const offset = e.g.position.clone().sub(P);
@@ -295,7 +295,7 @@ const L = require('./lib');
       fireTexture: pirateFleetFireTex.uuid
     };
   });
-  L.check('все четыре пилота используют общие текстуры двигателя, дыма и огня', textureReuse.shared, textureReuse);
+  L.check('все активные пилоты используют общие текстуры двигателя, дыма и огня', textureReuse.shared, textureReuse);
 
   const docked = await page.evaluate(() => {
     dock();
