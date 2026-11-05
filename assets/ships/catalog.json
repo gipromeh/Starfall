@@ -7,7 +7,7 @@
       "name": "Pirate Droid 001 — TIE-пират с пришельцем",
       "faction": "pirate",
       "category": "fighter",
-      "path": "assets/ships/pirate/pirate_fighter_001/",
+      "path": "../pirates/ships/pirate/pirate_fighter_001/",
       "config": "config.json",
       "status": "integrated",
       "model": "pirate_droid_001.glb"
@@ -17,7 +17,7 @@
       "name": "Pirate Fighter 002 — Ржавый череп",
       "faction": "pirate",
       "category": "fighter",
-      "path": "assets/ships/pirate/pirate_fighter_002/",
+      "path": "../pirates/ships/pirate/pirate_fighter_002/",
       "config": "config.json",
       "status": "integrated",
       "model": "model.glb"
@@ -27,10 +27,10 @@
       "name": "Pirate Fighter 003 — TIE Raider",
       "faction": "pirate",
       "category": "fighter",
-      "path": "/",
-      "config": null,
+      "path": "../pirates/ships/pirate/pirate_fighter_003/",
+      "config": "config.json",
       "status": "integrated",
-      "model": "Pirate3.glb",
+      "model": "model.glb",
       "role": "fighter"
     },
     {
@@ -38,10 +38,10 @@
       "name": "Pirate Transport 001 — Millennium Falcon",
       "faction": "pirate",
       "category": "transport",
-      "path": "assets/ships/pirate/",
-      "config": null,
+      "path": "../pirates/ships/pirate/pirate_transport_001/",
+      "config": "config.json",
       "status": "integrated",
-      "model": "Pirate4.glb",
+      "model": "model.glb",
       "role": "transport"
     }
   ]

@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="claude:viewport-fit-sides" content="cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#02030a"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>STARFALL</title>
-<meta name="starfall-version" content="v96">
+<meta name="starfall-version" content="v96.1">
 <meta name="starfall-telemetry-endpoint" content="">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 <style>
@@ -3048,13 +3048,13 @@ const out=new T.Group();out.name='STARFALL_FORWARD_AXIS_FIX';G.forEach((q,mat)=>
 out.rotation.y=Math.PI;const root=new T.Group();root.add(out);root.updateMatrixWorld(true);const bb=new T.Box3().setFromObject(root),c=bb.getCenter(new T.Vector3());out.position.sub(c);return root}
 /* v46: GitHub Pages GLB — type 0 «Ржавый череп», type 1 «Шакал»; первая волна ждёт обе модели. */
 const GLB_PIR=[
- {ty:0,url:"assets/ships/pirate/pirate_fighter_002/model.glb",sc:.75,bake:0},
- {ty:1,url:"assets/ships/pirate/pirate_fighter_001/pirate_droid_001.glb",sc:1,bake:1}
+ {ty:0,url:"assets/pirates/ships/pirate/pirate_fighter_002/model.glb",sc:.75,bake:0},
+ {ty:1,url:"assets/pirates/ships/pirate/pirate_fighter_001/pirate_droid_001.glb",sc:1,bake:1}
 ];
 let pirateAssetsDone=0;
 const GLB_EXTRA_PIR=[
- {ty:2,url:"Pirate3.glb",size:10,yaw:Math.PI,author:"Mickael Boitte",license:"CC-BY-4.0"},
- {ty:3,url:"assets/ships/pirate/Pirate4.glb",size:10,yaw:Math.PI,author:"Quiznos323",license:"CC-BY-NC-SA-4.0"}
+ {ty:2,url:"assets/pirates/ships/pirate/pirate_fighter_003/model.glb",size:10,yaw:Math.PI,author:"Mickael Boitte",license:"CC-BY-4.0"},
+ {ty:3,url:"assets/pirates/ships/pirate/pirate_transport_001/model.glb",size:10,yaw:Math.PI,author:"Quiznos323",license:"CC-BY-NC-SA-4.0"}
 ];
 function fitPirateAsset(src,targetSize=10,yaw=Math.PI){
  src.updateMatrixWorld(true);

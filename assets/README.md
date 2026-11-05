@@ -6,7 +6,8 @@
 
 | Каталог | Назначение | Правила |
 |---|---|---|
-| [ships/](ships/) | Корабли, истребители, транспорт, модели GLB | [README](ships/README.md), [GLB specification](ships/BLENDER_GLB_SPEC.md) |
+| [ships/](ships/) | Общий каталог и просмотрщик кораблей, непиратские модели | [README](ships/README.md), [GLB specification](ships/BLENDER_GLB_SPEC.md) |
+| [pirates/](pirates/) | Пиратская фракция: истребители, транспорт, GLB, исходники, конфигурации и авторство | [README](pirates/README.md) |
 | [droids/](droids/) | Дроиды и автономные боевые платформы | [README](droids/README.md) |
 | [planets/](planets/) | Планеты, спутники, звёзды, поверхности и текстуры | [README](planets/README.md) |
 | [weapons/](weapons/) | Вооружение, турели, снаряды и боевые ресурсы | [README](weapons/README.md) |

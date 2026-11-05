@@ -1,3 +1,8 @@
+## v96.1 — перенос пиратских кораблей в отдельную ветку
+- Все четыре пиратские модели и сопутствующие ресурсы размещены в `assets/pirates/ships/pirate/`.
+- Игровые URL и общий каталог моделей обновлены; роли кораблей и процедурные fallback-модели сохранены.
+- Геометрия и бинарное содержимое GLB не изменялись.
+
 ## v96 — интеграция полного пиратского состава
 - `Pirate3.glb` подключён как четвёртый боевой архетип пиратов (тип 2) через существующий `mkPirate`; используются штатные AI, оружие, попадания и уничтожение.
 - `Pirate4.glb` подключён как редкий крупный пиратский транспорт в нейтральном трафике; он не включается в боевую эскадрилью.
@@ -190,10 +195,10 @@
 date: 2026-10-31
 topic: STARFALL: паспорт проекта (архитектура, технологии, механика, сохранения, качество)
 tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура]
-game_version: "v96"
+game_version: "v96.1"
 last_update: 2026-11-05
 main_file: starfall.html
-main_file_sha256: "bd13c4cb8fcdb480e7de54f5105dfac5a76e81e3ba1ae421348b8495609cad56"
+main_file_sha256: "f2c628ca0fbbc1eeed58978afe9e080b00766dc75e48d0bb0893141003052337"
 save_format_version: 3
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"
