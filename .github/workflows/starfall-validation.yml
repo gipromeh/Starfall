@@ -6,6 +6,7 @@ on:
     paths:
       - "starfall.html"
       - "tools/validate-starfall.mjs"
+      - "tests/t11_pirate_fleet.js"
       - ".github/workflows/starfall-validation.yml"
   workflow_dispatch:
 
@@ -24,3 +25,22 @@ jobs:
           node-version: 22
       - name: Parse inline scripts and check pirate regressions
         run: node tools/validate-starfall.mjs
+
+  pirate-browser-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser test dependencies
+        run: npm install --no-save --no-package-lock playwright@1.56.1 three@0.128.0 tsparticles@2.12.0
+      - name: Install Chromium
+        run: npx playwright install chromium
+      - name: Run pirate fleet browser regression
+        env:
+          SF_NM: ${{ github.workspace }}/node_modules
+        run: node tests/t11_pirate_fleet.js
