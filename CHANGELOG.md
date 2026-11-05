@@ -1,3 +1,10 @@
+## STARFALL v102.1 — mobile initialization order fix (2026-11-05)
+
+- Moved `TCH` to the start of the main game script, before functions that read it and before the first animation frame.
+- Fixed Safari/WebKit startup failure `Cannot access 'TCH' before initialization`.
+- Added a static regression assertion for a single early `TCH` declaration.
+- Pirate convoy, escort, combat and route behavior are unchanged.
+
 ## STARFALL v102 — три независимые пиратские системы и GLB-астероиды (2026-11-05)
 
 - Стартовая атака гарантированно создаёт три разных типа истребителей.
