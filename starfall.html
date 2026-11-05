@@ -3712,7 +3712,7 @@ function loadExtraPirateAssets(){
   try{
    const g=fitPirateAsset(gl.scene,d.size,d.yaw);
    applyPirateLivery(g);g.traverse(o=>{if(o.isMesh&&o.geometry){o.geometry.userData.keep=1;o.castShadow=false;o.receiveShadow=false}});
-   g.userData={sc:1};if(d.role==="transport")MC.pirateTransport=g;else MC["p"+d.ty]=g;pirateFleetResolveSockets(g,d.ty);
+   g.userData={sc:1,starfallLoadedGLB:true};if(d.role==="transport")MC.pirateTransport=g;else MC["p"+d.ty]=g;pirateFleetResolveSockets(g,d.ty);
    console.info("STARFALL: pirate GLB ready",d.ty,d.url);
   }catch(e){console.warn("GLB extra pirate processing failed; procedural fallback active:",d.url,e)}
   finally{pirateExtraAssetDone()}
@@ -3722,9 +3722,9 @@ function pirateAssetDone(){if(++pirateAssetsDone>=GLB_PIR.length)loadExtraPirate
 // v96: Pirate3 is the fourth fighter archetype; Pirate4 is reserved for pirate transport traffic.
 const mkPirateProcedural=mkPirate;
 mkPirate=function(ty,...args){
-  const asset=MC["p"+ty];
+  const asset=MC["p"+ty],isGlb=!!(asset&&asset.userData&&asset.userData.starfallLoadedGLB===true);
   let g;
-  if(asset){
+  if(isGlb){
    g=asset.clone(true);
    const assetScale=Number.isFinite(asset.userData&&asset.userData.sc)?asset.userData.sc:1;
    g.scale.multiplyScalar(assetScale);
@@ -3734,7 +3734,7 @@ mkPirate=function(ty,...args){
    if(g)g.userData={...g.userData,starfallAssetSource:"PROCEDURAL",starfallType:ty,starfallForwardAxis:"-Z",starfallUpAxis:"+Y"};
   }
   if(g)pirateFleetResolveSockets(g,ty);
-  if(asset&&ty===0)applyBrawlerNeon(g);
+  if(isGlb&&ty===0)applyBrawlerNeon(g);
   return g;
  };
  function mkPirateTransport(){
@@ -3757,7 +3757,7 @@ if(T.GLTFLoader&&location.protocol!=="file:"){
     g=assetRoot;
    }
    applyPirateLivery(g);g.traverse(o=>{if(o.isMesh&&o.geometry)o.geometry.userData.keep=1});
-   g.userData={sc:d.sc};MC["p"+d.ty]=g;pirateFleetResolveSockets(g,d.ty);pirateAssetDone();
+   g.userData={sc:d.sc,starfallLoadedGLB:true};MC["p"+d.ty]=g;pirateFleetResolveSockets(g,d.ty);pirateAssetDone();
   }catch(e){console.warn("GLB",d.url,e);pirateAssetDone()}
  },undefined,e=>{console.warn("GLB не загружен:",d.url,e);pirateAssetDone()}));
 }else pirateAssetsReady=true;
