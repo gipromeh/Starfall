@@ -97,11 +97,15 @@ const ff = (page, sec) => page.evaluate(s => { const n = Math.round(s / .05); fo
   const freighterGeometryDisposed = await page.evaluate(ids => ids.length > 0 && ids.every(id => window.__sfGeomDiag.records.get(id)?.disposed), freighterGeometryIds);
   L.check('геометрия планетарного грузовоза освобождается при удалении', freighterGeometryDisposed, { created:freighterGeometryIds.length, disposed:freighterGeometryDisposed });
   await page.evaluate(() => clearNv());
+  const sceneBaseline = await page.evaluate(() => S.children.map(o => ({ uuid:o.uuid, name:o.name, type:o.type })));
   const b0 = await mem(page);
   const geomBaseline = await page.evaluate(() => [...window.__sfGeomDiag.records.keys()]);
   for (let r = 0; r < 8; r++) { await page.evaluate(() => { if (!E) spawnE(); if(E){E.fire=1e9;E.burstLeft=0;E.burstGap=1e9;} }); await ff(page, 5); await page.evaluate(() => { firing = true; }); await ff(page, 2); await page.evaluate(() => { firing = false; if (E) hurtEn(E, 1e6, false); spawnT=1e9; }); await ff(page, 3); }
   await ff(page, 40);
   const b1 = await mem(page);
+  const sceneAfter = await page.evaluate(() => S.children.map(o => ({ uuid:o.uuid, name:o.name, type:o.type })));
+  const sceneRemoved = sceneBaseline.filter(o => !sceneAfter.some(n => n.uuid === o.uuid));
+  console.log('  удалённые объекты сцены:', JSON.stringify(sceneRemoved));
   const geomLeaks = await page.evaluate(base => {
     const attached = new Set();
     S.traverse(o => { if(o.geometry) attached.add(o.geometry.uuid); });
