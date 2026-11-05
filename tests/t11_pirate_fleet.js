@@ -129,7 +129,7 @@ const L = require('./lib');
   const combat = await page.evaluate(() => {
     pirateFleet.forEach((e, i) => {
       e.warp = 0; e.g.visible = true;
-      e.g.position.copy(P).add(new THREE.Vector3((i - .5) * 12, 0, -350));
+      e.g.position.copy(P).add(new THREE.Vector3((i - .5) * 12, 0, -300));
       e.hd.copy(P.clone().sub(e.g.position).normalize());
       e.vel.copy(e.hd).multiplyScalar(46);
       e.state = 'ATTACK'; e.aiIntent='ATTACK'; e.stateT = 0; e.fire = 0; e.burst = 0; e.burstGap = 0; e.aiClock = EAI.STEP; e.aiTicks = 0;
