@@ -25,7 +25,7 @@ const checks = [
  ['NPC collision solver includes neutral transports', html.includes('n.g&&!n.tur&&n.g.visible!==false&&n.v')],
  ['collision solver runs every frame', html.includes('pirateFleetUpdate(dt);resolvePirateShipCollisions();')],
  ['pirate fleet initializes two seeded attackers', html.includes('for(let slot=0;slot<2;slot++){const e={slot,ty:pirateFleetNextType,g:null,hp:0,mx:0,respawn:Infinity,dead:false,flames:[]};pirateFleet.push(e);pirateFleetSpawn(e,slot*.22)}')],
- ['pirate fleet spawns ahead of the player', html.includes('addScaledVector(fw,(760+e.slot*90))')],
+ ['pirate fleet spawns ahead of the player', html.includes('addScaledVector(fw,(1100+e.slot*90))')],
  ['pirate fleet does not respawn after destruction', html.includes('e.respawn=Infinity;e.hits=0;')],
  ['pirate fleet uses per-archetype firing envelopes', html.includes('const fireRange=[390,330,520,430][e.ty],fireCone=[.82,.72,.62,.95][e.ty];')&&html.includes('const canFire=e.state==="ATTACK"&&dist<fireRange&&(fireAngle<fireCone||(dist<260&&fireAngle<1.3));')],
  ['regular pirates use 380/420-unit firing ranges', html.includes('d<(e.ty===3?420:380)')],
