@@ -1836,6 +1836,25 @@ const pirateFleetSocketConfigs={
     authoredFrom:"assets/pirates/ships/pirate/pirate_fighter_002/build_blender.py"
   }
 };
+const pirateFleetSocketConfigPromises=new Map();
+const pirateFleetSocketConfigURLs={
+  0:"assets/pirates/ships/pirate/pirate_fighter_002/config.json",
+  1:"assets/pirates/ships/pirate/pirate_fighter_001/config.json",
+  2:"assets/pirates/ships/pirate/pirate_fighter_003/config.json",
+  3:"assets/pirates/ships/pirate/pirate_transport_001/config.json"
+};
+function pirateFleetSocketConfigLoad(ty){
+ if(pirateFleetSocketConfigs[ty])return Promise.resolve(pirateFleetSocketConfigs[ty]);
+ if(pirateFleetSocketConfigPromises.has(ty))return pirateFleetSocketConfigPromises.get(ty);
+ const url=pirateFleetSocketConfigURLs[ty];
+ if(!url||typeof fetch!=="function")return Promise.resolve(null);
+ const promise=fetch(url).then(response=>{if(!response.ok)throw new Error("socket config HTTP "+response.status);return response.json()})
+  .then(data=>{const sockets=data&&data.sockets;if(!sockets)return null;
+   const config={source:"config.json",guns:sockets.guns||[],engines:sockets.engines||[],coordinateSpace:sockets.coordinateSpace||"model-local"};
+   pirateFleetSocketConfigs[ty]=config;return config;
+  }).catch(error=>{console.warn("STARFALL: pirate socket config unavailable",ty,error);return null});
+ pirateFleetSocketConfigPromises.set(ty,promise);return promise;
+}
 const pirateFleetGunFallback=[[-2.74,-1.24,-3.565],[-2.46,-1.24,-3.565],[2.46,-1.24,-3.565],[2.74,-1.24,-3.565]],pirateFleetEngineFallback=[[-.62,-.9,6.535],[.62,-.9,6.535]];
 function pirateSocketIndex(name,kind){
  const n=String(name||"").toUpperCase().replace(/[\\s.-]+/g,"_");
