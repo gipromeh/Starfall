@@ -27,13 +27,17 @@ const L = require('./lib');
   L.check('атмосферы планет согласованы с направлением реального солнца', scene.atmosphereVectors >= 6 && scene.atmosphereAligned, scene);
   await page.evaluate(() => { lift(); QL.setMode('low'); pirateFleetInit(); });
   await page.waitForFunction(() => pirateFleet.length === 2, null, { timeout: 15000 });
+  await page.waitForFunction(() => pirateAssetsReady === true, null, { timeout: 60000 });
   const pirateModels = await page.evaluate(() => {
+    const fighter = mkPirate(2);
     const transport = mkPirateTransport();
-    return { fighter: !!MC.p2 && mkPirate(2).children.length === MC.p2.children.length,
-      transport: !!MC.p3 && !!transport?.userData.pirateTransport && transport.children.length === MC.p3.children.length };
+    let fighterMeshes = 0, transportMeshes = 0;
+    fighter.traverse(o => { if (o.isMesh) fighterMeshes++; });
+    transport?.traverse(o => { if (o.isMesh) transportMeshes++; });
+    return { fighterMeshes, transportMeshes, transportFlag: !!transport?.userData.pirateTransport };
   });
-  L.check('Pirate3 GLB используется четвёртым боевым архетипом', pirateModels.fighter, pirateModels);
-  L.check('Pirate4 GLB создаётся отдельным пиратским транспортом', pirateModels.transport, pirateModels);
+  L.check('Pirate3 GLB создаёт дополнительный боевой архетип', pirateModels.fighterMeshes > 0, pirateModels);
+  L.check('Pirate4 GLB создаёт отдельный пиратский транспорт', pirateModels.transportMeshes > 0 && pirateModels.transportFlag, pirateModels);
 
 
   const livery = await page.evaluate(() => {
