@@ -1,3 +1,12 @@
+## Документация — обязательный GLB Asset Pipeline (2026-11-05, без изменения версии игры)
+
+- Добавлен общий pipeline для всех GLB-категорий: происхождение/лицензия, структурная валидация, координаты/pivot, геометрия, PBR, маркеры, физика, runtime, регрессии и платформенная приёмка.
+- Мастер-инструкция, паспорт и библиотека ассетов требуют выполнять pipeline до статуса integrated.
+- Уточнено, что корабельные оси/бюджеты действуют только для кораблей; существующий pirate socket resolver v97 сохраняется без дублирования.
+- Добавлены базовый GLB Structural Validator, Marker Debugger, одиннадцать структурных regression tests и запуск тестов в game-tests quick-checks. Ограничения инструментов описаны в GLB pipeline.
+- Исправлена устаревшая версия main в корневом README: v100 → v102.
+- Игровой HTML и версия игры не менялись. Автоматические тесты игрового кода не запускались; документация проверяется отдельно.
+
 ## CI stability follow-up — 2026-11-05
 
 - Pirate fleet speed regression allows the normal transient deceleration after spawn while still enforcing each archetype's configured speed envelope.
