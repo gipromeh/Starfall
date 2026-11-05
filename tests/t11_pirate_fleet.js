@@ -106,21 +106,21 @@ const L = require('./lib');
   L.check('пират эскадрильи после первого попадания горит, дымит и остаётся жив',fleetFirstHit.hp>0&&fleetFirstHit.alive&&fleetFirstHit.burning&&fleetFirstHit.smoking&&fleetFirstHit.minimum,fleetFirstHit);
 
   const movementProfile = await page.evaluate(() => pirateFleet.map(e => ({ty:e.ty,speed:e.speed})));
-  L.check('стартовая эскадрилья использует три скоростных профиля архетипов',movementProfile.length===3&&[0,1,2].every(ty=>movementProfile.some(x=>x.ty===ty&&Math.abs(x.speed-[46,34.5,46][ty])<.01)),movementProfile);
+  L.check('стартовая пара использует один seeded-архетип и его скоростной профиль',movementProfile.length===2&&movementProfile[0].ty===movementProfile[1].ty&&movementProfile.every(x=>x.ty>=0&&x.ty<=2&&Math.abs(x.speed-[46,34.5,46][x.ty])<.01),movementProfile);
 
   const composition = await page.evaluate(() => ({
     total: pirateFleet.length,
     types: [...new Set(pirateFleet.map(e=>e.ty))].map(ty=>pirateFleet.filter(e=>e.ty===ty).length),
     spawned: pirateFleet.filter(e => !!e.g).length
   }));
-  L.check('стартовая атака содержит по одному кораблю каждого архетипа', composition.total === 3 && composition.types.length===3 && composition.types.every(count=>count===1), composition);
-  L.check('все три корабля стартовой атаки созданы', composition.spawned === 3, composition);
+  L.check('стартовая атака содержит два корабля одного seeded-архетипа', composition.total === 2 && composition.types.length===1 && composition.types[0]===2, composition);
+  L.check('оба корабля стартовой атаки созданы', composition.spawned === 2, composition);
   const initialSpawn = await page.evaluate(() => pirateFleet.map(e => {
     const forward = new THREE.Vector3(0,0,-1).applyQuaternion(Q).normalize();
     const offset = e.g.position.clone().sub(P);
     return { type:e.ty, distance:offset.length(), ahead:offset.normalize().dot(forward), lateral:offset.dot(new THREE.Vector3(1,0,0).applyQuaternion(Q).normalize()) };
   }));
-  L.check('стартовая эскадрилья появляется впереди игрока на заданной дистанции', initialSpawn.length===3&&initialSpawn.every((x,i)=>x.distance>=[1090,1180,1270][i]&&x.distance<=[1120,1220,1320][i]&&x.ahead>.98)&&initialSpawn[0].lateral*initialSpawn[1].lateral<0, initialSpawn);
+  L.check('стартовая эскадрилья появляется впереди игрока на заданной дистанции', initialSpawn.length===2&&initialSpawn.every(x=>x.distance>=1090&&x.distance<=1220&&x.ahead>.98)&&initialSpawn[0].lateral*initialSpawn[1].lateral<0, initialSpawn);
   const fleetHealth = await page.evaluate(() => pirateFleet.every(e => e.mx >= 160));
   L.check('прочность каждого корабля эскадрильи не ниже двойной прочности игрока', fleetHealth, fleetHealth);
   const locators = await page.evaluate(() => pirateFleet.map(e => {
@@ -276,7 +276,7 @@ const L = require('./lib');
     pirateFleetUpdate(.05);
     return { destroyed, respawned: !!e.g, sameType: e.ty === type, slots: pirateFleet.length };
   });
-  L.check('уничтоженный корабль не возрождается, слот и состав не пересоздаются', damage.destroyed && !damage.respawned && damage.sameType && damage.slots === 3, damage);
+  L.check('уничтоженный корабль не возрождается, слот и состав не пересоздаются', damage.destroyed && !damage.respawned && damage.sameType && damage.slots === 2, damage);
 
   const textureReuse = await page.evaluate(() => {
     for (const e of pirateFleet.filter(x => x.g && x.hp > 0)) {
@@ -303,10 +303,10 @@ const L = require('./lib');
   });
   L.check('стыковка очищает флот и его снаряды', docked.state === 'dock' && docked.slots === 0 && !docked.ready && docked.taggedShots === 0, docked);
   await page.evaluate(() => { lift(); QL.setMode('low'); pirateFleetInit(); state='pause'; });
-  await page.waitForFunction(() => pirateFleet.length === 3 && pirateFleet.every(e=>!!e.g), null, { timeout: 15000 });
-  const relaunched = await page.evaluate(() => pirateFleet.length === 3 && [0,1,2].every(ty=>pirateFleet.some(e=>e.ty===ty&&!!e.g&&e.hp>0)));
+  await page.waitForFunction(() => pirateFleet.length === 2 && pirateFleet.every(e=>!!e.g), null, { timeout: 15000 });
+  const relaunched = await page.evaluate(() => pirateFleet.length === 2 && pirateFleet[0].ty===pirateFleet[1].ty && pirateFleet.every(e=>!!e.g&&e.hp>0));
   await page.evaluate(() => { state='play'; });
-  L.check('после dock → lift снова создаётся стартовый состав из трёх архетипов', relaunched);
+  L.check('после dock → lift снова создаётся стартовая пара одного архетипа', relaunched);
 
   const jackalAggro = await page.evaluate(() => {
     const old = { E, E2, firstWaveSpawn, random: Math.random, neutrals: nv.slice() };
