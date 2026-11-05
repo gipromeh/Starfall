@@ -1825,17 +1825,7 @@ const EAI=(function(){
 })();
 const pirateFleetForward=new T.Vector3(0,0,-1),pirateFleetUp=new T.Vector3(0,1,0),pirateFleetHeading=new T.Vector3();
 const pirateFleetGunNames=["GUN_0","GUN_1","GUN_2","GUN_3"],pirateFleetEngineNames=["ENG_0","ENG_1"];
-const pirateFleetSocketConfigs={
-  0:{
-    source:"config.json",
-    guns:[
-      [2.46,4.6,-.34],[2.74,4.6,-.34],[-2.46,4.6,-.34],[-2.74,4.6,-.34]
-    ],
-    engines:[[.62,-5.5,0],[-.62,-5.5,0]],
-    coordinateSpace:"model-local-source",
-    authoredFrom:"assets/pirates/ships/pirate/pirate_fighter_002/build_blender.py"
-  }
-};
+const pirateFleetSocketConfigs={};
 const pirateFleetSocketConfigPromises=new Map();
 const pirateFleetSocketConfigURLs={
   0:"assets/pirates/ships/pirate/pirate_fighter_002/config.json",
