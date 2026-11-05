@@ -31,6 +31,18 @@ class GLBValidatorTests(unittest.TestCase):
     def test_detects_invalid_child_index(self):
         d=json.loads(json.dumps(self.doc));d["nodes"][0]["children"]=[99];self.write(d)
         self.assertTrue(any("child index" in x for x in validate(self.path)["errors"]))
+    def test_texture_dimensions(self):
+        # PNG header is sufficient to validate declared image dimensions without decoding pixels.
+        import base64
+        png=base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAgAAAAIA")
+        d=json.loads(json.dumps(self.doc))
+        d["images"]=[{"bufferView":0,"mimeType":"image/png"}]
+        d["bufferViews"]=[{"buffer":0,"byteOffset":0,"byteLength":len(png)}]
+        d["buffers"]=[{"byteLength":len(png)}]
+        self.write(d,make_glb(d,png))
+        result=validate(self.path,"ship")
+        self.assertEqual(result["texture_dimensions"][0]["width"],512)
+        self.assertEqual(result["texture_dimensions"][0]["height"],512)
     def test_marker_inventory(self):
         self.write();self.assertIn("GUN_0",validate(self.path)["markers"])
     def test_truncated_chunk(self):
