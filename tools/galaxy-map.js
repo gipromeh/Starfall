@@ -103,7 +103,7 @@ function buildPoints(list){
  renderedRecords.forEach((r,i)=>{p[i*3]=r.x*.035;p[i*3+1]=r.y*.035;p[i*3+2]=r.z*.035;const pop=+r.p||0,col=new T.Color(pop>1e8?0xffc56f:pop>0?0x68d9e9:0x8a9eb8);c[i*3]=col.r;c[i*3+1]=col.g;c[i*3+2]=col.b;});
  const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(p,3));g.setAttribute('color',new T.BufferAttribute(c,3));
  points=new T.Points(g,new T.PointsMaterial({size:2.5,sizeAttenuation:false,vertexColors:true,transparent:true,opacity:.9}));points.frustumCulled=false;galaxy.add(points);
- const inhabitedCount=records.reduce((n,r)=>n+(r.p>0?1:0),0);
+ const inhabitedCount=populationAvailable?records.reduce((n,r)=>n+(r.p>0?1:0),0):0;
  allBtn.disabled=list.length===records.length;
  inhBtn.disabled=!(populationAvailable&&inhabitedCount>0)||list.length===inhabitedCount;
  inhBtn.textContent=populationAvailable?(inhabitedCount?'ОБЖИТЫЕ':'ОБЖИТЫЕ · НЕТ В ВЫБОРКЕ'):'ОБЖИТЫЕ · НЕТ ДАННЫХ';
@@ -134,7 +134,7 @@ async function loadCatalog(){
    if(!line)return;
    const v=JSON.parse(line);
    if(!v||typeof v.id!=='string'||typeof v.n!=='string'||!Number.isFinite(v.x)||!Number.isFinite(v.y)||!Number.isFinite(v.z))throw Error('некорректная запись каталога');
-   list.push({id:v.id,name:v.n,searchName:v.n.toLocaleLowerCase(),x:v.x,y:v.y,z:v.z,p:+v.p||0,a:v.a||'',g:v.g||'',s:v.s||'',e:v.e||'',e2:v.e2||'',f:v.f||'',bc:+v.bc||0});
+   const record={id:v.id,name:v.n,searchName:v.n.toLocaleLowerCase(),x:v.x,y:v.y,z:v.z};if(v.p!=null)record.p=+v.p||0;if(v.a)record.a=v.a;if(v.g)record.g=v.g;if(v.s)record.s=v.s;if(v.e)record.e=v.e;if(v.e2)record.e2=v.e2;if(v.f)record.f=v.f;if(v.bc!=null)record.bc=+v.bc||0;list.push(record);
   };
   while(true){const part=await reader.read();if(part.done)break;pending+=decoder.decode(part.value,{stream:true});let cut;
    while((cut=pending.indexOf('\n'))>=0){appendLine(pending.slice(0,cut));pending=pending.slice(cut+1);}
