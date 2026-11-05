@@ -23,7 +23,7 @@ async function newCtx(browser, o = {}) {
     if (url.startsWith(ORIGIN)) {
       const u = new URL(url);
       if (u.pathname === '/' || u.pathname.endsWith('starfall.html')) return route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: fs.readFileSync(o.game || GAME, 'utf8') });
-      if (u.pathname.startsWith('/assets/')) { const f = path.join(__dirname, '..', decodeURIComponent(u.pathname)); if (f.startsWith(path.join(__dirname, '..', 'assets')) && fs.existsSync(f)) return route.fulfill({ status: 200, contentType: f.endsWith('.glb') ? 'model/gltf-binary' : 'application/octet-stream', body: fs.readFileSync(f, 'utf8') }); }
+      if (u.pathname.startsWith('/assets/')) { const f = path.join(__dirname, '..', decodeURIComponent(u.pathname)); if (f.startsWith(path.join(__dirname, '..', 'assets')) && fs.existsSync(f)) return route.fulfill({ status: 200, contentType: f.endsWith('.glb') ? 'model/gltf-binary' : 'application/octet-stream', body: fs.readFileSync(f) }); }
       if (u.pathname.startsWith('/tools/') || u.pathname.startsWith('/data/')) {
         const root = path.resolve(__dirname, '..');
         const file = path.resolve(root, decodeURIComponent(u.pathname.slice(1)));
