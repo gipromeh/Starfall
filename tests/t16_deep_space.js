@@ -1,4 +1,7 @@
 const L=require('./lib');
+const fs=require('node:fs');
+const path=require('node:path');
+const galaxyManifest=JSON.parse(fs.readFileSync(path.join(__dirname,'..','data','elite-dangerous-lite','systems.jsonl.gz.manifest.json'),'utf8'));
 (async()=>{
  const browser=await L.launch(),ctx=await L.newCtx(browser,{viewport:{width:1280,height:800},dpr:1});
  try{
@@ -20,7 +23,7 @@ const L=require('./lib');
   L.check('Deep Space: scanner opens from the upper-right control without covering the lower-left radar',ui.width>=44&&ui.height>=44&&ui.right>=0&&ui.top>=0&&ui.open,ui);
   await page.evaluate(()=>SF_GALAXY_MAP.open());
   const galaxy=await page.evaluate(()=>({catalog:SF_GALAXY_MAP.stats.catalog,inhabitedDisabled:document.querySelectorAll('#sf-galaxy .bottom button')[1].disabled,status:document.querySelector('#sf-galaxy .status')?.textContent||'',state:__STARFALL_DIAG__.state()}));
-  L.check('Galaxy Map: verifies and loads the 50,000-system catalogue; population filter stays disabled when source has no population',galaxy.catalog===50000&&galaxy.inhabitedDisabled&&galaxy.status.includes('SHA-256 подтверждён')&&galaxy.status.includes('population отсутствует')&&galaxy.state==='galaxy',galaxy);
+  L.check('Galaxy Map: verifies the complete manifest-defined catalogue; population filter stays disabled when source has no population',galaxy.catalog===galaxyManifest.records&&galaxy.inhabitedDisabled&&galaxy.status.includes('SHA-256 подтверждён')&&galaxy.status.includes('population отсутствует')&&galaxy.state==='galaxy',galaxy);
   await page.evaluate(()=>SF_GALAXY_MAP.close());
   L.check('Deep Space: no JavaScript errors',page.errors.length===0,page.errors);process.exitCode=L.summary();
  }finally{await ctx.close();await browser.close()}
