@@ -34,7 +34,7 @@ const L = require('./lib');
   L.check('маршрут каравана использует планеты или явные навигационные маяки', result.convoys.every(c=>['PLANET','NAV_WAYPOINT'].includes(c.routeSource)), result.convoys);
   L.check('каждый эскорт содержит три разных класса', result.convoys.every(c=>c.types.length>=3), result.convoys);
   L.check('вольные пираты отображаются на радаре', result.radarRoamers>=2, result.radarRoamers);
-  L.check('игровое поле и кольца используют asteroid.glb', result.asteroids.ready && result.asteroids.mineable>=24 && result.asteroids.mineable<=48 && result.asteroids.rings>=1, result.asteroids);
+  L.check('mineable field uses asteroid.glb; no synthetic ringed planets are created without body catalogue data', result.asteroids.ready && result.asteroids.meshes>0 && result.asteroids.mineable>=24 && result.asteroids.mineable<=48 && result.asteroids.rings===0, result.asteroids);
   L.check('искусственный Cargo Showcase удалён', !result.fakeCargo, result.fakeCargo);
   L.check('ошибок выполнения страницы нет', page.errors.length===0, page.errors);
   process.exitCode=L.summary();
