@@ -4,6 +4,8 @@ const L = require('./lib');
   const browser = await L.launch();
   const ctx = await L.newCtx(browser, { viewport: { width: 800, height: 450 }, dpr: 1 });
   const page = await L.openGame(ctx);
+  page.on('console', msg => { if (/pirate|GLB/i.test(msg.text())) console.log('PAGE '+msg.type()+': '+msg.text()); });
+  page.on('pageerror', err => console.log('PAGE ERROR: '+err.message));
   await page.click('#play');
   await page.waitForFunction(() => state === 'dock', null, { timeout: 60000 });
   await page.waitForFunction(() => pirateAssetsReady === true, null, { timeout: 60000 });
@@ -28,6 +30,12 @@ const L = require('./lib');
   await page.evaluate(() => { lift(); QL.setMode('low'); pirateFleetInit(); });
   await page.waitForFunction(() => pirateFleet.length === 2, null, { timeout: 15000 });
   await page.waitForFunction(() => pirateAssetsReady === true, null, { timeout: 60000 });
+  const transportAssetState = await page.evaluate(async () => {
+    const url = GLB_EXTRA_PIR.find(x => x.role === 'transport')?.url;
+    const response = url ? await fetch(url, { cache:'no-store' }).catch(() => null) : null;
+    return { url, status:response?.status||0, loader:!!T.GLTFLoader, ready:pirateAssetsReady, loaded:!!MC.pirateTransport };
+  });
+  L.check('Pirate transport GLB asset loads into its dedicated cache slot', transportAssetState.loader && transportAssetState.status===200 && transportAssetState.loaded, transportAssetState);
   const pirateModels = await page.evaluate(() => {
     const fighter = mkPirate(2);
     const transport = mkPirateTransport();
@@ -40,6 +48,7 @@ const L = require('./lib');
   L.check('Pirate4 GLB создаёт отдельный пиратский транспорт', pirateModels.transportMeshes > 0 && pirateModels.transportFlag, pirateModels);
   const socketInventory = await page.evaluate(() => {
     const inspect = (id, g, ty) => {
+      if (!g) return { id, missing:true, guns:0, engines:0, flames:0, plasmaTrailCount:0 };
       const sockets = pirateFleetResolveSockets(g, ty);
       S.add(g); g.updateMatrixWorld(true);
       const center = new THREE.Box3().setFromObject(g).getCenter(new THREE.Vector3());
