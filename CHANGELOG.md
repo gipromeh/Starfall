@@ -1,3 +1,7 @@
+## Browser regression alignment — 2026-11-05
+
+- Deep Space now validates the Galaxy Map catalogue against the checked-in manifest record count instead of a stale hard-coded 50,000.
+- Pirate ecosystem asteroid checks validate the loaded GLB and mineable field; ring instances remain absent while the source catalogue contains no planetary body/ring data, rather than requiring synthetic ringed planets.
 ## STARFALL v102 — восстановление маршрутизации пиратских караванов (2026-11-05)
 
 - В текущей сборке координаты звёздной системы не создают объекты планет, поэтому прежнее условие `pcPlanets().length >= 2` блокировало запуск всех трёх караванов.
