@@ -15,6 +15,8 @@ const zlib = require('node:zlib');
       : undefined
   });
   let page;
+  const manifestPath = path.join(__dirname, '..', 'data', 'elite-dangerous-lite', 'systems.jsonl.gz.manifest.json');
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
   try {
     page = await L.openGame(ctx);
     await page.evaluate(() => { try { localStorage.clear(); } catch (_) {} });
@@ -28,14 +30,14 @@ const zlib = require('node:zlib');
 
     await page.evaluate(() => window.SF_GALAXY_MAP.open());
     await page.waitForFunction(() => state === 'galaxy', null, { timeout: 10000 });
-    await page.waitForFunction(() => window.SF_GALAXY_MAP.stats.catalog === 50000, null, { timeout: 90000 });
+    await page.waitForFunction(expected => window.SF_GALAXY_MAP.stats.catalog === expected, manifest.records, { timeout: 240000 });
     const catalog = await page.evaluate(() => ({
       count: window.SF_GALAXY_MAP.stats.catalog,
       status: document.querySelector('#sf-galaxy .status')?.textContent || '',
       rootBackground: getComputedStyle(document.getElementById('sf-galaxy')).backgroundColor,
       inhabitedDisabled: [...document.querySelectorAll('#sf-galaxy .bottom button')].find(b => b.textContent.includes('ОБЖИТЫЕ'))?.disabled
     }));
-    L.check('Galaxy Map: 50 000 записей загружены и SHA-256 проверен', catalog.count === 50000 && catalog.status.includes('SHA-256 подтверждён'), catalog);
+    L.check('Galaxy Map: весь каталог загружен и SHA-256 проверен', catalog.count === manifest.records && catalog.status.includes('SHA-256 подтверждён'), { count:catalog.count, expected:manifest.records, status:catalog.status });
     L.check('Galaxy Map: 3D canvas не перекрыт фоном интерфейса', catalog.rootBackground === 'rgba(0, 0, 0, 0)', catalog.rootBackground);
     L.check('Galaxy Map: фильтр населения отключён при отсутствии population', catalog.inhabitedDisabled === true, catalog.inhabitedDisabled);
 
