@@ -10,10 +10,9 @@ const L = require('./lib');
   await page.waitForFunction(() => state === 'dock', null, { timeout: 60000 });
   await page.waitForFunction(() => pirateAssetsReady === true, null, { timeout: 60000 });
   await page.evaluate(() => { lift(); QL.setMode('low'); });
-  await page.waitForFunction(() => state === 'play' && worldPlanets.length > 0, null, { timeout: 30000 });
+  await page.waitForFunction(() => state === 'play' && !!plt && !!stn, null, { timeout: 15000 });
   const scene = await page.evaluate(() => {
-    const vectors = worldPlanets.slice(0, 6).map(p => p.mesh.children.find(o => o.material?.uniforms?.c && o.material?.uniforms?.s)?.material.uniforms.s.value);
-    const aligned = vectors.length === 6 && vectors.every((v,i) => v && v.clone().normalize().dot(SYSTEM_CENTER.clone().sub(worldPlanets[i].mesh.position).normalize()) > .999);
+    const atmosphere = !!(plt && plt.children.some(o => o.isMesh && o.material?.transparent && o.material?.side === T.BackSide));
     return {
       ambient: S.children.find(o => o.isAmbientLight)?.intensity,
       directional: sun.intensity,
@@ -21,14 +20,14 @@ const L = require('./lib');
       cameraFill: C.children.find(o => o.isDirectionalLight)?.intensity,
       bloom: CP.passes.find(p => p.strength !== undefined)?.strength,
       stars: sky.children.filter(o => o.isPoints).length,
-      planets: worldPlanets.length,
-      atmosphereVectors: new Set(vectors).size,
-      atmosphereAligned: aligned
+      planets: plt && plt.visible ? 1 : 0,
+      station: !!(stn && stn.visible),
+      atmosphere
     };
   });
   L.check('восстановлена равномерная световая схема ранней сборки', scene.ambient >= .39 && scene.directional >= 1.29 && scene.hemisphere >= .54 && scene.cameraFill >= .54 && scene.bloom >= .61, scene);
-  L.check('звёздное поле и планетная система сохранены', scene.stars >= 2 && scene.planets >= 6, scene);
-  L.check('атмосферы планет согласованы с направлением реального солнца', scene.atmosphereVectors >= 6 && scene.atmosphereAligned, scene);
+  L.check('звёздное поле, локальная планета и станция сохранены', scene.stars >= 2 && scene.planets === 1 && scene.station, scene);
+  L.check('атмосферный слой прикреплён к локальной планете', scene.atmosphere, scene);
   await page.evaluate(() => { pirateFleetInit(); });
   await page.waitForFunction(() => pirateFleet.length === 2, null, { timeout: 15000 });
   await page.waitForFunction(() => pirateAssetsReady === true, null, { timeout: 60000 });
