@@ -1851,7 +1851,10 @@ function pirateFleetSocketConfigLoad(ty){
  const promise=fetch(url).then(response=>{if(!response.ok)throw new Error("socket config HTTP "+response.status);return response.json()})
   .then(data=>{const sockets=data&&data.sockets;if(!sockets)return null;
    const config={source:"config.json",guns:sockets.guns||[],engines:sockets.engines||[],coordinateSpace:sockets.coordinateSpace||"model-local"};
-   pirateFleetSocketConfigs[ty]=config;return config;
+   pirateFleetSocketConfigs[ty]=config;
+   if(MC["p"+ty])pirateFleetResolveSockets(MC["p"+ty],ty);
+   if(ty===3&&MC.pirateTransport)pirateFleetResolveSockets(MC.pirateTransport,3);
+   return config;
   }).catch(error=>{console.warn("STARFALL: pirate socket config unavailable",ty,error);return null});
  pirateFleetSocketConfigPromises.set(ty,promise);return promise;
 }
