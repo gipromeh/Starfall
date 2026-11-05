@@ -337,6 +337,32 @@ const L = require('./lib');
   L.check('Шакал открывает огонь по игроку при устойчивом наведении на 300 м',
     jackalAggro.state === 'ATTACK' && jackalAggro.shots >= 2 && jackalAggro.burstLeft < 3, jackalAggro);
 
+  const convoyInit = await page.evaluate(() => {
+    pirateConvoyUpdate(1/60);
+    const list=SF_PC.list();
+    return {count:list.length,escorts:list.map(c=>c.escorts.length),cargo:list.every(c=>!!c.cargo?.g),ready:pirateConvoyReady};
+  });
+  L.check('создаются два постоянных каравана с грузовиками и эскортом 3/4',convoyInit.count===2&&convoyInit.escorts[0]===3&&convoyInit.escorts[1]===4&&convoyInit.cargo&&convoyInit.ready,convoyInit);
+  const convoyRoute = await page.evaluate(() => {
+    SF_PC.near(0);upd(1/60);
+    const c=SF_PC.list()[0],d=c.cargo.g.position.distanceTo(P);
+    return {distance:d,slotCount:c.escorts.length,formation:c.escorts.every(e=>e.mode==='FORM')};
+  });
+  L.check('караван можно приблизить отладочной командой и эскорт сохраняет строй',convoyRoute.distance<1200&&convoyRoute.slotCount===3&&convoyRoute.formation,convoyRoute);
+  const convoyAggro = await page.evaluate(() => {
+    const c=SF_PC.list()[0],before=cr;
+    pirateConvoyDamage(c.escorts[0],1,false);
+    const hostile=c.state==='HOSTILE'&&c.hostileT===PC_GRUDGE&&c.escorts.every(e=>e.mode==='FIGHT');
+    const phases=c.escorts.every(e=>['ATTACK','BREAK','RESET'].includes(e.ph));
+    return {hostile,phases,credits:cr-before,fast:c.fast};
+  });
+  L.check('урон игрока переводит караван во враждебный режим и запускает фазы эскорта',convoyAggro.hostile&&convoyAggro.phases,convoyAggro);
+  const convoyCargoKill = await page.evaluate(() => {
+    const c=SF_PC.list()[0],before=cr;
+    pirateConvoyDamage(c.cargo,1e9,false);
+    return {dead:c.cargo.dead,credits:cr-before,escortAlive:c.escorts.some(e=>!!e.g)};
+  });
+  L.check('уничтожение грузовика выдаёт дополнительные 250 кредитов и не удаляет эскорт',convoyCargoKill.dead&&convoyCargoKill.credits>=250&&convoyCargoKill.escortAlive,convoyCargoKill);
   const cleanup = await page.evaluate(() => {
     toMenu();
     return { slots: pirateFleet.length, ready: pirateFleetReady };
