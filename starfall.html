@@ -2143,7 +2143,7 @@ function pirateFleetUpdate(dt){
    EAI.command(e,e.aimS,dist,{speed:targetSpeed,acceleration,turnRate});
   }
   EAI.integrate(e,dt,g,pirateFleetUp);
-  pirateFleetHeading.copy(e.vel.lengthSq()>1?e.vel:e.hd).normalize();pirateFleetLookMatrix.lookAt(pirateFleetLookOrigin,pirateFleetHeading,pirateFleetUp);pirateFleetLookQuat.setFromRotationMatrix(pirateFleetLookMatrix);g.quaternion.slerp(pirateFleetLookQuat,1-Math.exp(-dt*12));
+  pirateFleetHeading.copy(e.hd).normalize();pirateFleetLookMatrix.lookAt(pirateFleetLookOrigin,pirateFleetHeading,pirateFleetUp);pirateFleetLookQuat.setFromRotationMatrix(pirateFleetLookMatrix);g.quaternion.slerp(pirateFleetLookQuat,1-Math.exp(-dt*12));
   g.rotateZ(Math.max(-.2,Math.min(.2,(e.ocsYaw||0)*-.008)));
   pirateFleetUpdateFlames(e,dt);
   e.trailT-=dt;if(e.trailT<=0){e.trailT=TCH?.48:.36;g.updateMatrixWorld(true);const exhausts=e.engineNodes&&e.engineNodes.length?e.engineNodes.map(n=>n.getWorldPosition(new T.Vector3())):[g.localToWorld(new T.Vector3(0,.05,e.ty===0?4.7:5.45))];for(const exhaust of exhausts){trail(exhaust,e.hp/e.mx<.42?"rgba(255,70,25,1)":"rgba(255,145,66,.9)",e.ty===0?2.2:2);if(e.hp/e.mx<.68&&Math.random()<.7)trail(exhaust,"rgba(55,55,60,.9)",2.8)}}
