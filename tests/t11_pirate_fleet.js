@@ -108,7 +108,7 @@ const L = require('./lib');
     spawned: pirateFleet.filter(e => !!e.g).length
   }));
   L.check('стартовая атака содержит три разных seeded-архетипа', composition.total === 3 && composition.types.length===3 && composition.types.every(n=>n===1), composition);
-  L.check('оба корабля стартовой атаки созданы', composition.spawned === 2, composition);
+  L.check('все три корабля стартовой атаки созданы', composition.spawned === 3, composition);
   const initialSpawn = await page.evaluate(() => pirateFleet.map(e => {
     const forward = new THREE.Vector3(0,0,-1).applyQuaternion(Q).normalize();
     const offset = e.g.position.clone().sub(P);
@@ -297,9 +297,9 @@ const L = require('./lib');
   L.check('стыковка очищает флот и его снаряды', docked.state === 'dock' && docked.slots === 0 && !docked.ready && docked.taggedShots === 0, docked);
   await page.evaluate(() => { lift(); QL.setMode('low'); pirateFleetInit(); state='pause'; });
   await page.waitForFunction(() => pirateFleet.length === 3 && pirateFleet.every(e=>!!e.g), null, { timeout: 15000 });
-  const relaunched = await page.evaluate(() => pirateFleet.length === 2 && pirateFleet[0].ty===pirateFleet[1].ty && pirateFleet.every(e=>!!e.g&&e.hp>0));
+  const relaunched = await page.evaluate(() => pirateFleet.length === 3 && new Set(pirateFleet.map(e=>e.ty)).size===3 && pirateFleet.every(e=>!!e.g&&e.hp>0));
   await page.evaluate(() => { state='play'; });
-  L.check('после dock → lift снова создаётся стартовый состав из двух типов', relaunched);
+  L.check('после dock → lift повторно создаётся стартовая эскадрилья из трёх классов', relaunched);
 
   const jackalAggro = await page.evaluate(() => {
     const old = { E, E2, firstWaveSpawn, random: Math.random, neutrals: nv.slice() };
@@ -342,7 +342,7 @@ const L = require('./lib');
     const list=SF_PC.list();
     return {count:list.length,escorts:list.map(c=>c.escorts.length),cargo:list.every(c=>!!c.cargo?.g),ready:pirateConvoyReady};
   });
-  L.check('создаются два постоянных каравана с грузовиками и эскортом 3/4',convoyInit.count===2&&convoyInit.escorts[0]===3&&convoyInit.escorts[1]===4&&convoyInit.cargo&&convoyInit.ready,convoyInit);
+  L.check('создаются три постоянных каравана с грузовиками и эскортом 3/4/3',convoyInit.count===3&&convoyInit.escorts.join(',')==='3,4,3'&&convoyInit.cargo&&convoyInit.ready,convoyInit);
   const convoyRoute = await page.evaluate(() => {
     SF_PC.near(0);upd(1/60);
     const c=SF_PC.list()[0],d=c.cargo.g.position.distanceTo(P);
