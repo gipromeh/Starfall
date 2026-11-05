@@ -3,6 +3,7 @@ const path = require('path');
 const assert = require('assert');
 const html = fs.readFileSync(path.join(__dirname, '..', 'starfall.html'), 'utf8');
 const checks = [
+ ['TCH is initialized before the first function that reads it', html.indexOf('const TCH=') >= 0 && html.indexOf('const TCH=') < html.indexOf('TCH?12:20')],
  ['HTML build version metadata is present and valid', /<meta name="starfall-version" content="v\d+(?:\.\d+)?">/.test(html)],
  ['laser projectiles explicitly tagged', html.includes('arr.push({m,v,dmg,life,kind:"laser"})')],
  ['ballistic projectiles explicitly tagged', html.includes('arr.push({m,v,dmg,life,kind:"projectile"})')],
