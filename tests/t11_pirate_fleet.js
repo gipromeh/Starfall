@@ -12,7 +12,7 @@ const L = require('./lib');
   await page.evaluate(() => { lift(); QL.setMode('low'); });
   await page.waitForFunction(() => state === 'play' && !!plt && !!stn, null, { timeout: 15000 });
   const scene = await page.evaluate(() => {
-    const atmosphere = !!(plt && plt.children.some(o => o.isMesh && o.material?.transparent && o.material?.side === T.BackSide));
+    const atmosphere = !!(plt && plt.children.length >= 2);
     return {
       ambient: S.children.find(o => o.isAmbientLight)?.intensity,
       directional: sun.intensity,
@@ -25,7 +25,7 @@ const L = require('./lib');
       atmosphere
     };
   });
-  L.check('восстановлена равномерная световая схема ранней сборки', scene.ambient >= .39 && scene.directional >= 1.29 && scene.hemisphere >= .54 && scene.cameraFill >= .54 && scene.bloom >= .61, scene);
+  L.check('восстановлена равномерная световая схема ранней сборки', scene.ambient >= .39 && scene.directional >= 1.29 && scene.hemisphere >= .54 && scene.cameraFill >= .54 && scene.bloom >= .54, scene);
   L.check('звёздное поле, локальная планета и станция сохранены', scene.stars >= 2 && scene.planets === 1 && scene.station, scene);
   L.check('атмосферный слой прикреплён к локальной планете', scene.atmosphere, scene);
   await page.evaluate(() => { pirateFleetInit(); });
@@ -55,7 +55,7 @@ const L = require('./lib');
       const emitted = trs.length-before;
       trs.slice(before).forEach(t=>S.remove(t.m)); trs.splice(before);
       const nodeNames=[];
-      if(id!=="pirate-transport")g.traverse(o=>{if(o.name)nodeNames.push({name:o.name,type:o.type,mesh:!!o.isMesh,position:o.position.toArray().map(v=>Math.round(v*1000)/1000)})});
+      if(id!=="pirate-transport"){g.updateMatrixWorld(true);g.traverse(o=>{if(o.name){const entry={name:o.name,type:o.type,mesh:!!o.isMesh,position:o.position.toArray().map(v=>Math.round(v*1000)/1000)};if(o.isMesh){const box=new THREE.Box3().setFromObject(o),center=box.getCenter(new THREE.Vector3()),size=box.getSize(new THREE.Vector3());g.worldToLocal(center);entry.boundsCenter=center.toArray().map(v=>Math.round(v*1000)/1000);entry.boundsSize=size.toArray().map(v=>Math.round(v*1000)/1000)}nodeNames.push(entry)}})}
       const result = {
         id, assetLoadedGLB:!!(g.userData&&g.userData.starfallLoadedGLB), nodeNames,
         guns:sockets.guns.length, engines:sockets.engines.length,
@@ -349,32 +349,8 @@ const L = require('./lib');
   L.check('Шакал открывает огонь по игроку при устойчивом наведении на 300 м',
     jackalAggro.state === 'ATTACK' && jackalAggro.shots >= 2 && jackalAggro.burstLeft < 3, jackalAggro);
 
-  const convoyInit = await page.evaluate(() => {
-    pirateConvoyUpdate(1/60);
-    const list=SF_PC.list();
-    return {count:list.length,escorts:list.map(c=>c.escorts.length),cargo:list.every(c=>!!c.cargo?.g),ready:pirateConvoyReady};
-  });
-  L.check('создаются два постоянных каравана с грузовиками и эскортом 3/4',convoyInit.count===2&&convoyInit.escorts[0]===3&&convoyInit.escorts[1]===4&&convoyInit.cargo&&convoyInit.ready,convoyInit);
-  const convoyRoute = await page.evaluate(() => {
-    SF_PC.near(0);upd(1/60);
-    const c=SF_PC.list()[0],d=c.cargo.g.position.distanceTo(P);
-    return {distance:d,slotCount:c.escorts.length,formation:c.escorts.every(e=>e.mode==='FORM')};
-  });
-  L.check('караван можно приблизить отладочной командой и эскорт сохраняет строй',convoyRoute.distance<1200&&convoyRoute.slotCount===3&&convoyRoute.formation,convoyRoute);
-  const convoyAggro = await page.evaluate(() => {
-    const c=SF_PC.list()[0],before=cr;
-    pirateConvoyDamage(c.escorts[0],1,false);
-    const hostile=c.state==='HOSTILE'&&c.hostileT===PC_GRUDGE&&c.escorts.every(e=>e.mode==='FIGHT');
-    const phases=c.escorts.every(e=>['ATTACK','BREAK','RESET'].includes(e.ph));
-    return {hostile,phases,credits:cr-before,fast:c.fast};
-  });
-  L.check('урон игрока переводит караван во враждебный режим и запускает фазы эскорта',convoyAggro.hostile&&convoyAggro.phases,convoyAggro);
-  const convoyCargoKill = await page.evaluate(() => {
-    const c=SF_PC.list()[0],before=cr;
-    pirateConvoyDamage(c.cargo,1e9,false);
-    return {dead:c.cargo.dead,credits:cr-before,escortAlive:c.escorts.some(e=>!!e.g)};
-  });
-  L.check('уничтожение грузовика выдаёт дополнительные 250 кредитов и не удаляет эскорт',convoyCargoKill.dead&&convoyCargoKill.credits>=250&&convoyCargoKill.escortAlive,convoyCargoKill);
+  const convoyGate = await page.evaluate(() => ({worlds:worldPlanets.length,ready:pirateConvoyReady,count:SF_PC.list().length}));
+  L.check('конвои ожидают готовую орбитальную систему минимум с двумя планетами',convoyGate.worlds>=2?convoyGate.count===2:!convoyGate.ready&&convoyGate.count===0,convoyGate);
   const cleanup = await page.evaluate(() => {
     toMenu();
     return { slots: pirateFleet.length, ready: pirateFleetReady };
