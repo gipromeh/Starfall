@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="claude:viewport-fit-sides" content="cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#02030a"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>STARFALL</title>
-<meta name="starfall-version" content="v100">
+<meta name="starfall-version" content="v101">
 <meta name="starfall-telemetry-endpoint" content="">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 <style>
@@ -193,11 +193,23 @@ small{opacity:.75;max-width:600px;line-height:1.6}
   background:radial-gradient(ellipse at center,transparent 55%,#ff2a1a55 100%);
   animation:lowhull 1.1s ease-in-out infinite}
 @keyframes lowhull{0%,100%{opacity:.25}50%{opacity:1}}
+
+/* v101 — минимальный боевой HUD, компактный радар и указатель пиратов */
+#hud::before,.hud-version{display:none!important}
+#radar{width:112px!important;height:112px!important;right:12px!important;bottom:12px!important;opacity:.84}
+#radar-controls{display:none!important}
+#pbtn{width:30px!important;height:30px!important;min-width:30px!important;padding:0!important;right:12px!important;top:12px!important;border-radius:50%!important;font-size:12px!important;line-height:28px!important;background:#071522bb!important;box-shadow:0 0 6px #4fd0ff55!important;opacity:.78}
+#fbtn{width:30px!important;height:30px!important;min-width:30px!important;padding:0!important;left:12px!important;bottom:12px!important;font-size:0!important;border-radius:50%!important;opacity:.55}
+#fbtn::after{content:"◎";font-size:17px}
+#pirate-direction{display:none;position:fixed;z-index:8;pointer-events:none;color:#ff765f;font:700 23px/1 Arial,sans-serif;text-shadow:0 0 5px #ff321f,0 0 12px #ff321f;filter:drop-shadow(0 0 3px #000)}
+#aux{max-width:190px!important;font-size:9px!important;opacity:.68!important}
+#spd{font-size:10px!important;opacity:.68}
+@media(max-height:500px){#radar{width:94px!important;height:94px!important}#spd{bottom:34px!important}}
 </style></head><body>
 <div id="hud"><span class="hud-version" data-version-label></span><div class="bar" id="hull"><i></i></div><div class="bar" id="shield"><i></i></div>
 <div class="t" id="miss" style="left:20px;top:62px"></div><div class="t" id="sc" style="right:20px;top:20px;text-align:right"></div>
 <div class="t" id="msg"></div><button id="fbtn" style="position:absolute;left:50%;transform:translateX(-50%);bottom:64px;pointer-events:auto;padding:6px 14px;font-size:12px;background:#04182cdd;color:#bfeaff;border:2px solid #4fd0ffcc;border-radius:16px;box-shadow:0 0 10px #4fd0ff88;cursor:pointer;z-index:5">СОПРОВОЖДЕНИЕ [H]</button><div id="cross"></div><div id="stick"></div><div id="tgt"></div>
-<div class="t" id="tinfo" style="left:0;right:0;bottom:28px;text-align:center"></div><div class="bar" id="heat" style="top:84px"><i style="background:#fa0;width:0"></i></div><div class="t" id="aux" style="left:20px;top:104px"></div><div class="bar" id="fuel" style="top:128px"><i style="background:#8f4;width:100%"></i></div><div class="bar" id="ehp" style="left:50%;margin-left:-110px;top:20px;display:none"><i style="background:#f44;width:0"></i></div><button id="pbtn" style="position:absolute;right:20px;top:60px;pointer-events:auto;min-width:0;padding:4px 12px;font-size:14px">II</button><div id="thr" style="position:absolute;display:none;color:#f54;font-size:28px">➤</div><div id="lead" style="position:absolute;display:none;width:14px;height:14px;margin:-7px;border:2px solid #8f8;border-radius:50%"></div><div id="hm" style="position:absolute;left:50%;top:50%;margin:-16px;width:32px;height:32px;opacity:0;color:#fff;font-size:30px;text-align:center;line-height:32px">✕</div><div class="t" id="cmb" style="left:0;right:0;top:30%;text-align:center;font-size:20px;color:#fd4"></div><canvas id="radar" width="170" height="170" style="position:absolute;right:20px;bottom:20px;border-radius:50%;background:#02122099;border:1px solid #3cf"></canvas><div id="radar-controls" aria-label="Масштаб радара" style="position:absolute;right:20px;bottom:194px;display:flex;gap:3px;z-index:12;pointer-events:auto"><button type="button" data-radar-range="500" aria-label="Радар 500 метров" style="font-size:10px;line-height:1;padding:4px 5px;min-width:32px;letter-spacing:0;clip-path:none">0.5</button><button type="button" data-radar-range="1000" aria-label="Радар 1 километр" style="font-size:10px;line-height:1;padding:4px 5px;min-width:32px;letter-spacing:0;clip-path:none">1.0</button><button type="button" data-radar-range="2000" aria-label="Радар 2 километра" style="font-size:10px;line-height:1;padding:4px 5px;min-width:32px;letter-spacing:0;clip-path:none">2.0</button></div><div id="flash"></div><div class="t" id="scn" style="left:0;right:0;top:57%;text-align:center;font-size:13px;color:#ffd36a;display:none"></div><div class="t" id="spd" style="left:0;right:0;bottom:56px;text-align:center;font-size:12px;line-height:1.5"></div></div>
+<div class="t" id="tinfo" style="left:0;right:0;bottom:28px;text-align:center"></div><div class="bar" id="heat" style="top:84px"><i style="background:#fa0;width:0"></i></div><div class="t" id="aux" style="left:20px;top:104px"></div><div class="bar" id="fuel" style="top:128px"><i style="background:#8f4;width:100%"></i></div><div class="bar" id="ehp" style="left:50%;margin-left:-110px;top:20px;display:none"><i style="background:#f44;width:0"></i></div><button id="pbtn" style="position:absolute;right:20px;top:60px;pointer-events:auto;min-width:0;padding:4px 12px;font-size:14px">II</button><div id="thr" style="position:absolute;display:none;color:#f54;font-size:28px">➤</div><div id="lead" style="position:absolute;display:none;width:14px;height:14px;margin:-7px;border:2px solid #8f8;border-radius:50%"></div><div id="hm" style="position:absolute;left:50%;top:50%;margin:-16px;width:32px;height:32px;opacity:0;color:#fff;font-size:30px;text-align:center;line-height:32px">✕</div><div class="t" id="cmb" style="left:0;right:0;top:30%;text-align:center;font-size:20px;color:#fd4"></div><div id="pirate-direction" aria-label="Направление на ближайший пиратский корабль">▲</div><canvas id="radar" width="170" height="170" style="position:absolute;right:12px;bottom:12px;border-radius:50%;background:#02122099;border:1px solid #3cf"></canvas><div id="flash"></div><div class="t" id="scn" style="left:0;right:0;top:57%;text-align:center;font-size:13px;color:#ffd36a;display:none"></div><div class="t" id="spd" style="left:0;right:0;bottom:56px;text-align:center;font-size:12px;line-height:1.5"></div></div>
 <div id="tsp" style="position:fixed;inset:0;pointer-events:none"></div>
 <div class="ov" id="menu"><div class="mn-hero"><h1>STARFALL</h1><div class="mn-version" data-version-label></div></div>
 <div class="mn-main" id="mnmain"><button id="play">ИГРАТЬ</button><div class="mn-hint">нажмите ENTER или коснитесь кнопки</div></div>
@@ -2010,8 +2022,7 @@ function pirateFleetInit(){
  if(pirateFleetReady||state!=="play"||!pirateAssetsReady)return;
  pirateFleetPrepare();pirateFleetReady=true;EAI.seed((((sy+1)*0x9e3779b1)^((wave+1)*0x85ebca6b)^((score+1)*0xc2b2ae35))>>>0);
  pirateFleetNextType=EAI.rand()*3|0;pirateFleetWaveTimer=0;
- for(let slot=0;slot<2;slot++){const e={slot,ty:pirateFleetNextType,g:null,hp:0,mx:0,respawn:Infinity,dead:false,flames:[]};pirateFleet.push(e);pirateFleetSpawn(e,slot*.22)}
- say("ПИРАТСКАЯ ПАРА: "+(["ГОЛОВОРЕЗЫ","ШАКАЛЫ","МАРОДЁРЫ"][pirateFleetNextType]),3);
+ for(let slot=0;slot<3;slot++){const e={slot,ty:slot<2?0:1,g:null,hp:0,mx:0,respawn:Infinity,dead:false,flames:[]};pirateFleet.push(e);pirateFleetSpawn(e,slot*.22)}\n say("ПИРАТСКАЯ ЭСКАДРИЛЬЯ: 2 ГОЛОВОРЕЗА + ШАКАЛ",3);
 }
 function pirateDamageFxPrepare(){if(!pirateFleetSmokeTex)pirateFleetSmokeTex=gtex("rgba(55,55,58,.92)");if(!pirateFleetFireTex)pirateFleetFireTex=gtex("rgba(255,75,18,1)")}
 function pirateIgnite(e){if(!e||!e.g)return;pirateDamageFxPrepare();e.hits=(e.hits||0)+1;const c=e.hitCenter||new T.Vector3(),r=e.hitFxRadius||e.r||8;if(!e.fireFx){e.fireFx=new T.Sprite(new T.SpriteMaterial({map:pirateFleetFireTex,color:0xff6724,transparent:true,opacity:.96,blending:T.AdditiveBlending,depthWrite:false,depthTest:false}));e.fireFx.position.copy(c).add(new T.Vector3(0,r*.18,-r*.24));e.fireFx.scale.set(r*1.15,r*1.55,1);e.g.add(e.fireFx)}if(!e.damageFlames){e.damageFlames=[];for(let i=0;i<3;i++){const f=new T.Sprite(new T.SpriteMaterial({map:pirateFleetFireTex,color:[0xff4b18,0xff8a24,0xffc05a][i],transparent:true,opacity:.78,blending:T.AdditiveBlending,depthWrite:false,depthTest:false}));f.position.copy(c).add(new T.Vector3((i-1)*r*.42,r*(i===1?.12:-.08),r*(i===0?.35:-.28)));f.scale.set(r*(.62+i*.08),r*(.9+i*.12),1);e.g.add(f);e.damageFlames.push(f)}}if(!e.smoke){e.smoke=new T.Sprite(new T.SpriteMaterial({map:pirateFleetSmokeTex,transparent:true,opacity:.62,depthWrite:false,depthTest:false}));e.smoke.position.copy(c).add(new T.Vector3(0,r*.62,r*.04));e.smoke.scale.set(r*1.05,r*1.35,1);e.g.add(e.smoke)}e.fireTrailT=0}
@@ -2064,8 +2075,7 @@ function pirateFleetPhase(e,toPlayer,dist,incoming,aiThink,dt){
  e.state=e.aiIntent=(e.ph==="ATTACK")?"ATTACK":"EVADE";
  return aim;
 }
-function pirateFleetUpdate(dt){
- if(state==="play"&&!pirateFleetReady&&pirateAssetsReady)pirateFleetInit();if(!pirateFleetReady||state!=="play")return;
+function pirateFleetUpdate(dt){\n if(state==="play")ensureCargoShowcase();if(state==="play"&&!pirateFleetReady&&pirateAssetsReady)pirateFleetInit();if(!pirateFleetReady||state!=="play")return;
  if(pirateFleet.every(e=>!e.g)){pirateFleetWaveTimer-=dt;if(pirateFleetWaveTimer<=0){pirateFleetNextType=(pirateFleetNextType+1)%3;pirateFleet.forEach((e,i)=>{e.ty=pirateFleetNextType;e.dead=false;pirateFleetSpawn(e,i*.24)});pirateFleetWaveTimer=3.5;say("НОВАЯ ПИРАТСКАЯ ПАРА: "+(["ГОЛОВОРЕЗЫ","ШАКАЛЫ","МАРОДЁРЫ"][pirateFleetNextType]),2.5)}}
  for(const e of pirateFleet){
   if(!e.g){e.respawn-=dt;if(e.respawn<=0)pirateFleetSpawn(e,0);continue}
@@ -2637,9 +2647,7 @@ window.SF_PC={
 })();
 // ===== END STARFALL v92 FLIGHT RECORDER =====
 
-const rc=$("radar").getContext("2d");
-let radarRange=1000;
-const radarRangeButtons=Array.from(document.querySelectorAll("#radar-controls [data-radar-range]"));
+const rc=$("radar").getContext("2d");\nlet radarRange=1000;\nconst radarRangeButtons=[];\nconst pirateDirectionEl=$("pirate-direction");
 const radarContacts=[],radarPosition=new T.Vector3(),radarVelocity=new T.Vector3();
 
 // Elite-style 3D elliptical scanner projection.
@@ -2721,12 +2729,11 @@ function radar(){
  rc.restore();
  rc.fillStyle="#ffd8ad";rc.font="8px monospace";rc.textAlign="center";rc.fillText(targetText?"ЦЕЛЬ "+targetText+" · "+Math.round(targetDistance)+"м":"КОНТАКТЫ · ВРАГИ "+hostileCount,c,168);rc.restore();
 }
-function setRadarRange(value){radarRange=Math.max(500,Math.min(2000,Number(value)||1000));radarRangeButtons.forEach(b=>b.classList.toggle("on",Number(b.dataset.radarRange)===radarRange));radar()}
-radarRangeButtons.forEach(b=>b.addEventListener("click",e=>{e.stopPropagation();setRadarRange(b.dataset.radarRange)}));radarRangeButtons.forEach(b=>b.classList.toggle("on",Number(b.dataset.radarRange)===radarRange));
+function setRadarRange(value){radarRange=Math.max(500,Math.min(2000,Number(value)||1000));radar()} function updatePirateDirection(){let nearest=null,best=Infinity;const consider=e=>{if(!e||!e.g||e.warp>0||e.hp<=0)return;const d=e.g.position.distanceToSquared(P);if(d<best&&d<=radarRange*radarRange){best=d;nearest=e.g.position}};consider(E);consider(E2);for(const e of pirateFleet)consider(e);if(!nearest){pirateDirectionEl.style.display="none";return}const projected=nearest.clone().project(C);let dx=projected.x,dy=-projected.y;if(projected.z>1){dx=-dx;dy=-dy}const len=Math.hypot(dx,dy)||1;dx/=len;dy/=len;const radius=Math.min(window.innerWidth,window.innerHeight)*.34,cx=window.innerWidth*.5,cy=window.innerHeight*.5;const x=Math.max(22,Math.min(window.innerWidth-22,cx+dx*radius)),y=Math.max(22,Math.min(window.innerHeight-22,cy+dy*radius));pirateDirectionEl.style.left=x+"px";pirateDirectionEl.style.top=y+"px";pirateDirectionEl.style.transform="translate(-50%,-50%) rotate("+(Math.atan2(dy,dx)*180/Math.PI+90)+"deg)";pirateDirectionEl.style.display="block";pirateDirectionEl.title="Пират · "+Math.round(Math.sqrt(best))+" м"}
 
 let last=performance.now();
 function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/1e3);last=now;planetOrbits.forEach(o=>{o.phase+=dt*o.speed;o.mesh.position.set(SYSTEM_CENTER.x+Math.cos(o.phase)*o.radius,SYSTEM_CENTER.y+o.y+Math.sin(o.phase*.7)*o.tilt,SYSTEM_CENTER.z+Math.sin(o.phase)*o.radius)});moonOrbitUpdate(dt);naturalSatellites.forEach(o=>{o.a+=dt*o.speed;o.mesh.position.set(o.parent.mesh.position.x+Math.cos(o.a)*o.orbit,o.parent.mesh.position.y+Math.sin(o.a*.7+o.phase)*o.orbit*.055,o.parent.mesh.position.z+Math.sin(o.a)*o.orbit);o.mesh.rotation.y+=dt*.025});worldPlanets.forEach(w=>{if(w.kind==="planet")w.mesh.rotation.y+=dt*(w.mesh.userData.worldPlanet===0?.012:.022+w.mesh.userData.worldPlanet*.003);const sd=SYSTEM_CENTER.clone().sub(w.mesh.position).normalize();w.mesh.children.forEach(ch=>{if(ch.material&&ch.material.uniforms&&ch.material.uniforms.s)ch.material.uniforms.s.value.copy(sd)})});if(plt&&plt.visible){const pd=SYSTEM_CENTER.clone().sub(plt.position).normalize();plt.children.forEach(ch=>{if(ch.material&&ch.material.uniforms&&ch.material.uniforms.s)ch.material.uniforms.s.value.copy(pd)})}planetClouds.forEach(c=>{c.mesh.rotation.y+=dt*c.speed});for(const sys of saturnRingSystems){sys.ringOrbit.rotation.z+=dt*.045;for(let i=0;i<sys.orbitData.length;i++){const a=sys.orbitData[i];a.a+=a.speed*dt;const wob=Math.sin(a.a*2.7+i)*a.tilt;sys.dummy.position.set(Math.cos(a.a)*a.rad,Math.sin(a.a)*a.rad,a.zoff+wob);sys.dummy.rotation.set(a.a*.7+i,a.a*1.1,a.a*.45);sys.dummy.scale.setScalar(a.scale);sys.dummy.updateMatrix();sys.asteroids.setMatrixAt(i,sys.dummy.matrix)}sys.asteroids.instanceMatrix.needsUpdate=true}
-if(state==="menu"){const t=now/4000;C.position.set(Math.sin(t)*13,3,Math.cos(t)*13);C.lookAt(0,0,0);sky.position.copy(P)}else if(state==="dock"){C.position.set(8,6,10);C.lookAt(-120,-250,-420);sky.position.copy(P)}else if(state==="jump")jmp(dt);else if(state==="play"||state==="dying")upd(dt);else if(hg)hg.gain.value=0;if(window.SF_FLIGHT_RECORDER)window.SF_FLIGHT_RECORDER.frame(dt,now);if(state==="galaxy"&&window.SF_GALAXY_MAP)SF_GALAXY_MAP.render(dt);else if(tr<1)trRender(dt);else if(!cafeLive)CP.render()}
+if(state==="menu"){const t=now/4000;C.position.set(Math.sin(t)*13,3,Math.cos(t)*13);C.lookAt(0,0,0);sky.position.copy(P)}else if(state==="dock"){C.position.set(8,6,10);C.lookAt(-120,-250,-420);sky.position.copy(P)}else if(state==="jump")jmp(dt);else if(state==="play"||state==="dying")upd(dt);else if(hg)hg.gain.value=0;if(state==="play")updatePirateDirection();else pirateDirectionEl.style.display="none";if(window.SF_FLIGHT_RECORDER)window.SF_FLIGHT_RECORDER.frame(dt,now);if(state==="galaxy"&&window.SF_GALAXY_MAP)SF_GALAXY_MAP.render(dt);else if(tr<1)trRender(dt);else if(!cafeLive)CP.render()}
 const TCH=matchMedia("(pointer:coarse)").matches||(("ontouchstart" in window)&&!matchMedia("(any-pointer:fine)").matches);
 {const mb=document.createElement("small");mb.textContent="Режим управления (определён автоматически): "+(TCH?"сенсорный (телефон)":"клавиатура и мышь");$("menu").appendChild(mb)}
 if(TCH){document.querySelector(".mn-hint").textContent="коснитесь кнопки, чтобы начать";R.setPixelRatio(1);rs();$("radar").style.width=$("radar").style.height="120px";document.querySelectorAll("#menu small")[1].textContent="Держи телефон горизонтально. Прицел — проведи пальцем по экрану (чем дальше от точки касания, тем быстрее поворот). Слева — ползунок ГАЗ (скорость корабля). Справа: огонь, ракета, ЛАЗЕР (переключает боевой/горный: в горном «огонь» сканирует и добывает), форсаж; в меню ≡ — ядерка, разворот, тормоз, прыжок.";
@@ -3703,8 +3710,7 @@ function loadCargoTransportAsset(){
  });
 }
 
-loadCargoTransportAsset();
-mkFreighter=function(){
+loadCargoTransportAsset();\n let cargoShowcaseSpawned=false;function ensureCargoShowcase(){if(cargoShowcaseSpawned||state!=="play"||!MC.cargoTransport)return;const g=mkCargoTransport();if(!g)return;const forward=new T.Vector3(0,0,-1).applyQuaternion(Q).normalize(),right=new T.Vector3(1,0,0).applyQuaternion(Q).normalize();g.position.copy(P).addScaledVector(forward,820).addScaledVector(right,105);const v=right.multiplyScalar(22).addScaledVector(forward,-3);g.lookAt(g.position.clone().sub(v));S.add(g);nv.push({g,v,hp:900,hit:0,cargoShowcase:true});cargoShowcaseSpawned=true;say("ГРУЗОВОЙ КОРАБЛЬ: CARGO SPACESHIP ОБНАРУЖЕН",3)}\n mkFreighter=function(){
  const roll=Math.random();
  if(MC.cargoTransport&&roll<.62)return mkCargoTransport();
  if(MC.pirateTransport&&roll<(MC.cargoTransport?.76:.14)){const g=cached("pirate-transport",()=>mkPirateTransport());g.userData={...g.userData,pirateTransport:true};const sockets=pirateFleetResolveSockets(g,3),fx={g,ty:3,engineNodes:sockets.engines,flames:[],flameCores:[]};pirateFleetAttachFX(fx);g.starfallEngineNodes=sockets.engines;g.starfallEngineFlames=fx.flames;g.starfallEngineFlameCores=fx.flameCores;return g}
