@@ -87,15 +87,20 @@ const lg=new T.BufferGeometry();lg.setAttribute('position',new T.Float32BufferAt
 const localPoints=new T.Points(lg,new T.PointsMaterial({size:9,sizeAttenuation:false,vertexColors:true}));localGroup.add(localPoints);
 const ring=new T.Mesh(new T.TorusGeometry(13,.8,6,48),new T.MeshBasicMaterial({color:0x7ceaff,transparent:true,opacity:.95}));ring.visible=false;scene.add(ring);
 const routeMat=new T.LineBasicMaterial({color:0xffc46b,transparent:true,opacity:.9});
-let routeLine=null,records=[],filtered=[],selected=null,routeStart=null,routeEnd=null,points=null;let populationAvailable=false;
+let routeLine=null,records=[],filtered=[],renderedRecords=[],selected=null,routeStart=null,routeEnd=null,points=null;let populationAvailable=false;
 let previousState='menu',previousHud='',opened=false,yaw=.18,pitch=.12,distance=3300,drag=null,target=new T.Vector3();
 const externalRaycaster=new T.Raycaster(),externalPointer=new T.Vector2();
 const originalTouchAction=R.domElement.style.touchAction;
 const posOf=r=>new T.Vector3(r.x*.035,r.y*.035,r.z*.035);
 function disposePoints(){if(points){galaxy.remove(points);points.geometry.dispose();points.material.dispose();points=null;}}
 function buildPoints(list){
- disposePoints();const p=new Float32Array(list.length*3),c=new Float32Array(list.length*3);
- list.forEach((r,i)=>{p[i*3]=r.x*.035;p[i*3+1]=r.y*.035;p[i*3+2]=r.z*.035;const pop=+r.p||0,col=new T.Color(pop>1e8?0xffc56f:pop>0?0x68d9e9:0x8a9eb8);c[i*3]=col.r;c[i*3+1]=col.g;c[i*3+2]=col.b;});
+ disposePoints();
+ // Keep the complete catalogue available for search and system inspection,
+ // but cap GPU point count to protect iPhone Safari memory and frame time.
+ const renderLimit=160000,stride=Math.max(1,Math.ceil(list.length/renderLimit));
+ renderedRecords=stride===1?list:list.filter((_,i)=>i%stride===0);
+ const p=new Float32Array(renderedRecords.length*3),c=new Float32Array(renderedRecords.length*3);
+ renderedRecords.forEach((r,i)=>{p[i*3]=r.x*.035;p[i*3+1]=r.y*.035;p[i*3+2]=r.z*.035;const pop=+r.p||0,col=new T.Color(pop>1e8?0xffc56f:pop>0?0x68d9e9:0x8a9eb8);c[i*3]=col.r;c[i*3+1]=col.g;c[i*3+2]=col.b;});
  const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(p,3));g.setAttribute('color',new T.BufferAttribute(c,3));
  points=new T.Points(g,new T.PointsMaterial({size:2.5,sizeAttenuation:false,vertexColors:true,transparent:true,opacity:.9}));points.frustumCulled=false;galaxy.add(points);
  const inhabitedCount=records.reduce((n,r)=>n+(r.p>0?1:0),0);
@@ -103,7 +108,7 @@ function buildPoints(list){
  inhBtn.disabled=!(populationAvailable&&inhabitedCount>0)||list.length===inhabitedCount;
  inhBtn.textContent=populationAvailable?(inhabitedCount?'ОБЖИТЫЕ':'ОБЖИТЫЕ · НЕТ В ВЫБОРКЕ'):'ОБЖИТЫЕ · НЕТ ДАННЫХ';
  inhBtn.title=inhBtn.disabled?'В источнике Spansh нет пригодных данных о населении для фильтрации.':'Показать системы с населением больше нуля.';
- status.textContent=list.length.toLocaleString('ru-RU')+' систем Spansh · выборка, не полная галактика'+(populationAvailable?' · обитаемых в выборке: '+inhabitedCount:' · population отсутствует, фильтр отключён');
+ status.textContent=list.length.toLocaleString('ru-RU')+' систем в каталоге Spansh · на карте '+renderedRecords.length.toLocaleString('ru-RU')+' точек'+(populationAvailable?' · обитаемых: '+inhabitedCount:' · population отсутствует, фильтр отключён');
 }
 async function loadCatalog(){
  if(records.length)return;
@@ -265,7 +270,7 @@ const projectedPoint=new T.Vector3();
 function nearest(x,y){
  const rect=R.domElement.getBoundingClientRect(),nx=(x-rect.left)/rect.width*2-1,ny=-((y-rect.top)/rect.height*2-1);let best=null,bd=324;
  const test=(arr,isLocal)=>{for(const r of arr){const p=projectedPoint.set(isLocal?r.x:r.x*.035,isLocal?r.y:r.y*.035,isLocal?r.z:r.z*.035);p.project(camera);if(p.z< -1||p.z>1)continue;const dx=(p.x-nx)*rect.width*.5,dy=(p.y-ny)*rect.height*.5,d=dx*dx+dy*dy;if(d<bd){bd=d;best={record:r,local:isLocal};}}};
- test(local,true);test(filtered,false);return best;
+ test(local,true);test(renderedRecords,false);return best;
 }
 function down(e){if(!opened||e.target.closest('#sf-galaxy .top,#sf-galaxy .side,#sf-galaxy .bottom,#sf-galaxy .flight-controls'))return;drag={x:e.clientX,y:e.clientY,id:e.pointerId,moved:false};try{R.domElement.setPointerCapture(e.pointerId);}catch(_){}}
 function move(e){if(!drag||drag.id!==e.pointerId)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.x=e.clientX;drag.y=e.clientY;if(Math.abs(dx)+Math.abs(dy)>2)drag.moved=true;if(flightMode&&flightShip){flightShip.rotateY(-dx*.004);flightShip.rotateX(-dy*.004);updateFlightCamera();return;}yaw-=dx*.005;pitch=Math.max(-1.35,Math.min(1.35,pitch+dy*.004));cameraUpdate();}
