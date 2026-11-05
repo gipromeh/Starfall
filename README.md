@@ -21,7 +21,7 @@
 
 ## Библиотека игровых ресурсов
 
-Все игровые ассеты хранятся в `assets/` и распределяются по категориям: `ships/`, `droids/`, `planets/`, `weapons/`, `artifacts/`. Описание структуры и правила размещения: [`assets/README.md`](assets/README.md). Каталог дроидов: [`assets/droids/`](assets/droids/); просмотрщик моделей кораблей: [`assets/ships/viewer.html`](assets/ships/viewer.html). Корневой каталог `Droids/` удалён — единственный актуальный путь находится внутри `assets/`.
+Все игровые ассеты хранятся в `assets/` и распределяются по категориям: `ships/`, `droids/`, `planets/`, `weapons/`, `artifacts/`. Описание структуры и правила размещения: [`assets/README.md`](assets/README.md). Обязательная проверка всех GLB: [GLB Asset Pipeline](docs/GLB_ASSET_PIPELINE.md). Каталог дроидов: [`assets/droids/`](assets/droids/); просмотрщик моделей кораблей: [`assets/ships/viewer.html`](assets/ships/viewer.html). Корневой каталог `Droids/` удалён — единственный актуальный путь находится внутри `assets/`.
 
 ## Galaxy Map и каталог Spansh
 
@@ -35,7 +35,7 @@
 
 ## Единственный источник правды
 
-Единственный актуальный источник кода и документации — репозиторий [`gipromeh/Starfall`](https://github.com/gipromeh/Starfall), ветка `main`. Текущая версия: **v100**, изменения подготовлены в PR #37 и ожидают обязательного CI.
+Единственный актуальный источник кода и документации — репозиторий [`gipromeh/Starfall`](https://github.com/gipromeh/Starfall), ветка `main`. Текущая версия main: **v102** (по meta[name=starfall-version] в starfall.html).
 
 Разработка и сопровождение проекта сейчас ведутся в **ChatGPT** с подключением к GitHub. **Claude не используется.** Старые чаты, локальные копии и сторонние рабочие пространства не являются источником актуального состояния проекта. Все изменения сверяются с содержимым репозитория.
 
