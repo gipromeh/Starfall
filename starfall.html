@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="claude:viewport-fit-sides" content="cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#02030a"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>STARFALL</title>
-<meta name="starfall-version" content="v97">
+<meta name="starfall-version" content="v97.1">
 <meta name="starfall-telemetry-endpoint" content="">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 <style>
@@ -1660,7 +1660,7 @@ const tv=tp===P?vel:(e.tn?e.tn.v:vel),rel=tp.clone().sub(g.position),aa=tv.lengt
 if(disc>=0&&Math.abs(aa)>1e-6){const sq=Math.sqrt(disc),t1=(-bb-sq)/(2*aa),t2=(-bb+sq)/(2*aa),ts=[t1,t2].filter(t=>t>0&&t<4);if(ts.length)lead=Math.min(...ts)}
 const aim=rel.addScaledVector(tv,Math.min(4,lead)).normalize().add(rd().multiplyScalar(Math.max(.015,.1-.008*wave)*DF[dif].ac)).normalize();
 if(e.ty===3){shoot(eb,g.position.clone(),aim.multiplyScalar(40),0xff55ff,30*DF[dif].dm,8);const q=eb[eb.length-1];q.hm=1;q.kind="hostile-missile";q.m.scale.set(2.5,2.5,.8);if(tp===P)say("ВНИМАНИЕ: РАКЕТА!",1.4);sfx("m");e.burstLeft=0;e.fire=2.8*DF[dif].fr}
-else{const guns=e.muzzleNodes&&e.muzzleNodes.length?e.muzzleNodes:[null];for(const gun of guns){const muzzle=gun?gun.getWorldPosition(new T.Vector3()):g.position.clone();shootLaser(eb,muzzle,aim.clone().multiplyScalar(150),0xffc34a,[12,8,24][e.ty]*DF[dif].dm,4)}sfx("l2");e.burstLeft--;e.burstGap=.12;if(!e.burstLeft)e.fire=Math.max(.7,1.5-.05*wave)*[.9,.75,1.35][e.ty]*DF[dif].fr}
+else{const guns=e.muzzleNodes&&e.muzzleNodes.length?e.muzzleNodes:[null];for(const gun of guns){const muzzle=gun?gun.getWorldPosition(new T.Vector3()):g.position.clone();shootLaser(eb,muzzle,aim.clone().multiplyScalar(150),0xffc34a,[12,8,24][e.ty]*DF[dif].dm*(2/Math.max(1,guns.length)),4)}sfx("l2");e.burstLeft--;e.burstGap=.12;if(!e.burstLeft)e.fire=Math.max(.7,1.5-.05*wave)*[.9,.75,1.35][e.ty]*DF[dif].fr}
 }}}if(_p){const t_=E;E=E2;E2=t_}}
 }
 if(state==="play"||state==="dying"){
@@ -1706,7 +1706,7 @@ function planetNavUpdate(){
 
 // ===== STARFALL v77 — RESTORED LIGHTING, BARREL FIRE AND ATTACK AI =====
 const pirateFleet=[];
-let pirateFleetReady=false,pirateFleetTemplates=null,pirateFleetFlameMat=null,pirateFleetSmokeTex=null,pirateFleetFireTex=null,pirateFleetNextType=0,pirateFleetWaveTimer=0;
+let pirateFleetReady=false,pirateFleetTemplates=null,pirateFleetFlameMat=null,pirateFleetFlameCoreMat=null,pirateFleetSmokeTex=null,pirateFleetFireTex=null,pirateFleetNextType=0,pirateFleetWaveTimer=0;
 /* Elite research adaptation: tactical decisions run at 15 Hz (four 60 Hz frames),
    while steering, orientation and world-position integration remain per-frame.
    Coordinates stay in Starfall/Three.js units; no ZX Spectrum scale is imported. */
@@ -1898,23 +1898,30 @@ function pirateFleetPrepare(){
  pirateFleetSmokeTex=gtex("rgba(55,55,58,.92)");pirateFleetFireTex=gtex("rgba(255,75,18,1)");
 }
 function pirateFleetEnsureFlameMaterial(){
- if(!pirateFleetFlameMat){pirateFleetFlameMat=new T.SpriteMaterial({map:gtex("rgba(255,135,48,1)"),color:0xff8a38,transparent:true,opacity:.76,blending:T.AdditiveBlending,depthWrite:false});pirateFleetFlameMat.userData.keep=true;if(pirateFleetFlameMat.map)pirateFleetFlameMat.map.userData.keep=true}
+ if(!pirateFleetFlameMat){pirateFleetFlameMat=new T.SpriteMaterial({map:gtex("rgba(255,135,48,1)"),color:0xff8a38,transparent:true,opacity:.82,blending:T.AdditiveBlending,depthWrite:false});pirateFleetFlameMat.userData.keep=true;if(pirateFleetFlameMat.map)pirateFleetFlameMat.map.userData.keep=true}
+ if(!pirateFleetFlameCoreMat){pirateFleetFlameCoreMat=new T.SpriteMaterial({map:gtex("rgba(255,232,190,1)"),color:0xffdfaa,transparent:true,opacity:.9,blending:T.AdditiveBlending,depthWrite:false});pirateFleetFlameCoreMat.userData.keep=true;if(pirateFleetFlameCoreMat.map)pirateFleetFlameCoreMat.map.userData.keep=true}
 }
 function pirateFleetAttachFX(e){
  if(!e||!e.g)return;
  if(!e.engineNodes||!e.engineNodes.length)e.engineNodes=pirateFleetResolveSockets(e.g,e.ty).engines;
- e.flames=e.flames||[];pirateFleetEnsureFlameMaterial();
+ e.flames=e.flames||[];e.flameCores=e.flameCores||[];pirateFleetEnsureFlameMaterial();
  e.engineNodes.forEach((node,i)=>{
-  const name="STARFALL_ENGINE_FLAME_"+i;
-  let flame=node.getObjectByName(name);
-  if(!flame){flame=new T.Sprite(pirateFleetFlameMat);flame.name=name;flame.position.set(0,0,.12);flame.scale.set(e.ty===0?1.3:1.5,4.2,1);node.add(flame)}
+  const flameName="STARFALL_ENGINE_FLAME_"+i,coreName="STARFALL_ENGINE_PLASMA_CORE_"+i;
+  let flame=node.getObjectByName(flameName),core=node.getObjectByName(coreName);
+  if(!flame){flame=new T.Sprite(pirateFleetFlameMat);flame.name=flameName;flame.position.set(0,0,.12);flame.scale.set(e.ty===0?1.3:1.5,4.2,1);node.add(flame)}
+  if(!core){core=new T.Sprite(pirateFleetFlameCoreMat);core.name=coreName;core.position.set(0,0,.2);core.scale.set(.48,2.7,1);node.add(core)}
   if(!e.flames.includes(flame))e.flames.push(flame);
+  if(!e.flameCores.includes(core))e.flameCores.push(core);
  });
 }
 function pirateFleetUpdateFlames(e,dt){
  if(!e||!e.flames||!e.flames.length)return;
  const speed=e.speed||e.sp2||45,phase=performance.now()*.018+(e.slot||0)*1.7+(e.ty||0)*.9;
- e.flames.forEach((f,i)=>{const pulse=.82+.18*Math.sin(phase+i*1.9);f.scale.set(e.ty===0?1.3:1.5,(2.9+Math.min(1,speed/55)*2.35)*pulse,1);f.position.z=.12+.08*Math.sin(phase+i*1.3)});
+ e.flames.forEach((f,i)=>{
+  const pulse=.82+.18*Math.sin(phase+i*1.9),length=(2.9+Math.min(1,speed/55)*2.35)*pulse;
+  f.scale.set(e.ty===0?1.3:1.5,length,1);f.position.z=.12+.08*Math.sin(phase+i*1.3);f.material.opacity=.62+.2*pulse;
+  const core=e.flameCores&&e.flameCores[i];if(core){core.scale.set(.42+.08*pulse,length*.62,1);core.position.z=.2+.04*Math.sin(phase+i*1.7);core.material.opacity=.68+.24*pulse}
+ });
 }
 function pirateEngineTrailUpdate(e,dt,interval=.38){
  if(!e||!e.g||!e.engineNodes||!e.engineNodes.length||e.warp>0)return;
@@ -1927,7 +1934,7 @@ function pirateEngineTrailUpdate(e,dt,interval=.38){
 function pirateTrafficEngineFxUpdate(dt){
  for(const n of nv){
   const g=n.g;if(!g||!g.userData||!g.userData.pirateTransport)continue;
-  if(!n.engineNodes){n.engineNodes=g.starfallEngineNodes||pirateFleetResolveSockets(g,3).engines;n.flames=g.starfallEngineFlames||[];n.ty=3;n.engineTrailT=.12}
+  if(!n.engineNodes){n.engineNodes=g.starfallEngineNodes||pirateFleetResolveSockets(g,3).engines;n.flames=g.starfallEngineFlames||[];n.flameCores=g.starfallEngineFlameCores||[];n.ty=3;n.engineTrailT=.12}
   pirateFleetUpdateFlames(n,dt);pirateEngineTrailUpdate(n,dt,TCH?.48:.4);
  }
 }
@@ -2018,7 +2025,7 @@ function pirateFleetUpdate(dt){
    for(const gun of guns){
     const muzzle=gun?gun.getWorldPosition(new T.Vector3()):g.localToWorld(new T.Vector3(0,-.25,-3.8));
     const shotDir=gun?gun.getWorldDirection(new T.Vector3()).normalize().lerp(targetPoint.clone().sub(muzzle).normalize(),.12).normalize():targetPoint.clone().sub(muzzle).normalize();
-    shootLaser(eb,muzzle,shotDir.multiplyScalar(shotSpeed),0xffc34a,[5.0,3.8,6.2,4.4][e.ty]*DF[dif].dm,7.0);
+    shootLaser(eb,muzzle,shotDir.multiplyScalar(shotSpeed),0xffc34a,[5.0,3.8,6.2,4.4][e.ty]*DF[dif].dm*(2/Math.max(1,guns.length)),7.0);
     eb[eb.length-1].pirateFleet=true;eb[eb.length-1].pirateFleetSlot=e.slot;
    }
    e.burst--;e.burstGap=.18;if(e.burst<=0)e.fire=([.8,1.1,1.35,1.2][e.ty]+EAI.rand()*[.25,.35,.55,.4][e.ty])*DF[dif].fr;sfx("l2");
@@ -3131,7 +3138,7 @@ const GLB_PIR=[
 let pirateAssetsDone=0;
 const GLB_EXTRA_PIR=[
  {ty:2,url:"assets/pirates/ships/pirate/pirate_fighter_003/model.glb",size:10,yaw:Math.PI,author:"Mickael Boitte",license:"CC-BY-4.0"},
- {ty:3,url:"assets/pirates/ships/pirate/pirate_transport_001/model.glb",size:10,yaw:Math.PI,author:"Quiznos323",license:"CC-BY-NC-SA-4.0"}
+ {ty:3,role:"transport",url:"assets/pirates/ships/pirate/pirate_transport_001/model.glb",size:10,yaw:Math.PI,author:"Quiznos323",license:"CC-BY-NC-SA-4.0"}
 ];
 function fitPirateAsset(src,targetSize=10,yaw=Math.PI){
  src.updateMatrixWorld(true);
@@ -3151,7 +3158,7 @@ function loadExtraPirateAssets(){
   try{
    const g=fitPirateAsset(gl.scene,d.size,d.yaw);
    applyPirateLivery(g);g.traverse(o=>{if(o.isMesh&&o.geometry){o.geometry.userData.keep=1;o.castShadow=false;o.receiveShadow=false}});
-   g.userData={sc:1};MC["p"+d.ty]=g;pirateFleetResolveSockets(g,d.ty);
+   g.userData={sc:1};if(d.role==="transport")MC.pirateTransport=g;else MC["p"+d.ty]=g;pirateFleetResolveSockets(g,d.ty);
    console.info("STARFALL: pirate GLB ready",d.ty,d.url);
   }catch(e){console.warn("GLB extra pirate processing failed; procedural fallback active:",d.url,e)}
   finally{pirateExtraAssetDone()}
@@ -3166,10 +3173,10 @@ mkPirate=function(ty,...args){
   return g;
  };
  function mkPirateTransport(){
- if(!MC.p3)return null;
- const g=MC.p3.clone(true);g.userData={...g.userData,sc:2.2,pirateTransport:true};
- const sockets=pirateFleetResolveSockets(g,3),fx={g,ty:3,engineNodes:sockets.engines,flames:[]};pirateFleetAttachFX(fx);
- g.starfallEngineNodes=sockets.engines;g.starfallEngineFlames=fx.flames;return g;
+ if(!MC.pirateTransport)return null;
+ const g=MC.pirateTransport.clone(true);g.userData={...g.userData,sc:2.2,pirateTransport:true};
+ const sockets=pirateFleetResolveSockets(g,3),fx={g,ty:3,engineNodes:sockets.engines,flames:[],flameCores:[]};pirateFleetAttachFX(fx);
+ g.starfallEngineNodes=sockets.engines;g.starfallEngineFlames=fx.flames;g.starfallEngineFlameCores=fx.flameCores;return g;
 }
 if(T.GLTFLoader&&location.protocol!=="file:"){
  const GL_=new T.GLTFLoader();
@@ -3191,7 +3198,7 @@ if(T.GLTFLoader&&location.protocol!=="file:"){
 }else pirateAssetsReady=true;
 mkBoss=function(){return cached("boss",()=>applyPirateLivery(SKIT.mkBoss(gtex)))};
 mkStation=function(){return SKIT.mkStation(gtex)};
-mkFreighter=function(){if(MC.p3&&Math.random()<.14){const g=cached("pirate-transport",()=>mkPirateTransport());g.userData={...g.userData,pirateTransport:true};const sockets=pirateFleetResolveSockets(g,3),fx={g,ty:3,engineNodes:sockets.engines,flames:[]};pirateFleetAttachFX(fx);g.starfallEngineNodes=sockets.engines;g.starfallEngineFlames=fx.flames;return g}const k=Math.random()<.6?0:1,g=cached("f"+k,()=>{const f=SKIT.mkFreighter(k,gtex);f.userData.sc=1.6;return f});return g};
+mkFreighter=function(){if(MC.pirateTransport&&Math.random()<.14){const g=cached("pirate-transport",()=>mkPirateTransport());g.userData={...g.userData,pirateTransport:true};const sockets=pirateFleetResolveSockets(g,3),fx={g,ty:3,engineNodes:sockets.engines,flames:[],flameCores:[]};pirateFleetAttachFX(fx);g.starfallEngineNodes=sockets.engines;g.starfallEngineFlames=fx.flames;g.starfallEngineFlameCores=fx.flameCores;return g}const k=Math.random()<.6?0:1,g=cached("f"+k,()=>{const f=SKIT.mkFreighter(k,gtex);f.userData.sc=1.6;return f});return g};
 // ангар: шкалы под новые корабли
 {const _h=hgrView;hgrView=function(box,s,n){_h(box,s,n);const b=box.querySelectorAll(".hg-s b"),q=SHIPS[shp];if(b.length>=4){b[0].style.width=Math.min(100,q.hull/4.5)+"%";b[1].style.width=Math.min(100,q.spd*80)+"%";b[3].style.width=Math.min(100,q.cargo*3.4)+"%"}}}
 applyShip();
@@ -3733,16 +3740,12 @@ const DG=(function(){
 {const _l=loop;loop=function(now){if(QL.lost){// ===== STARFALL v64 — PIRATE PILOTS, INERTIAL ATTACK RUNS & ENGINE VFX =====
 {
 function disposePirateV64(e){const f=e&&e.v64fx;if(!f||f.disposed)return;f.disposed=true;for(const q of f.flames){q.outer.material.dispose();q.core.material.dispose()}if(f.smoke)f.smoke.material.dispose();if(f.fire)f.fire.material.dispose()}
-const _spawnPirateV64=spawnE;spawnE=function(){_spawnPirateV64();for(const e of [E,E2]){if(!e||e.boss||e.v64fx)continue;const g=e.g,ty=e.ty,mounts=ty===2?[[-1.5,4.9],[0,4.9],[1.5,4.9]]:ty===3?[[-2,4.6],[2,4.6]]:ty===1?[[0,5.0]]:[[-.7,4.0],[.7,4.0]],flames=[];
-for(const [x,z] of mounts){const outer=new T.Sprite(new T.SpriteMaterial({map:gtex("rgba(255,110,34,1)"),color:0xff7b30,transparent:true,opacity:.78,blending:T.AdditiveBlending,depthWrite:false}));outer.position.set(x,-.04,z);outer.scale.set(1.05,3.9,1);g.add(outer);const core=new T.Sprite(new T.SpriteMaterial({map:gtex("rgba(255,225,165,1)"),color:0xffd6a0,transparent:true,opacity:.76,blending:T.AdditiveBlending,depthWrite:false}));core.position.set(x,-.04,z-.08);core.scale.set(.42,2.45,1);g.add(core);flames.push({outer,core,x,z})}
-e.v64fx={flames,trailT:0,fireT:0,clock:0,damage:0,smoke:null,fire:null}}};
+const _spawnPirateV64=spawnE;spawnE=function(){_spawnPirateV64();for(const e of [E,E2]){if(!e||e.boss||e.v64fx)continue;e.v64fx={flames:[],trailT:0,fireT:0,clock:0,damage:0,smoke:null,fire:null}}};
 const _hurtPirateV64=hurtE;hurtE=function(d,ms){const e=E;_hurtPirateV64(d,ms);if(!e||e.hp<=0||e.boss||!e.v64fx)return;const f=e.v64fx,ratio=e.hp/Math.max(1,e.mx);f.damage=1-ratio;
 if(ratio<.68&&!f.smoke){f.smoke=new T.Sprite(new T.SpriteMaterial({map:gtex("rgba(48,48,52,.9)"),transparent:true,opacity:.42,depthWrite:false}));f.smoke.position.set(.2,.55,1.1);f.smoke.scale.set(3.8,4.6,1);e.g.add(f.smoke)}
 if(ratio<.46&&!f.fire){f.fire=new T.Sprite(new T.SpriteMaterial({map:gtex("rgba(255,78,18,1)"),color:0xff6724,transparent:true,opacity:.86,blending:T.AdditiveBlending,depthWrite:false}));f.fire.position.set(-.2,.12,2.5);f.fire.scale.set(3.7,5.8,1);e.g.add(f.fire)}};
 const _killPirateV64=kill;kill=function(ms){const e=E;_killPirateV64(ms);disposePirateV64(e)};
-function pirateV64Tick(dt){for(const e of [E,E2]){if(!e||e.boss||!e.v64fx||e.hp<=0||!e.g)continue;const f=e.v64fx;f.clock+=dt;const power=Math.max(.18,Math.min(1,e.vel.length()/Math.max(24,e.sp2||42)));
-for(const q of f.flames){const pulse=.9+.1*Math.sin(f.clock*17+q.x*2);q.outer.scale.set(.82+power*.42,(2.2+power*4.1)*pulse,1);q.outer.material.opacity=.35+power*.48;q.core.scale.set(.32+power*.2,(1.25+power*2.6)*pulse,1);q.core.material.opacity=.3+power*.55}
-f.trailT-=dt;if(f.trailT<=0&&state==="play"&&e.warp<=0){f.trailT=TCH?.15:.105;e.g.updateMatrixWorld(true);const z=e.ty===2?5.9:e.ty===1?5.8:e.ty===3?5.3:4.8,p=e.g.localToWorld(new T.Vector3(0,0,z));trail(p,e.hp/e.mx<.46?"rgba(255,72,20,1)":"rgba(255,145,62,.95)",e.ty===2?3.0:2.25)}
+function pirateV64Tick(dt){for(const e of [E,E2]){if(!e||e.boss||!e.v64fx||e.hp<=0||!e.g)continue;const f=e.v64fx;f.clock+=dt;
 if(f.smoke){f.smoke.material.opacity=.24+.18*(.5+.5*Math.sin(f.clock*3));f.smoke.scale.setScalar(3.8+f.damage*3.2)}
 if(f.fire){f.fire.material.opacity=.5+.38*(.5+.5*Math.sin(f.clock*19));f.fire.scale.set(3.1+.35*Math.sin(f.clock*13),5.0+.8*Math.sin(f.clock*16),1);f.fireT-=dt;if(f.fireT<=0&&state==="play"&&e.warp<=0){f.fireT=TCH?.18:.12;e.g.updateMatrixWorld(true);const p=e.g.localToWorld(new T.Vector3(-.2,.1,4.0));trail(p,"rgba(255,75,20,1)",3.0);if(f.damage>.78&&Math.sin(f.clock*9)>.55)trail(p,"rgba(58,58,62,.88)",3.8)}}}}
 const _updPirateV64=upd;upd=function(dt){_updPirateV64(dt);pirateV64Tick(dt)};

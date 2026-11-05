@@ -56,7 +56,8 @@ const L = require('./lib');
         gunForward:sockets.guns.every(n=>n.getWorldDirection(new THREE.Vector3()).dot(forward)>.98),
         gunsAhead:sockets.guns.every(n=>n.getWorldPosition(new THREE.Vector3()).sub(center).dot(forward)>0),
         flames:fx.flames.length, flamesAtEngines:fx.flames.every((f,i)=>f.parent===sockets.engines[i]),
-        plasmaTrailCount:emitted
+        flameCores:fx.flameCores.length, coresAtEngines:fx.flameCores.every((f,i)=>f.parent===sockets.engines[i]),
+        manifest:sockets.manifest, plasmaTrailCount:emitted
       };
       fx.flames.forEach(f=>f.parent?.remove(f)); S.remove(g);
       return result;
@@ -68,6 +69,7 @@ const L = require('./lib');
       inspect('pirate-transport',mkPirateTransport(),3)
     ];
   });
+  console.log("STARFALL_PIRATE_SOCKET_MANIFEST "+JSON.stringify(socketInventory.map(x=>({id:x.id,manifest:x.manifest}))));
   L.check('«Ржавый череп» использует четыре реальные GUN-маркера и два ENG-маркера GLB',
     socketInventory[0].guns===4&&socketInventory[0].engines===2&&socketInventory[0].gunSource==='GLB'&&socketInventory[0].engineSource==='GLB',
     socketInventory[0]);
@@ -75,7 +77,7 @@ const L = require('./lib');
     socketInventory.every(x=>x.guns>=2&&x.engines>=2&&x.gunForward&&x.gunsAhead),
     socketInventory);
   L.check('каждый двигатель получает видимое пламя и отдельный плазменный след',
-    socketInventory.every(x=>x.flames===x.engines&&x.flamesAtEngines&&x.plasmaTrailCount===x.engines),
+    socketInventory.every(x=>x.flames===x.engines&&x.flamesAtEngines&&x.flameCores===x.engines&&x.coresAtEngines&&x.plasmaTrailCount===x.engines),
     socketInventory);
 
 
