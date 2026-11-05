@@ -3221,10 +3221,9 @@ function loadExtraPirateAssets(){
    const g=fitPirateAsset(gl.scene,d.size,d.yaw);
    applyPirateLivery(g);g.traverse(o=>{if(o.isMesh&&o.geometry){o.geometry.userData.keep=1;o.castShadow=false;o.receiveShadow=false}});
    g.userData={sc:1};if(d.role==="transport")MC.pirateTransport=g;else MC["p"+d.ty]=g;
-   pirateFleetSocketConfigLoad(d.ty).then(()=>pirateFleetResolveSockets(g,d.ty));
+   pirateFleetSocketConfigLoad(d.ty).then(()=>pirateFleetResolveSockets(g,d.ty)).finally(pirateExtraAssetDone);
    console.info("STARFALL: pirate GLB ready",d.ty,d.url);
-  }catch(e){console.warn("GLB extra pirate processing failed; procedural fallback active:",d.url,e)}
-  finally{pirateExtraAssetDone()}
+  }catch(e){console.warn("GLB extra pirate processing failed; procedural fallback active:",d.url,e);pirateExtraAssetDone()}
  },undefined,e=>{console.warn("GLB extra pirate unavailable; procedural fallback active:",d.url,e);pirateExtraAssetDone()}));
 }
 function pirateAssetDone(){if(++pirateAssetsDone>=GLB_PIR.length)loadExtraPirateAssets()}
