@@ -1444,8 +1444,20 @@ function buildAsteroidRingInstances(){
   inst.instanceColor.needsUpdate=true;inst.instanceMatrix.needsUpdate=true;sys.instance=inst;sys.ringOrbit.add(inst);
  }
 }
+function asteroidFallback(reason){
+ if(asteroidGLBReady)return;
+ asteroidGLBError=String(reason||"GLB unavailable");
+ asteroidBaseGeometry=new T.IcosahedronGeometry(1,2);
+ asteroidBaseGeometry.computeVertexNormals();
+ asteroidBaseMaterial=new T.MeshStandardMaterial({color:0x77736d,roughness:.94,metalness:.025});
+ asteroidGLBMeshCount=1;
+ buildAsteroidRingInstances();
+ asteroidGLBReady=true;
+ spawnMineableAsteroids();
+ console.warn("STARFALL asteroid.glb unavailable; shared procedural fallback activated",asteroidGLBError);
+}
 function loadAsteroidGLB(){
- if(!T.GLTFLoader||location.protocol==="file:"){asteroidGLBError="GLTFLoader unavailable";console.error("STARFALL asteroid.glb unavailable; procedural fallback disabled");return}
+ if(!T.GLTFLoader||location.protocol==="file:"){asteroidFallback("GLTFLoader unavailable or file protocol");return}
  new T.GLTFLoader().load("assets/space/asteroids/asteroid.glb",gl=>{
   const meshes=[];gl.scene.updateMatrixWorld(true);gl.scene.traverse(o=>{if(o.isMesh&&o.geometry)meshes.push(o)});
   if(!meshes.length){asteroidGLBError="No mesh primitives";console.error("STARFALL asteroid.glb has no meshes");return}
@@ -1454,7 +1466,7 @@ function loadAsteroidGLB(){
   asteroidBaseMaterial=Array.isArray(src.material)?src.material[0].clone():src.material.clone();asteroidBaseMaterial.roughness=.94;asteroidBaseMaterial.metalness=.025;
   buildAsteroidRingInstances();asteroidGLBReady=true;spawnMineableAsteroids();
   console.info("STARFALL: asteroid.glb ready",asteroidGLBMeshCount,"mesh primitives; rings and mineable field use shared geometry");
- },undefined,err=>{asteroidGLBError=String(err);console.error("STARFALL asteroid.glb load failed; no procedural fallback",err)});
+ },undefined,err=>{asteroidFallback(err)});
 }
 window.SF_ASTEROIDS={status:()=>({ready:asteroidGLBReady,meshes:asteroidGLBMeshCount,error:asteroidGLBError,mineable:rocks.length,rings:saturnRingSystems.filter(x=>!!x.instance).length})};
 loadAsteroidGLB();
@@ -2200,7 +2212,7 @@ function pirateFleetUpdate(dt){
    EAI.command(e,e.aimS,dist,{speed:targetSpeed,acceleration,turnRate});
   }
   EAI.integrate(e,dt,g,pirateFleetUp);
-  pirateFleetHeading.copy(e.hd).normalize();
+  pirateFleetHeading.copy(e.vel.lengthSq()>1e-6?e.vel:e.hd).normalize();
   const orientationUp=Math.abs(pirateFleetHeading.dot(pirateFleetUp))>.985?pirateFleetAltUp:pirateFleetUp;
   pirateFleetLookMatrix.lookAt(pirateFleetLookOrigin,pirateFleetHeading,orientationUp);
   pirateFleetLookQuat.setFromRotationMatrix(pirateFleetLookMatrix);
