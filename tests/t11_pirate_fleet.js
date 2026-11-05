@@ -66,7 +66,7 @@ const L = require('./lib');
       return result;
     };
     return [
-      inspect('rust-skull',mkPirate(0),0),
+      inspect('rust-skull',MC.p0?MC.p0.clone(true):mkPirate(0),0),
       inspect('jackal',mkPirate(1),1),
       inspect('tie-raider',mkPirate(2),2),
       inspect('pirate-transport',mkPirateTransport(),3)
