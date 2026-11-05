@@ -24,7 +24,7 @@ const zlib = require('node:zlib');
       sharedRenderer: !!R && !!R.domElement,
       version: document.querySelector('meta[name="starfall-version"]')?.content
     }));
-    L.check('Galaxy Map: загрузчик подключён к игре', boot.mapButton && boot.sharedRenderer && boot.version === 'v96', boot);
+    L.check('Galaxy Map: загрузчик подключён к игре', boot.mapButton && boot.sharedRenderer && boot.version === 'v97', boot);
 
     await page.evaluate(() => window.SF_GALAXY_MAP.open());
     await page.waitForFunction(() => state === 'galaxy', null, { timeout: 10000 });
