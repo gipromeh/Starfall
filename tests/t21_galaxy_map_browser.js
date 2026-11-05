@@ -33,11 +33,13 @@ const zlib = require('node:zlib');
     await page.waitForFunction(expected => window.SF_GALAXY_MAP.stats.catalog === expected, manifest.records, { timeout: 240000 });
     const catalog = await page.evaluate(() => ({
       count: window.SF_GALAXY_MAP.stats.catalog,
+      rendered: window.SF_GALAXY_MAP.stats.rendered,
       status: document.querySelector('#sf-galaxy .status')?.textContent || '',
       rootBackground: getComputedStyle(document.getElementById('sf-galaxy')).backgroundColor,
       inhabitedDisabled: [...document.querySelectorAll('#sf-galaxy .bottom button')].find(b => b.textContent.includes('ОБЖИТЫЕ'))?.disabled
     }));
     L.check('Galaxy Map: весь каталог загружен и SHA-256 проверен', catalog.count === manifest.records && catalog.status.includes('SHA-256 подтверждён'), { count:catalog.count, expected:manifest.records, status:catalog.status });
+    L.check('Galaxy Map: GPU-точки ограничены мобильным лимитом', catalog.rendered > 0 && catalog.rendered <= 160000, { rendered:catalog.rendered, catalogue:catalog.count });
     L.check('Galaxy Map: 3D canvas не перекрыт фоном интерфейса', catalog.rootBackground === 'rgba(0, 0, 0, 0)', catalog.rootBackground);
     L.check('Galaxy Map: фильтр населения отключён при отсутствии population', catalog.inhabitedDisabled === true, catalog.inhabitedDisabled);
 
