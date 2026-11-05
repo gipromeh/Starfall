@@ -3710,9 +3710,11 @@ const GLB_EXTRA_PIR=[
 function fitPirateAsset(src,targetSize=10,yaw=Math.PI){
  src.updateMatrixWorld(true);
  const box=new T.Box3().setFromObject(src),size=box.getSize(new T.Vector3()),center=box.getCenter(new T.Vector3());
- const root=new T.Group();root.name="STARFALL_NORMALIZED_PIRATE_GLB";root.add(src);
- src.position.sub(center);root.rotation.y=yaw;
+ const root=new T.Group();root.name="STARFALL_NORMALIZED_PIRATE_GLB";
+ const axisFix=new T.Group();axisFix.name="STARFALL_FORWARD_AXIS_FIX_RUNTIME";axisFix.rotation.y=yaw;
+ root.add(axisFix);axisFix.add(src);src.position.sub(center);
  const maxDim=Math.max(size.x,size.y,size.z,1e-4);root.scale.setScalar(targetSize/maxDim);
+ root.userData={starfallForwardAxis:"-Z",starfallUpAxis:"+Y",starfallAxisFix:"CHILD"};
  root.updateMatrixWorld(true);return root;
 }
 let pirateExtraAssetsDone=0;
