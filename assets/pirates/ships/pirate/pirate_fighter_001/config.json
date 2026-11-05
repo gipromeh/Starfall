@@ -27,5 +27,14 @@
     "kind": "pirate",
     "index": 1
   },
-  "scale": 1
+  "scale": 1,
+  "socketSchemaVersion": 1,
+  "sockets": {
+    "coordinateSpace": "model-local",
+    "forwardAxis": "-Z",
+    "guns": [],
+    "engines": [],
+    "note": "No artist-verified socket coordinates are available for this asset yet. Runtime GLB marker discovery is used; bounds fallback remains active when exported markers are absent."
+  },
+  "socketStatus": "unverified"
 }
