@@ -28,5 +28,10 @@ if (/\bg\.rotateZ\s*\(/.test(fleetUpdate)) throw new Error("Pirate roll still ac
 if (!html.includes('const asset=MC["p"+ty]')) throw new Error("Loaded pirate GLB templates are not selected by mkPirate().");
 if (!html.includes("window.StarfallPirateDiagnostics")) throw new Error("Pirate runtime diagnostics API is missing.");
 if (!html.includes("STARFALL_SOCKET_ANCHOR_")) throw new Error("Non-destructive socket anchors are missing.");
+if (!fleetUpdate.includes("e.vel.lengthSq()>1e-6?e.vel:e.hd")) throw new Error("Pirate hull is not aligned to actual velocity.");
+if (!fleetUpdate.includes("g.quaternion.copy(pirateFleetTargetQuat)")) throw new Error("Pirate hull orientation is still delayed behind velocity.");
+if (!fleetUpdate.includes("fireRange=[390,390,520,430]")) throw new Error("Jackal close-range firing envelope regressed.");
+if (!html.includes('lowProfile=QL&&QL.mode==="low"')) throw new Error("LOW-profile fleet composition is missing.");
+if (!html.includes("function asteroidFallback(reason)")) throw new Error("Asteroid GLB failure has no procedural fallback.");
 
 console.log("Validated " + parsed + " inline JavaScript blocks and pirate-flight regression guards.");
