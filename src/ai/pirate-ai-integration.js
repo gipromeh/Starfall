@@ -170,7 +170,7 @@
     const idSeed = (((sy + 1) * 0x9e3779b1) ^ ((wave + 1) * 0x85ebca6b) ^ ((score + 1) * 0xc2b2ae35) ^ ((entity.slot + 1) * 0x27d4eb2d)) >>> 0;
     entity.sfAI = new Core({
       apiVersion: API_VERSION, seed: idSeed || 1, profileId: "starfall-pirate-v1",
-      decisionHz: 5, navigationHz: 15, safetyHz: 25, maxAcceptedDt: 0.25,
+      decisionHz: 5, navigationHz: 15, safetyHz: 15, maxAcceptedDt: 0.25,
       approachSpeed: [54, 61, 58, 53][entity.ty] || 50,
       maxAttackersPerTarget: 2
     });
