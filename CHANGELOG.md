@@ -1,3 +1,9 @@
+## STARFALL v103 — сопровождение транспортного трафика
+
+- Гражданские транспортные корабли получают два истребителя охранения, пиратские — три.
+- Эскорт удерживает строй на маршруте, реагирует на угрозу, атакует игрока при агрессии и корректно удаляется вместе с транспортом.
+- Добавлена browser-регрессия `t25_transport_escorts.js`; версия игры повышена до v103.
+
 ## Documentation synchronization policy — 2026-11-06
 
 - Master instruction updated to v2.8: defined mandatory README synchronization triggers, content rules, source-of-truth hierarchy and acceptance checks.
