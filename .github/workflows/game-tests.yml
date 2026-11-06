@@ -63,6 +63,18 @@ jobs:
           for script in /tmp/starfall-inline-*.js; do node --check "$script"; done
           node --check tools/galaxy-map.js
           node --check tools/external-systems.js
+          node --check src/ai/pirate-ai-integration.js
+          node --input-type=module - <<'NODE'
+          import { readFileSync } from 'node:fs';
+          import { gunzipSync } from 'node:zlib';
+          const encoded = readFileSync('src/ai/pirate-ai-core.esm.gz.b64', 'utf8').trim();
+          const source = gunzipSync(Buffer.from(encoded, 'base64')).toString('utf8');
+          const module = await import('data:text/javascript;base64,' + Buffer.from(source).toString('base64'));
+          if (module.PIRATE_AI_VERSION !== '1.0.0' || typeof module.PirateAICore !== 'function') {
+            throw new Error('Pirate AI core runtime export/version mismatch');
+          }
+          console.log('Pirate AI Core ' + module.PIRATE_AI_VERSION + ' bundle verified');
+          NODE
           node tests/t20_galaxy_map.js
           node tests/t22_external_systems.js
           node --check tests/lib.js
