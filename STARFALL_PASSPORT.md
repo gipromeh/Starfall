@@ -1,3 +1,8 @@
+## v103.1 — пиратский перехват и production combat regression
+- Мародёр получил более прямой дальний перехват: боковое отклонение уменьшается на дальнем сближении, скорость и управляемость повышены; ближний боковой манёвр сохранён.
+- Production combat batch добавлен в обязательную browser CI matrix; 12 seeded-прогонов проверяют реальный огонь, попадания и фактическое изменение HP.
+- База v103 и сопровождение транспорта сохранены.
+
 ## v103 — сопровождение гражданского и пиратского транспортного трафика
 - Гражданский транспорт и межпланетные пассажирские/грузовые перевозчики получают два истребителя охранения; пиратский транспорт — три.
 - Эскорт формируется вокруг курса транспортного корабля, сопровождает его по маршруту и возвращается в строй после прекращения угрозы.
@@ -269,10 +274,10 @@
 date: 2026-10-31
 topic: STARFALL: паспорт проекта (архитектура, технологии, механика, сохранения, качество)
 tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура]
-game_version: "v103"
-last_update: 2026-11-06
+game_version: "v103.1"
+last_update: 2026-11-07
 main_file: starfall.html
-main_file_sha256: "fa358be620f9e2da9d86d3fa85ce91c004d03c97bd01d3b219567b7a48d7d4ae"
+main_file_sha256: "52dfc3f5bf374487fb9284730b3b64fb8694dc47e74864477e98a1fd2ff0d1ac"
 save_format_version: 3
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"
