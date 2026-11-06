@@ -30,6 +30,24 @@ const L = require('./lib');
   L.check('атмосферный слой прикреплён к локальной планете', scene.atmosphere, scene);
   await page.evaluate(() => { pirateFleetInit(); });
   await page.waitForFunction(() => pirateFleet.length === 2, null, { timeout: 15000 });
+  await page.waitForFunction(() => window.SF_PIRATE_AI && window.SF_PIRATE_AI.ready, null, { timeout: 20000 });
+  await page.waitForFunction(() => pirateFleet.every(e => e.sfAI && e.sfAiFrame), null, { timeout: 10000 });
+  const coreBridge = await page.evaluate(() => ({
+    version: window.SF_PIRATE_AI_VERSION,
+    ships: pirateFleet.map(e => ({
+      entity: e.sfAiFrame?.entityId,
+      mission: e.sfAiFrame?.missionState,
+      tactical: e.sfAiFrame?.tacticalState,
+      target: e.sfAiFrame?.selectedTargetTrackId,
+      nav: e.sfAiFrame?.navigation?.mode,
+      enabled: e.sfAiEnabled
+    }))
+  }));
+  L.check('Pirate AI Core 1.0.0 загружен и подключён к каждому кораблю эскадрильи',
+    coreBridge.version === '1.0.0' && coreBridge.ships.length === 2 &&
+    coreBridge.ships.every(e => e.enabled && e.entity && e.nav === 'VELOCITY' && e.target === 'player'),
+    coreBridge);
+
   await page.waitForFunction(() => pirateAssetsReady === true, null, { timeout: 60000 });
   const pirateModels = await page.evaluate(() => {
     const fighter = mkPirate(2);
