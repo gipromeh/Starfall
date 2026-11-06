@@ -12,7 +12,7 @@ const L = require('./lib');
   await page.waitForFunction(()=>state==='dock',null,{timeout:60000});
   await page.waitForFunction(()=>pirateAssetsReady===true,null,{timeout:60000});
   const report=await page.evaluate(()=>{
-   const DT=1/60,FRAMES=1200,TRIALS=12,rows=[];
+   const DT=1/60,FRAMES=1800,TRIALS=12,rows=[];
    const originalShootLaser=shootLaser;
    let playerShots=0,hostileShots=0,enemyHitEvents=0,playerHitEvents=0,playerDamageReceived=0,actualEnemyDamage=0;
    const originalDamage=pirateFleetDamage,originalPlayerDamage=dmg,originalRandom=Math.random;
@@ -34,7 +34,7 @@ const L = require('./lib');
      playerShots=0;hostileShots=0;enemyHitEvents=0;playerHitEvents=0;playerDamageReceived=0;actualEnemyDamage=0;
      let frames=0;
      for(;frames<FRAMES&&state==='play';frames++){
-      if(frames===900)firing=true;
+      if(frames===1200)firing=true;
       if(firing){const target=pirateFleet.find(e=>e.g&&e.hp>0);if(target){const aim=target.g.position.clone().sub(P).normalize();Q.setFromUnitVectors(new THREE.Vector3(0,0,-1),aim);rig.quaternion.copy(Q)}}
       upd(DT);
      }
