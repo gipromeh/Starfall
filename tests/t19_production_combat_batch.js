@@ -14,9 +14,9 @@ const L = require('./lib');
   const report=await page.evaluate(()=>{
    const DT=1/60,FRAMES=1200,TRIALS=12,rows=[];
    const originalShootLaser=shootLaser;
-   let playerShots=0,hostileShots=0,enemyHitEvents=0,playerHitEvents=0,playerDamageReceived=0;
+   let playerShots=0,hostileShots=0,enemyHitEvents=0,playerHitEvents=0,playerDamageReceived=0,actualEnemyDamage=0;
    const originalDamage=pirateFleetDamage,originalPlayerDamage=dmg,originalRandom=Math.random;
-   pirateFleetDamage=function(e,d,missile){const before=e?.hp??0;originalDamage(e,d,missile);if(e&&e.hp<before)enemyHitEvents++;};
+   pirateFleetDamage=function(e,d,missile){const before=e?.hp??0;originalDamage(e,d,missile);if(e&&e.hp<before){enemyHitEvents++;actualEnemyDamage+=before-e.hp;}};
    dmg=function(n){playerHitEvents++;playerDamageReceived+=n*100/SHIPS[shp].hull;return originalPlayerDamage(n);};
    shootLaser=function(arr,...args){if(arr===bul)playerShots++;else if(arr===eb)hostileShots++;return originalShootLaser(arr,...args)};
    try{
@@ -28,18 +28,18 @@ const L = require('./lib');
      EAI.seed(seed);
      Q.setFromEuler(new THREE.Euler((trial%3-1)*.035,(trial%4-1.5)*.055,0));
      rig.quaternion.copy(Q);P.set(0,0,0);vel.set(0,0,0);thl=0;thr=0;
-     mouse.x=0;mouse.y=0;firing=true;fireT=0;heat=0;hot=false;
+     mouse.x=0;mouse.y=0;firing=false;fireT=0;heat=0;hot=false;
      hull=100;shield=100;used=1;sinceHit=0;
      pirateFleet.forEach(e=>{e.warp=0;e.g.visible=true;e.fire=0;e.burst=0;e.burstGap=0});
-     playerShots=0;hostileShots=0;enemyHitEvents=0;playerHitEvents=0;playerDamageReceived=0;
+     playerShots=0;hostileShots=0;enemyHitEvents=0;playerHitEvents=0;playerDamageReceived=0;actualEnemyDamage=0;
      let frames=0;
      for(;frames<FRAMES&&state==='play';frames++){
-      const target=pirateFleet.find(e=>e.g&&e.hp>0);
-      if(target){const aim=target.g.position.clone().sub(P).normalize();Q.setFromUnitVectors(new THREE.Vector3(0,0,-1),aim);rig.quaternion.copy(Q)}
+      if(frames===900)firing=true;
+      if(firing){const target=pirateFleet.find(e=>e.g&&e.hp>0);if(target){const aim=target.g.position.clone().sub(P).normalize();Q.setFromUnitVectors(new THREE.Vector3(0,0,-1),aim);rig.quaternion.copy(Q)}}
       upd(DT);
      }
      const active=pirateFleet.filter(e=>e.g&&e.hp>0);
-     const enemyDamage=pirateFleet.reduce((sum,e)=>sum+Math.max(0,e.mx-e.hp),0);
+     const enemyDamage=actualEnemyDamage;
      const enemyHits=enemyHitEvents;
      rows.push({trial,seed,simulated_seconds:+(frames*DT).toFixed(3),state,player_hull:+hull.toFixed(2),player_shield:+shield.toFixed(2),player_shots:playerShots,hostile_shots:hostileShots,player_hit_events:playerHitEvents,player_damage_received:+playerDamageReceived.toFixed(2),enemy_damage:+enemyDamage.toFixed(2),enemy_hits:enemyHits,active_enemies:active.length,enemy_states:pirateFleet.map(e=>e.state||'destroyed'),enemy_hp:pirateFleet.map(e=>e.hp),enemy_debug:pirateFleet.map(e=>({slot:e.slot,type:e.ty,distance:e.g?.position.distanceTo(P),position:e.g?.position.toArray(),velocity:e.vel?.toArray(),heading:e.hd?.toArray(),ticks:e.aiTicks,phase:e.ph,phase_time:e.phT,fire:e.fire,burst:e.burst,burst_gap:e.burstGap,warp:e.warp}))});
      firing=false;
