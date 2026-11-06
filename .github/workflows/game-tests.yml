@@ -126,6 +126,7 @@ jobs:
           - deep-space
           - galaxy-map
           - galaxy-map-webkit
+          - production-combat-batch
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -196,6 +197,9 @@ jobs:
               ;;
             galaxy-map-webkit)
               SF_WEBKIT=1 node tests/t21_galaxy_map_browser.js
+              ;;
+            production-combat-batch)
+              node tests/t19_production_combat_batch.js
               ;;
             *)
               echo "::error::Unknown test: ${{ matrix.test }}"
