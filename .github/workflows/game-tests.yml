@@ -119,6 +119,7 @@ jobs:
           - pirate-fleet
           - cargo-transport
           - pirate-ecosystems
+          - transport-escorts
           - saves-regression
           - performance-leak
           - iphone-chromium
@@ -175,6 +176,9 @@ jobs:
               ;;
             pirate-ecosystems)
               node tests/t24_pirate_ecosystems.js
+              ;;
+            transport-escorts)
+              node tests/t25_transport_escorts.js
               ;;
             saves-regression)
               node tests/t1_saves.js
