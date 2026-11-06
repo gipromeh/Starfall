@@ -19,15 +19,15 @@ const L = require('./lib');
     const pirate={g:pirateShip,v:fw.clone().multiplyScalar(55),hp:420,hit:0,tur:0,route:{kind:0}};
     nv.push(civilian,pirate);SF_TRAFFIC_ESCORTS.attach(civilian);SF_TRAFFIC_ESCORTS.attach(pirate);
     window.__SF_TEST_ESCORT_OWNERS=[civilian,pirate];
-    SF_TRAFFIC_ESCORTS.near(civilian);SF_TRAFFIC_ESCORTS.near(pirate);
     const groups=SF_TRAFFIC_ESCORTS.list().filter(c=>window.__SF_TEST_ESCORT_OWNERS.includes(c.owner));
     return {groups:groups.map(c=>({pirate:c.pirateTransport,count:c.escorts.length,alive:c.escorts.every(e=>e.g&&e.hp>0)}))};
   });
   L.check('гражданский транспорт получает два корабля охранения',setup.groups.some(c=>!c.pirate&&c.count===2&&c.alive),setup);
   L.check('пиратский транспорт получает три истребителя',setup.groups.some(c=>c.pirate&&c.count===3&&c.alive),setup);
-  await page.waitForFunction(() => SF_TRAFFIC_ESCORTS.list().every(c=>c.escorts.every(e=>e.g&&e.g.visible)), null, { timeout: 10000 });
+  await page.waitForFunction(() => SF_TRAFFIC_ESCORTS.list().filter(c=>(window.__SF_TEST_ESCORT_OWNERS||[]).includes(c.owner)).every(c=>c.escorts.every(e=>e.g&&e.g.visible)), null, { timeout: 10000 });
   const formation=await page.evaluate(()=>SF_TRAFFIC_ESCORTS.list().filter(c=>(window.__SF_TEST_ESCORT_OWNERS||[]).includes(c.owner)).map(c=>c.escorts.map(e=>e.g.position.distanceTo(c.owner.g.position))));
-  L.check('эскорт держит строй вокруг транспорта',formation.every(a=>a.every(d=>d>20&&d<150)),formation);
+  L.check('эскорт держит строй вокруг транспорта',formation.length===2&&formation.every(a=>a.every(d=>d>20&&d<150)),formation);
+  await page.evaluate(()=>{for(const owner of window.__SF_TEST_ESCORT_OWNERS)SF_TRAFFIC_ESCORTS.near(owner)});
   await page.waitForFunction(() => {
     const owners=window.__SF_TEST_ESCORT_OWNERS||[];
     const groups=SF_TRAFFIC_ESCORTS.list().filter(c=>owners.includes(c.owner));
