@@ -1,3 +1,9 @@
+## v103.3 — интеграция Pirate AI Core
+- В основной Pirate Fleet подключён детерминированный `PirateAICore` v1.0.0 через браузерный ESM runtime; host bridge формирует plain-data snapshots игрока, пиратской группы, вражеских снарядов, состояния корпуса и лазерного слота.
+- Тактическое решение выполняется с частотой 5 Гц; существующий `EAI` сохраняет 15 Гц steering и покадровую интеграцию движения. Выход Core задаёт desired velocity, EVADE/RETREAT и разрешение на огонь.
+- Финальная дальность, OCS/projection gates, burst, cooldown, попадания, урон, физика и столкновения остаются под контролем STARFALL. При ошибке Core применяется native EAI fallback.
+- Добавлена browser-регрессия проверки загрузки Core, AI frame для каждого корабля и выбора игрока как hostile target. Физический iPhone/PC playtest не заявляется.
+
 ## v103.2 — дальность огня и групповой респавн Pirate Fleet
 - Удалён глобальный 384-unit fire gate; фактическая дальность определяется `fireRange` архетипа, включая 520 единиц Мародёра. OCS/projection gates и PRNG сохранены.
 - Первый групповой респавн теперь ждёт 3.5 секунды, как и последующие циклы.
@@ -279,10 +285,10 @@
 date: 2026-10-31
 topic: STARFALL: паспорт проекта (архитектура, технологии, механика, сохранения, качество)
 tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура]
-game_version: "v103.2"
+game_version: "v103.3"
 last_update: 2026-11-07
 main_file: starfall.html
-main_file_sha256: "7abce20efc3932d85e6490c88b60169478cd74fac2eea5a483eb5fcb1c4b64ef"
+main_file_sha256: "21434927836dbeb287b132ba75a9eb5ab3f2527bf958dda8984eec01ee0a9179"
 save_format_version: 3
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"
