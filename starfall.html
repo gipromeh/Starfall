@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="claude:viewport-fit-sides" content="cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#02030a"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>STARFALL</title>
-<meta name="starfall-version" content="v102">
+<meta name="starfall-version" content="v103">
 <meta name="starfall-telemetry-endpoint" content="">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 <style>
@@ -4420,6 +4420,129 @@ window.__STARFALL_DIAG__={state:()=>state,touch:()=>TCH,dpr:()=>R.getPixelRatio(
    (near?"<span class='warn'>⚠ СНИЗЬТЕ ГАЗ ДЛЯ СТЫКОВКИ</span>":"");
  }
 }}
+
+
+/* ===== STARFALL v103: ESCORTS FOR LIVE TRANSPORT TRAFFIC ===== */
+const trafficEscortGroups=new Map();
+const TRAFFIC_ESCORT_LIMIT=TCH?3:6;
+function trafficEscortDispose(group){
+ if(!group)return;
+ for(const e of group.escorts||[]){pirateDamageFxClear(e);if(e.g)S.remove(e.g);e.g=null;if(e.muzzleNodes)e.muzzleNodes.length=0;if(e.engineNodes)e.engineNodes.length=0}
+ group.escorts.length=0;
+}
+function trafficEscortVelocity(owner,out){
+ const v=owner&&(owner.v||owner.velocity);
+ if(v&&Number.isFinite(v.x)&&Number.isFinite(v.y)&&Number.isFinite(v.z))out.set(v.x,v.y,v.z);
+ else out.set(0,0,-1).applyQuaternion(owner.g.quaternion);
+ if(out.lengthSq()<1e-6)out.set(0,0,-1).applyQuaternion(owner.g.quaternion);
+ return out;
+}
+function trafficEscortAttach(n){
+ if(!n||!n.g||!n.g.position||!n.g.quaternion||n.tur||trafficEscortGroups.has(n)||!pirateAssetsReady)return null;
+ if(n.g.position.distanceTo(P)>12000||trafficEscortGroups.size>=TRAFFIC_ESCORT_LIMIT)return null;
+ pirateFleetPrepare();
+ const pirate=!!(n.g.userData&&n.g.userData.pirateTransport);
+ const velocity=trafficEscortVelocity(n,new T.Vector3());
+ const c={id:1000+trafficEscortGroups.size,p:n.g.position.clone(),hd:velocity,q:n.g.quaternion.clone(),sp:Math.max(12,velocity.length()),t:0,state:"CRUISE",hostileT:0,fast:false,pirateTransport:pirate,owner:n,escorts:[]};
+ if(c.hd.lengthSq()<1e-6)c.hd.set(0,0,-1);else c.hd.normalize();
+ for(let i=0;i<(pirate?3:2);i++){
+  const e=pcShip(c,"escort",PC_TYPES[i],i);
+  if(!e)continue;
+  e.trafficEscort=true;e.trafficOwner=n;e.mode="FORM";e.blend=1;c.escorts.push(e);
+ }
+ if(!c.escorts.length)return null;
+ trafficEscortGroups.set(n,c);n.trafficEscort=c;return c;
+}
+function trafficEscortAggro(c){
+ if(!c||!c.escorts.length)return;
+ c.hostileT=Math.max(c.hostileT,18);
+ for(const e of c.escorts)if(e.g&&!e.dead&&e.mode!=="FIGHT"){
+  e.mode="FIGHT";e.ph="ATTACK";e.phT=0;e.jinkT=0;e.jinkCd=0;e.aimS=null;
+  e.flank=EAI.rand()<.5?-1:1;e.fire=.35+EAI.rand()*.45;e.burst=0;e.burstGap=0;
+ }
+}
+function trafficEscortUpdate(dt){
+ if(state!=="play")return;
+ dt=Math.min(dt,.1);
+ const candidates=nv.filter(n=>n&&n.g&&!n.tur&&!n.gone&&n.hp>0).sort((a,b)=>a.g.position.distanceTo(P)-b.g.position.distanceTo(P));
+ for(const n of candidates){if(trafficEscortGroups.size>=TRAFFIC_ESCORT_LIMIT)break;if(!trafficEscortGroups.has(n)&&n.g.position.distanceTo(P)<12000)trafficEscortAttach(n)}
+ for(const [owner,c] of trafficEscortGroups){
+  const distance=owner.g?owner.g.position.distanceTo(P):Infinity;
+  if(!nv.includes(owner)||!owner.g||owner.gone||owner.hp<=0||distance>15000){
+   trafficEscortDispose(c);trafficEscortGroups.delete(owner);delete owner.trafficEscort;continue;
+  }
+  c.t+=dt;c.p.copy(owner.g.position);c.q.copy(owner.g.quaternion);trafficEscortVelocity(owner,c.hd);
+  c.hd.normalize();
+  c.sp=Math.max(12,c.hd.length());
+  if(c.pirateTransport&&distance<1450)trafficEscortAggro(c);
+  else if(!c.pirateTransport&&owner.hit&&distance<1550)trafficEscortAggro(c);
+  if(c.hostileT>0)c.hostileT=Math.max(0,c.hostileT-dt);
+  if(c.hostileT<=0)for(const e of c.escorts)if(e.g&&!e.dead&&e.mode==="FIGHT"){e.mode="RETURN";e.ph="RESET"}
+  for(const e of c.escorts){
+   if(!e.g||e.dead)continue;
+   const d=e.g.position.distanceTo(P),visible=distance<12000&&d<12000;e.g.visible=visible;
+   if(!visible){e.mode="FORM";e.blend=1;pcForm(e,c,dt);continue}
+   if(e.mode==="FIGHT"&&c.hostileT>0)pcFight(e,c,dt);
+   else if(e.mode==="RETURN")pcReturn(e,c,dt);
+   else pcForm(e,c,dt);
+   if(d<3000)pcFx(e,dt,.5);
+  }
+ }
+}
+function trafficEscortHits(dt){
+ if(!trafficEscortGroups.size)return;
+ for(let i=bul.length-1;i>=0;i--){
+  const b=bul[i],now=b.m.position,prev=now.clone().addScaledVector(b.v,-dt);let hit=false;
+  for(const c of trafficEscortGroups.values()){
+   for(const e of c.escorts)if(e.g&&e.hp>0&&e.g.visible&&pirateSegmentHit(prev,now,e)){
+    hit=true;pirateFleetDamage(e,b.dmg,false);if(!c.pirateTransport)trafficEscortAggro(c);break;
+   }
+   if(hit)break;
+  }
+  if(hit){S.remove(b.m);bul.splice(i,1)}
+ }
+ for(let i=mis.length-1;i>=0;i--){
+  const m=mis[i],now=m.m.position,prev=now.clone().addScaledVector(m.dir,-m.spd*dt);let hit=false;
+  for(const c of trafficEscortGroups.values()){
+   for(const e of c.escorts)if(e.g&&e.hp>0&&e.g.visible&&pirateSegmentHit(prev,now,e,1)){
+    hit=true;pirateFleetDamage(e,MS[mt].d,true);if(!c.pirateTransport)trafficEscortAggro(c);break;
+   }
+   if(hit)break;
+  }
+  if(hit){S.remove(m.m);mis.splice(i,1)}
+ }
+}
+{
+ const _spawnTrafficEscort=spawnNv;
+ spawnNv=function(){_spawnTrafficEscort();trafficEscortAttach(nv[nv.length-1])};
+ const _spawnPlanetTrafficEscort=spawnPlanetFreighter;
+ spawnPlanetFreighter=function(type){const before=nv.length;_spawnPlanetTrafficEscort(type);if(nv.length>before)trafficEscortAttach(nv[nv.length-1])};
+ const _removeTrafficEscort=removeNvAt;
+ removeNvAt=function(i){const n=nv[i],c=n&&trafficEscortGroups.get(n);if(c){trafficEscortDispose(c);trafficEscortGroups.delete(n)}_removeTrafficEscort(i)};
+ const _clearPirateTrafficEscort=pirateFleetClear;
+ pirateFleetClear=function(){_clearPirateTrafficEscort();for(const c of trafficEscortGroups.values())trafficEscortDispose(c);trafficEscortGroups.clear()};
+ const _updateTrafficEscort=upd;
+ upd=function(dt){_updateTrafficEscort(dt);trafficEscortUpdate(dt);trafficEscortHits(dt)};
+ const _radarTrafficEscort=collectRadarContacts;
+ collectRadarContacts=function(){
+  const contacts=_radarTrafficEscort();
+  for(const c of trafficEscortGroups.values())for(const e of c.escorts)if(e.g&&!e.dead&&e.g.visible)
+   contacts.push({position:e.g.position,kind:c.pirateTransport?"enemy":"neutral",color:c.pirateTransport?"#ff8b58":"#78e6ff",radius:2.6,label:c.pirateTransport?"PE":"CE",entity:e,velocity:e.vel,ty:e.ty,hostile:c.pirateTransport||c.hostileT>0,selected:false});
+  return contacts;
+ };
+}
+window.SF_TRAFFIC_ESCORTS={
+ list:()=>[...trafficEscortGroups.values()],attach:trafficEscortAttach,
+ near(owner){
+  const c=trafficEscortGroups.get(owner);if(!c||!owner.g)return false;
+  const fw=new T.Vector3(0,0,-1).applyQuaternion(Q).normalize();
+  owner.g.position.copy(P).addScaledVector(fw,650);owner.g.quaternion.copy(Q);owner.v.copy(fw).multiplyScalar(55);
+  if(!c.pirateTransport)owner.hit=1;
+  trafficEscortUpdate(1/60);return true;
+ },
+ clear:()=>{for(const c of trafficEscortGroups.values())trafficEscortDispose(c);trafficEscortGroups.clear()}
+};
+/* ===== END TRANSPORT TRAFFIC ESCORTS ===== */
 
 </script><script>
 (()=>{const v=document.querySelector('meta[name="starfall-version"]')?.content||"DEV";document.querySelectorAll("[data-version-label]").forEach(el=>{el.textContent=v;});})();
