@@ -2210,9 +2210,9 @@ function pirateFleetUpdate(dt){
     targetSpeed=dist>330?61:48;turnRate=2.5;
    }else if(e.ty===2){
     // Мародёр: сохраняет прямой вектор перехвата с небольшим боковым дрейфом.
-    const lateral=Math.sin(profilePhase*.42+e.slot)*(dist>520?.04:dist>270?.14:.18);
+    const lateral=Math.sin(profilePhase*.42+e.slot)*(dist>520?.02:dist>270?.04:.08);
     aim.copy(toPlayer).normalize().addScaledVector(right,lateral).normalize();
-    targetSpeed=dist>520?58:dist>270?42:30;turnRate=1.45;acceleration=48;
+    targetSpeed=dist>520?58:dist>270?42:30;turnRate=2.0;acceleration=52;
    }else{
     // Гарпия: широкая орбита с вертикальными сменами высоты.
     aim.addScaledVector(right,Math.sin(profilePhase*.55)*.9).addScaledVector(pirateFleetUp,Math.sin(profilePhase*.8)*.42).normalize();
