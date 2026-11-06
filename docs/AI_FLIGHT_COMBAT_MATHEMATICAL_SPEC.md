@@ -516,8 +516,12 @@ centered=(|h|\le0.18)
 Огонь запрещён, если выполняется любое условие:
 
 \[
-rangeByte\ge12\quad\lor\quad d\ge range\quad\lor\quad d_{ocs}\ge-0.02
-\]
+d\ge range\quad\lor\quad d_{ocs}\ge-0.02
+\
+
+Здесь нет глобального ограничения `rangeByte >= 12`: дальность задаётся параметром `range` конкретного архетипа (`fireRange`). Старый фиксированный gate ограничивал все корабли 384 единицами и делал недостижимой часть заявленной дальности Мародёра 520. Численный high-byte порог из Elite не переносится напрямую в игровые единицы STARFALL без калибровки. Ограничение `rangeByte >= 4` ниже сохранено как отдельный gate точности наведения.
+
+]
 или
 \[
 (\neg xor\land\neg centered)
@@ -736,3 +740,12 @@ bank=\operatorname{clamp}(-0.008\,ocsYaw,-0.2,0.2)
 7. Отдельное соответствие `pcFight/pcFire` и `pirateFleetUpdate` — расхождения не должны исчезать из тестов при рефакторинге.
 
 **Источник истины:** код соответствующих функций в `starfall.html` той же ревизии. При расхождении документа с кодом сначала фиксируется фактическое поведение кода и затем обновляется эта спецификация; формулы не подгоняются под текст.
+
+
+## 16. v103.2 — дальность огня и групповой респавн
+
+- Elite research basis: `ELITE_GAME_PASSPORT.md` §§13.5–13.7, 13.9, 14.11; `ELITE_TO_STARFALL_V90.md` rows for OCS steering and NPC fire gates.
+- Сохранены разделение tactical decision tick / per-frame integration, OCS projection, sign-XOR, orientation gates и seeded PRNG.
+- Численный gate `rangeByte >= 12` исключён: исходные Elite byte units не имеют подтверждённого прямого соответствия единицам STARFALL; дальность теперь ограничивается per-archetype `fireRange`. Другие projection gates сохранены.
+- Первый и последующие групповые респавны используют одинаковую паузу 3.5 s. Lifecycle/respawn — отдельная игровая система, не переносимая из Elite AI.
+- Регрессии: `tests/t11_pirate_fleet.js` проверяет 519/520 для Мародёра и отсутствие респавна до истечения 3.5 s.

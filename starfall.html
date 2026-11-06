@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="claude:viewport-fit-sides" content="cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#02030a"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>STARFALL</title>
-<meta name="starfall-version" content="v103.1">
+<meta name="starfall-version" content="v103.2">
 <meta name="starfall-telemetry-endpoint" content="">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 <style>
@@ -1886,7 +1886,7 @@ const EAI=(function(){
   const rangeByte=Math.floor(Math.max(0,distance)/32);
   const signX=projection.h<0,signD=projection.d<0,xor=signX!==signD;
   const centered=Math.abs(projection.h)<=.18;
-  if(rangeByte>=12||distance>=range||projection.d>=-.02)return false;
+  if(distance>=range||projection.d>=-.02)return false;
   if(!xor&&!centered)return false;
   if(rangeByte>=4&&!centered)return false;
   const probability=clamp(descriptor,0,1)*(combatRank?1:.5);
@@ -2128,7 +2128,7 @@ function pirateFleetInit(){
   pirateFleetClear();
  }
  pirateFleetPrepare();pirateFleetReady=true;EAI.seed((((sy+1)*0x9e3779b1)^((wave+1)*0x85ebca6b)^((score+1)*0xc2b2ae35))>>>0);
- pirateFleetNextType=EAI.rand()*3|0;pirateFleetWaveTimer=0;
+ pirateFleetNextType=EAI.rand()*3|0;pirateFleetWaveTimer=3.5;
  const fleetSize=lowProfile?2:3;
  for(let slot=0;slot<fleetSize;slot++){const e={slot,ty:lowProfile?pirateFleetNextType:slot,g:null,hp:0,mx:0,respawn:Infinity,dead:false,flames:[],openingAttack:true};pirateFleet.push(e);pirateFleetSpawn(e,slot*.06)}
  say(lowProfile?"ПИРАТСКАЯ ПАРА: "+(["ГОЛОВОРЕЗЫ","ШАКАЛЫ","МАРОДЁРЫ"][pirateFleetNextType]):"ПИРАТСКАЯ ЭСКАДРИЛЬЯ: ГОЛОВОРЕЗ · ШАКАЛ · МАРОДЁР",3);
