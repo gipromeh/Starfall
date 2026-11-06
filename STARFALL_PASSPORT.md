@@ -265,10 +265,10 @@
 date: 2026-10-31
 topic: STARFALL: паспорт проекта (архитектура, технологии, механика, сохранения, качество)
 tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура]
-game_version: "v102"
-last_update: 2026-11-05
+game_version: "v102.1"
+last_update: 2026-11-06
 main_file: starfall.html
-main_file_sha256: "80a38648880abfa673712023aa7c1527019a73b281ccf088e06a70b108c4812a"
+main_file_sha256: "bacfe3f67b5a24e9d27398187d8e5aee504e7d9f9e396b096033a5ee432636ab"
 save_format_version: 3
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"
