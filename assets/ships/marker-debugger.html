@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>STARFALL GLB Marker Debugger</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080d14;color:#e5edf5;font:13px system-ui}#stage{position:absolute;inset:0}#panel{position:absolute;z-index:2;top:12px;left:12px;width:min(350px,calc(100vw - 24px));max-height:calc(100vh - 24px);overflow:auto;background:#101b2bea;border:1px solid #ffffff25;border-radius:10px;padding:14px;backdrop-filter:blur(12px)}h1{font-size:15px;margin:0 0 8px}p{color:#aab9c8;font-size:12px;line-height:1.5}button,input{max-width:100%;margin:4px 2px;padding:8px;background:#1d3045;color:#e5edf5;border:1px solid #ffffff2c;border-radius:6px}button{cursor:pointer}button.active{border-color:#73d8ff}#drop{display:block;border:1px dashed #78a8c7;padding:12px;border-radius:7px;text-align:center}#report{font:11px/1.45 ui-monospace,monospace;white-space:pre-wrap;overflow-wrap:anywhere;color:#c7d7e5}#stage canvas{display:block}
+</style></head><body><div id="stage"></div><section id="panel"><h1>STARFALL / GLB MARKER DEBUGGER</h1><p>Загрузи GLB. Синие оси — локальные оси узла; цветные маркеры — распознанные сокеты. Debug helpers не входят в экспортируемую модель.</p><label id="drop">Перетащи GLB сюда или <input id="file" type="file" accept=".glb,model/gltf-binary"></label><p><button id="axes" class="active">Local axes</button><button id="bounds" class="active">Bounds</button><button id="spin">Auto rotate</button></p><div id="report">Ожидается GLB…</div></section>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script><script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script><script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script>
+(()=>{
+const stage=document.querySelector('#stage'),report=document.querySelector('#report'),renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.75));renderer.outputEncoding=THREE.sRGBEncoding;renderer.setSize(innerWidth,innerHeight);stage.appendChild(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x080d14);
+const camera=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,.01,10000);camera.position.set(4,3,6);
+const controls=new THREE.OrbitControls(camera,renderer.domElement);controls.enableDamping=true;
+scene.add(new THREE.HemisphereLight(0xc9e6ff,0x263044,1.6));const key=new THREE.DirectionalLight(0xffffff,2.2);key.position.set(4,7,5);scene.add(key);
+const grid=new THREE.GridHelper(20,20,0x33506b,0x1b2a3b);scene.add(grid);
+let root=null,helpers=[],showAxes=true,showBounds=true,spinning=false;
+const loader=new THREE.GLTFLoader();
+function clear(){if(root){scene.remove(root);root.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>m.dispose())})}helpers.forEach(h=>scene.remove(h));helpers=[];root=null}
+function markerType(name){const n=name.toUpperCase();if(/^(GUN_|MUZZLE_|WEAPON_|LASER_|CANNON_)/.test(n))return 0xff665c;if(/^(ENG_|ENGINE_|THRUSTER_|EXHAUST_|NOZZLE_)/.test(n))return 0x66d9ff;return 0xffca67}
+function load(buffer,name){clear();loader.parse(buffer,'',g=>{
+ root=g.scene;scene.add(root);root.updateMatrixWorld(true);
+ const box=new THREE.Box3().setFromObject(root),size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3()),radius=Math.max(size.length()*.65,.5);
+ controls.target.copy(center);camera.position.copy(center).add(new THREE.Vector3(radius*1.8,radius*1.1,radius*2.2));camera.near=Math.max(radius/10000,.001);camera.far=radius*100;camera.updateProjectionMatrix();
+ let meshes=0,triangles=0,materials=new Set(),textures=new Set(),nodes=0,markers=[],errors=[];
+ root.traverse(o=>{nodes++;if(o.isMesh){meshes++;triangles+=(o.geometry.index?o.geometry.index.count:o.geometry.attributes.position.count)/3;(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{materials.add(m);['map','normalMap','roughnessMap','metalnessMap','emissiveMap','aoMap'].forEach(k=>{if(m[k])textures.add(m[k])})})}
+ if(o.name){const type=markerType(o.name),known=/^(GUN_|MUZZLE_|WEAPON_|LASER_|CANNON_|ENG_|ENGINE_|THRUSTER_|EXHAUST_|NOZZLE_)/i.test(o.name);if(known){const pos=new THREE.Vector3(),quat=new THREE.Quaternion();o.getWorldPosition(pos);o.getWorldQuaternion(quat);const dir=new THREE.Vector3(0,0,1).applyQuaternion(quat).normalize();const arrow=new THREE.ArrowHelper(dir,pos,Math.max(radius*.12,.12),type,Math.max(radius*.035,.04),Math.max(radius*.025,.03));helpers.push(arrow);markers.push({name:o.name,position:pos.toArray().map(v=>+v.toFixed(3)),worldDirection:dir.toArray().map(v=>+v.toFixed(3))})}}
+ if(showAxes&&o.isObject3D&&o.name){const ax=new THREE.AxesHelper(Math.max(radius*.08,.08));o.add(ax);o.userData.__debugAxis=ax;helpers.push(ax)}
+ });
+ if(showBounds){const b=new THREE.Box3Helper(box,0x9eff8a);scene.add(b);helpers.push(b)}
+ report.textContent=[name,'nodes='+nodes,'meshes='+meshes,'triangles='+Math.round(triangles),'materials='+materials.size,'textures='+textures.size,'bounds='+size.toArray().map(v=>v.toFixed(3)).join(' × '),'markers:',...(markers.length?markers.map(m=>m.name+' @ '+m.position.join(', ')+' dir '+m.worldDirection.join(', ')):['(none detected)'])].join('\n');
+ },e=>{report.textContent='LOAD ERROR: '+(e.message||e)});}
+document.querySelector('#file').onchange=e=>{const f=e.target.files[0];if(f)f.arrayBuffer().then(b=>load(b,f.name))};
+const drop=document.querySelector('#drop');drop.ondragover=e=>{e.preventDefault()};drop.ondrop=e=>{e.preventDefault();const f=e.dataTransfer.files[0];if(f&&f.name.toLowerCase().endsWith('.glb'))f.arrayBuffer().then(b=>load(b,f.name))};
+document.querySelector('#axes').onclick=e=>{showAxes=!showAxes;e.target.classList.toggle('active',showAxes);if(root){const f=root;loadCurrentAxes(f)}};
+function loadCurrentAxes(){if(!root)return;root.traverse(o=>{if(o.userData.__debugAxis){o.remove(o.userData.__debugAxis);delete o.userData.__debugAxis}if(showAxes&&o.name){const a=new THREE.AxesHelper(.2);o.add(a);o.userData.__debugAxis=a}})}
+document.querySelector('#bounds').onclick=e=>{showBounds=!showBounds;e.target.classList.toggle('active',showBounds);if(!showBounds)helpers=helpers.filter(h=>{if(h.isBox3Helper){scene.remove(h);return false}return true})};
+document.querySelector('#spin').onclick=e=>{spinning=!spinning;e.target.classList.toggle('active',spinning)};
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+function frame(){requestAnimationFrame(frame);if(spinning&&root)root.rotation.y+=.002;controls.update();renderer.render(scene,camera)}frame();
+})();
+</script></body></html>

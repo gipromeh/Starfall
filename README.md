@@ -21,7 +21,7 @@
 
 ## Библиотека игровых ресурсов
 
-Все игровые ассеты хранятся в `assets/` и распределяются по категориям: `ships/`, `droids/`, `planets/`, `weapons/`, `artifacts/`. Описание структуры и правила размещения: [`assets/README.md`](assets/README.md). Каталог дроидов: [`assets/droids/`](assets/droids/); просмотрщик моделей кораблей: [`assets/ships/viewer.html`](assets/ships/viewer.html). Корневой каталог `Droids/` удалён — единственный актуальный путь находится внутри `assets/`.
+Все игровые ассеты хранятся в `assets/` и распределяются по категориям: `ships/`, `droids/`, `planets/`, `weapons/`, `artifacts/`. Описание структуры и правила размещения: [`assets/README.md`](assets/README.md). Обязательная проверка всех GLB: [GLB Asset Pipeline](docs/GLB_ASSET_PIPELINE.md). Каталог дроидов: [`assets/droids/`](assets/droids/); просмотрщик моделей кораблей: [`assets/ships/viewer.html`](assets/ships/viewer.html). Корневой каталог `Droids/` удалён — единственный актуальный путь находится внутри `assets/`.
 
 ## Galaxy Map и каталог Spansh
 
