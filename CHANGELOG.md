@@ -1,3 +1,9 @@
+## Documentation synchronization policy — 2026-11-06
+
+- Master instruction updated to v2.8: defined mandatory README synchronization triggers, content rules, source-of-truth hierarchy and acceptance checks.
+- README corrected to reflect STARFALL v102 from the production HTML version marker; removed stale v100 / PR #37 status and clarified that unmerged PRs are not part of `main`.
+- Added the README synchronization rule to the repository workflow. No gameplay code, `starfall.html`, SAVE schema or game version changed.
+
 ## Документация — обязательный GLB Asset Pipeline (2026-11-05, без изменения версии игры)
 
 - Добавлен общий pipeline для всех GLB-категорий: происхождение/лицензия, структурная валидация, координаты/pivot, геометрия, PBR, маркеры, физика, runtime, регрессии и платформенная приёмка.
