@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="claude:viewport-fit-sides" content="cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#02030a"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>STARFALL</title>
-<meta name="starfall-version" content="v102">
+<meta name="starfall-version" content="v102.1">
 <meta name="starfall-telemetry-endpoint" content="">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 <style>
@@ -2210,8 +2210,9 @@ function pirateFleetUpdate(dt){
     targetSpeed=dist>330?61:48;turnRate=2.5;
    }else if(e.ty===2){
     // Мародёр: сохраняет прямой вектор перехвата с небольшим боковым дрейфом.
-    aim.copy(toPlayer).normalize().addScaledVector(right,Math.sin(profilePhase*.42)*.22).normalize();
-    targetSpeed=dist>470?40:dist>270?30:26;turnRate=1.2;acceleration=36;
+    const lateral=Math.sin(profilePhase*.42+e.slot)*(dist>520?.04:dist>270?.14:.18);
+    aim.copy(toPlayer).normalize().addScaledVector(right,lateral).normalize();
+    targetSpeed=dist>520?58:dist>270?42:30;turnRate=1.45;acceleration=48;
    }else{
     // Гарпия: широкая орбита с вертикальными сменами высоты.
     aim.addScaledVector(right,Math.sin(profilePhase*.55)*.9).addScaledVector(pirateFleetUp,Math.sin(profilePhase*.8)*.42).normalize();
