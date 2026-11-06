@@ -37,7 +37,7 @@ const L = require('./lib');
      const active=pirateFleet.filter(e=>e.g&&e.hp>0);
      const enemyDamage=pirateFleet.reduce((sum,e)=>sum+Math.max(0,e.mx-e.hp),0);
      const enemyHits=enemyHitEvents;
-     rows.push({trial,seed,simulated_seconds:+(frames*DT).toFixed(3),state,player_hull:+hull.toFixed(2),player_shield:+shield.toFixed(2),player_shots:playerShots,hostile_shots:hostileShots,player_hit_events:playerHitEvents,player_damage_received:+playerDamageReceived.toFixed(2),enemy_damage:+enemyDamage.toFixed(2),enemy_hits:enemyHits,active_enemies:active.length,enemy_states:pirateFleet.map(e=>e.state||'destroyed'),enemy_hp:pirateFleet.map(e=>e.hp)});
+     rows.push({trial,seed,simulated_seconds:+(frames*DT).toFixed(3),state,player_hull:+hull.toFixed(2),player_shield:+shield.toFixed(2),player_shots:playerShots,hostile_shots:hostileShots,player_hit_events:playerHitEvents,player_damage_received:+playerDamageReceived.toFixed(2),enemy_damage:+enemyDamage.toFixed(2),enemy_hits:enemyHits,active_enemies:active.length,enemy_states:pirateFleet.map(e=>e.state||'destroyed'),enemy_hp:pirateFleet.map(e=>e.hp),enemy_debug:pirateFleet.map(e=>({slot:e.slot,type:e.ty,distance:e.g?.position.distanceTo(P),position:e.g?.position.toArray(),velocity:e.vel?.toArray(),heading:e.hd?.toArray(),ticks:e.aiTicks,phase:e.ph,phase_time:e.phT,fire:e.fire,burst:e.burst,burst_gap:e.burstGap,warp:e.warp}))});
      firing=false;
      dock();
     }
