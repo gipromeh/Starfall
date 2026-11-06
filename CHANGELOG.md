@@ -1,3 +1,9 @@
+## STARFALL v102.1 — сближение и огневое окно Мародёра (2026-11-06)
+
+- Уменьшен боковой уход тяжёлого пиратского архетипа на дальнем сближении; увеличены скорость и управляемость захода, чтобы он доходил до дальности огня.
+- Production combat batch теперь выводит телеметрию каждого прогона, ведёт цель игроком и требует фактического попадания и ответного огня.
+- Добавлен production combat batch в browser CI matrix; версия, паспортный SHA и README синхронизированы.
+
 ## Documentation synchronization policy — 2026-11-06
 
 - Master instruction updated to v2.8: defined mandatory README synchronization triggers, content rules, source-of-truth hierarchy and acceptance checks.
