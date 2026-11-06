@@ -2222,7 +2222,7 @@ function pirateFleetUpdate(dt){
   }else{
    targetSpeed=[50,59,39,51][e.ty];
   }
-  if(sfAiFrame){const desired=vec(sfAiFrame.navigation.desiredVelocity||{x:0,y:0,z:0}),desiredSpeed=desired.length();if(desiredSpeed>1e-3)aim.copy(desired).normalize();targetSpeed=desiredSpeed;e.state=(sfAiFrame.tacticalState==="EVADE"||sfAiFrame.tacticalState==="BREAK_AWAY")?"EVADE":"ATTACK";e.aiIntent=e.state}
+  if(sfAiFrame){const dv=sfAiFrame.navigation.desiredVelocity||{x:0,y:0,z:0},desired=new T.Vector3(dv.x,dv.y,dv.z),desiredSpeed=desired.length();if(desiredSpeed>1e-3)aim.copy(desired).normalize();targetSpeed=desiredSpeed;e.state=(sfAiFrame.tacticalState==="EVADE"||sfAiFrame.tacticalState==="BREAK_AWAY")?"EVADE":"ATTACK";e.aiIntent=e.state}
   targetSpeed*=DF[dif].sp;acceleration*=DF[dif].ac;
   if(aiThink){
    e.aimS=e.aimS?e.aimS.lerp(aim,.4).normalize():aim.clone();
