@@ -88,6 +88,15 @@ sanity_check:
 # ПРОЦЕСС РАБОТЫ С GITHUB (единственный источник правды)
 process:
   repo: https://github.com/gipromeh/Starfall   # ветка main
+  hosting_policy:
+    authority: "Единственная разрешённая платформа публикации игры — GitHub Pages."
+    rules:
+      - "Vercel запрещён для STARFALL и не должен использоваться ни при каких обстоятельствах."
+      - "Не создавать и не подключать Vercel projects, GitHub integrations, deployments, domains, tokens или другие Vercel resources."
+      - "Не добавлять Vercel в workflows, scripts, repository settings, документацию или пользовательские инструкции."
+      - "GitHub Pages — единственный production hosting/deployment target; использовать существующий workflow .github/workflows/deploy-starfall-pages.yml."
+      - "Vercel checks, deployment statuses и preview URLs являются внешними, неавторитетными для проекта сигналами: не запускать их, не устранять их сбои и не включать в CI/release acceptance criteria."
+      - "Если Vercel status автоматически появляется в PR, зафиксировать, что платформа не используется; он не является обязательной проверкой и не блокирует приёмку STARFALL."
   current_version: v103.2
   files:
     game: starfall.html        # единственная актуальная версия игры
