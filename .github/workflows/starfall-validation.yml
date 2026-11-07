@@ -8,6 +8,7 @@ on:
       - "tools/validate-starfall.mjs"
       - "tests/t11_pirate_fleet.js"
       - "tests/lib.js"
+      - "tests/lib.js"
       - ".github/workflows/starfall-validation.yml"
   push:
     branches: ['feat/**']
