@@ -185,6 +185,56 @@
     entity.sfAiEnabled = true;
   }
 
+  // The intercept point is a steering target only. Braking must use the live
+  // target distance; otherwise a near-zero predicted-intercept distance can
+  // stall an approaching fighter hundreds of metres from its target.
+  function applyActualDistanceBraking(frame, snapshot) {
+    const navigation = frame && frame.navigation;
+    if (!navigation || frame.tacticalState !== "APPROACH" ||
+        navigation.mode !== "VELOCITY" || navigation.maneuver !== "INTERCEPT") return frame;
+    const target = snapshot.contacts.find(contact => contact.trackId === frame.selectedTargetTrackId);
+    if (!target || !target.transform || !target.transform.position) return frame;
+    const self = snapshot.self;
+    const propulsion = self && self.propulsion;
+    const selfPosition = self && self.transform && self.transform.position;
+    const targetPosition = target.transform.position;
+    const acceleration = propulsion && propulsion.availableAcceleration;
+    const maxSpeed = propulsion && propulsion.maxSpeed;
+    if (!selfPosition || !Number.isFinite(acceleration) || acceleration <= 0 ||
+        !Number.isFinite(maxSpeed) || maxSpeed <= 0) return frame;
+    const dx = targetPosition.x - selfPosition.x;
+    const dy = targetPosition.y - selfPosition.y;
+    const dz = targetPosition.z - selfPosition.z;
+    const distance = Math.hypot(dx, dy, dz);
+    if (!Number.isFinite(distance)) return frame;
+    const stoppingDistance = Math.max(20,
+      (self.capabilities && self.capabilities.collisionRadius || 0) +
+      (target.estimatedRadius || 0) + 20);
+    const brakingDistance = Math.max(0, distance - stoppingDistance);
+    const distanceLimitedSpeed = Math.min(maxSpeed, Math.sqrt(2 * acceleration * brakingDistance));
+    const desired = navigation.desiredVelocity;
+    if (!desired || !Number.isFinite(desired.x) || !Number.isFinite(desired.y) || !Number.isFinite(desired.z)) return frame;
+    const currentSpeed = Math.hypot(desired.x, desired.y, desired.z);
+    if (currentSpeed >= distanceLimitedSpeed - 1e-6) return frame;
+    // Keep Core's predicted-intercept direction. If it supplied no direction,
+    // use the actual target bearing; speed still comes only from actual distance.
+    const inverseLength = currentSpeed > 1e-6 ? 1 / currentSpeed : (distance > 1e-6 ? 1 / distance : 0);
+    const direction = currentSpeed > 1e-6
+      ? { x: desired.x * inverseLength, y: desired.y * inverseLength, z: desired.z * inverseLength }
+      : { x: dx * inverseLength, y: dy * inverseLength, z: dz * inverseLength };
+    return {
+      ...frame,
+      navigation: {
+        ...navigation,
+        desiredVelocity: {
+          x: direction.x * distanceLimitedSpeed,
+          y: direction.y * distanceLimitedSpeed,
+          z: direction.z * distanceLimitedSpeed
+        }
+      }
+    };
+  }
+
   function updateAI(entity, dt) {
     if (!Core || !entity.g || entity.hp <= 0 || entity.warp > 0 || state !== "play") return null;
     try {
@@ -198,13 +248,14 @@
         const tick = ++globalTick;
         entity.sfAiTick = tick;
         const snapshot = entity.sfAIHost.captureSnapshot(tick, aiDt);
-        const output = entity.sfAI.update(snapshot, aiDt);
-        if (output.entityId !== snapshot.controlledEntityId || output.tickId !== tick ||
-            !output.navigation || !Number.isFinite(output.validUntil) ||
-            !output.navigation.desiredVelocity && output.navigation.mode === "VELOCITY") {
+        const coreOutput = entity.sfAI.update(snapshot, aiDt);
+        if (coreOutput.entityId !== snapshot.controlledEntityId || coreOutput.tickId !== tick ||
+            !coreOutput.navigation || !Number.isFinite(coreOutput.validUntil) ||
+            !coreOutput.navigation.desiredVelocity && coreOutput.navigation.mode === "VELOCITY") {
           entity.sfAIHost.applySafeFallback();
           return null;
         }
+        const output = applyActualDistanceBraking(coreOutput, snapshot);
         entity.sfAIHost.commitAIFrame(output);
       }
       const frame = entity.sfAiFrame;
