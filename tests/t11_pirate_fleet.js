@@ -194,7 +194,7 @@ const L = require('./lib');
     pirateFleet.forEach((p,i)=>{
       p.warp=0;p.g.visible=true;p.aiClock=0;p.aiTicks=0;p.aiIntent="ATTACK";p.aiSideSign=i%2?1:-1;
       p.g.position.copy(P).add(new THREE.Vector3((i-.5)*10,0,-620));
-      p.hd.set(0,0,1);p.vel.set(0,0,46);p.speed=46;p.state="ATTACK";p.fire=99;p.burst=0;p.burstGap=0;
+      p.hd.set(0,0,1);p.g.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,-1),p.hd);p.vel.set(0,0,46);p.speed=46;p.aimS=null;p.state="ATTACK";p.ph="ATTACK";p.phT=0;p.brk=null;p.fire=99;p.burst=0;p.burstGap=0;
       p.sfAiElapsed=.25;p.sfAiFrame=null;p.sfAiFire=false;
     });
     let minDistance=Infinity,maxDistance=0;const states=new Set();let previousHeading=pirateFleet[0].hd.clone(),maxHeadingStep=0;
@@ -210,7 +210,11 @@ const L = require('./lib');
       const p=pirateFleet[0],d=p.g.position.distanceTo(P);minDistance=Math.min(minDistance,d);maxDistance=Math.max(maxDistance,d);states.add(p.state);
       const angle=previousHeading.angleTo(p.hd);maxHeadingStep=Math.max(maxHeadingStep,angle);previousHeading.copy(p.hd);
     }
-    return{minDistance,maxDistance,states:[...states],maxHeadingStep,ticks:pirateFleet[0].aiTicks,legacy:pirateFleet.some(p=>["ATTACK_RUN","FIRING_PASS","OVERSHOOT","REPOSITION","LOOP","BREAK"].includes(p.state))};
+    const p=pirateFleet[0],frame=p.sfAiFrame,dv=frame?.navigation?.desiredVelocity||null;
+    return{minDistance,maxDistance,states:[...states],maxHeadingStep,ticks:p.aiTicks,legacy:pirateFleet.some(p=>["ATTACK_RUN","FIRING_PASS","OVERSHOOT","REPOSITION","LOOP","BREAK"].includes(p.state)),
+      finalDistance:p.g.position.distanceTo(P),finalVelocity:p.vel.toArray(),heading:p.hd.toArray(),modelForward:new THREE.Vector3(0,0,-1).applyQuaternion(p.g.quaternion).toArray(),
+      desiredVelocity:dv,desiredSpeed:dv?Math.hypot(dv.x,dv.y,dv.z):null,tacticalState:frame?.tacticalState||null,maneuver:frame?.navigation?.maneuver||null,
+      ocs:{yaw:p.ocsYaw,pitch:p.ocsPitch,accel:p.ocsAccel,targetSpeed:p.ocsTargetSpeed},sfAiEnabled:p.sfAiEnabled,sfAiFire:p.sfAiFire,aiError:p.sfAiErrorLogged||false};
   });
   L.check('Elite flight: tactical behavior uses only ATTACK/EVADE intents, without scripted waypoints',eliteFlight.states.every(s=>s==="ATTACK"||s==="EVADE")&&!eliteFlight.legacy,eliteFlight);
   L.check('Elite flight: close-range reaction switches to evasion and later re-engages',eliteFlight.states.includes("EVADE")&&eliteFlight.states.includes("ATTACK"),eliteFlight);
