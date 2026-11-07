@@ -1,3 +1,9 @@
+## v103.5 — HARMLESS Pursuit AI для Pirate Fleet
+- Встроен HARMLESS-style pursuit controller: поддержание дистанции 500, коррекция скорости с учётом скорости игрока и угла разворота, close-range break ниже 260 с очисткой выше 560 и боковым clearance 320.
+- Переход в классический attack-run определяется направлением носа игрока с гистерезисом 1.3/1.85 радиан; прежние профили Головореза, Шакала, Мародёра и Гарпии сохранены.
+- Входящие снаряды прерывают pursuit и возвращают штатный ATTACK/jink и Pirate AI Core EVADE/BREAK_AWAY/RETREAT; native EAI, интеграция движения, стрельба, физика, столкновения и урон остаются authoritative.
+- Добавлены browser-регрессии pursuit activation, break/clear thresholds, slash hysteresis и incoming-fire priority. Реальный iPhone/PC playtest не заявляется.
+
 ## v103.4 — восстановление классической атаки Pirate Fleet
 - Исправлено взаимодействие Pirate AI Core с боевой траекторией: его прямой `desiredVelocity` больше не подменяет штатную геометрию захода при `APPROACH/ATTACK`.
 - Сохранены нативные фазы `ATTACK → BREAK → RESET`, боковой манёвр архетипа и инерционное прохождение цели. Core по-прежнему управляет `EVADE/BREAK_AWAY/RETREAT` и ограничивает скорость сближения.
@@ -291,10 +297,10 @@
 date: 2026-10-31
 topic: STARFALL: паспорт проекта (архитектура, технологии, механика, сохранения, качество)
 tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура]
-game_version: "v103.4"
-last_update: 2026-11-07
+game_version: "v103.5"
+last_update: 2026-11-08
 main_file: starfall.html
-main_file_sha256: "0552bfb2ed657b50d4c9aa7e66854b0d832de37dcebd08c03dab9c4b22600da0"
+main_file_sha256: "5527ec9dd327fdbb9a439aa1597509db5073f48597d5a2f0c292e4c2a316822e"
 save_format_version: 3
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"

@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="claude:viewport-fit-sides" content="cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#02030a"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>STARFALL</title>
-<meta name="starfall-version" content="v103.4">
+<meta name="starfall-version" content="v103.5">
 <meta name="starfall-telemetry-endpoint" content="">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 <style>
@@ -2147,10 +2147,14 @@ function pirateFleetDamage(e,d,missile){
 }
 // HARMLESS Pursuit AI adaptation: hold the target's six, break clear on close approach,
 // and switch to the existing attack-run state machine when the player's nose faces the pirate.
-const PF_PURSUIT_RANGE=500,PF_PURSUIT_CLOSE_GAIN=1,PF_PURSUIT_TURN_FLOOR=.15;
+const PF_PURSUIT_RANGE=500,PF_PURSUIT_CLOSE_GAIN=.08,PF_PURSUIT_TURN_FLOOR=.15;
 const PF_PURSUIT_BREAK_RANGE=260,PF_PURSUIT_CLEAR_RANGE=560,PF_PURSUIT_BREAK_CLEARANCE=320;
 const pfPursuitForward=new T.Vector3(),pfPursuitToPirate=new T.Vector3(),pfPursuitAway=new T.Vector3(),pfPursuitPerp=new T.Vector3(),pfPursuitAim=new T.Vector3(),pfPursuitToDir=new T.Vector3();
-function pirateFleetPursuit(e,dist,toPlayer,aiThink){
+function pirateFleetPursuit(e,dist,toPlayer,aiThink,incoming=false){
+ if(incoming){
+  if(e.ph==="PURSUIT"||e.pursuitSlashing){e.ph="ATTACK";e.phT=0;e.pursuitSlashing=false;e.brk=null;e.aimS=null}
+  return null;
+ }
  const playerForward=pfPursuitForward.set(0,0,-1).applyQuaternion(Q).normalize();
  const toPirate=pfPursuitToPirate.copy(e.g.position).sub(P);
  if(aiThink){
@@ -2188,7 +2192,7 @@ function pirateFleetPursuit(e,dist,toPlayer,aiThink){
  const facing=e.hd.angleTo(pfPursuitToDir.copy(toPlayer).normalize());
  const turnScale=PF_PURSUIT_TURN_FLOOR+(1-PF_PURSUIT_TURN_FLOOR)*Math.max(0,Math.cos(facing));
  const maxSpeed=[62,68,55,62][e.ty]||62;
- const targetSpeed=Math.max(0,Math.min(maxSpeed,(vel.length()+PF_PURSUIT_CLOSE_GAIN*(dist-PF_PURSUIT_RANGE))*turnScale));
+ const targetSpeed=Math.max(0,Math.min(maxSpeed,Math.max(22,vel.length()+PF_PURSUIT_CLOSE_GAIN*(dist-PF_PURSUIT_RANGE)))*turnScale);
  e.state=e.aiIntent="ATTACK";e.ph="PURSUIT";e.pursuitBreaking=!!(e.pursuitBreak&&e.pursuitBreak.breaking);
  return{aim:pfPursuitAim.clone(),speed:e.pursuitBreaking?maxSpeed:targetSpeed,breaking:e.pursuitBreaking};
 }
@@ -2241,7 +2245,7 @@ function pirateFleetUpdate(dt){
   const g=e.g,toPlayer=P.clone().sub(g.position),dist=toPlayer.length(),aiThink=EAI.think(e,dt);if(dist<1)continue;
   let incoming=false;
   if(aiThink)for(let bi=bul.length-1;bi>=0;bi--){const b=bul[bi],delta=g.position.clone().sub(b.m.position);if(delta.length()<135&&b.v.dot(delta)>0){incoming=true;break}}
-  const pursuit=pirateFleetPursuit(e,dist,toPlayer,aiThink);
+  const pursuit=pirateFleetPursuit(e,dist,toPlayer,aiThink,incoming);
   const baseAim=pursuit?null:pirateFleetPhase(e,toPlayer,dist,incoming,aiThink,dt),sfAiFrame=window.SF_PIRATE_AI?window.SF_PIRATE_AI.update(e,dt):null;
   const right=new T.Vector3().crossVectors(toPlayer.clone().normalize(),pirateFleetUp).normalize();
   const profilePhase=(e.aiTicks||0)*.19+e.slot*1.7;
