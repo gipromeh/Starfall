@@ -28,11 +28,11 @@
       // The Core bundle is self-contained, so a UTF-8 data URL avoids blob-module
       // origin/CSP inconsistencies without adding a second network request.
       const bytes = new TextEncoder().encode(source);
-      let binary = "";
+      let binaryString = "";
       for (let offset = 0; offset < bytes.length; offset += 0x8000) {
-        binary += String.fromCharCode(...bytes.subarray(offset, Math.min(offset + 0x8000, bytes.length)));
+        binaryString += String.fromCharCode(...bytes.subarray(offset, Math.min(offset + 0x8000, bytes.length)));
       }
-      const moduleUrl = "data:text/javascript;base64," + btoa(binary);
+      const moduleUrl = "data:text/javascript;base64," + btoa(binaryString);
       const module = await import(moduleUrl);
       if (typeof module.PirateAICore !== "function") throw new Error("PirateAICore export is missing.");
       Core = module.PirateAICore;
