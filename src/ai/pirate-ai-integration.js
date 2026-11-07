@@ -24,16 +24,20 @@
       if (typeof DecompressionStream !== "function") throw new Error("GZIP decompression is unavailable.");
       const stream = new Blob([binary]).stream().pipeThrough(new DecompressionStream("gzip"));
       const source = await new Response(stream).text();
-      const moduleUrl = URL.createObjectURL(new Blob([source], { type: "text/javascript" }));
-      try {
-        const module = await import(moduleUrl);
-        if (typeof module.PirateAICore !== "function") throw new Error("PirateAICore export is missing.");
-        Core = module.PirateAICore;
-        window.SF_PIRATE_AI_VERSION = module.PIRATE_AI_VERSION;
-        return Core;
-      } finally {
-        URL.revokeObjectURL(moduleUrl);
+      // Safari/WebKit can reject JavaScript modules loaded from blob: URLs.
+      // The Core bundle is self-contained, so a UTF-8 data URL avoids blob-module
+      // origin/CSP inconsistencies without adding a second network request.
+      const bytes = new TextEncoder().encode(source);
+      let binary = "";
+      for (let offset = 0; offset < bytes.length; offset += 0x8000) {
+        binary += String.fromCharCode(...bytes.subarray(offset, Math.min(offset + 0x8000, bytes.length)));
       }
+      const moduleUrl = "data:text/javascript;base64," + btoa(binary);
+      const module = await import(moduleUrl);
+      if (typeof module.PirateAICore !== "function") throw new Error("PirateAICore export is missing.");
+      Core = module.PirateAICore;
+      window.SF_PIRATE_AI_VERSION = module.PIRATE_AI_VERSION;
+      return Core;
     })().catch(error => {
       loadError = error;
       console.error("[STARFALL Pirate AI] Core load failed; native EAI remains active.", error);
