@@ -35,7 +35,7 @@ const L = require('./lib');
      let frames=0;
      for(;frames<FRAMES&&state==='play';frames++){
       if(frames===1200)firing=true;
-      if(firing){const target=pirateFleet.find(e=>e.g&&e.hp>0);if(target){const aim=target.g.position.clone().sub(P).normalize();Q.setFromUnitVectors(new THREE.Vector3(0,0,-1),aim);rig.quaternion.copy(Q)}}
+      if(firing){let target=null,nearest=Infinity;for(const candidate of pirateFleet){if(!candidate.g||candidate.hp<=0)continue;const distance=candidate.g.position.distanceTo(P);if(distance<nearest){nearest=distance;target=candidate}}if(target){const projectileSpeed=Math.max(1,WP[gw[0]].v),leadTime=Math.min(6.2,nearest/projectileSpeed),relativeVelocity=target.vel.clone().sub(vel),leadPoint=target.g.position.clone().addScaledVector(relativeVelocity,leadTime),aim=leadPoint.sub(P).normalize();Q.setFromUnitVectors(new THREE.Vector3(0,0,-1),aim);rig.quaternion.copy(Q)}}
       upd(DT);
      }
      const active=pirateFleet.filter(e=>e.g&&e.hp>0);
@@ -46,7 +46,7 @@ const L = require('./lib');
      dock();
     }
    }finally{shootLaser=originalShootLaser;pirateFleetDamage=originalDamage;dmg=originalPlayerDamage;Math.random=originalRandom;firing=false;}
-   return{schema:'starfall.production-combat-batch.v1',engine:'starfall.html v103.1 actual browser runtime; upd() including pirateFleetUpdate(), production projectile movement/collision and damage handlers',production_modified:false,frame_dt:DT,frames_per_trial:FRAMES,trials:TRIALS,results:rows,aggregate:{player_shots:rows.reduce((a,x)=>a+x.player_shots,0),hostile_shots:rows.reduce((a,x)=>a+x.hostile_shots,0),enemy_damage:+rows.reduce((a,x)=>a+x.enemy_damage,0).toFixed(2),enemy_hits:rows.reduce((a,x)=>a+x.enemy_hits,0),player_deaths:rows.filter(x=>x.state==='dying').length,enemy_wipes:rows.filter(x=>x.active_enemies===0).length,enemy_hit_events:rows.reduce((a,x)=>a+x.enemy_hits,0),player_hit_events:rows.reduce((a,x)=>a+x.player_hit_events,0),player_damage_received:+rows.reduce((a,x)=>a+x.player_damage_received,0).toFixed(2)}};
+   return{schema:'starfall.production-combat-batch.v1',engine:'starfall.html v103.4 actual browser runtime; upd() including pirateFleetUpdate(), production projectile movement/collision and damage handlers',aim_model:'nearest hostile with ballistic lead using equipped laser projectile speed',production_modified:false,frame_dt:DT,frames_per_trial:FRAMES,trials:TRIALS,results:rows,aggregate:{player_shots:rows.reduce((a,x)=>a+x.player_shots,0),hostile_shots:rows.reduce((a,x)=>a+x.hostile_shots,0),enemy_damage:+rows.reduce((a,x)=>a+x.enemy_damage,0).toFixed(2),enemy_hits:rows.reduce((a,x)=>a+x.enemy_hits,0),player_deaths:rows.filter(x=>x.state==='dying').length,enemy_wipes:rows.filter(x=>x.active_enemies===0).length,enemy_hit_events:rows.reduce((a,x)=>a+x.enemy_hits,0),player_hit_events:rows.reduce((a,x)=>a+x.player_hit_events,0),player_damage_received:+rows.reduce((a,x)=>a+x.player_damage_received,0).toFixed(2)}};
   });
   console.log('PRODUCTION_COMBAT_REPORT '+JSON.stringify(report));
   if(report.results.length!==12)throw new Error('Expected 12 production trials');

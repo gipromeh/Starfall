@@ -28,7 +28,7 @@ const checks = [
  ['pirate fleet scales between a low-profile pair and a three-archetype squadron', html.includes('const lowProfile=QL&&QL.mode==="low";')&&html.includes('const fleetSize=lowProfile?2:3;')&&html.includes('for(let slot=0;slot<fleetSize;slot++){const e={slot,ty:lowProfile?pirateFleetNextType:slot,g:null,hp:0,mx:0,respawn:Infinity,dead:false,flames:[],openingAttack:true};pirateFleet.push(e);pirateFleetSpawn(e,slot*.06)}')],
  ['pirate fleet spawns ahead of the player', html.includes('addScaledVector(fw,(1100+e.slot*90))')],
  ['pirate fleet does not respawn after destruction', html.includes('e.respawn=Infinity;e.hits=0;')],
- ['pirate fleet uses current per-archetype firing envelopes', html.includes('const fireRange=[390,390,520,430][e.ty],fireCone=[.82,.72,.62,.95][e.ty];')&&html.includes('const canFire=e.state==="ATTACK"&&dist<fireRange&&(fireAngle<fireCone||(dist<260&&fireAngle<1.3))&&(!e.sfAiEnabled||e.sfAiFire);')],
+ ['pirate fleet uses current per-archetype firing envelopes', html.includes('const fireRange=[390,390,520,430][e.ty],fireCone=[.82,.72,.62,.95][e.ty];')&&html.includes('const canFire=e.state==="ATTACK"&&dist<fireRange&&(fireAngle<fireCone||(dist<260&&fireAngle<1.3));')&&!html.includes('&&(!e.sfAiEnabled||e.sfAiFire)')],
  ['regular pirates use 380/420-unit firing ranges', html.includes('d<(e.ty===3?420:380)')],
  ['wave attacks wait until the opening fleet is cleared', html.includes('if(!E&&!pirateFleet.some(pe=>pe.g&&pe.hp>0&&!pe.dead)){if(enc>0){spawnT-=dt;')],
  ['additional E/E2 wave spawns also wait until the opening fleet is cleared', html.includes('if(!pirateFleet.some(pe=>pe.g&&pe.hp>0&&!pe.dead)&&E&&!E2&&!E.boss&&enc>0&&wave%5!==4){')],

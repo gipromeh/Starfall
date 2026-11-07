@@ -1,3 +1,9 @@
+## v103.4 — восстановление классической атаки Pirate Fleet
+- Исправлено взаимодействие Pirate AI Core с боевой траекторией: его прямой `desiredVelocity` больше не подменяет штатную геометрию захода при `APPROACH/ATTACK`.
+- Сохранены нативные фазы `ATTACK → BREAK → RESET`, боковой манёвр архетипа и инерционное прохождение цели. Core по-прежнему управляет `EVADE/BREAK_AWAY/RETREAT` и ограничивает скорость сближения.
+- `fireRequest` Core больше не блокирует выстрел сам по себе: финальное решение остаётся за штатными проверками состояния атаки, дальности, огневого конуса, OCS/projection, PRNG, очереди и cooldown.
+- Добавлены browser-регрессии: прямой Core intercept не отменяет боковой заход и BREAK; штатный лазерный огонь сохраняется даже при `fireRequest=false` Core, если нативные боевые условия выполнены. 30-секундная симуляция контролирует минимальную дистанцию до игрока; production combat batch наводится на ближайшую цель с баллистическим упреждением по скорости установленного лазера.
+
 ## v103.3 — интеграция Pirate AI Core
 - В основной Pirate Fleet подключён детерминированный `PirateAICore` v1.0.0 через браузерный ESM runtime; host bridge формирует plain-data snapshots игрока, пиратской группы, вражеских снарядов, состояния корпуса и лазерного слота.
 - Тактическое решение выполняется с частотой 5 Гц; существующий `EAI` сохраняет 15 Гц steering и покадровую интеграцию движения. Выход Core задаёт desired velocity, EVADE/RETREAT и разрешение на огонь.
@@ -285,10 +291,10 @@
 date: 2026-10-31
 topic: STARFALL: паспорт проекта (архитектура, технологии, механика, сохранения, качество)
 tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура]
-game_version: "v103.3"
+game_version: "v103.4"
 last_update: 2026-11-07
 main_file: starfall.html
-main_file_sha256: "21434927836dbeb287b132ba75a9eb5ab3f2527bf958dda8984eec01ee0a9179"
+main_file_sha256: "0552bfb2ed657b50d4c9aa7e66854b0d832de37dcebd08c03dab9c4b22600da0"
 save_format_version: 3
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"
