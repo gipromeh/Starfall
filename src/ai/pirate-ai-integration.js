@@ -215,7 +215,7 @@
     const desired = navigation.desiredVelocity;
     if (!desired || !Number.isFinite(desired.x) || !Number.isFinite(desired.y) || !Number.isFinite(desired.z)) return frame;
     const currentSpeed = Math.hypot(desired.x, desired.y, desired.z);
-    if (currentSpeed >= distanceLimitedSpeed - 1e-6) return frame;
+    if (Math.abs(currentSpeed - distanceLimitedSpeed) <= 1e-6) return frame;
     // Keep Core's predicted-intercept direction. If it supplied no direction,
     // use the actual target bearing; speed still comes only from actual distance.
     const inverseLength = currentSpeed > 1e-6 ? 1 / currentSpeed : (distance > 1e-6 ? 1 / distance : 0);
