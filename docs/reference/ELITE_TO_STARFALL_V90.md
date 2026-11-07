@@ -1,3 +1,11 @@
+## 2026-11-07 — Pirate AI Core and classic attack geometry (v103.4)
+
+- Core is a tactical layer, not a replacement for the native pirate attack controller. During APPROACH/ATTACK, native `pirateFleetPhase` and archetype steering retain lateral approach, attack pass, BREAK and RESET behavior.
+- Core EVADE/BREAK_AWAY/RETREAT vectors may override native steering; Core APPROACH may cap speed using live target distance but does not steer directly into the player.
+- Native fire execution remains authoritative: attack state, range, firing cone, OCS/projection gates, seeded PRNG, burst and cooldown. Core `fireRequest` is advisory and cannot suppress a valid native firing opportunity.
+- Elite basis: §§5.2, 13.6–13.7, 14.7 and 14.11. Decision and movement remain separate; steering uses local OCS projections and rate-limited integration; weapon release retains orientation, distance and probability gates. STARFALL continues using Three.js world units and its own calibrated thresholds; no Z80 constants are copied.
+- Browser regression simulates a Core APPROACH command aimed directly at the player with `fireRequest=false` and verifies lateral attack steering, native BREAK, valid laser fire and minimum separation during a 30-second flight simulation. The production combat batch uses nearest-target ballistic lead based on the equipped laser speed, without adding auto-aim to the game.
+
 # Elite research → STARFALL implementation map
 
 **Source:** `docs/reference/ELITE_GAME_PASSPORT.md`, revision 0.4, ZX Spectrum 128K research passport.  

@@ -189,6 +189,71 @@ const L = require('./lib');
   L.check('каждый маркер оружия создаёт отдельный лазер из своей дульной точки', combat.firstShipShots >= 2 && combat.muzzleMatch && combat.shotForward && combat.socketsForward && combat.lineShots, combat);
   L.check('каждый пират стреляет из всех собственных передних сокетов', combat.allPilotShots.every(x => x.shots === x.guns && x.shots >= 2 && x.originsMatch), combat.allPilotShots);
 
+  const coreAttackAuthority = await page.evaluate(() => {
+    const originalAI = window.SF_PIRATE_AI;
+    const testAI = Object.create(originalAI);
+    Object.defineProperty(testAI, 'update', {
+      value: entity => {
+        entity.sfAiEnabled = true;
+        entity.sfAiFire = false;
+        const target = P.clone().sub(entity.g.position).normalize();
+        return {
+          tacticalState: 'APPROACH',
+          navigation: { mode: 'VELOCITY', maneuver: 'INTERCEPT',
+            desiredVelocity: { x: target.x * 54, y: target.y * 54, z: target.z * 54 } },
+          weapons: [{ slotId: 'primary-laser', fireRequest: false }],
+          validUntil: 1e12
+        };
+      }
+    });
+    const originalRand = EAI.rand;
+    const originalType = pirateFleet[0].ty;
+    const p = pirateFleet[0];
+    const before = eb.length;
+    window.SF_PIRATE_AI = testAI;
+    EAI.rand = () => 0;
+    try {
+      p.ty = 0;
+      p.warp = 0; p.g.visible = true;
+      p.g.position.copy(P).add(new THREE.Vector3(0, 0, -300));
+      p.hd.set(0, 0, 1); p.vel.set(0, 0, 46); p.speed = 46;
+      p.g.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, -1), p.hd);
+      p.ph = 'ATTACK'; p.phT = .1; p.brk = null; p.jinkT = 0; p.jinkCd = 0;
+      p.aimS = null; p.fire = 0; p.burst = 0; p.burstGap = 0;
+      p.aiClock = EAI.STEP; p.aiTicks = 0; p.state = 'ATTACK';
+      p.sfAiEnabled = true; p.sfAiFire = false;
+      pirateFleetUpdate(1 / 60);
+      const attackBearing = P.clone().sub(p.g.position).normalize();
+      const attackAlignment = p.aimS.clone().normalize().dot(attackBearing);
+      const attackShots = eb.slice(before).filter(b => b.pirateFleetSlot === p.slot).length;
+      const deniedByCore = p.sfAiFire === false;
+
+      p.g.position.copy(P).add(new THREE.Vector3(0, 0, -120));
+      p.hd.set(0, 0, 1); p.vel.set(0, 0, 46); p.speed = 46;
+      p.g.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, -1), p.hd);
+      p.ph = 'BREAK'; p.phT = .1; p.brk = new THREE.Vector3(1, 0, 1).normalize();
+      p.aimS = null; p.aiClock = EAI.STEP; p.aiTicks = 0;
+      p.fire = 99; p.burst = 0; p.burstGap = 0;
+      pirateFleetUpdate(1 / 60);
+      const breakBearing = P.clone().sub(p.g.position).normalize();
+      const breakAlignment = p.aimS.clone().normalize().dot(breakBearing);
+      return {
+        attackAlignment, attackShots, deniedByCore,
+        breakPhase: p.ph, breakState: p.state, breakAlignment
+      };
+    } finally {
+      window.SF_PIRATE_AI = originalAI;
+      EAI.rand = originalRand;
+      p.ty = originalType;
+    }
+  });
+  L.check('Pirate AI Core APPROACH сохраняет боковой заход и штатный огонь при fireRequest=false',
+    coreAttackAuthority.attackAlignment < .999 && coreAttackAuthority.attackShots > 0 && coreAttackAuthority.deniedByCore,
+    coreAttackAuthority);
+  L.check('Pirate AI Core APPROACH не отменяет штатный BREAK-отход',
+    coreAttackAuthority.breakPhase === 'BREAK' && coreAttackAuthority.breakState === 'EVADE' &&
+    coreAttackAuthority.breakAlignment < .9, coreAttackAuthority);
+
   const eliteFlight = await page.evaluate(() => {
     const e=pirateFleet[0];
     pirateFleet.forEach((p,i)=>{
@@ -226,6 +291,7 @@ const L = require('./lib');
   L.check('Elite flight: approach speed is derived from actual target distance, not a near-zero intercept distance',
     eliteFlight.maxLongRangeApproachSpeed>15&&eliteFlight.longRangeApproachSamples>0,eliteFlight);
   L.check('Elite flight: close-range reaction switches to evasion and later re-engages',eliteFlight.states.includes("EVADE")&&eliteFlight.states.includes("ATTACK"),eliteFlight);
+  L.check('Pirate Fleet completes close passes without entering the player collision envelope',eliteFlight.minDistance>28,eliteFlight);
   L.check('Elite flight: OCS heading changes continuously, not by snapping to target',eliteFlight.maxHeadingStep<.12&&eliteFlight.ticks>=400,eliteFlight);
 
   const phaseAI = await page.evaluate(() => {
