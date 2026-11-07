@@ -190,8 +190,10 @@
     try {
       ensureAI(entity);
       entity.sfAiElapsed = (entity.sfAiElapsed || 0) + Math.max(0, dt);
-      if (entity.sfAiElapsed + 1e-6 >= DECISION_STEP) {
-        const aiDt = clamp(entity.sfAiElapsed, 0.001, 0.25);
+      const previousFrame = entity.sfAiFrame;
+      const frameExpired = !previousFrame || previousFrame.validUntil < now();
+      if (entity.sfAiElapsed + 1e-6 >= DECISION_STEP || frameExpired) {
+        const aiDt = clamp(Math.max(entity.sfAiElapsed, DECISION_STEP), 0.001, 0.25);
         entity.sfAiElapsed = 0;
         const tick = ++globalTick;
         entity.sfAiTick = tick;
