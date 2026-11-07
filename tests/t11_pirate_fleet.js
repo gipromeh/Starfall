@@ -158,11 +158,9 @@ const L = require('./lib');
       e.hd.copy(P.clone().sub(e.g.position).normalize());
       e.vel.copy(e.hd).multiplyScalar(46);
       e.g.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,-1),e.hd);
-      e.state = 'ATTACK'; e.aiIntent='ATTACK'; e.ph='ATTACK'; e.phT=0; e.brk=null; e.aimS=null; e.jinkT=0; e.jinkCd=0; e.stateT = 0; e.fire = 0; e.burst = 0; e.burstGap = 0; e.aiClock = EAI.STEP; e.aiTicks = 0;
+      e.state = 'ATTACK'; e.aiIntent='ATTACK'; e.ph='ATTACK'; e.phT=0; e.brk=null; e.aimS=null; e.jinkT=.5; e.jinkCd=1; e.jinkSide=1; e.stateT = 0; e.fire = 0; e.burst = 0; e.burstGap = 0; e.aiClock = EAI.STEP; e.aiTicks = 0;
       e.sfAiElapsed = .25; e.sfAiFrame = null; e.sfAiFire = false;
     });
-    const threat = { m:{position:pirateFleet[0].g.position.clone().add(new THREE.Vector3(0,0,-40))}, v:new THREE.Vector3(0,0,100) };
-    bul.push(threat);
     const before = eb.length;
     const randomAI = EAI.rand; EAI.rand = () => 0;
     try { pirateFleetUpdate(.05); } finally { EAI.rand = randomAI; }
@@ -182,8 +180,8 @@ const L = require('./lib');
       return { slot: e.slot, shots: own.length, guns: muzzles.length, originsMatch: own.length === muzzles.length && own.every((b, i) => b.m.position.distanceTo(muzzles[i]) < .001) };
     });
     const noseAlignment = pirateFleet.map(e => new THREE.Vector3(0,0,-1).applyQuaternion(e.g.quaternion).dot(e.vel.clone().normalize()));
-    bul.splice(bul.indexOf(threat),1);
-    return { before, after: eb.length, delta: eb.length - before, noseAlignment, firstShipShots: shots.length, muzzleMatch, shotForward, socketsForward, lineShots, allPilotShots, jinkFiring };
+    return { before, after: eb.length, delta: eb.length - before, noseAlignment, firstShipShots: shots.length, muzzleMatch, shotForward, socketsForward, lineShots, allPilotShots, jinkFiring,
+      aiState:first.sfAiFrame?.tacticalState||null, aiFire:first.sfAiFire, weaponIntents:first.sfAiFrame?.weapons||[], aiError:first.sfAiErrorLogged||false };
   });
   L.check('оба пилота участвуют в бою на ближней дистанции', combat.delta >= 2, combat);
   L.check('jink не отключает огонь, если корабль остаётся в ATTACK и цель в конусе',combat.jinkFiring&&combat.firstShipShots>=2,combat);
