@@ -159,6 +159,7 @@ const L = require('./lib');
       e.vel.copy(e.hd).multiplyScalar(46);
       e.g.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,-1),e.hd);
       e.state = 'ATTACK'; e.aiIntent='ATTACK'; e.ph='ATTACK'; e.phT=0; e.brk=null; e.aimS=null; e.jinkT=0; e.jinkCd=0; e.stateT = 0; e.fire = 0; e.burst = 0; e.burstGap = 0; e.aiClock = EAI.STEP; e.aiTicks = 0;
+      e.sfAiElapsed = .25; e.sfAiFrame = null; e.sfAiFire = false;
     });
     const threat = { m:{position:pirateFleet[0].g.position.clone().add(new THREE.Vector3(0,0,-40))}, v:new THREE.Vector3(0,0,100) };
     bul.push(threat);
@@ -196,9 +197,17 @@ const L = require('./lib');
       p.warp=0;p.g.visible=true;p.aiClock=0;p.aiTicks=0;p.aiIntent="ATTACK";p.aiSideSign=i%2?1:-1;
       p.g.position.copy(P).add(new THREE.Vector3((i-.5)*10,0,-620));
       p.hd.set(0,0,1);p.vel.set(0,0,46);p.speed=46;p.state="ATTACK";p.fire=99;p.burst=0;p.burstGap=0;
+      p.sfAiElapsed=.25;p.sfAiFrame=null;p.sfAiFire=false;
     });
     let minDistance=Infinity,maxDistance=0;const states=new Set();let previousHeading=pirateFleet[0].hd.clone(),maxHeadingStep=0;
+    let incoming=null,incomingUntil=-1;
     for(let i=0;i<1800;i++){
+      const pilot=pirateFleet[0],distanceToPlayer=pilot.g.position.distanceTo(P);
+      if(!incoming&&distanceToPlayer<300){
+        incoming={m:{position:pilot.g.position.clone().add(new THREE.Vector3(0,0,40))},v:new THREE.Vector3(0,0,-100)};
+        bul.push(incoming);incomingUntil=i+90;
+      }
+      if(incoming&&i>=incomingUntil){const index=bul.indexOf(incoming);if(index>=0)bul.splice(index,1);incoming=null;}
       pirateFleetUpdate(1/60);
       const p=pirateFleet[0],d=p.g.position.distanceTo(P);minDistance=Math.min(minDistance,d);maxDistance=Math.max(maxDistance,d);states.add(p.state);
       const angle=previousHeading.angleTo(p.hd);maxHeadingStep=Math.max(maxHeadingStep,angle);previousHeading.copy(p.hd);
