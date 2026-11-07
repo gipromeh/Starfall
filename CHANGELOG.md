@@ -1,3 +1,9 @@
+## Hosting policy — GitHub Pages only (2026-11-07)
+
+- Зафиксировано обязательное правило: GitHub Pages — единственная разрешённая production-платформа STARFALL.
+- Vercel запрещён: не создавать и не использовать проекты, интеграции, deployments, domains, tokens, workflows или конфигурацию Vercel.
+- Автоматические Vercel checks/statuses не являются проверками STARFALL и не входят в CI/release acceptance criteria. Игровой код и версия игры не менялись.
+
 ## STARFALL v103.3 — интеграция Pirate AI Core (2026-11-07)
 
 - Подключён Pirate AI Core 1.0.0 к основной Pirate Fleet через host bridge и браузерный ESM runtime без дополнительных сетевых зависимостей.
