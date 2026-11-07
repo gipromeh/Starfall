@@ -30,6 +30,11 @@ const L = require('./lib');
   L.check('атмосферный слой прикреплён к локальной планете', scene.atmosphere, scene);
   await page.evaluate(() => { pirateFleetInit(); });
   await page.waitForFunction(() => pirateFleet.length === 2, null, { timeout: 15000 });
+  const spawnSnapshot = await page.evaluate(() => pirateFleet.map(e => ({
+    type:e.ty, speed:e.speed, distance:e.g.position.distanceTo(P),
+    ahead:e.g.position.clone().sub(P).normalize().dot(new THREE.Vector3(0,0,-1).applyQuaternion(Q).normalize()),
+    lateral:e.g.position.clone().sub(P).dot(new THREE.Vector3(1,0,0).applyQuaternion(Q).normalize())
+  })));
   await page.waitForFunction(() => window.SF_PIRATE_AI && window.SF_PIRATE_AI.ready, null, { timeout: 20000 });
   await page.waitForFunction(() => pirateFleet.every(e => e.sfAI && e.sfAiFrame), null, { timeout: 10000 });
   const coreBridge = await page.evaluate(() => ({
@@ -123,7 +128,7 @@ const L = require('./lib');
   const fleetFirstHit=await page.evaluate(()=>{const e=pirateFleet[0];e.hp=e.mx;e.hits=0;pirateFleetDamage(e,20,false);return{hp:e.hp,mx:e.mx,alive:!!e.g,burning:!!e.fireFx,smoking:!!e.smoke,minimum:e.mx>=160}});
   L.check('пират эскадрильи после первого попадания горит, дымит и остаётся жив',fleetFirstHit.hp>0&&fleetFirstHit.alive&&fleetFirstHit.burning&&fleetFirstHit.smoking&&fleetFirstHit.minimum,fleetFirstHit);
 
-  const movementProfile = await page.evaluate(() => pirateFleet.map(e => ({ty:e.ty,speed:e.speed})));
+  const movementProfile = spawnSnapshot.map(e => ({ty:e.type,speed:e.speed}));
   L.check('стартовая пара использует один seeded-архетип и его скоростной профиль',movementProfile.length===2&&movementProfile[0].ty===movementProfile[1].ty&&movementProfile.every(x=>x.ty>=0&&x.ty<=2&&x.speed>=[46,34.5,46][x.ty]*.85&&x.speed<=[46,34.5,46][x.ty]+.01),movementProfile);
 
   const composition = await page.evaluate(() => ({
@@ -133,11 +138,7 @@ const L = require('./lib');
   }));
   L.check('стартовая атака содержит два корабля одного seeded-архетипа', composition.total === 2 && composition.types.length===1 && composition.types[0]===2, composition);
   L.check('оба корабля стартовой атаки созданы', composition.spawned === 2, composition);
-  const initialSpawn = await page.evaluate(() => pirateFleet.map(e => {
-    const forward = new THREE.Vector3(0,0,-1).applyQuaternion(Q).normalize();
-    const offset = e.g.position.clone().sub(P);
-    return { type:e.ty, distance:offset.length(), ahead:offset.normalize().dot(forward), lateral:offset.dot(new THREE.Vector3(1,0,0).applyQuaternion(Q).normalize()) };
-  }));
+  const initialSpawn = spawnSnapshot;
   L.check('стартовая эскадрилья появляется впереди игрока на заданной дистанции', initialSpawn.length===2&&initialSpawn.every(x=>x.distance>=1090&&x.distance<=1220&&x.ahead>.98)&&initialSpawn[0].lateral*initialSpawn[1].lateral<0, initialSpawn);
   const fleetHealth = await page.evaluate(() => pirateFleet.every(e => e.mx >= 160));
   L.check('прочность каждого корабля эскадрильи не ниже двойной прочности игрока', fleetHealth, fleetHealth);
