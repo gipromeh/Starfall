@@ -4,6 +4,13 @@
 - Vercel запрещён: не создавать и не использовать проекты, интеграции, deployments, domains, tokens, workflows или конфигурацию Vercel.
 - Автоматические Vercel checks/statuses не являются проверками STARFALL и не входят в CI/release acceptance criteria. Игровой код и версия игры не менялись.
 
+## STARFALL v103.3 — интеграция Pirate AI Core (2026-11-07)
+
+- Подключён Pirate AI Core 1.0.0 к основной Pirate Fleet через host bridge и браузерный ESM runtime без дополнительных сетевых зависимостей.
+- Тактический decision tick — 5 Гц; существующий native EAI сохраняет 15 Гц steering, покадровое движение, OCS gates, weapon execution и damage pipeline.
+- Core управляет перехватом, фланговым манёвром, уклонением, отступлением и разрешением на огонь; при ошибке включается штатный native EAI fallback.
+- Добавлена browser-регрессия runtime: загрузка Core, создание AI frame для каждого корабля и выбор игрока как hostile target.
+
 ## STARFALL v103.2 — Pirate Fleet fire range и respawn (2026-11-07)
 
 - `EAI.fireGate` больше не обрезает все архетипы на 384 единицах; дальность определяется индивидуальным `fireRange`. Мародёр может стрелять в пределах 520 единиц при выполнении остальных OCS/projection gates.

@@ -7,6 +7,16 @@ on:
       - "starfall.html"
       - "tools/validate-starfall.mjs"
       - "tests/t11_pirate_fleet.js"
+      - "tests/lib.js"
+      - "tests/lib.js"
+      - ".github/workflows/starfall-validation.yml"
+  push:
+    branches: ['feat/**']
+    paths:
+      - "starfall.html"
+      - "tools/validate-starfall.mjs"
+      - "tests/t11_pirate_fleet.js"
+      - "tests/lib.js"
       - ".github/workflows/starfall-validation.yml"
   workflow_dispatch:
 
