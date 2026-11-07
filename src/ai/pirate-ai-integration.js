@@ -131,13 +131,13 @@
             sensorRange: 9000, maxAngularRate: 2.5, maxAngularAcceleration: 3,
             canUseAfterburner: false, tags: ["PIRATE", "NPC"] },
           status: "ACTIVE", factionId: "pirates",
-          roleHint: e.ty === 2 ? "ASSAULT" : e.ty === 1 ? "SCOUT" : "INTERCEPTOR"
+          roleHint: "SCOUT"
         },
         contacts, threats,
         weapons: [{
           slotId: "primary-laser", weaponType: "LASER", ready: weaponReady,
           cooldownRemaining: Math.max(0, e.fire || 0), ammo: null, energyFraction: 1,
-          projectileSpeed: 200, effectiveRange: range, optimalRange: Math.max(150, range * 0.62),
+          projectileSpeed: 200, effectiveRange: range, optimalRange: range,
           maxFireAngle: 0.55, fireRate: 5, damageEstimate: [5, 3.8, 6.2, 4.4][e.ty] || 5,
           tracking: "FIXED", targetLockRequired: false, canFire: true
         }],
