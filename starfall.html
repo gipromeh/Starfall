@@ -2145,6 +2145,53 @@ function pirateFleetDamage(e,d,missile){
  shk=Math.max(shk,.48);sfx("e");pirateDamageFxClear(e);S.remove(e.g);e.g=null;e.respawn=Infinity;e.hits=0;e.flames.length=0;if(e.muzzleNodes)e.muzzleNodes.length=0;if(e.engineNodes)e.engineNodes.length=0;
  combo++;score+=Math.round(100+(missile?160:0));cr+=80+wave*5;if(nuke<3&&++kills>=10){nuke++;kills=0}if(Math.random()<.18)drop(p);say((["ГОЛОВОРЕЗ","ШАКАЛ","МАРОДЁР","ГАРПИЯ"][e.ty]||"ПИРАТ")+" УНИЧТОЖЕН · +100",1.5);
 }
+// HARMLESS Pursuit AI adaptation: hold the target's six, break clear on close approach,
+// and switch to the existing attack-run state machine when the player's nose faces the pirate.
+const PF_PURSUIT_RANGE=500,PF_PURSUIT_CLOSE_GAIN=1,PF_PURSUIT_TURN_FLOOR=.15;
+const PF_PURSUIT_BREAK_RANGE=260,PF_PURSUIT_CLEAR_RANGE=560,PF_PURSUIT_BREAK_CLEARANCE=320;
+const pfPursuitForward=new T.Vector3(),pfPursuitToPirate=new T.Vector3(),pfPursuitAway=new T.Vector3(),pfPursuitPerp=new T.Vector3(),pfPursuitAim=new T.Vector3(),pfPursuitToDir=new T.Vector3();
+function pirateFleetPursuit(e,dist,toPlayer,aiThink){
+ const playerForward=pfPursuitForward.set(0,0,-1).applyQuaternion(Q).normalize();
+ const toPirate=pfPursuitToPirate.copy(e.g.position).sub(P);
+ if(aiThink){
+  const faced=playerForward.angleTo(toPirate.lengthSq()>1e-8?toPirate.normalize():playerForward);
+  const wasSlashing=!!e.pursuitSlashing;
+  if(!wasSlashing&&faced<1.3)e.pursuitSlashing=true;
+  else if(wasSlashing&&faced>1.85)e.pursuitSlashing=false;
+  if(wasSlashing!==!!e.pursuitSlashing){
+   e.ph=e.pursuitSlashing?"ATTACK":"PURSUIT";e.phT=0;
+   if(e.pursuitSlashing){e.brk=null;e.aimS=null}
+  }
+  if(!e.pursuitSlashing){
+   e.pursuitBreak=e.pursuitBreak||{breaking:false,side:0};
+   const brk=e.pursuitBreak;
+   if(brk.breaking){if(dist>PF_PURSUIT_CLEAR_RANGE){brk.breaking=false;brk.side=0}}
+   else if(dist<PF_PURSUIT_BREAK_RANGE)brk.breaking=true;
+   if(brk.breaking){
+    pfPursuitAway.copy(e.g.position).sub(P);
+    if(pfPursuitAway.lengthSq()<1e-8)pfPursuitAway.copy(e.hd).negate();
+    pfPursuitAway.normalize();
+    pfPursuitPerp.crossVectors(pfPursuitAway,pirateFleetUp);
+    if(pfPursuitPerp.lengthSq()>1e-6){
+     pfPursuitPerp.normalize();
+     if(!brk.side)brk.side=(e.slot%2===0?1:-1);
+    }else pfPursuitPerp.set(0,0,0);
+    pfPursuitAim.copy(e.g.position)
+      .addScaledVector(pfPursuitAway,PF_PURSUIT_BREAK_CLEARANCE)
+      .addScaledVector(pfPursuitPerp,brk.side*PF_PURSUIT_BREAK_CLEARANCE);
+   }else pfPursuitAim.copy(P);
+  }
+ }
+ if(e.pursuitSlashing)return null;
+ // HARMLESS pursuitSpeed: match target velocity, close/open toward standoff range,
+ // and reduce speed while turning so the pilot can hold a stable firing solution.
+ const facing=e.hd.angleTo(pfPursuitToDir.copy(toPlayer).normalize());
+ const turnScale=PF_PURSUIT_TURN_FLOOR+(1-PF_PURSUIT_TURN_FLOOR)*Math.max(0,Math.cos(facing));
+ const maxSpeed=[62,68,55,62][e.ty]||62;
+ const targetSpeed=Math.max(0,Math.min(maxSpeed,(vel.length()+PF_PURSUIT_CLOSE_GAIN*(dist-PF_PURSUIT_RANGE))*turnScale));
+ e.state=e.aiIntent="ATTACK";e.ph="PURSUIT";e.pursuitBreaking=!!(e.pursuitBreak&&e.pursuitBreak.breaking);
+ return{aim:pfPursuitAim.clone(),speed:e.pursuitBreaking?maxSpeed:targetSpeed,breaking:e.pursuitBreaking};
+}
 const PF_BREAK_D=[140,150,210,160];
 const PF_RESET_D=[400,380,460,420];
 const PF_BREAK_T=[1.6,1.4,2.0,1.6];
@@ -2194,11 +2241,12 @@ function pirateFleetUpdate(dt){
   const g=e.g,toPlayer=P.clone().sub(g.position),dist=toPlayer.length(),aiThink=EAI.think(e,dt);if(dist<1)continue;
   let incoming=false;
   if(aiThink)for(let bi=bul.length-1;bi>=0;bi--){const b=bul[bi],delta=g.position.clone().sub(b.m.position);if(delta.length()<135&&b.v.dot(delta)>0){incoming=true;break}}
-  const baseAim=pirateFleetPhase(e,toPlayer,dist,incoming,aiThink,dt),sfAiFrame=window.SF_PIRATE_AI?window.SF_PIRATE_AI.update(e,dt):null;
+  const pursuit=pirateFleetPursuit(e,dist,toPlayer,aiThink);
+  const baseAim=pursuit?null:pirateFleetPhase(e,toPlayer,dist,incoming,aiThink,dt),sfAiFrame=window.SF_PIRATE_AI?window.SF_PIRATE_AI.update(e,dt):null;
   const right=new T.Vector3().crossVectors(toPlayer.clone().normalize(),pirateFleetUp).normalize();
   const profilePhase=(e.aiTicks||0)*.19+e.slot*1.7;
-  let aim=baseAim.clone(),targetSpeed=[49,56,34,47][e.ty],turnRate=[2.05,2.35,1.25,1.75][e.ty],acceleration=[68,76,38,58][e.ty];
-  if(e.state!=="EVADE"){aim.addScaledVector(right,(e.slot===0?-1:1)*.22).normalize();
+  let aim=pursuit?pursuit.aim:baseAim.clone(),targetSpeed=pursuit?pursuit.speed:[49,56,34,47][e.ty],turnRate=[2.05,2.35,1.25,1.75][e.ty],acceleration=[68,76,38,58][e.ty];
+  if(!pursuit&&e.state!=="EVADE"){aim.addScaledVector(right,(e.slot===0?-1:1)*.22).normalize();
    if(e.ty===0){
     // Головорез: прямой агрессивный перехват, минимальный боковой уход.
     aim.lerp(toPlayer.clone().normalize(),.38).normalize();targetSpeed=dist>260?54:43;
@@ -2222,10 +2270,10 @@ function pirateFleetUpdate(dt){
   }else{
    targetSpeed=[50,59,39,51][e.ty];
   }
-  if(sfAiFrame){const tactical=sfAiFrame.tacticalState,dv=sfAiFrame.navigation.desiredVelocity||{x:0,y:0,z:0},desired=new T.Vector3(dv.x,dv.y,dv.z),desiredSpeed=desired.length();if(tactical==="EVADE"||tactical==="BREAK_AWAY"||tactical==="RETREAT"){if(desiredSpeed>1e-3){aim.copy(desired).normalize();targetSpeed=desiredSpeed}e.state="EVADE";e.aiIntent="EVADE"}else{if(tactical==="APPROACH"&&desiredSpeed>1e-3)targetSpeed=Math.min(targetSpeed,desiredSpeed);e.state=e.ph==="ATTACK"?"ATTACK":"EVADE";e.aiIntent=e.state}}
+  if(sfAiFrame&&!pursuit){const tactical=sfAiFrame.tacticalState,dv=sfAiFrame.navigation.desiredVelocity||{x:0,y:0,z:0},desired=new T.Vector3(dv.x,dv.y,dv.z),desiredSpeed=desired.length();if(tactical==="EVADE"||tactical==="BREAK_AWAY"||tactical==="RETREAT"){if(desiredSpeed>1e-3){aim.copy(desired).normalize();targetSpeed=desiredSpeed}e.state="EVADE";e.aiIntent="EVADE"}else{if(tactical==="APPROACH"&&desiredSpeed>1e-3)targetSpeed=Math.min(targetSpeed,desiredSpeed);e.state=e.ph==="ATTACK"?"ATTACK":"EVADE";e.aiIntent=e.state}}
   targetSpeed*=DF[dif].sp;acceleration*=DF[dif].ac;
   if(aiThink){
-   e.aimS=e.aimS?e.aimS.lerp(aim,.4).normalize():aim.clone();
+   e.aimS=e.aimS?e.aimS.lerp(aim,pursuit?.32:.4).normalize():aim.clone();
    EAI.command(e,e.aimS,dist,{speed:targetSpeed,acceleration,turnRate});
   }
   EAI.integrate(e,dt,g,pirateFleetUp);
