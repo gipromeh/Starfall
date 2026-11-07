@@ -1,3 +1,9 @@
+## Hosting policy — GitHub Pages only (2026-11-07)
+
+- Зафиксировано обязательное правило: GitHub Pages — единственная разрешённая production-платформа STARFALL.
+- Vercel запрещён: не создавать и не использовать проекты, интеграции, deployments, domains, tokens, workflows или конфигурацию Vercel.
+- Автоматические Vercel checks/statuses не являются проверками STARFALL и не входят в CI/release acceptance criteria. Игровой код и версия игры не менялись.
+
 ## STARFALL v103.2 — Pirate Fleet fire range и respawn (2026-11-07)
 
 - `EAI.fireGate` больше не обрезает все архетипы на 384 единицах; дальность определяется индивидуальным `fireRange`. Мародёр может стрелять в пределах 520 единиц при выполнении остальных OCS/projection gates.
