@@ -24,12 +24,13 @@ async function newCtx(browser, o = {}) {
       const u = new URL(url);
       if (u.pathname === '/' || u.pathname.endsWith('starfall.html')) return route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: fs.readFileSync(o.game || GAME, 'utf8') });
       if (u.pathname.startsWith('/assets/')) { const f = path.join(__dirname, '..', decodeURIComponent(u.pathname)); if (f.startsWith(path.join(__dirname, '..', 'assets')) && fs.existsSync(f)) return route.fulfill({ status: 200, contentType: f.endsWith('.glb') ? 'model/gltf-binary' : 'application/octet-stream', body: fs.readFileSync(f) }); }
-      if (u.pathname.startsWith('/tools/') || u.pathname.startsWith('/data/')) {
+      if (u.pathname.startsWith('/tools/') || u.pathname.startsWith('/data/') || u.pathname.startsWith('/src/')) {
         const root = path.resolve(__dirname, '..');
         const file = path.resolve(root, decodeURIComponent(u.pathname.slice(1)));
         if (file.startsWith(root + path.sep) && fs.existsSync(file) && fs.statSync(file).isFile()) {
           const type = file.endsWith('.js') ? 'text/javascript; charset=utf-8'
             : file.endsWith('.json') ? 'application/json; charset=utf-8'
+            : file.endsWith('.b64') ? 'text/plain; charset=utf-8'
             : file.endsWith('.gz') ? 'application/gzip'
             : 'application/octet-stream';
           return route.fulfill({ status: 200, contentType: type, body: fs.readFileSync(file) });
