@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 
 const html = readFileSync(new URL("../starfall.html", import.meta.url), "utf8");
+const yukaAdapter = readFileSync(new URL("../src/ai/yuka-pirate-flight.js", import.meta.url), "utf8");
 const scriptTag = /<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi;
 let parsed = 0;
 for (const match of html.matchAll(scriptTag)) {
@@ -30,7 +31,7 @@ if (!html.includes("window.StarfallPirateDiagnostics")) throw new Error("Pirate 
 if (!html.includes("STARFALL_SOCKET_ANCHOR_")) throw new Error("Non-destructive socket anchors are missing.");
 if (!fleetUpdate.includes("SF_YUKA_PIRATE_AI.update")) throw new Error("Yuka does not control the pirate fleet.");
 if (!fleetUpdate.includes("e.vel.lengthSq()>1e-6?e.vel:e.hd")) throw new Error("Pirate hull is not aligned to actual velocity.");
-if (!fleetUpdate.includes("g.quaternion.slerp(pirateFleetTargetQuat")) throw new Error("Pirate hull orientation smoothing is missing.");
+if (!yukaAdapter.includes("v.rotateTo(pilot.facing,dt)") || !yukaAdapter.includes("g.quaternion.set(v.rotation.x,v.rotation.y,v.rotation.z,v.rotation.w)")) throw new Error("Yuka does not own pirate hull rotation.");
 if (!fleetUpdate.includes("fireRange=[390,390,520,430]")) throw new Error("Jackal close-range firing envelope regressed.");
 if (!html.includes('lowProfile=QL&&QL.mode==="low"')) throw new Error("LOW-profile fleet composition is missing.");
 if (!html.includes("function asteroidFallback(reason)")) throw new Error("Asteroid GLB failure has no procedural fallback.");

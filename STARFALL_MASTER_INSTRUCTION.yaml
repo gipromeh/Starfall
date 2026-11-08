@@ -102,7 +102,7 @@ process:
     scope: "Пиратские истребители, roaming pirates и истребители пиратского конвоя."
     library: "Yuka 0.7.8 MIT, локально в src/vendor/yuka.js; адаптер src/ai/yuka-pirate-flight.js."
     rules:
-      - "Yuka Vehicle Steering и PursuitBehavior, EvadeBehavior, WanderBehavior, ArriveBehavior являются единственным контуром движения пиратской авиации."
+      - "Yuka Vehicle Steering и PursuitBehavior, EvadeBehavior, WanderBehavior, ArriveBehavior являются единственным контуром движения и ориентации пиратской авиации."
       - "Не восстанавливать HARMLESS pursuit, Pirate AI Core, pirateFleetPursuit/pirateFleetPhase или EAI.command/EAI.integrate для движения пиратов."
       - "Starfall сохраняет физическое исполнение, оружие, урон, эффекты, Three.js и общую симуляцию; огневые механики не являются контроллером полёта."
       - "Эксперимент не меняет AI торговцев, гражданского трафика и прочих NPC."

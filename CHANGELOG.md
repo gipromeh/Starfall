@@ -5,11 +5,11 @@
 
 ## STARFALL v103.6 — Yuka pirate flight AI and transport collision fixes (2026-11-08)
 
-- Синхронизированы README, паспорт и SHA-256 игры; CI-проверки обновлены для локальной Yuka вместо удалённого Pirate AI Core.
+- Синхронизированы README, паспорт и SHA-256 игры; CI-проверки обновлены для локальной Yuka вместо удалённого Pirate AI Core. Глобальный EAI PRNG сохранён для неизменённых NPC.
 - Регрессионные проверки переведены с удалённых профилей EAI на библиотечные Yuka steering profiles.
 - World matrix Yuka Vehicle помечается dirty перед Wander/steering update; парный collision resolver исключает двойную регистрацию транспорта через traffic escort group.
 
-- Vendored Yuka 0.7.8 (MIT) and moved pirate fighter flight to Pursuit, Evade, Wander and Arrive steering behaviors.
+- Vendored Yuka 0.7.8 (MIT) and moved pirate fighter flight, hull orientation and steering to Pursuit, Evade, Wander and Arrive behaviors.
 - Raised pirate transport cruise velocity and added full-model hull collision coverage for convoy transports.
 
 ## STARFALL v103.5 — HARMLESS pursuit для Pirate Fleet (2026-11-08)

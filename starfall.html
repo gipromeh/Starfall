@@ -1945,7 +1945,7 @@ const EAI=(function(){
  api={STEP,seed,rand,think,project,projectOCS,command,integrate,fireChance,fireGate,chooseVector};
  return api;
 })();
-const pirateFleetForward=new T.Vector3(0,0,-1),pirateFleetUp=new T.Vector3(0,1,0),pirateFleetAltUp=new T.Vector3(0,0,1),pirateFleetHeading=new T.Vector3(),pirateFleetLookOrigin=new T.Vector3(),pirateFleetLookMatrix=new T.Matrix4(),pirateFleetLookQuat=new T.Quaternion(),pirateFleetTargetQuat=new T.Quaternion(),pirateFleetBankQuat=new T.Quaternion();
+const pirateFleetUp=new T.Vector3(0,1,0),pirateFleetHeading=new T.Vector3();
 const pirateFleetGunNames=["GUN_0","GUN_1","GUN_2","GUN_3"],pirateFleetEngineNames=["ENG_0","ENG_1"];
 const pirateFleetGunFallback=[[-2.74,-1.24,-3.565],[-2.46,-1.24,-3.565],[2.46,-1.24,-3.565],[2.74,-1.24,-3.565]],pirateFleetEngineFallback=[[-.62,-.9,6.535],[.62,-.9,6.535]];
 function pirateSocketIndex(name,kind){
@@ -2153,7 +2153,7 @@ function pirateFleetInit(){
   if(!untouchedOpening||!wrongComposition)return;
   pirateFleetClear();
  }
- pirateFleetPrepare();pirateFleetReady=true;
+ pirateFleetPrepare();pirateFleetReady=true;EAI.seed((((sy+1)*0x9e3779b1)^((wave+1)*0x85ebca6b)^((score+1)*0xc2b2ae35))>>>0);
  pirateFleetNextType=Math.random()*3|0;pirateFleetWaveTimer=3.5;
  const fleetSize=lowProfile?2:3;
  for(let slot=0;slot<fleetSize;slot++){const e={slot,ty:lowProfile?pirateFleetNextType:slot,g:null,hp:0,mx:0,respawn:Infinity,dead:false,flames:[],openingAttack:true};pirateFleet.push(e);pirateFleetSpawn(e,slot*.06)}
@@ -2209,14 +2209,6 @@ function pirateFleetUpdate(dt){
   e.state=e.aiIntent=result?.evading?"EVADE":(dist<fireRange?"ATTACK":"PURSUE");
   e.ph=e.state==="EVADE"?"EVADE":"ATTACK";
   pirateFleetHeading.copy(e.vel.lengthSq()>1e-6?e.vel:e.hd).normalize();
-  const orientationUp=Math.abs(pirateFleetHeading.dot(pirateFleetUp))>.985?pirateFleetAltUp:pirateFleetUp;
-  pirateFleetLookMatrix.lookAt(pirateFleetLookOrigin,pirateFleetHeading,orientationUp);
-  pirateFleetLookQuat.setFromRotationMatrix(pirateFleetLookMatrix);
-  const bankTarget=Math.max(-.24,Math.min(.24,-(e.ocsYaw||0)/15*.24));
-  e.bank=(e.bank||0)+(bankTarget-(e.bank||0))*(1-Math.exp(-dt*5.5));
-  pirateFleetBankQuat.setFromAxisAngle(pirateFleetForward,e.bank);
-  pirateFleetTargetQuat.copy(pirateFleetLookQuat).multiply(pirateFleetBankQuat);
-  g.quaternion.slerp(pirateFleetTargetQuat,1-Math.exp(-dt*7));
   pirateFleetUpdateFlames(e,dt);
   e.trailT-=dt;
   if(e.trailT<=0){
@@ -2305,11 +2297,7 @@ function pcPlanets(){
  }
  return pcNavigationWaypoints;
 }
-function pcOrient(g,hd,dt,k,bank){
- _pcM.lookAt(_pcZero,hd,pirateFleetUp);_pcQ.setFromRotationMatrix(_pcM);
- if(bank)_pcQ.multiply(_pcQ2.setFromAxisAngle(_pcZ,bank));
- g.quaternion.slerp(_pcQ,1-Math.exp(-dt*k));
-}
+
 function pcSlotPos(c,idx,out){const s=PC_SLOTS[idx];return out.set(s[0],s[1],s[2]).applyQuaternion(c.q).add(c.p)}
 
 function pcCargoModel(){
@@ -2467,7 +2455,6 @@ function pcFight(e,c,dt){
  });
  e.state=e.aiIntent=result?.evading?"EVADE":"ATTACK";
  e.ph=e.state==="EVADE"?"EVADE":"ATTACK";
- pcOrient(g,e.hd,dt,8,0);
  pcFire(e,dist,true,dt);
 }
 
@@ -2477,15 +2464,13 @@ function pcReturn(e,c,dt){
  SF_YUKA_PIRATE_AI.update(e,dt,{position:tgt,velocity:c.hd,quaternion:c.q},{
   mode:"arrive",targetPosition:tgt,speed:Math.max(55,c.sp+35),acceleration:82,turnRate:2.2,deceleration:2.5,tolerance:18
  });
- pcOrient(g,e.hd,dt,8,0);
 }
 
 function pcForm(e,c,dt){
  const target=pcSlotPos(c,e.slot,_pcV);_pcV.y+=Math.sin(c.t*.5+e.slot*1.9)*2.2;
  SF_YUKA_PIRATE_AI.update(e,dt,{position:target,velocity:c.hd,quaternion:c.q},{
   mode:"arrive",targetPosition:target,speed:Math.max(50,c.sp+18),acceleration:68,turnRate:1.9,deceleration:3.2,tolerance:12
- });
- pcOrient(e.g,e.hd,dt,7,0);e.speed=e.vel.length();
+ });e.speed=e.vel.length();
 }
 
 function pcFx(e,dt,interval){

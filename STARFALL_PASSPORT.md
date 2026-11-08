@@ -1,6 +1,6 @@
 ## v103.6 — Yuka pirate flight AI, transport speed and hull collisions
 
-- Пиратская авиация использует локально поставляемую библиотеку Yuka 0.7.8 (MIT): PursuitBehavior, EvadeBehavior, WanderBehavior и ArriveBehavior.
+- Пиратская авиация использует локально поставляемую библиотеку Yuka 0.7.8 (MIT): PursuitBehavior, EvadeBehavior, WanderBehavior и ArriveBehavior управляют скоростью, курсом и ориентацией корпуса.
 - Starfall оставляет исполнение оружия, урон, эффекты, игровой мир и адаптеры Three.js; собственные алгоритмы траектории пиратских истребителей удаляются.
 - Область эксперимента ограничена пиратскими истребителями и их эскортом; прочие NPC не мигрируют.
 - Скорость пиратских транспортников увеличивается в маршрутной симуляции и обычном трафике.
@@ -322,7 +322,7 @@ tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура
 game_version: "v103.6"
 last_update: 2026-11-08
 main_file: starfall.html
-main_file_sha256: "e00cbb282ca10d2fc968acd8f99e47753e71f2213ec82ca52023d2e73dfb9f9c"
+main_file_sha256: "4ddb3e8ba3d7dede50c8e197744023d57feb2fa24ce942c03ddb65a658d8258a"
 save_format_version: 3
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"
