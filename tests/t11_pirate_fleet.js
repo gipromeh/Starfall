@@ -35,64 +35,23 @@ const L = require('./lib');
     ahead:e.g.position.clone().sub(P).normalize().dot(new THREE.Vector3(0,0,-1).applyQuaternion(Q).normalize()),
     lateral:e.g.position.clone().sub(P).dot(new THREE.Vector3(1,0,0).applyQuaternion(Q).normalize())
   })));
-  await page.waitForFunction(() => window.SF_PIRATE_AI && window.SF_PIRATE_AI.ready, null, { timeout: 20000 });
-  await page.waitForFunction(() => pirateFleet.every(e => e.sfAI && e.sfAiFrame), null, { timeout: 10000 });
-  const coreBridge = await page.evaluate(() => ({
-    version: window.SF_PIRATE_AI_VERSION,
-    ships: pirateFleet.map(e => ({
-      entity: e.sfAiFrame?.entityId,
-      mission: e.sfAiFrame?.missionState,
-      tactical: e.sfAiFrame?.tacticalState,
-      target: e.sfAiFrame?.selectedTargetTrackId,
-      nav: e.sfAiFrame?.navigation?.mode,
-      enabled: e.sfAiEnabled
-    }))
+  await page.waitForFunction(() => window.SF_YUKA_PIRATE_AI && window.SF_YUKA_PIRATE_AI.ready && pirateFleet.every(e => e.g && e.warp <= 0 && e.yukaPilot), null, { timeout: 15000 });
+  const yuka = await page.evaluate(() => ({
+    version: window.SF_YUKA_PIRATE_AI.version,
+    active: pirateFleet.filter(e => e.g && e.yukaPilot).length,
+    legacyCore: !!window.SF_PIRATE_AI,
+    steering: pirateFleet.map(e => e.yukaPilot?.vehicle?.steering?.behaviors?.map(b => b.constructor.name) || [])
   }));
-  L.check('Pirate AI Core 1.0.0 загружен и подключён к каждому кораблю эскадрильи',
-    coreBridge.version === '1.0.0' && coreBridge.ships.length === 2 &&
-    coreBridge.ships.every(e => e.enabled && e.entity && e.nav === 'VELOCITY' && e.target === 'player'),
-    coreBridge);
-
-  const pursuitRegression = await page.evaluate(() => {
-    const saved = { position:P.clone(), quaternion:Q.clone(), velocity:vel.clone() };
-    const probe = {
-      g:{ position:new THREE.Vector3(300,0,0) }, hd:new THREE.Vector3(-1,0,0),
-      slot:7, ty:0, ph:'ATTACK', phT:0, state:'ATTACK', aiIntent:'ATTACK'
-    };
-    try {
-      P.set(0,0,0); Q.identity(); vel.set(0,0,-40);
-      const toPlayer = () => P.clone().sub(probe.g.position);
-      const active = pirateFleetPursuit(probe,300,toPlayer(),true,false);
-      const pursuitActive = !!active && probe.ph==='PURSUIT' && active.speed>0 && active.speed<=62;
-      probe.g.position.set(0,0,200); probe.hd.set(0,0,1);
-      const close = pirateFleetPursuit(probe,200,toPlayer(),true,false);
-      const breakActive = !!close && close.breaking && probe.pursuitBreak?.breaking && close.speed===62;
-      probe.g.position.set(0,0,600);
-      const clear = pirateFleetPursuit(probe,600,toPlayer(),true,false);
-      const breakCleared = !!clear && !clear.breaking && !probe.pursuitBreak?.breaking;
-      probe.g.position.set(0,0,-300); probe.hd.set(0,0,1);
-      const slashStart = pirateFleetPursuit(probe,300,toPlayer(),true,false);
-      const slashEntered = slashStart===null && probe.pursuitSlashing===true;
-      probe.g.position.set(0,0,300);
-      const slashEnd = pirateFleetPursuit(probe,300,toPlayer(),true,false);
-      const slashHysteresis = !!slashEnd && probe.pursuitSlashing===false && probe.ph==='PURSUIT';
-      probe.ph='PURSUIT'; probe.pursuitSlashing=false; probe.aimS=new THREE.Vector3(1,0,0);
-      const incoming = pirateFleetPursuit(probe,300,toPlayer(),true,true);
-      const evadePriority = incoming===null && probe.ph==='ATTACK' && probe.aimS===null;
-      return { pursuitActive, breakActive, breakCleared, slashEntered, slashHysteresis, evadePriority,
-        speed:active?.speed, breakSpeed:close?.speed };
-    } finally {
-      P.copy(saved.position); Q.copy(saved.quaternion); vel.copy(saved.velocity);
-    }
+  L.check('Yuka 0.7.8 локально загружен и управляет всеми активными пиратскими истребителями',
+    yuka.version === '0.7.8' && yuka.active === pirateFleet.length && !yuka.legacyCore &&
+    yuka.steering.every(a => a.includes('PursuitBehavior')), yuka);
+  const yukaMotion = await page.evaluate(() => {
+    const e=pirateFleet.find(x=>x.g);if(!e)return {ok:false};
+    const before=e.g.position.clone();
+    SF_YUKA_PIRATE_AI.update(e,1/30,{position:P,velocity:vel,quaternion:Q},{mode:'pursuit',speed:70,acceleration:100,turnRate:2});
+    return {ok:e.g.position.distanceTo(before)>0,dist:e.g.position.distanceTo(P),speed:e.speed,position:e.g.position.toArray()};
   });
-  L.check('HARMLESS pursuit включается вне атакующего конуса и сохраняет положительную ограниченную скорость',
-    pursuitRegression.pursuitActive, pursuitRegression);
-  L.check('close-range break включается ниже 260 и очищается выше 560',
-    pursuitRegression.breakActive && pursuitRegression.breakCleared, pursuitRegression);
-  L.check('slash mode использует раздельные пороги входа/выхода 1.3/1.85 радиан',
-    pursuitRegression.slashEntered && pursuitRegression.slashHysteresis, pursuitRegression);
-  L.check('incoming projectile немедленно передаёт управление штатному EVADE/Core контуру',
-    pursuitRegression.evadePriority, pursuitRegression);
+  L.check('Yuka PursuitBehavior реально перемещает пиратский корабль', yukaMotion.ok, yukaMotion);
 
   await page.waitForFunction(() => pirateAssetsReady === true, null, { timeout: 60000 });
   const pirateModels = await page.evaluate(() => {

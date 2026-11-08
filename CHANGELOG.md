@@ -3,6 +3,11 @@
 - Добавлен регламент выборочного повторного запуска CI: документационные изменения проверяются Project Auditor и затронутыми документными проверками без автоматического повтора полной browser matrix, если игровой код и тестовая инфраструктура не менялись.
 - Синхронизирован `process.current_version` в мастер-инструкции с фактической версией игры v103.5. Игровой код и версия игры не менялись.
 
+## STARFALL v103.6 — Yuka pirate flight AI and transport collision fixes (2026-11-08)
+
+- Vendored Yuka 0.7.8 (MIT) and moved pirate fighter flight to Pursuit, Evade, Wander and Arrive steering behaviors.
+- Raised pirate transport cruise velocity and added full-model hull collision coverage for convoy transports.
+
 ## STARFALL v103.5 — HARMLESS pursuit для Pirate Fleet (2026-11-08)
 
 - Уточнён приоритет внешнего Pirate AI Core: тактические EVADE/BREAK_AWAY/RETREAT могут прервать pursuit и задавать курс уклонения.
