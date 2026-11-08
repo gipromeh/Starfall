@@ -5,7 +5,7 @@ const L = require('./lib');
   const ctx = await L.newCtx(browser, { viewport: { width: 960, height: 540 }, dpr: 1 });
   const page = await L.openGame(ctx);
   page.on('pageerror', err => console.error('PAGE ERROR:', err.stack || err.message));
-  await page.click('#play');
+  await page.click('#play', { noWaitAfter: true });
   await page.waitForFunction(() => state === 'dock', null, { timeout: 60000 });
   await page.waitForFunction(() => pirateAssetsReady && cargoTransportReady && MC.pirateTransport, null, { timeout: 60000 });
   await page.evaluate(() => lift());

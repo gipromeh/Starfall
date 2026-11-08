@@ -1,3 +1,18 @@
+## Documentation sync — CI policy and version metadata (2026-11-08)
+
+- Добавлен регламент выборочного повторного запуска CI: документационные изменения проверяются Project Auditor и затронутыми документными проверками без автоматического повтора полной browser matrix, если игровой код и тестовая инфраструктура не менялись.
+- Синхронизирован `process.current_version` в мастер-инструкции с фактической версией игры v103.5. Игровой код и версия игры не менялись.
+
+## STARFALL v103.5 — HARMLESS pursuit для Pirate Fleet (2026-11-08)
+
+- Уточнён приоритет внешнего Pirate AI Core: тактические EVADE/BREAK_AWAY/RETREAT могут прервать pursuit и задавать курс уклонения.
+
+- Внедрён HARMLESS-style pursuit: удержание позиции за целью, скоростная коррекция к дистанции 500 и снижение скорости на резких разворотах.
+- Добавлен устойчивый close-range break с порогами 260/560 и боковым clearance 320; переход в attack-run использует гистерезис 1.3/1.85 радиан по направлению носа игрока.
+- Входящий снаряд имеет приоритет над pursuit: управление возвращается штатным ATTACK/BREAK/jink и Pirate AI Core EVADE/BREAK_AWAY/RETREAT. Native EAI, физика, стрельба и профили кораблей сохранены.
+- Browser-регрессии проверяют pursuit, break/clear hysteresis, slash hysteresis и приоритет уклонения.
+- Физический iPhone Safari/PC playtest не заявляется.
+
 ## STARFALL v103.4 — классическая атака Pirate Fleet (2026-11-07)
 
 - Исправлено управление атакой после интеграции Pirate AI Core: Core больше не заменяет штатный боковой заход и фазы ATTACK → BREAK → RESET прямым вектором перехвата.
@@ -910,3 +925,16 @@ tags: [starfall, changelog]
 
 - Updated `main_file_sha256` after extending the shared Elite-derived pilot to boss flight; `last_update` refreshed.
 - SHA-256: `32c6d0a01e6691d046d9c7657fcb18a3b14201786b8f51757a7862008029c07c`.
+
+
+## HARMLESS Pursuit regression geometry — 2026-11-08
+
+- Pirate Fleet regression fixtures now place the close-range target behind the player's forward axis, isolating the pursuit-break branch from the attack-run slash cone.
+- Slash hysteresis assertion now expects a resumed pursuit result after the exit threshold is crossed; the function returns an active pursuit command rather than null in that state.
+- Production pursuit logic is unchanged; this corrects two test-fixture/expectation errors found by the full browser matrix.
+
+
+## Browser CI — transport escorts SPA launch (2026-11-08)
+
+- Playwright transport-escorts test disables navigation auto-wait for the `#play` click; the following explicit `state === 'dock'` wait remains the startup readiness assertion.
+- Production gameplay code and passport hash are unchanged.

@@ -1,3 +1,22 @@
+## v103.5 — HARMLESS Pursuit AI для Pirate Fleet
+
+## Регламент выборочного CI и повторного запуска тестов
+
+- Решение о повторном запуске определяется фактическим diff и областью влияния изменений, а не наличием нового commit.
+- Результат теста относится к конкретному commit SHA. Успешный полный Game Tests для игрового SHA остаётся подтверждением этого игрового кода, если последующие коммиты меняют только документацию и не затрагивают игру, тесты, зависимости или конфигурацию тестирования.
+- При документационных изменениях без изменений игрового HTML, тестов, зависимостей и test configuration не требуется повторять полную browser matrix только из-за нового коммита.
+- Для таких изменений обязательны Project Auditor и затронутые проверки документации, паспорта, ссылок и синхронизации версии.
+- Полный Game Tests/browser CI повторяется при изменениях игрового кода, тестов, зависимостей, сборки или runtime/test configuration, а также при исправлении дефекта, обнаруженного предыдущим прогоном.
+- GitHub может автоматически запустить PR checks после каждого push. Дождаться завершения обязательных checks; отделять их от целевых проверок, необходимых по характеру diff.
+- Перед merge проверять актуальный head SHA PR, обязательные checks и их итоговые статусы. Успешный запуск для другого SHA не переносится автоматически.
+- Документационные правки не повышают версию игры. `process.current_version`, паспорт и HTML marker должны соответствовать фактической версии игры.
+
+- Уточнено взаимодействие pursuit с Pirate AI Core: EVADE, BREAK_AWAY и RETREAT имеют приоритет над преследованием.
+- Встроен HARMLESS-style pursuit controller: поддержание дистанции 500, коррекция скорости с учётом скорости игрока и угла разворота, close-range break ниже 260 с очисткой выше 560 и боковым clearance 320.
+- Переход в классический attack-run определяется направлением носа игрока с гистерезисом 1.3/1.85 радиан; прежние профили Головореза, Шакала, Мародёра и Гарпии сохранены.
+- Входящие снаряды прерывают pursuit и возвращают штатный ATTACK/jink и Pirate AI Core EVADE/BREAK_AWAY/RETREAT; native EAI, интеграция движения, стрельба, физика, столкновения и урон остаются authoritative.
+- Добавлены browser-регрессии pursuit activation, break/clear thresholds, slash hysteresis и incoming-fire priority. Реальный iPhone/PC playtest не заявляется.
+
 ## v103.4 — восстановление классической атаки Pirate Fleet
 - Исправлено взаимодействие Pirate AI Core с боевой траекторией: его прямой `desiredVelocity` больше не подменяет штатную геометрию захода при `APPROACH/ATTACK`.
 - Сохранены нативные фазы `ATTACK → BREAK → RESET`, боковой манёвр архетипа и инерционное прохождение цели. Core по-прежнему управляет `EVADE/BREAK_AWAY/RETREAT` и ограничивает скорость сближения.
@@ -291,10 +310,10 @@
 date: 2026-10-31
 topic: STARFALL: паспорт проекта (архитектура, технологии, механика, сохранения, качество)
 tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура]
-game_version: "v103.4"
-last_update: 2026-11-07
+game_version: "v103.5"
+last_update: 2026-11-08
 main_file: starfall.html
-main_file_sha256: "0552bfb2ed657b50d4c9aa7e66854b0d832de37dcebd08c03dab9c4b22600da0"
+main_file_sha256: "f968fde512bc7bb1bace022036c3bbae79ca60126758a143eab90f5cbe27d341"
 save_format_version: 3
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"

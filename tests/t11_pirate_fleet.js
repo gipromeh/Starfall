@@ -53,6 +53,47 @@ const L = require('./lib');
     coreBridge.ships.every(e => e.enabled && e.entity && e.nav === 'VELOCITY' && e.target === 'player'),
     coreBridge);
 
+  const pursuitRegression = await page.evaluate(() => {
+    const saved = { position:P.clone(), quaternion:Q.clone(), velocity:vel.clone() };
+    const probe = {
+      g:{ position:new THREE.Vector3(300,0,0) }, hd:new THREE.Vector3(-1,0,0),
+      slot:7, ty:0, ph:'ATTACK', phT:0, state:'ATTACK', aiIntent:'ATTACK'
+    };
+    try {
+      P.set(0,0,0); Q.identity(); vel.set(0,0,-40);
+      const toPlayer = () => P.clone().sub(probe.g.position);
+      const active = pirateFleetPursuit(probe,300,toPlayer(),true,false);
+      const pursuitActive = !!active && probe.ph==='PURSUIT' && active.speed>0 && active.speed<=62;
+      probe.g.position.set(0,0,200); probe.hd.set(0,0,1);
+      const close = pirateFleetPursuit(probe,200,toPlayer(),true,false);
+      const breakActive = !!close && close.breaking && probe.pursuitBreak?.breaking && close.speed===62;
+      probe.g.position.set(0,0,600);
+      const clear = pirateFleetPursuit(probe,600,toPlayer(),true,false);
+      const breakCleared = !!clear && !clear.breaking && !probe.pursuitBreak?.breaking;
+      probe.g.position.set(0,0,-300); probe.hd.set(0,0,1);
+      const slashStart = pirateFleetPursuit(probe,300,toPlayer(),true,false);
+      const slashEntered = slashStart===null && probe.pursuitSlashing===true;
+      probe.g.position.set(0,0,300);
+      const slashEnd = pirateFleetPursuit(probe,300,toPlayer(),true,false);
+      const slashHysteresis = !!slashEnd && probe.pursuitSlashing===false && probe.ph==='PURSUIT';
+      probe.ph='PURSUIT'; probe.pursuitSlashing=false; probe.aimS=new THREE.Vector3(1,0,0);
+      const incoming = pirateFleetPursuit(probe,300,toPlayer(),true,true);
+      const evadePriority = incoming===null && probe.ph==='ATTACK' && probe.aimS===null;
+      return { pursuitActive, breakActive, breakCleared, slashEntered, slashHysteresis, evadePriority,
+        speed:active?.speed, breakSpeed:close?.speed };
+    } finally {
+      P.copy(saved.position); Q.copy(saved.quaternion); vel.copy(saved.velocity);
+    }
+  });
+  L.check('HARMLESS pursuit включается вне атакующего конуса и сохраняет положительную ограниченную скорость',
+    pursuitRegression.pursuitActive, pursuitRegression);
+  L.check('close-range break включается ниже 260 и очищается выше 560',
+    pursuitRegression.breakActive && pursuitRegression.breakCleared, pursuitRegression);
+  L.check('slash mode использует раздельные пороги входа/выхода 1.3/1.85 радиан',
+    pursuitRegression.slashEntered && pursuitRegression.slashHysteresis, pursuitRegression);
+  L.check('incoming projectile немедленно передаёт управление штатному EVADE/Core контуру',
+    pursuitRegression.evadePriority, pursuitRegression);
+
   await page.waitForFunction(() => pirateAssetsReady === true, null, { timeout: 60000 });
   const pirateModels = await page.evaluate(() => {
     const fighter = mkPirate(2);
