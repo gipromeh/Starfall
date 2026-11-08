@@ -927,3 +927,9 @@ tags: [starfall, changelog]
 - Pirate Fleet regression fixtures now place the close-range target behind the player's forward axis, isolating the pursuit-break branch from the attack-run slash cone.
 - Slash hysteresis assertion now expects a resumed pursuit result after the exit threshold is crossed; the function returns an active pursuit command rather than null in that state.
 - Production pursuit logic is unchanged; this corrects two test-fixture/expectation errors found by the full browser matrix.
+
+
+## Browser CI — transport escorts SPA launch (2026-11-08)
+
+- Playwright transport-escorts test disables navigation auto-wait for the `#play` click; the following explicit `state === 'dock'` wait remains the startup readiness assertion.
+- Production gameplay code and passport hash are unchanged.
