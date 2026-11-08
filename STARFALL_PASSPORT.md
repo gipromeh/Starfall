@@ -1,4 +1,5 @@
 ## v103.5 — HARMLESS Pursuit AI для Pirate Fleet
+- Уточнено взаимодействие pursuit с Pirate AI Core: EVADE, BREAK_AWAY и RETREAT имеют приоритет над преследованием.
 - Встроен HARMLESS-style pursuit controller: поддержание дистанции 500, коррекция скорости с учётом скорости игрока и угла разворота, close-range break ниже 260 с очисткой выше 560 и боковым clearance 320.
 - Переход в классический attack-run определяется направлением носа игрока с гистерезисом 1.3/1.85 радиан; прежние профили Головореза, Шакала, Мародёра и Гарпии сохранены.
 - Входящие снаряды прерывают pursuit и возвращают штатный ATTACK/jink и Pirate AI Core EVADE/BREAK_AWAY/RETREAT; native EAI, интеграция движения, стрельба, физика, столкновения и урон остаются authoritative.
@@ -300,7 +301,7 @@ tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура
 game_version: "v103.5"
 last_update: 2026-11-08
 main_file: starfall.html
-main_file_sha256: "7f901e99eac2bdf55965e85c580d81cc684a9da995845a6d87d0949b4f8fc9ef"
+main_file_sha256: "f968fde512bc7bb1bace022036c3bbae79ca60126758a143eab90f5cbe27d341"
 save_format_version: 3
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"

@@ -1,5 +1,7 @@
 ## STARFALL v103.5 — HARMLESS pursuit для Pirate Fleet (2026-11-08)
 
+- Уточнён приоритет внешнего Pirate AI Core: тактические EVADE/BREAK_AWAY/RETREAT могут прервать pursuit и задавать курс уклонения.
+
 - Внедрён HARMLESS-style pursuit: удержание позиции за целью, скоростная коррекция к дистанции 500 и снижение скорости на резких разворотах.
 - Добавлен устойчивый close-range break с порогами 260/560 и боковым clearance 320; переход в attack-run использует гистерезис 1.3/1.85 радиан по направлению носа игрока.
 - Входящий снаряд имеет приоритет над pursuit: управление возвращается штатным ATTACK/BREAK/jink и Pirate AI Core EVADE/BREAK_AWAY/RETREAT. Native EAI, физика, стрельба и профили кораблей сохранены.

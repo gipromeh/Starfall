@@ -2274,6 +2274,7 @@ function pirateFleetUpdate(dt){
   }else{
    targetSpeed=[50,59,39,51][e.ty];
   }
+  // v103.5: Pirate AI Core evasive intents remain authoritative during HARMLESS pursuit.
   if(sfAiFrame){const tactical=sfAiFrame.tacticalState,dv=sfAiFrame.navigation.desiredVelocity||{x:0,y:0,z:0},desired=new T.Vector3(dv.x,dv.y,dv.z),desiredSpeed=desired.length();if(tactical==="EVADE"||tactical==="BREAK_AWAY"||tactical==="RETREAT"){if(desiredSpeed>1e-3){aim.copy(desired).normalize();targetSpeed=desiredSpeed}e.state="EVADE";e.aiIntent="EVADE"}else if(!pursuit){if(tactical==="APPROACH"&&desiredSpeed>1e-3)targetSpeed=Math.min(targetSpeed,desiredSpeed);e.state=e.ph==="ATTACK"?"ATTACK":"EVADE";e.aiIntent=e.state}}
   targetSpeed*=DF[dif].sp;acceleration*=DF[dif].ac;
   if(aiThink){
