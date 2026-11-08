@@ -35,64 +35,29 @@ const L = require('./lib');
     ahead:e.g.position.clone().sub(P).normalize().dot(new THREE.Vector3(0,0,-1).applyQuaternion(Q).normalize()),
     lateral:e.g.position.clone().sub(P).dot(new THREE.Vector3(1,0,0).applyQuaternion(Q).normalize())
   })));
-  await page.waitForFunction(() => window.SF_PIRATE_AI && window.SF_PIRATE_AI.ready, null, { timeout: 20000 });
-  await page.waitForFunction(() => pirateFleet.every(e => e.sfAI && e.sfAiFrame), null, { timeout: 10000 });
-  const coreBridge = await page.evaluate(() => ({
-    version: window.SF_PIRATE_AI_VERSION,
-    ships: pirateFleet.map(e => ({
-      entity: e.sfAiFrame?.entityId,
-      mission: e.sfAiFrame?.missionState,
-      tactical: e.sfAiFrame?.tacticalState,
-      target: e.sfAiFrame?.selectedTargetTrackId,
-      nav: e.sfAiFrame?.navigation?.mode,
-      enabled: e.sfAiEnabled
-    }))
+  await page.waitForFunction(() => window.SF_YUKA_PIRATE_AI && window.SF_YUKA_PIRATE_AI.ready && window.SF_YUKA_DECISION && window.SF_STARFALL_YUKA_ADAPTER && pirateFleet.every(e => e.g && e.warp <= 0 && e.yukaPilot && SF_YUKA_PIRATE_AI.inspect(e)?.decisionTicks > 0), null, { timeout: 15000 });
+  const yuka = await page.evaluate(() => ({
+    version: window.SF_YUKA_PIRATE_AI.version,
+    decisionVersion: window.SF_YUKA_DECISION.version,
+    adapterVersion: window.SF_STARFALL_YUKA_ADAPTER.version,
+    decisionHz: window.SF_YUKA_PIRATE_AI.decisionHz,
+    authority: window.SF_YUKA_PIRATE_AI.adapterAuthority,
+    active: pirateFleet.filter(e => e.g && e.yukaPilot).length,
+    ships: pirateFleet.length,
+    legacyCore: !!window.SF_PIRATE_AI,
+    steering: pirateFleet.map(e => e.yukaPilot?.vehicle?.steering?.behaviors?.map(b => b.constructor.name) || [])
   }));
-  L.check('Pirate AI Core 1.0.0 загружен и подключён к каждому кораблю эскадрильи',
-    coreBridge.version === '1.0.0' && coreBridge.ships.length === 2 &&
-    coreBridge.ships.every(e => e.enabled && e.entity && e.nav === 'VELOCITY' && e.target === 'player'),
-    coreBridge);
-
-  const pursuitRegression = await page.evaluate(() => {
-    const saved = { position:P.clone(), quaternion:Q.clone(), velocity:vel.clone() };
-    const probe = {
-      g:{ position:new THREE.Vector3(300,0,0) }, hd:new THREE.Vector3(-1,0,0),
-      slot:7, ty:0, ph:'ATTACK', phT:0, state:'ATTACK', aiIntent:'ATTACK'
-    };
-    try {
-      P.set(0,0,0); Q.identity(); vel.set(0,0,-40);
-      const toPlayer = () => P.clone().sub(probe.g.position);
-      const active = pirateFleetPursuit(probe,300,toPlayer(),true,false);
-      const pursuitActive = !!active && probe.ph==='PURSUIT' && active.speed>0 && active.speed<=62;
-      probe.g.position.set(0,0,200); probe.hd.set(0,0,1);
-      const close = pirateFleetPursuit(probe,200,toPlayer(),true,false);
-      const breakActive = !!close && close.breaking && probe.pursuitBreak?.breaking && close.speed===62;
-      probe.g.position.set(0,0,600);
-      const clear = pirateFleetPursuit(probe,600,toPlayer(),true,false);
-      const breakCleared = !!clear && !clear.breaking && !probe.pursuitBreak?.breaking;
-      probe.g.position.set(0,0,-300); probe.hd.set(0,0,1);
-      const slashStart = pirateFleetPursuit(probe,300,toPlayer(),true,false);
-      const slashEntered = slashStart===null && probe.pursuitSlashing===true;
-      probe.g.position.set(0,0,300);
-      const slashEnd = pirateFleetPursuit(probe,300,toPlayer(),true,false);
-      const slashHysteresis = !!slashEnd && probe.pursuitSlashing===false && probe.ph==='PURSUIT';
-      probe.ph='PURSUIT'; probe.pursuitSlashing=false; probe.aimS=new THREE.Vector3(1,0,0);
-      const incoming = pirateFleetPursuit(probe,300,toPlayer(),true,true);
-      const evadePriority = incoming===null && probe.ph==='ATTACK' && probe.aimS===null;
-      return { pursuitActive, breakActive, breakCleared, slashEntered, slashHysteresis, evadePriority,
-        speed:active?.speed, breakSpeed:close?.speed };
-    } finally {
-      P.copy(saved.position); Q.copy(saved.quaternion); vel.copy(saved.velocity);
-    }
+  L.check('Yuka Decision → Steering → Starfall Adapter загружены и управляют эскадрильей',
+    yuka.version === '0.7.8' && yuka.decisionVersion === '1.0.0' && yuka.adapterVersion === '1.0.0' &&
+    yuka.decisionHz === 15 && yuka.authority === 'STARFALL' && yuka.active === yuka.ships && !yuka.legacyCore &&
+    yuka.steering.every(a => a.includes('PursuitBehavior')), yuka);
+  const yukaMotion = await page.evaluate(() => {
+    const e=pirateFleet.find(x=>x.g);if(!e)return {ok:false};
+    const before=e.g.position.clone();
+    SF_YUKA_PIRATE_AI.update(e,1/30,{position:P,velocity:vel,quaternion:Q},{mode:'pursuit',speed:70,acceleration:100,turnRate:2});
+    return {ok:e.g.position.distanceTo(before)>0,dist:e.g.position.distanceTo(P),speed:e.speed,position:e.g.position.toArray()};
   });
-  L.check('HARMLESS pursuit включается вне атакующего конуса и сохраняет положительную ограниченную скорость',
-    pursuitRegression.pursuitActive, pursuitRegression);
-  L.check('close-range break включается ниже 260 и очищается выше 560',
-    pursuitRegression.breakActive && pursuitRegression.breakCleared, pursuitRegression);
-  L.check('slash mode использует раздельные пороги входа/выхода 1.3/1.85 радиан',
-    pursuitRegression.slashEntered && pursuitRegression.slashHysteresis, pursuitRegression);
-  L.check('incoming projectile немедленно передаёт управление штатному EVADE/Core контуру',
-    pursuitRegression.evadePriority, pursuitRegression);
+  L.check('Yuka PursuitBehavior реально перемещает пиратский корабль', yukaMotion.ok, yukaMotion);
 
   await page.waitForFunction(() => pirateAssetsReady === true, null, { timeout: 60000 });
   const pirateModels = await page.evaluate(() => {
@@ -199,14 +164,14 @@ const L = require('./lib');
       e.hd.copy(P.clone().sub(e.g.position).normalize());
       e.vel.copy(e.hd).multiplyScalar(46);
       e.g.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,-1),e.hd);
-      e.state = 'ATTACK'; e.aiIntent='ATTACK'; e.ph='ATTACK'; e.phT=0; e.brk=null; e.aimS=null; e.jinkT=.5; e.jinkCd=1; e.jinkSide=1; e.stateT = 0; e.fire = 0; e.burst = 0; e.burstGap = 0; e.aiClock = EAI.STEP; e.aiTicks = 0;
-      e.sfAiElapsed = .25; e.sfAiFrame = null; e.sfAiFire = false;
+      e.state = 'ATTACK'; e.aiIntent='ATTACK'; e.ph='ATTACK'; e.phT=0; e.brk=null; e.aimS=null; e.jinkT=.5; e.jinkCd=1; e.jinkSide=1; e.stateT = 0; e.fire = 0; e.burst = 0; e.burstGap = 0; 
+      
     });
     const before = eb.length;
     const randomAI = EAI.rand; EAI.rand = () => 0;
-    try { pirateFleetUpdate(.05); } finally { EAI.rand = randomAI; }
+    try { pirateFleetUpdate(1/15+1e-5); } finally { EAI.rand = randomAI; }
     const first = pirateFleet[0];
-    const jinkFiring = first.ph==="ATTACK" && first.state==="ATTACK" && first.jinkT>0;
+    const attackFiring = first.ph==="ATTACK" && first.state==="ATTACK";
     const shots = eb.slice(before).filter(b => b.pirateFleetSlot === first.slot);
     const gunPositions = first.muzzleNodes.map(n => n.getWorldPosition(new THREE.Vector3()));
     const muzzleMatch = shots.length === gunPositions.length && shots.every((b, i) => b.m.position.distanceTo(gunPositions[i]) < .001);
@@ -221,140 +186,13 @@ const L = require('./lib');
       return { slot: e.slot, shots: own.length, guns: muzzles.length, originsMatch: own.length === muzzles.length && own.every((b, i) => b.m.position.distanceTo(muzzles[i]) < .001) };
     });
     const noseAlignment = pirateFleet.map(e => new THREE.Vector3(0,0,-1).applyQuaternion(e.g.quaternion).dot(e.vel.clone().normalize()));
-    return { before, after: eb.length, delta: eb.length - before, noseAlignment, firstShipShots: shots.length, muzzleMatch, shotForward, socketsForward, lineShots, allPilotShots, jinkFiring,
-      aiState:first.sfAiFrame?.tacticalState||null, aiFire:first.sfAiFire, weaponIntents:first.sfAiFrame?.weapons||[], aiError:first.sfAiErrorLogged||false };
+    return { before, after: eb.length, delta: eb.length - before, noseAlignment, firstShipShots: shots.length, muzzleMatch, shotForward, socketsForward, lineShots, allPilotShots, attackFiring };
   });
   L.check('оба пилота участвуют в бою на ближней дистанции', combat.delta >= 2, combat);
-  L.check('jink не отключает огонь, если корабль остаётся в ATTACK и цель в конусе',combat.jinkFiring&&combat.firstShipShots>=2,combat);
+  L.check('Yuka pursuit сохраняет штатный огонь при наведении в боевом конусе',combat.attackFiring&&combat.firstShipShots>=2,combat);
   L.check('фактический нос каждой модели совпадает с направлением движения', combat.noseAlignment.every(x => x > .98), combat.noseAlignment);
   L.check('каждый маркер оружия создаёт отдельный лазер из своей дульной точки', combat.firstShipShots >= 2 && combat.muzzleMatch && combat.shotForward && combat.socketsForward && combat.lineShots, combat);
   L.check('каждый пират стреляет из всех собственных передних сокетов', combat.allPilotShots.every(x => x.shots === x.guns && x.shots >= 2 && x.originsMatch), combat.allPilotShots);
-
-  const coreAttackAuthority = await page.evaluate(() => {
-    const originalAI = window.SF_PIRATE_AI;
-    const testAI = Object.create(originalAI);
-    Object.defineProperty(testAI, 'update', {
-      value: entity => {
-        entity.sfAiEnabled = true;
-        entity.sfAiFire = false;
-        const target = P.clone().sub(entity.g.position).normalize();
-        return {
-          tacticalState: 'APPROACH',
-          navigation: { mode: 'VELOCITY', maneuver: 'INTERCEPT',
-            desiredVelocity: { x: target.x * 54, y: target.y * 54, z: target.z * 54 } },
-          weapons: [{ slotId: 'primary-laser', fireRequest: false }],
-          validUntil: 1e12
-        };
-      }
-    });
-    const originalRand = EAI.rand;
-    const originalType = pirateFleet[0].ty;
-    const p = pirateFleet[0];
-    const before = eb.length;
-    window.SF_PIRATE_AI = testAI;
-    EAI.rand = () => 0;
-    try {
-      p.ty = 0;
-      p.warp = 0; p.g.visible = true;
-      p.g.position.copy(P).add(new THREE.Vector3(0, 0, -300));
-      p.hd.set(0, 0, 1); p.vel.set(0, 0, 46); p.speed = 46;
-      p.g.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, -1), p.hd);
-      p.ph = 'ATTACK'; p.phT = .1; p.brk = null; p.jinkT = 0; p.jinkCd = 0;
-      p.aimS = null; p.fire = 0; p.burst = 0; p.burstGap = 0;
-      p.aiClock = EAI.STEP; p.aiTicks = 0; p.state = 'ATTACK';
-      p.sfAiEnabled = true; p.sfAiFire = false;
-      pirateFleetUpdate(1 / 60);
-      const attackBearing = P.clone().sub(p.g.position).normalize();
-      const attackAlignment = p.aimS.clone().normalize().dot(attackBearing);
-      const attackShots = eb.slice(before).filter(b => b.pirateFleetSlot === p.slot).length;
-      const deniedByCore = p.sfAiFire === false;
-
-      p.g.position.copy(P).add(new THREE.Vector3(0, 0, -120));
-      p.hd.set(0, 0, 1); p.vel.set(0, 0, 46); p.speed = 46;
-      p.g.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, -1), p.hd);
-      p.ph = 'BREAK'; p.phT = .1; p.brk = new THREE.Vector3(1, 0, 1).normalize();
-      p.aimS = null; p.aiClock = EAI.STEP; p.aiTicks = 0;
-      p.fire = 99; p.burst = 0; p.burstGap = 0;
-      pirateFleetUpdate(1 / 60);
-      const breakBearing = P.clone().sub(p.g.position).normalize();
-      const breakAlignment = p.aimS.clone().normalize().dot(breakBearing);
-      return {
-        attackAlignment, attackShots, deniedByCore,
-        breakPhase: p.ph, breakState: p.state, breakAlignment
-      };
-    } finally {
-      window.SF_PIRATE_AI = originalAI;
-      EAI.rand = originalRand;
-      p.ty = originalType;
-    }
-  });
-  L.check('Pirate AI Core APPROACH сохраняет боковой заход и штатный огонь при fireRequest=false',
-    coreAttackAuthority.attackAlignment < .999 && coreAttackAuthority.attackShots > 0 && coreAttackAuthority.deniedByCore,
-    coreAttackAuthority);
-  L.check('Pirate AI Core APPROACH не отменяет штатный BREAK-отход',
-    coreAttackAuthority.breakPhase === 'BREAK' && coreAttackAuthority.breakState === 'EVADE' &&
-    coreAttackAuthority.breakAlignment < .9, coreAttackAuthority);
-
-  const eliteFlight = await page.evaluate(() => {
-    const e=pirateFleet[0];
-    pirateFleet.forEach((p,i)=>{
-      p.warp=0;p.g.visible=true;p.aiClock=0;p.aiTicks=0;p.aiIntent="ATTACK";p.aiSideSign=i%2?1:-1;
-      p.g.position.copy(P).add(new THREE.Vector3((i-.5)*10,0,-620));
-      p.hd.set(0,0,1);p.g.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,-1),p.hd);p.vel.set(0,0,46);p.speed=46;p.aimS=null;p.state="ATTACK";p.ph="ATTACK";p.phT=0;p.brk=null;p.fire=99;p.burst=0;p.burstGap=0;
-      p.sfAiElapsed=.25;p.sfAiFrame=null;p.sfAiFire=false;
-    });
-    let minDistance=Infinity,maxDistance=0;const states=new Set();let previousHeading=pirateFleet[0].hd.clone(),maxHeadingStep=0;
-    let maxLongRangeApproachSpeed=0,longRangeApproachSamples=0;
-    let incoming=null,incomingUntil=-1;
-    for(let i=0;i<1800;i++){
-      const pilot=pirateFleet[0],distanceToPlayer=pilot.g.position.distanceTo(P);
-      if(!incoming&&distanceToPlayer<300){
-        incoming={m:{position:pilot.g.position.clone().add(new THREE.Vector3(0,0,40))},v:new THREE.Vector3(0,0,-100)};
-        bul.push(incoming);incomingUntil=i+90;
-      }
-      if(incoming&&i>=incomingUntil){const index=bul.indexOf(incoming);if(index>=0)bul.splice(index,1);incoming=null;}
-      pirateFleetUpdate(1/60);
-      const p=pirateFleet[0],d=p.g.position.distanceTo(P);minDistance=Math.min(minDistance,d);maxDistance=Math.max(maxDistance,d);states.add(p.state);
-      if(p.sfAiFrame?.tacticalState==="APPROACH"&&d>500){
-        const v=p.sfAiFrame.navigation?.desiredVelocity;
-        if(v){const speed=Math.hypot(v.x,v.y,v.z);if(Number.isFinite(speed)){maxLongRangeApproachSpeed=Math.max(maxLongRangeApproachSpeed,speed);longRangeApproachSamples++;}}
-      }
-      const angle=previousHeading.angleTo(p.hd);maxHeadingStep=Math.max(maxHeadingStep,angle);previousHeading.copy(p.hd);
-    }
-    const p=pirateFleet[0],frame=p.sfAiFrame,dv=frame?.navigation?.desiredVelocity||null;
-    return{minDistance,maxDistance,states:[...states],maxHeadingStep,ticks:p.aiTicks,legacy:pirateFleet.some(p=>["ATTACK_RUN","FIRING_PASS","OVERSHOOT","REPOSITION","LOOP","BREAK"].includes(p.state)),
-      finalDistance:p.g.position.distanceTo(P),finalVelocity:p.vel.toArray(),heading:p.hd.toArray(),modelForward:new THREE.Vector3(0,0,-1).applyQuaternion(p.g.quaternion).toArray(),
-      desiredVelocity:dv,desiredSpeed:dv?Math.hypot(dv.x,dv.y,dv.z):null,tacticalState:frame?.tacticalState||null,maneuver:frame?.navigation?.maneuver||null,
-      maxLongRangeApproachSpeed,longRangeApproachSamples,
-      ocs:{yaw:p.ocsYaw,pitch:p.ocsPitch,accel:p.ocsAccel,targetSpeed:p.ocsTargetSpeed},sfAiEnabled:p.sfAiEnabled,sfAiFire:p.sfAiFire,aiError:p.sfAiErrorLogged||false};
-  });
-  L.check('Elite flight: tactical behavior uses only ATTACK/EVADE intents, without scripted waypoints',eliteFlight.states.every(s=>s==="ATTACK"||s==="EVADE")&&!eliteFlight.legacy,eliteFlight);
-  L.check('Elite flight: approach speed is derived from actual target distance, not a near-zero intercept distance',
-    eliteFlight.maxLongRangeApproachSpeed>15&&eliteFlight.longRangeApproachSamples>0,eliteFlight);
-  L.check('Elite flight: close-range reaction switches to evasion and later re-engages',eliteFlight.states.includes("EVADE")&&eliteFlight.states.includes("ATTACK"),eliteFlight);
-  L.check('Pirate Fleet completes close passes without entering the player collision envelope',eliteFlight.minDistance>28,eliteFlight);
-  L.check('Elite flight: OCS heading changes continuously, not by snapping to target',eliteFlight.maxHeadingStep<.12&&eliteFlight.ticks>=400,eliteFlight);
-
-  const phaseAI = await page.evaluate(() => {
-    const random = EAI.rand; EAI.rand = () => 0;
-    try {
-      const e = { ty:0, hd:new THREE.Vector3(0,0,1), ph:"ATTACK", phT:0, jinkT:0, jinkCd:0, flank:-1 };
-      pirateFleetPhase(e,new THREE.Vector3(0,0,100),100,false,true,1/60);
-      const breakStarted = e.ph==="BREAK" && e.brk && e.brk.length()>.99;
-      let breakElapsed=0;
-      while(e.ph==="BREAK"&&breakElapsed<2){pirateFleetPhase(e,new THREE.Vector3(0,0,100),100,false,true,.05);breakElapsed+=.05}
-      const enteredReset=e.ph==="RESET";
-      let resetElapsed=0;
-      while(e.ph==="RESET"&&resetElapsed<1.2){pirateFleetPhase(e,new THREE.Vector3(0,0,500),500,false,true,.05);resetElapsed+=.05}
-      const reengaged=e.ph==="ATTACK";
-      const jinkAim=pirateFleetPhase(e,new THREE.Vector3(0,0,500),500,true,true,.05);
-      return {breakStarted,breakElapsed,enteredReset,reengaged,jink:e.jinkT>0&&e.state==="ATTACK"&&jinkAim.length()>.99};
-    } finally { EAI.rand=random; }
-  });
-  L.check('pirateFleet: BREAK длится заданное время, затем следует RESET и новый ATTACK',
-    phaseAI.breakStarted&&phaseAI.enteredReset&&phaseAI.breakElapsed>=1.55&&phaseAI.breakElapsed<=1.75&&phaseAI.reengaged,phaseAI);
-  L.check('pirateFleet: jink уклоняет курс, не выключая состояние ATTACK',
-    phaseAI.jink,phaseAI);
 
   const eliteAI = await page.evaluate(() => {
     const fwd = EAI.project(new THREE.Vector3(0,0,-1), new THREE.Vector3(0,0,-1));
@@ -402,20 +240,23 @@ const L = require('./lib');
   L.check('Elite fire: per-ship range permits Marauder shots below 520 and rejects the exact limit', eliteController.marauderRangeGate && !eliteController.marauderLimitGate, eliteController);
   L.check('Elite AI: phase offsets stagger decision ticks between object slots', eliteController.ticksA[0] !== eliteController.ticksB[0], eliteController);
 
-  const aiIntegration = await page.evaluate(() => {
-    const e = pirateFleet[0];
-    pirateFleet.forEach((p,i) => {
-      p.warp = 0; p.g.visible = true; p.aiClock = 0; p.aiTicks = 0;
-      p.fire = 99; p.burst = 0; p.burstGap = 0; p.state = 'APPROACH'; p.stateT = 0;
-      p.g.position.copy(P).add(new THREE.Vector3((i-.5)*80,0,-780));
-      p.hd.copy(P.clone().sub(p.g.position).normalize());
-      p.vel.copy(p.hd).multiplyScalar(34.5); p.speed = p.vel.length();
-    });
-    const before = e.g.position.clone();
-    for(let i=0;i<60;i++) pirateFleetUpdate(1/60);
-    return { ticks:e.aiTicks, movement:before.distanceTo(e.g.position) };
+  const yukaBehaviors = await page.evaluate(() => {
+    const e=pirateFleet[0],saved={position:e.g.position.clone(),velocity:e.vel.clone(),heading:e.hd.clone(),quaternion:e.g.quaternion.clone()};
+    const target={position:P,velocity:vel,quaternion:Q};
+    SF_YUKA_PIRATE_AI.update(e,1/15+1e-5,target,{mode:"patrol",targetDetected:false,speed:48,acceleration:70,turnRate:1.1});
+    const patrol=e.yukaPilot.vehicle.steering.behaviors[0]?.constructor.name;
+    SF_YUKA_PIRATE_AI.update(e,1/15+1e-5,target,{mode:"arrive",targetDetected:false,targetPosition:P.clone().add(new THREE.Vector3(80,0,0)),speed:58,acceleration:82,turnRate:2});
+    const arrive=e.yukaPilot.vehicle.steering.behaviors[0]?.constructor.name;
+    const threat={position:e.g.position.clone().add(new THREE.Vector3(0,0,-40)),velocity:new THREE.Vector3(0,0,80)};
+    const evasion=SF_YUKA_PIRATE_AI.update(e,1/15+1e-5,target,{mode:"pursuit",targetDetected:true,distance:e.g.position.distanceTo(P),fireRange:390,weaponReady:true,speed:68,acceleration:100,turnRate:2,threat,threatRadius:220});
+    const evade=e.yukaPilot.vehicle.steering.behaviors[0]?.constructor.name;
+    e.g.position.copy(saved.position);e.vel.copy(saved.velocity);e.hd.copy(saved.heading);e.g.quaternion.copy(saved.quaternion);
+    SF_YUKA_PIRATE_AI.update(e,1/15+1e-5,target,{mode:"pursuit",targetDetected:true,distance:e.g.position.distanceTo(P),fireRange:390,weaponReady:true,speed:68,acceleration:100,turnRate:2});
+    return {patrol,arrive,evade,evading:evasion.evading};
   });
-  L.check('Elite AI: движение интегрируется каждый кадр между решениями', aiIntegration.ticks === 15 && aiIntegration.movement > 10, aiIntegration);
+  L.check('Yuka WanderBehavior управляет патрульным полётом', yukaBehaviors.patrol === 'WanderBehavior', yukaBehaviors);
+  L.check('Yuka ArriveBehavior управляет возвратом и построением эскорта', yukaBehaviors.arrive === 'ArriveBehavior', yukaBehaviors);
+  L.check('Yuka EvadeBehavior перехватывает управление при угрозе снаряда', yukaBehaviors.evade === 'EvadeBehavior' && yukaBehaviors.evading, yukaBehaviors);
 
   const damage = await page.evaluate(() => {
     const e = pirateFleet[0], type = e.ty;

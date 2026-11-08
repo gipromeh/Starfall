@@ -63,18 +63,16 @@ jobs:
           for script in /tmp/starfall-inline-*.js; do node --check "$script"; done
           node --check tools/galaxy-map.js
           node --check tools/external-systems.js
-          node --check src/ai/pirate-ai-integration.js
-          node --input-type=module - <<'NODE'
-          import { readFileSync } from 'node:fs';
-          import { gunzipSync } from 'node:zlib';
-          const encoded = readFileSync('src/ai/pirate-ai-core.esm.gz.b64', 'utf8').trim();
-          const source = gunzipSync(Buffer.from(encoded, 'base64')).toString('utf8');
-          const module = await import('data:text/javascript;base64,' + Buffer.from(source).toString('base64'));
-          if (module.PIRATE_AI_VERSION !== '1.0.0' || typeof module.PirateAICore !== 'function') {
-            throw new Error('Pirate AI core runtime export/version mismatch');
-          }
-          console.log('Pirate AI Core ' + module.PIRATE_AI_VERSION + ' bundle verified');
-          NODE
+          node --check src/vendor/yuka.js
+          node --check src/ai/yuka-pirate-decision.js
+          node --check src/ai/starfall-yuka-adapter.js
+          node --check src/ai/yuka-pirate-flight.js
+          node --check tests/t11_pirate_fleet.js
+          node --check tests/t26_pirate_transport_collision.js
+          node --check tests/t27_yuka_ai_architecture.js
+          node --check tests/t19_production_combat_batch.js
+          node --check tools/validate-starfall.mjs
+          node tools/validate-starfall.mjs
           node tests/t20_galaxy_map.js
           node tests/t22_external_systems.js
           node --check tests/lib.js
@@ -129,9 +127,11 @@ jobs:
           - nuclear-performance
           - graphics-probe
           - pirate-fleet
+          - yuka-ai-architecture
           - cargo-transport
           - pirate-ecosystems
           - transport-escorts
+          - pirate-transport-collision
           - saves-regression
           - performance-leak
           - iphone-chromium
@@ -184,6 +184,9 @@ jobs:
             pirate-fleet)
               node tests/t11_pirate_fleet.js
               ;;
+            yuka-ai-architecture)
+              node tests/t27_yuka_ai_architecture.js
+              ;;
             cargo-transport)
               node tests/t23_cargo_transport.js
               ;;
@@ -192,6 +195,9 @@ jobs:
               ;;
             transport-escorts)
               node tests/t25_transport_escorts.js
+              ;;
+            pirate-transport-collision)
+              node tests/t26_pirate_transport_collision.js
               ;;
             saves-regression)
               node tests/t1_saves.js

@@ -97,7 +97,21 @@ process:
       - "GitHub Pages — единственный production hosting/deployment target; использовать существующий workflow .github/workflows/deploy-starfall-pages.yml."
       - "Vercel checks, deployment statuses и preview URLs являются внешними, неавторитетными для проекта сигналами: не запускать их, не устранять их сбои и не включать в CI/release acceptance criteria."
       - "Если Vercel status автоматически появляется в PR, зафиксировать, что платформа не используется; он не является обязательной проверкой и не блокирует приёмку STARFALL."
-  current_version: v103.5
+  current_version: v103.7
+  pirate_ai_policy:
+    scope: "Пиратские истребители, roaming pirates и истребители пиратского конвоя."
+    library: "Yuka 0.7.8 MIT, локально в src/vendor/yuka.js."
+    decision_layer: "src/ai/yuka-pirate-decision.js: Yuka Think/GoalEvaluator, арбитраж стратегических намерений на 15 Гц."
+    steering_layer: "src/ai/yuka-pirate-flight.js: Pursuit, Evade, Wander, Arrive, Separation, Alignment и Cohesion; силы рассчитываются каждый кадр."
+    movement_adapter: "src/ai/starfall-yuka-adapter.js: единственная точка интеграции velocity, Three.js position и quaternion orientation."
+    rules:
+      - "Единый контур: Yuka Think/GoalEvaluator выбирает ATTACK/PURSUE/EVADE/RETREAT/PATROL/FORM/RETURN; Yuka Steering рассчитывает силы; Starfall Adapter интегрирует движение и ориентацию."
+      - "Yuka Vehicle.update() не вызывается для игровых сущностей и не владеет мировой позицией, скоростью или коллизиями."
+      - "Не восстанавливать HARMLESS pursuit, Pirate AI Core, pirateFleetPursuit/pirateFleetPhase или EAI.command/EAI.integrate для движения пиратов."
+      - "Starfall сохраняет физическое исполнение, оружие, урон, эффекты, Three.js, ориентацию, столкновения и общую симуляцию; огневые механики не являются контроллером полёта."
+      - "Эксперимент не меняет AI торговцев, гражданского трафика и прочих NPC."
+      - "Пиратские транспортники и конвойный груз должны участвовать в swept collision игрока и парном разрешении столкновений NPC с радиусом, вычисленным по полной геометрии корпуса."
+      - "Крейсерская скорость маршрутного пиратского конвоя — 100 игровых единиц/с; обычный пиратский транспортный трафик — 58–74 единицы/с."
   ci_policy:
     principle: "Повторный запуск проверок определяется областью изменений и зависимостями, а не самим фактом нового коммита."
     rules:

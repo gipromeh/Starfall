@@ -1,3 +1,22 @@
+## v103.7 — Yuka Decision Layer и Starfall Adapter
+
+- Добавлен Yuka `Think` с `GoalEvaluator`: арбитраж ATTACK, PURSUE, EVADE, RETREAT, PATROL, FORM и RETURN выполняется на частоте 15 Гц.
+- Стратегический контекст учитывает обнаружение цели, дистанцию и огневой диапазон, готовность оружия, остаток корпуса, входящие снаряды, роль и соседей группы.
+- Steering Layer рассчитывает силы Yuka на каждом кадре; `Vehicle.update()` не вызывается и не интегрирует мировую позицию.
+- `Starfall Yuka Adapter` применяет ограничения ускорения/скорости и обновляет Three.js position, velocity и quaternion orientation. STARFALL остаётся владельцем движения, ориентации, физики, столкновений, оружия и урона.
+- Decision → Steering → Adapter подключены к Pirate Fleet, roaming pirates и convoy escorts. Уничтожение и очистка сущностей освобождают AI pilots.
+- Добавлены browser-регрессии для арбитража намерений, приоритета EVADE/RETREAT, 15 Гц decision tick, покадровой интеграции Starfall, quaternion orientation и группового steering.
+- Добавлена очистка временных объектов и снарядов вне активного игрового состояния, чтобы эффекты не зависали после game over.
+
+## v103.6 — Yuka pirate flight AI, transport speed and hull collisions
+
+- Пиратская авиация использует локально поставляемую библиотеку Yuka 0.7.8 (MIT): PursuitBehavior, EvadeBehavior, WanderBehavior и ArriveBehavior управляют скоростью, курсом и ориентацией корпуса.
+- Starfall оставляет исполнение оружия, урон, эффекты, игровой мир и адаптеры Three.js; собственные алгоритмы траектории пиратских истребителей удаляются.
+- Область эксперимента ограничена пиратскими истребителями и их эскортом; прочие NPC не мигрируют.
+- Скорость пиратских транспортников увеличивается в маршрутной симуляции и обычном трафике.
+- Коллизии транспорта и конвойного груза учитываются при swept collision игрока и столкновениях NPC; корпус использует bounding sphere модели.
+- Критерии: локальная загрузка Yuka, движение через библиотечные steering behaviors, отсутствие старого Pirate AI Core, скорость транспорта, контакт корпуса с шести направлений, регрессии эскорта и грузовых кораблей.
+
 ## v103.5 — HARMLESS Pursuit AI для Pirate Fleet
 
 ## Регламент выборочного CI и повторного запуска тестов
@@ -310,10 +329,10 @@
 date: 2026-10-31
 topic: STARFALL: паспорт проекта (архитектура, технологии, механика, сохранения, качество)
 tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура]
-game_version: "v103.5"
+game_version: "v103.7"
 last_update: 2026-11-08
 main_file: starfall.html
-main_file_sha256: "f968fde512bc7bb1bace022036c3bbae79ca60126758a143eab90f5cbe27d341"
+main_file_sha256: "6127ae3be951e0f44756aa6c9102061f44df153e08659982bdb539b720af9828"
 save_format_version: 3
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"

@@ -2,6 +2,11 @@ const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
 const html = fs.readFileSync(path.join(__dirname, '..', 'starfall.html'), 'utf8');
+const flight = fs.readFileSync(path.join(__dirname, '..', 'src', 'ai', 'yuka-pirate-flight.js'), 'utf8');
+const decision = fs.readFileSync(path.join(__dirname, '..', 'src', 'ai', 'yuka-pirate-decision.js'), 'utf8');
+const adapter = fs.readFileSync(path.join(__dirname, '..', 'src', 'ai', 'starfall-yuka-adapter.js'), 'utf8');
+const pirateFlight = html.slice(html.indexOf('function pirateFleetUpdate(dt)'), html.indexOf('function resolvePirateShipCollisions()')) +
+  html.slice(html.indexOf('function pcFight(e,c,dt)'), html.indexOf('function pcFx(e,dt,interval)'));
 const checks = [
  ['HTML build version metadata is present and valid', /<meta name="starfall-version" content="v\d+(?:\.\d+)?">/.test(html)],
  ['laser projectiles explicitly tagged', html.includes('arr.push({m,v,dmg,life,kind:"laser"})')],
@@ -18,7 +23,13 @@ const checks = [
  ['Jackal has the slowest E/E2 initial speed', html.includes('multiplyScalar([18,10,12,16][ty]||18)')],
  ['Golovoroz original turn coefficient restored', html.includes('tr=[.8,1.1,.65,.75][e.ty]')],
  ['Jackal has reduced pirate-fleet spawn speed', html.includes('multiplyScalar([46,34.5,46,46][e.ty]||46)')],
- ['Jackal uses its current flanking cruise-speed profile', html.includes('targetSpeed=dist>330?61:48;turnRate=2.5;')],
+ ['Jackal uses the Yuka pursuit speed and turn-rate profile', html.includes('speed:[68,74,66,68][e.ty]')&&html.includes('turnRate:[2.05,2.35,1.85,1.95][e.ty]')],
+ ['Yuka owns pirate fighter pursuit and evasion', html.includes('SF_YUKA_PIRATE_AI.update(e,dt')&&flight.includes('new Y.PursuitBehavior')&&flight.includes('new Y.EvadeBehavior')&&flight.includes('v.steering.calculate(dt,pilot.force)')&&html.includes('src/ai/starfall-yuka-adapter.js')],
+ ['Yuka Think/GoalEvaluator arbitrates decisions at 15 Hz', decision.includes('new Y.Think(owner)')&&decision.includes('extends Y.GoalEvaluator')&&decision.includes('decisionHz:15')],
+ ['Starfall Adapter owns velocity, world position and quaternion orientation', adapter.includes('entity.g.position.addScaledVector(entity.vel,dt)')&&adapter.includes('entity.g.quaternion.slerp(targetRotation')&&adapter.includes('orientationAuthority:"STARFALL"')],
+ ['legacy HARMLESS and Pirate AI Core movement are removed', !html.includes('pirateFleetPursuit')&&!html.includes('SF_PIRATE_AI')&&!pirateFlight.includes('EAI.command(') && !pirateFlight.includes('EAI.integrate(') && !pirateFlight.includes('EAI.think(')],
+ ['pirate transport hulls participate in player collision sweep', html.includes('kind:"pirateConvoy"')&&html.includes('pirateHitBounds(n.g)')],
+ ['pirate transport cruise speed is increased', html.includes('PC_CRUISE=100')&&html.includes('pirateTransport?58+Math.random()*16')],
  ['player collision includes pirate fleet', html.includes('fleet:true')&&html.includes('if(h.fleet)pirateFleetDamage')],
  ['NPC collision solver exists', html.includes('function resolvePirateShipCollisions()')],
  ['NPC collision solver separates overlapping ships', html.includes('penetration=minimum-distance+.05')],

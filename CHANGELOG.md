@@ -1,7 +1,30 @@
+## STARFALL v103.7 — session-only save fallback (2026-11-08)
+
+- Исправлен fallback сохранения при запрете localStorage: in-memory journal теперь продвигает sequence/slot и контрольный снимок после подтверждённой записи в память текущей вкладки.
+- Восстановление через ПРОДОЛЖИТЬ использует актуальную запись сессии; durable persistence остаётся явно недоступной и предупреждение сохраняется.
+
 ## Documentation sync — CI policy and version metadata (2026-11-08)
 
 - Добавлен регламент выборочного повторного запуска CI: документационные изменения проверяются Project Auditor и затронутыми документными проверками без автоматического повтора полной browser matrix, если игровой код и тестовая инфраструктура не менялись.
 - Синхронизирован `process.current_version` в мастер-инструкции с фактической версией игры v103.5. Игровой код и версия игры не менялись.
+
+## STARFALL v103.7 — Yuka Decision Layer and Starfall movement authority (2026-11-08)
+
+- Added Yuka Think/GoalEvaluator strategic arbitration at 15 Hz for ATTACK, PURSUE, EVADE, RETREAT, PATROL, FORM and RETURN intents.
+- Connected target detection, range, weapon readiness, hull state, incoming projectiles, archetype and squad neighbors to tactical goal scoring.
+- Routed Yuka steering forces through a Starfall adapter. Yuka Vehicle.update() no longer integrates world position; Starfall owns velocity, acceleration limits, Three.js position integration and quaternion orientation.
+- Applied the same Decision → Steering → Adapter pipeline to Pirate Fleet, roaming pirates and convoy escorts. Weapon execution, fire gates, physics, collisions and damage remain in Starfall.
+- Added browser regressions for goal arbitration, evade/retreat priority, 15 Hz decisions, per-frame Starfall integration, orientation and group steering.
+- Added non-play-state cleanup for transient effects, debris, pickups, rescue pods and projectiles.
+
+## STARFALL v103.6 — Yuka pirate flight AI and transport collision fixes (2026-11-08)
+
+- Синхронизированы README, паспорт и SHA-256 игры после финального переноса ориентации корпуса в Yuka; CI-проверки обновлены для локальной Yuka вместо удалённого Pirate AI Core. Глобальный EAI PRNG и тактический тик сохранены для неизменённых NPC.
+- Регрессионные проверки переведены с удалённых профилей EAI на библиотечные Yuka steering profiles.
+- World matrix Yuka Vehicle помечается dirty перед Wander/steering update; парный collision resolver исключает двойную регистрацию транспорта через traffic escort group.
+
+- Vendored Yuka 0.7.8 (MIT) and moved pirate fighter flight, hull orientation and steering to Pursuit, Evade, Wander and Arrive behaviors.
+- Raised pirate transport cruise velocity and added full-model hull collision coverage for convoy transports.
 
 ## STARFALL v103.5 — HARMLESS pursuit для Pirate Fleet (2026-11-08)
 
