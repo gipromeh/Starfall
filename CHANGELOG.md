@@ -5,7 +5,7 @@
 
 ## STARFALL v103.6 — Yuka pirate flight AI and transport collision fixes (2026-11-08)
 
-- Синхронизированы README, паспорт и SHA-256 игры; CI-проверки обновлены для локальной Yuka вместо удалённого Pirate AI Core. Глобальный EAI PRNG сохранён для неизменённых NPC.
+- Синхронизированы README, паспорт и SHA-256 игры после финального переноса ориентации корпуса в Yuka; CI-проверки обновлены для локальной Yuka вместо удалённого Pirate AI Core. Глобальный EAI PRNG и тактический тик сохранены для неизменённых NPC.
 - Регрессионные проверки переведены с удалённых профилей EAI на библиотечные Yuka steering profiles.
 - World matrix Yuka Vehicle помечается dirty перед Wander/steering update; парный collision resolver исключает двойную регистрацию транспорта через traffic escort group.
 

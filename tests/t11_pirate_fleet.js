@@ -315,7 +315,7 @@ const L = require('./lib');
         e.warp = 0; e.g.visible = true;
         e.g.position.copy(P).addScaledVector(forward, 300);
         e.hd.copy(forward).negate(); e.vel.copy(e.hd).multiplyScalar(24);
-        e.aiIntent = "ATTACK"; 
+        e.aiIntent = "ATTACK"; e.aiClock = EAI.STEP; e.aiTicks = 0;
         e.fire = 0; e.burstLeft = 0; e.burstGap = 0;
       }
       const before = eb.length, oldRand = EAI.rand;
