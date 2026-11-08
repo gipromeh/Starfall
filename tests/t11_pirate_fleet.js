@@ -35,16 +35,21 @@ const L = require('./lib');
     ahead:e.g.position.clone().sub(P).normalize().dot(new THREE.Vector3(0,0,-1).applyQuaternion(Q).normalize()),
     lateral:e.g.position.clone().sub(P).dot(new THREE.Vector3(1,0,0).applyQuaternion(Q).normalize())
   })));
-  await page.waitForFunction(() => window.SF_YUKA_PIRATE_AI && window.SF_YUKA_PIRATE_AI.ready && pirateFleet.every(e => e.g && e.warp <= 0 && e.yukaPilot), null, { timeout: 15000 });
+  await page.waitForFunction(() => window.SF_YUKA_PIRATE_AI && window.SF_YUKA_PIRATE_AI.ready && window.SF_YUKA_DECISION && window.SF_STARFALL_YUKA_ADAPTER && pirateFleet.every(e => e.g && e.warp <= 0 && e.yukaPilot && SF_YUKA_PIRATE_AI.inspect(e)?.decisionTicks > 0), null, { timeout: 15000 });
   const yuka = await page.evaluate(() => ({
     version: window.SF_YUKA_PIRATE_AI.version,
+    decisionVersion: window.SF_YUKA_DECISION.version,
+    adapterVersion: window.SF_STARFALL_YUKA_ADAPTER.version,
+    decisionHz: window.SF_YUKA_PIRATE_AI.decisionHz,
+    authority: window.SF_YUKA_PIRATE_AI.adapterAuthority,
     active: pirateFleet.filter(e => e.g && e.yukaPilot).length,
     ships: pirateFleet.length,
     legacyCore: !!window.SF_PIRATE_AI,
     steering: pirateFleet.map(e => e.yukaPilot?.vehicle?.steering?.behaviors?.map(b => b.constructor.name) || [])
   }));
-  L.check('Yuka 0.7.8 локально загружен и управляет всеми активными пиратскими истребителями',
-    yuka.version === '0.7.8' && yuka.active === yuka.ships && !yuka.legacyCore &&
+  L.check('Yuka Decision → Steering → Starfall Adapter загружены и управляют эскадрильей',
+    yuka.version === '0.7.8' && yuka.decisionVersion === '1.0.0' && yuka.adapterVersion === '1.0.0' &&
+    yuka.decisionHz === 15 && yuka.authority === 'STARFALL' && yuka.active === yuka.ships && !yuka.legacyCore &&
     yuka.steering.every(a => a.includes('PursuitBehavior')), yuka);
   const yukaMotion = await page.evaluate(() => {
     const e=pirateFleet.find(x=>x.g);if(!e)return {ok:false};
@@ -164,7 +169,7 @@ const L = require('./lib');
     });
     const before = eb.length;
     const randomAI = EAI.rand; EAI.rand = () => 0;
-    try { pirateFleetUpdate(.05); } finally { EAI.rand = randomAI; }
+    try { pirateFleetUpdate(1/15+1e-5); } finally { EAI.rand = randomAI; }
     const first = pirateFleet[0];
     const attackFiring = first.ph==="ATTACK" && first.state==="ATTACK";
     const shots = eb.slice(before).filter(b => b.pirateFleetSlot === first.slot);
@@ -238,15 +243,15 @@ const L = require('./lib');
   const yukaBehaviors = await page.evaluate(() => {
     const e=pirateFleet[0],saved={position:e.g.position.clone(),velocity:e.vel.clone(),heading:e.hd.clone(),quaternion:e.g.quaternion.clone()};
     const target={position:P,velocity:vel,quaternion:Q};
-    SF_YUKA_PIRATE_AI.update(e,1/60,target,{mode:"patrol",speed:48,acceleration:70,turnRate:1.1});
+    SF_YUKA_PIRATE_AI.update(e,1/15+1e-5,target,{mode:"patrol",targetDetected:false,speed:48,acceleration:70,turnRate:1.1});
     const patrol=e.yukaPilot.vehicle.steering.behaviors[0]?.constructor.name;
-    SF_YUKA_PIRATE_AI.update(e,1/60,target,{mode:"arrive",targetPosition:P.clone().add(new THREE.Vector3(80,0,0)),speed:58,acceleration:82,turnRate:2});
+    SF_YUKA_PIRATE_AI.update(e,1/15+1e-5,target,{mode:"arrive",targetDetected:false,targetPosition:P.clone().add(new THREE.Vector3(80,0,0)),speed:58,acceleration:82,turnRate:2});
     const arrive=e.yukaPilot.vehicle.steering.behaviors[0]?.constructor.name;
     const threat={position:e.g.position.clone().add(new THREE.Vector3(0,0,-40)),velocity:new THREE.Vector3(0,0,80)};
-    const evasion=SF_YUKA_PIRATE_AI.update(e,1/60,target,{mode:"pursuit",speed:68,acceleration:100,turnRate:2,threat,threatRadius:220});
+    const evasion=SF_YUKA_PIRATE_AI.update(e,1/15+1e-5,target,{mode:"pursuit",targetDetected:true,distance:e.g.position.distanceTo(P),fireRange:390,weaponReady:true,speed:68,acceleration:100,turnRate:2,threat,threatRadius:220});
     const evade=e.yukaPilot.vehicle.steering.behaviors[0]?.constructor.name;
     e.g.position.copy(saved.position);e.vel.copy(saved.velocity);e.hd.copy(saved.heading);e.g.quaternion.copy(saved.quaternion);
-    SF_YUKA_PIRATE_AI.update(e,1/60,target,{mode:"pursuit",speed:68,acceleration:100,turnRate:2});
+    SF_YUKA_PIRATE_AI.update(e,1/15+1e-5,target,{mode:"pursuit",targetDetected:true,distance:e.g.position.distanceTo(P),fireRange:390,weaponReady:true,speed:68,acceleration:100,turnRate:2});
     return {patrol,arrive,evade,evading:evasion.evading};
   });
   L.check('Yuka WanderBehavior управляет патрульным полётом', yukaBehaviors.patrol === 'WanderBehavior', yukaBehaviors);

@@ -1,3 +1,13 @@
+## v103.7 — Yuka Decision Layer и Starfall Adapter
+
+- Добавлен Yuka `Think` с `GoalEvaluator`: арбитраж ATTACK, PURSUE, EVADE, RETREAT, PATROL, FORM и RETURN выполняется на частоте 15 Гц.
+- Стратегический контекст учитывает обнаружение цели, дистанцию и огневой диапазон, готовность оружия, остаток корпуса, входящие снаряды, роль и соседей группы.
+- Steering Layer рассчитывает силы Yuka на каждом кадре; `Vehicle.update()` не вызывается и не интегрирует мировую позицию.
+- `Starfall Yuka Adapter` применяет ограничения ускорения/скорости и обновляет Three.js position, velocity и quaternion orientation. STARFALL остаётся владельцем движения, ориентации, физики, столкновений, оружия и урона.
+- Decision → Steering → Adapter подключены к Pirate Fleet, roaming pirates и convoy escorts. Уничтожение и очистка сущностей освобождают AI pilots.
+- Добавлены browser-регрессии для арбитража намерений, приоритета EVADE/RETREAT, 15 Гц decision tick, покадровой интеграции Starfall, quaternion orientation и группового steering.
+- Добавлена очистка временных объектов и снарядов вне активного игрового состояния, чтобы эффекты не зависали после game over.
+
 ## v103.6 — Yuka pirate flight AI, transport speed and hull collisions
 
 - Пиратская авиация использует локально поставляемую библиотеку Yuka 0.7.8 (MIT): PursuitBehavior, EvadeBehavior, WanderBehavior и ArriveBehavior управляют скоростью, курсом и ориентацией корпуса.
@@ -319,10 +329,10 @@
 date: 2026-10-31
 topic: STARFALL: паспорт проекта (архитектура, технологии, механика, сохранения, качество)
 tags: [starfall, gamedev, threejs, webgl, паспорт, архитектура]
-game_version: "v103.6"
+game_version: "v103.7"
 last_update: 2026-11-08
 main_file: starfall.html
-main_file_sha256: "d6fe8ccd937f5e81325b2339326bbc8c4e9da8f5f71e87cb4849a92862cbaae9"
+main_file_sha256: "8cd92edd71e3ce741aee69c5589696c2efb63727722d00d4a738c943b2f9a527"
 save_format_version: 3
 libs:
   three: "r128 (cdnjs) + examples/js r128 из jsDelivr three@0.128.0: CopyShader, LuminosityHighPassShader, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, GLTFLoader (с v44, для GLB-моделей)"

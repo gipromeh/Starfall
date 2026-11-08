@@ -34,7 +34,7 @@ const L = require('./lib');
      playerShots=0;hostileShots=0;enemyHitEvents=0;playerHitEvents=0;playerDamageReceived=0;actualEnemyDamage=0;
      let frames=0;
      for(;frames<FRAMES&&state==='play';frames++){
-      if(frames===1200)firing=true;
+      if(frames===180)firing=true;
       if(firing){let target=null,nearest=Infinity;for(const candidate of pirateFleet){if(!candidate.g||candidate.hp<=0)continue;const distance=candidate.g.position.distanceTo(P);if(distance<nearest){nearest=distance;target=candidate}}if(target){const projectileSpeed=Math.max(1,WP[gw[0]].v),leadTime=Math.min(6.2,nearest/projectileSpeed),relativeVelocity=target.vel.clone().sub(vel),leadPoint=target.g.position.clone().addScaledVector(relativeVelocity,leadTime),aim=leadPoint.sub(P).normalize();Q.setFromUnitVectors(new THREE.Vector3(0,0,-1),aim);rig.quaternion.copy(Q)}}
       upd(DT);
      }

@@ -64,8 +64,15 @@ jobs:
           node --check tools/galaxy-map.js
           node --check tools/external-systems.js
           node --check src/vendor/yuka.js
+          node --check src/ai/yuka-pirate-decision.js
+          node --check src/ai/starfall-yuka-adapter.js
           node --check src/ai/yuka-pirate-flight.js
+          node --check tests/t11_pirate_fleet.js
           node --check tests/t26_pirate_transport_collision.js
+          node --check tests/t27_yuka_ai_architecture.js
+          node --check tests/t19_production_combat_batch.js
+          node --check tools/validate-starfall.mjs
+          node tools/validate-starfall.mjs
           node tests/t20_galaxy_map.js
           node tests/t22_external_systems.js
           node --check tests/lib.js
@@ -120,6 +127,7 @@ jobs:
           - nuclear-performance
           - graphics-probe
           - pirate-fleet
+          - yuka-ai-architecture
           - cargo-transport
           - pirate-ecosystems
           - transport-escorts
@@ -175,6 +183,9 @@ jobs:
               ;;
             pirate-fleet)
               node tests/t11_pirate_fleet.js
+              ;;
+            yuka-ai-architecture)
+              node tests/t27_yuka_ai_architecture.js
               ;;
             cargo-transport)
               node tests/t23_cargo_transport.js
