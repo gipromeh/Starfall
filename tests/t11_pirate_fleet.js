@@ -39,11 +39,12 @@ const L = require('./lib');
   const yuka = await page.evaluate(() => ({
     version: window.SF_YUKA_PIRATE_AI.version,
     active: pirateFleet.filter(e => e.g && e.yukaPilot).length,
+    ships: pirateFleet.length,
     legacyCore: !!window.SF_PIRATE_AI,
     steering: pirateFleet.map(e => e.yukaPilot?.vehicle?.steering?.behaviors?.map(b => b.constructor.name) || [])
   }));
   L.check('Yuka 0.7.8 локально загружен и управляет всеми активными пиратскими истребителями',
-    yuka.version === '0.7.8' && yuka.active === pirateFleet.length && !yuka.legacyCore &&
+    yuka.version === '0.7.8' && yuka.active === yuka.ships && !yuka.legacyCore &&
     yuka.steering.every(a => a.includes('PursuitBehavior')), yuka);
   const yukaMotion = await page.evaluate(() => {
     const e=pirateFleet.find(x=>x.g);if(!e)return {ok:false};

@@ -3,6 +3,7 @@
 const Y=global.YUKA;
 if(!Y)throw new Error("Yuka 0.7.8 failed to load");
 const pilots=new WeakMap();
+let activePilots=0;
 const set3=(v,p)=>v.set(p.x,p.y,p.z);
 const setQ=(q,p)=>q.set(p.x,p.y,p.z,p.w);
 function createPilot(entity){
@@ -14,11 +15,11 @@ function createPilot(entity){
  const evade=new Y.EvadeBehavior(threat,220,1.2);
  const wander=new Y.WanderBehavior(18,48,10);
  const arrive=new Y.ArriveBehavior(target.position,2.8,14);
- const pilot={vehicle,target,threat,pursuit,evade,wander,arrive,lastMode:""};
- pilots.set(entity,pilot);entity.yukaPilot=pilot;
+ const pilot={vehicle,target,threat,pursuit,evade,wander,arrive,facing:new Y.Vector3(),lastMode:""};
+ pilots.set(entity,pilot);activePilots++;entity.yukaPilot=pilot;
  return pilot;
 }
-function reset(entity){if(entity) {pilots.delete(entity);delete entity.yukaPilot}}
+function reset(entity){if(entity&&pilots.has(entity)){pilots.delete(entity);activePilots--;delete entity.yukaPilot}}
 function update(entity,dt,targetData,options={}){
  if(!entity||!entity.g||!targetData)return null;
  const pilot=pilots.get(entity)||createPilot(entity),v=pilot.vehicle,g=entity.g;
@@ -29,6 +30,7 @@ function update(entity,dt,targetData,options={}){
  v.maxSpeed=Math.max(1,options.speed||58);
  v.maxForce=Math.max(1,options.acceleration||72);
  v.mass=1;v.maxTurnRate=Math.max(.25,options.turnRate||1.8);
+ v._worldMatrixDirty=true;void v.worldMatrix;
  v.steering.clear();
  let evading=false;
  if(options.threat&&options.threat.position&&options.threat.velocity){
@@ -49,16 +51,17 @@ function update(entity,dt,targetData,options={}){
  }
  v.update(dt);
  if(v.velocity.squaredLength()>1e-6){
-  const facing=v.position.clone().add(v.velocity);
-  v.rotateTo(facing,dt);
+  pilot.facing.copy(v.position).add(v.velocity);
+  v.rotateTo(pilot.facing,dt);
  }
  g.position.set(v.position.x,v.position.y,v.position.z);
  entity.vel.set(v.velocity.x,v.velocity.y,v.velocity.z);
  if(entity.vel.lengthSq()>1e-6)entity.hd.copy(entity.vel).normalize();
  g.quaternion.set(v.rotation.x,v.rotation.y,v.rotation.z,v.rotation.w);
+ v._worldMatrixDirty=true;void v.worldMatrix;
  entity.speed=entity.vel.length();
  entity.state=entity.aiIntent=evading?"EVADE":(options.mode==="patrol"?"PATROL":options.mode==="arrive"?"RETURN":"ATTACK");
  return {evading,speed:entity.speed,position:entity.vel.lengthSq()?g.position:null,behavior:evading?"EvadeBehavior":options.mode==="patrol"?"WanderBehavior":options.mode==="arrive"?"ArriveBehavior":"PursuitBehavior"};
 }
-global.SF_YUKA_PIRATE_AI={version:"0.7.8",ready:true,reset,update,activeCount:()=>pilots.size};
+global.SF_YUKA_PIRATE_AI={version:"0.7.8",ready:true,reset,update,activeCount:()=>activePilots};
 })(window);

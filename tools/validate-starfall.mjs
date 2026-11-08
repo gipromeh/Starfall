@@ -28,10 +28,15 @@ if (/\bg\.rotateZ\s*\(/.test(fleetUpdate)) throw new Error("Pirate roll still ac
 if (!html.includes('const asset=MC["p"+ty]')) throw new Error("Loaded pirate GLB templates are not selected by mkPirate().");
 if (!html.includes("window.StarfallPirateDiagnostics")) throw new Error("Pirate runtime diagnostics API is missing.");
 if (!html.includes("STARFALL_SOCKET_ANCHOR_")) throw new Error("Non-destructive socket anchors are missing.");
+if (!fleetUpdate.includes("SF_YUKA_PIRATE_AI.update")) throw new Error("Yuka does not control the pirate fleet.");
 if (!fleetUpdate.includes("e.vel.lengthSq()>1e-6?e.vel:e.hd")) throw new Error("Pirate hull is not aligned to actual velocity.");
-if (!fleetUpdate.includes("g.quaternion.copy(pirateFleetTargetQuat)")) throw new Error("Pirate hull orientation is still delayed behind velocity.");
+if (!fleetUpdate.includes("g.quaternion.slerp(pirateFleetTargetQuat")) throw new Error("Pirate hull orientation smoothing is missing.");
 if (!fleetUpdate.includes("fireRange=[390,390,520,430]")) throw new Error("Jackal close-range firing envelope regressed.");
 if (!html.includes('lowProfile=QL&&QL.mode==="low"')) throw new Error("LOW-profile fleet composition is missing.");
 if (!html.includes("function asteroidFallback(reason)")) throw new Error("Asteroid GLB failure has no procedural fallback.");
+if (!html.includes('src/vendor/yuka.js') || !html.includes('src/ai/yuka-pirate-flight.js')) throw new Error("Local Yuka runtime is not loaded.");
+if (html.includes("pirate-ai-integration.js") || html.includes("SF_PIRATE_AI") || html.includes("pirateFleetPursuit")) throw new Error("Legacy Pirate AI runtime is still referenced.");
+if (!html.includes("PC_CRUISE=100") || !html.includes("pirateTransport?58+Math.random()*16")) throw new Error("Pirate transport speed profile regressed.");
+if (!html.includes('kind:"pirateConvoy"') || !html.includes("pirateConvoyDamage(h.o,9999,false)")) throw new Error("Pirate transport hull collision handling is missing.");
 
-console.log("Validated " + parsed + " inline JavaScript blocks and pirate-flight regression guards.");
+console.log("Validated " + parsed + " inline JavaScript blocks, Yuka pirate AI and transport collision guards.");

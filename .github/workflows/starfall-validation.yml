@@ -8,7 +8,9 @@ on:
       - "tools/validate-starfall.mjs"
       - "tests/t11_pirate_fleet.js"
       - "tests/lib.js"
-      - "tests/lib.js"
+      - "src/ai/yuka-pirate-flight.js"
+      - "src/vendor/yuka.js"
+      - "tests/t26_pirate_transport_collision.js"
       - ".github/workflows/starfall-validation.yml"
   push:
     branches: ['feat/**']
@@ -17,6 +19,9 @@ on:
       - "tools/validate-starfall.mjs"
       - "tests/t11_pirate_fleet.js"
       - "tests/lib.js"
+      - "src/ai/yuka-pirate-flight.js"
+      - "src/vendor/yuka.js"
+      - "tests/t26_pirate_transport_collision.js"
       - ".github/workflows/starfall-validation.yml"
   workflow_dispatch:
 

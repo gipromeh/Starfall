@@ -2252,7 +2252,6 @@ function resolvePirateShipCollisions(){
  for(const pe of roamingPirates)if(pe.g&&pe.hp>0)ships.push({g:pe.g,v:pe.vel,r:Math.max(6,Math.min(18,(pe.hitRadius||pe.r||12)*.5))});
  for(const c of pirateConvoys)for(const en of pcMembers(c))if(en.g&&!en.dead&&en.hp>0)ships.push({g:en.g,v:en.vel,r:Math.max(9,Math.min(34,(en.hitRadius||en.r||14)*.78))});
  if(typeof trafficEscortGroups!=="undefined")for(const c of trafficEscortGroups.values()){
-  if(c.owner?.g&&c.owner.v)ships.push({g:c.owner.g,v:c.owner.v,r:Math.max(10,Math.min(34,(c.owner._sfCollisionBounds?.hitRadius||c.owner.cr||14)*.78))});
   for(const en of c.escorts)if(en.g&&!en.dead&&en.hp>0)ships.push({g:en.g,v:en.vel,r:Math.max(6,Math.min(18,(en.hitRadius||en.r||12)*.5))});
  }
  for(const n of nv)if(n.g&&!n.tur&&n.g.visible!==false&&n.v){
@@ -2428,7 +2427,7 @@ function pirateConvoyDamage(e,d,missile){
  }
 }
 
-/* Фазы боя эскорта: ATTACK -> BREAK -> RESET -> ATTACK. */
+/* Pirate escort flight and return are delegated to Yuka steering behaviors. */
 
 
 function pcFire(e,dist,aiThink,dt){
