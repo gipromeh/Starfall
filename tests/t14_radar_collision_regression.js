@@ -2,6 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
 const html = fs.readFileSync(path.join(__dirname, '..', 'starfall.html'), 'utf8');
+const yukaAdapter = fs.readFileSync(path.join(__dirname, '..', 'src', 'ai', 'yuka-pirate-flight.js'), 'utf8');
+const pirateFlight = html.slice(html.indexOf('function pirateFleetUpdate(dt)'), html.indexOf('function resolvePirateShipCollisions()')) +
+  html.slice(html.indexOf('function pcFight(e,c,dt)'), html.indexOf('function pcFx(e,dt,interval)'));
 const checks = [
  ['HTML build version metadata is present and valid', /<meta name="starfall-version" content="v\d+(?:\.\d+)?">/.test(html)],
  ['laser projectiles explicitly tagged', html.includes('arr.push({m,v,dmg,life,kind:"laser"})')],
@@ -20,7 +23,7 @@ const checks = [
  ['Jackal has reduced pirate-fleet spawn speed', html.includes('multiplyScalar([46,34.5,46,46][e.ty]||46)')],
  ['Jackal uses the Yuka pursuit speed and turn-rate profile', html.includes('speed:[68,74,66,68][e.ty]')&&html.includes('turnRate:[2.05,2.35,1.85,1.95][e.ty]')],
  ['Yuka owns pirate fighter pursuit and evasion', html.includes('SF_YUKA_PIRATE_AI.update(e,dt')&&yukaAdapter.includes('new Y.PursuitBehavior')&&yukaAdapter.includes('new Y.EvadeBehavior')&&yukaAdapter.includes('v.rotateTo(pilot.facing,dt)')],
- ['legacy HARMLESS and Pirate AI Core movement are removed', !html.includes('pirateFleetPursuit')&&!html.includes('SF_PIRATE_AI')&&!html.includes('EAI.command(e')],
+ ['legacy HARMLESS and Pirate AI Core movement are removed', !html.includes('pirateFleetPursuit')&&!html.includes('SF_PIRATE_AI')&&!pirateFlight.includes('EAI.command(') && !pirateFlight.includes('EAI.integrate(') && !pirateFlight.includes('EAI.think(')],
  ['pirate transport hulls participate in player collision sweep', html.includes('kind:"pirateConvoy"')&&html.includes('pirateHitBounds(n.g)')],
  ['pirate transport cruise speed is increased', html.includes('PC_CRUISE=100')&&html.includes('pirateTransport?58+Math.random()*16')],
  ['player collision includes pirate fleet', html.includes('fleet:true')&&html.includes('if(h.fleet)pirateFleetDamage')],
