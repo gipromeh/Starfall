@@ -920,3 +920,10 @@ tags: [starfall, changelog]
 
 - Updated `main_file_sha256` after extending the shared Elite-derived pilot to boss flight; `last_update` refreshed.
 - SHA-256: `32c6d0a01e6691d046d9c7657fcb18a3b14201786b8f51757a7862008029c07c`.
+
+
+## HARMLESS Pursuit regression geometry — 2026-11-08
+
+- Pirate Fleet regression fixtures now place the close-range target behind the player's forward axis, isolating the pursuit-break branch from the attack-run slash cone.
+- Slash hysteresis assertion now expects a resumed pursuit result after the exit threshold is crossed; the function returns an active pursuit command rather than null in that state.
+- Production pursuit logic is unchanged; this corrects two test-fixture/expectation errors found by the full browser matrix.
