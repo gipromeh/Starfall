@@ -4211,9 +4211,13 @@ function save(reason){
  const dj=JSON.stringify(d);if(dj===lastJson)return true;
  const q=seq+1,slot=lastSlot===KA?KB:KA;
  const rec='{"v":'+VER+',"q":'+q+',"t":'+Date.now()+',"c":"'+ck(dj)+'","d":'+dj+'}';
- let ok=put(slot,rec);if(ok&&rd(slot)!==rec){ok=false;err="verify"}
- if(ok){seq=q;lastSlot=slot;lastJson=dj;lastSig=sigOf(d);lastW=performance.now();nextAt=0;err=""}
- else{nextAt=performance.now()+5000;if(!warned){warned=1;toast("⚠ Сохранение недоступно в этом браузере (приватный режим?). Прогресс не переживёт перезагрузку страницы.")}}
+ const durable=put(slot,rec);
+ /* localStorage may be blocked while the in-memory fallback remains writable.
+    Advance the session journal whenever rd() can read back the exact record. */
+ const ok=rd(slot)===rec;
+ if(ok){seq=q;lastSlot=slot;lastJson=dj;lastSig=sigOf(d);lastW=performance.now();nextAt=0;if(durable)err=""}
+ else{nextAt=performance.now()+5000}
+ if(!durable&&!warned){warned=1;toast("⚠ Сохранение недоступно в этом браузере (приватный режим?). Прогресс не переживёт перезагрузку страницы.")}
  return ok}
 
 function load(){
