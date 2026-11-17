@@ -79,7 +79,7 @@ async function clickText(page, scope, re) { return page.evaluate(([s, src]) => {
   await page.click('#cont', { noWaitAfter: true }); await page.waitForFunction(() => state === 'dock'); await L.sleep(300);
   let s2 = await page.evaluate(() => ({ cr, ct }));
   L.check('4. после меню и возврата: кредиты те же, контракта нет', s2.cr === s.cr && s2.ct === null, { s, s2 });
-  for (let i = 0; i < 3; i++) { await goMenu(page); await page.click('#cont', { noWaitAfter: true }); await page.waitForFunction(() => state === 'dock'); }
+  for (let i = 0; i < 3; i++) { await page.evaluate(() => toMenu()); await page.waitForFunction(() => state === 'menu'); await page.click('#cont', { noWaitAfter: true }); await page.waitForFunction(() => state === 'dock'); }
   s2 = await page.evaluate(() => ({ cr, ct }));
   L.check('8. три загрузки подряд — награда не дублируется', s2.cr === s.cr && s2.ct === null, { s, s2 });
 
